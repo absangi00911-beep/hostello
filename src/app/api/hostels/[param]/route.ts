@@ -109,6 +109,27 @@ export async function PATCH(
 
     const data = parsed.data;
 
+    // Validate image URLs to ensure they come from our R2 bucket (prevent arbitrary external URLs)
+    const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
+    if (data.images && R2_PUBLIC_URL) {
+      for (const imageUrl of data.images) {
+        if (!imageUrl.startsWith(R2_PUBLIC_URL)) {
+          return NextResponse.json(
+            { error: "Image URLs must be from the authorized image storage." },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    if (data.coverImage && R2_PUBLIC_URL) {
+      if (!data.coverImage.startsWith(R2_PUBLIC_URL)) {
+        return NextResponse.json(
+          { error: "Cover image URL must be from the authorized image storage." },
+          { status: 400 }
+        );
+      }
+    }
+
     if (data.status === "PENDING_REVIEW") {
       const updatedImages = data.images ?? hostel.images;
       if (updatedImages.length === 0) {
@@ -159,10 +180,20 @@ export async function DELETE(
       return NextResponse.json({ error: "You don't own this hostel." }, { status: 403 });
     }
 
-    await db.hostel.update({
-      where: { id: param },
-      data: { status: "SUSPENDED" },
-    });
+    // Use a transaction to atomically suspend hostel and cancel active bookings
+    await db.$transaction([
+      db.hostel.update({
+        where: { id: param },
+        data: { status: "SUSPENDED" },
+      }),
+      db.booking.updateMany({
+        where: { 
+          hostelId: param, 
+          status: { in: ["PENDING", "CONFIRMED"] } 
+        },
+        data: { status: "CANCELLED" },
+      }),
+    ]);
 
     return NextResponse.json({ message: "Hostel removed from listings." });
   } catch (err) {

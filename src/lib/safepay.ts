@@ -113,5 +113,18 @@ export async function verifyWebhookSignature(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  return hex === signature;
+  // Use timing-safe comparison to prevent timing attacks on webhook signature
+  const { timingSafeEqual } = await import("crypto");
+  const sigBuffer = Buffer.from(signature, "hex");
+  const hexBuffer = Buffer.from(hex, "hex");
+  
+  if (sigBuffer.length !== hexBuffer.length) {
+    return false;
+  }
+  
+  try {
+    return timingSafeEqual(sigBuffer, hexBuffer);
+  } catch {
+    return false;
+  }
 }

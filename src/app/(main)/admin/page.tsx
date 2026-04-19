@@ -97,12 +97,12 @@ export default async function AdminPage() {
 
         {/* Pending hostels */}
         {recentHostels.length > 0 && (
-          <Section title="Needs review" link="/admin/hostels">
+          <Section title="Needs review" link="/admin/hostels?status=PENDING_REVIEW">
             {recentHostels.map((h) => (
               <Row key={h.id}
                 title={h.name}
                 sub={`${h.city} · by ${h.owner.name}`}
-                right={<Link href={`/admin/hostels?id=${h.id}`} className="text-xs font-bold text-[var(--color-brand-700)] hover:underline">Review</Link>}
+                right={<Link href={`/admin/hostels?status=PENDING_REVIEW#${h.id}`} className="text-xs font-bold text-[var(--color-brand-700)] hover:underline">Review</Link>}
               />
             ))}
           </Section>

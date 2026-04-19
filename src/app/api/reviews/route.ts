@@ -41,36 +41,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Upsert — one review per user per hostel
-    const review = await db.review.upsert({
-      where: { hostelId_userId: { hostelId, userId: session.user.id } },
-      update: {
-        ...parsed.data,
-        updatedAt: new Date(),
-      },
-      create: {
-        hostelId,
-        userId: session.user.id,
-        ...parsed.data,
-      },
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-      },
-    });
+    // Upsert review and atomically recompute hostel rating in a single transaction
+    // This ensures if anything fails, both roll back together
+    const review = await db.$transaction(async (tx) => {
+      // Upsert — one review per user per hostel
+      const review = await tx.review.upsert({
+        where: { hostelId_userId: { hostelId, userId: session.user.id } },
+        update: {
+          ...parsed.data,
+          updatedAt: new Date(),
+        },
+        create: {
+          hostelId,
+          userId: session.user.id,
+          ...parsed.data,
+        },
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+        },
+      });
 
-    // Recompute hostel rating aggregate
-    const aggregate = await db.review.aggregate({
-      where: { hostelId },
-      _avg: { rating: true },
-      _count: { rating: true },
-    });
+      // Atomically recompute hostel rating and update it
+      const aggregate = await tx.review.aggregate({
+        where: { hostelId },
+        _avg: { rating: true },
+        _count: { rating: true },
+      });
 
-    await db.hostel.update({
-      where: { id: hostelId },
-      data: {
-        rating: aggregate._avg.rating ?? 0,
-        reviewCount: aggregate._count.rating,
-      },
+      await tx.hostel.update({
+        where: { id: hostelId },
+        data: {
+          rating: aggregate._avg.rating ?? 0,
+          reviewCount: aggregate._count.rating,
+        },
+      });
+
+      return review;
     });
 
     return NextResponse.json({ data: review, message: "Review submitted." }, { status: 201 });

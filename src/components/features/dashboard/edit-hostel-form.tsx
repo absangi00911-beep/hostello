@@ -36,7 +36,7 @@ interface HostelData {
   pricePerMonth: number; rooms: number; capacity: number;
   gender: "MALE" | "FEMALE" | "MIXED";
   minStay: number; maxStay: number | null;
-  amenities: string[]; rules: unknown;
+  amenities: string[]; rules: string[];
   images: string[]; coverImage: string | null;
   status: string;
 }
@@ -55,7 +55,7 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
   const [images,   setImages]   = useState<string[]>(hostel.images ?? []);
   const [showDelete, setShowDelete] = useState(false);
 
-  // Normalise rules from DB (stored as JSON, may be string[])
+  // Normalise rules from DB (stored as array of strings)
   const initialRules = Array.isArray(hostel.rules)
     ? (hostel.rules as string[]).join("\n")
     : "";
@@ -232,7 +232,6 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
         <Field label="House rules">
           <textarea
             rows={3}
-            defaultValue={initialRules}
             placeholder={"One rule per line:\nNo guests after 10pm\nNo smoking"}
             className={`${INPUT} h-auto py-3 resize-none`}
             {...register("rules", {

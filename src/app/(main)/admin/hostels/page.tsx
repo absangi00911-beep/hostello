@@ -16,14 +16,21 @@ const STATUS_CLS: Record<string, string> = {
   SUSPENDED:      "text-red-700 bg-red-50 border-red-200",
 };
 
-export default async function AdminHostelsPage() {
+export default async function AdminHostelsPage(props: { searchParams: Promise<{ status?: string }> }) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
+  const { status: filterStatus } = await props.searchParams;
+  
+  // Map query param to valid status enum
+  const validStatuses = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"];
+  const selectedStatus = filterStatus && validStatuses.includes(filterStatus) ? filterStatus : undefined;
+
   const hostels = await db.hostel.findMany({
+    where: selectedStatus ? { status: selectedStatus as any } : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     select: {
-      id: true, name: true, city: true, status: true, verified: true,
+      id: true, slug: true, name: true, city: true, status: true, verified: true,
       pricePerMonth: true, createdAt: true,
       owner: { select: { name: true, email: true } },
       _count: { select: { bookings: true, reviews: true } },
@@ -42,13 +49,35 @@ export default async function AdminHostelsPage() {
           </div>
         </div>
 
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {[
+            { value: undefined, label: "All" },
+            { value: "PENDING_REVIEW", label: "Needs review" },
+            { value: "ACTIVE", label: "Active" },
+            { value: "SUSPENDED", label: "Suspended" },
+          ].map(({ value, label }) => (
+            <Link
+              key={value ?? "all"}
+              href={value ? `/admin/hostels?status=${value}` : "/admin/hostels"}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
+                selectedStatus === value
+                  ? "bg-[var(--color-ink)] text-white"
+                  : "bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <div className="divide-y divide-[var(--color-border)]">
             {hostels.map((h) => (
               <div key={h.id} className="flex items-start gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Link href={`/hostels/${h.id}`} className="text-sm font-bold text-[var(--color-ink)] hover:underline">
+                    <Link href={`/hostels/${h.slug}`} className="text-sm font-bold text-[var(--color-ink)] hover:underline">
                       {h.name}
                     </Link>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_CLS[h.status] ?? ""}`}>

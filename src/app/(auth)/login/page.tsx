@@ -36,7 +36,11 @@ function LoginContent() {
       setServerErr("That email and password combination doesn't match.");
       return;
     }
-    router.push(callbackUrl);
+    // Validate callbackUrl is a safe relative path to prevent open redirect attacks
+    const safeUrl = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : "/dashboard";
+    router.push(safeUrl);
     router.refresh();
   }
 

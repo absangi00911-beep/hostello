@@ -73,6 +73,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 }
-
-// Safepay sends raw JSON — disable Next.js body parsing
-export const config = { api: { bodyParser: false } };

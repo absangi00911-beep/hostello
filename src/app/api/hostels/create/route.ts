@@ -57,9 +57,8 @@ export async function POST(req: NextRequest) {
         // Images come from the upload step — not validated by hostelCreateSchema
         images: Array.isArray(body.images) ? body.images : [],
         coverImage: typeof body.coverImage === "string" ? body.coverImage : null,
-        // Set to ACTIVE immediately — no manual verification step yet.
-        // Change to "PENDING_REVIEW" once an admin approval flow is built.
-        status: "ACTIVE",
+        // Hostels must be reviewed by admin before going live
+        status: "PENDING_REVIEW",
         ownerId: session.user.id,
       },
       select: { id: true, slug: true, name: true, status: true },

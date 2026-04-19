@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
 
 interface PageProps {
   searchParams: Promise<{ bookingId?: string }>;
@@ -10,6 +12,18 @@ interface PageProps {
 export default async function PaymentSuccessPage({ searchParams }: PageProps) {
   const { bookingId } = await searchParams;
   if (!bookingId) redirect("/");
+
+  // Verify the booking exists, belongs to the current user, and has been paid
+  const session = await auth();
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    select: { paymentStatus: true, userId: true, status: true },
+  });
+
+  // Redirect if booking not found, payment not confirmed, or user not authorized
+  if (!booking || booking.paymentStatus !== "PAID" || (session && booking.userId !== session.user.id)) {
+    redirect(`/bookings/${bookingId}`);
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-16 bg-[var(--color-ground)] flex items-center justify-center">

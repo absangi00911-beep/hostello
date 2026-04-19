@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/mark-completed-stays",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/cancel-abandoned-payments",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

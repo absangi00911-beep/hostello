@@ -68,29 +68,62 @@ export async function POST(req: NextRequest) {
 
     const total = months * hostel.pricePerMonth;
 
-    const booking = await db.booking.create({
-      data: {
-        hostelId,
-        roomId: roomId ?? null,
-        userId: session.user.id,
-        checkIn,
-        checkOut,
-        months,
-        guests,
-        total,
-        paymentMethod,
-        status: "PENDING",
-        paymentStatus: "PENDING",
-      },
-      select: {
-        id: true,
-        hostelId: true,
-        checkIn: true,
-        checkOut: true,
-        total: true,
-        status: true,
-        months: true,
-      },
+    // Use a transaction to atomically check capacity and create the booking
+    // This prevents race conditions where multiple bookings exceed capacity
+    const booking = await db.$transaction(async (tx) => {
+      // If a specific room is requested, verify availability and decrement
+      if (roomId) {
+        const room = await tx.room.findFirst({
+          where: { 
+            id: roomId,
+            hostelId,
+            available: { gt: 0 } 
+          },
+        });
+
+        if (!room) {
+          throw new Error("Room not available");
+        }
+
+        // Use optimistic locking: update only if version matches
+        // If version changed (room booked elsewhere), Prisma throws error and transaction rolls back
+        await tx.room.update({
+          where: { 
+            id: room.id,
+            version: room.version  // optimistic lock
+          },
+          data: { 
+            available: { decrement: 1 },
+            version: { increment: 1 }
+          },
+        });
+      }
+
+      // Create the booking
+      return tx.booking.create({
+        data: {
+          hostelId,
+          roomId: roomId ?? null,
+          userId: session.user.id,
+          checkIn,
+          checkOut,
+          months,
+          guests,
+          total,
+          paymentMethod,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+        },
+        select: {
+          id: true,
+          hostelId: true,
+          checkIn: true,
+          checkOut: true,
+          total: true,
+          status: true,
+          months: true,
+        },
+      });
     });
 
     // Build email data — we need the student's name and email from the session

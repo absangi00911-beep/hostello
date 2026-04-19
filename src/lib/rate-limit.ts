@@ -58,6 +58,14 @@ function getRedis() {
   }
 
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // In production, Redis is required for distributed rate limiting
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Upstash Redis is not configured. " +
+        "In production, set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN. " +
+        "In-memory rate limiting is per-instance and will not work on distributed platforms."
+      );
+    }
     redisClient = null;
     return redisClient;
   }
@@ -134,12 +142,28 @@ export async function rateLimit(
   }
 }
 
-/** Extract a stable IP string from a Next.js request. */
+/** Extract a stable IP string from a Next.js request.
+ * Prioritizes Cloudflare's CF-Connecting-IP header (most trustworthy),
+ * then takes the rightmost IP from x-forwarded-for (set by the actual proxy),
+ * avoiding client-controlled left entries.
+ */
 export function getIp(req: Request) {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    req.headers.get("x-real-ip") ??
-    req.headers.get("cf-connecting-ip") ??
-    "unknown"
-  );
+  // If behind Cloudflare, use their header (cannot be spoofed)
+  const cfIp = req.headers.get("cf-connecting-ip");
+  if (cfIp) {
+    return cfIp.trim();
+  }
+  
+  // Otherwise, take the LAST entry from x-forwarded-for (added by your proxy)
+  // Ignore client-controlled left entries
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const ips = forwarded.split(",").map((ip) => ip.trim());
+    const rightmostIp = ips[ips.length - 1];
+    if (rightmostIp && rightmostIp !== "unknown") {
+      return rightmostIp;
+    }
+  }
+  
+  return req.headers.get("x-real-ip") ?? "unknown";
 }

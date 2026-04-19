@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
 import { MAX_IMAGE_SIZE_MB, ACCEPTED_IMAGE_TYPES, MAX_IMAGES_PER_HOSTEL } from "@/config/constants";
 
 /**
@@ -68,9 +69,34 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const hostelId = formData.get("hostelId") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });
+    }
+
+    // If hostelId provided, verify ownership and check image count
+    if (hostelId) {
+      const hostel = await db.hostel.findUnique({
+        where: { id: hostelId },
+        select: { ownerId: true, images: true },
+      });
+
+      if (!hostel) {
+        return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
+      }
+
+      if (hostel.ownerId !== session.user.id && session.user.role !== "ADMIN") {
+        return NextResponse.json({ error: "You don't own this hostel." }, { status: 403 });
+      }
+
+      // Check server-side image count limit
+      if (hostel.images.length >= MAX_IMAGES_PER_HOSTEL) {
+        return NextResponse.json(
+          { error: `Maximum ${MAX_IMAGES_PER_HOSTEL} images allowed per hostel.` },
+          { status: 400 }
+        );
+      }
     }
 
     // Type validation
@@ -98,8 +124,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Upload failed. Try again." }, { status: 500 });
   }
 }
-
-// 10 MB body limit for Next.js — images can be up to 5 MB each
-export const config = {
-  api: { bodyParser: false },
-};

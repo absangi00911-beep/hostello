@@ -27,6 +27,7 @@ export function HostelInfo({ hostel, favoritesCount, initialIsSaved = false }: H
   const { data: session } = useSession();
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [saving, setSaving] = useState(false);
+  const [savedCount, setSavedCount] = useState(favoritesCount);
 
   async function handleSave() {
     if (!session) { toast.error("Sign in to save hostels"); return; }
@@ -37,6 +38,8 @@ export function HostelInfo({ hostel, favoritesCount, initialIsSaved = false }: H
       });
       if (!res.ok) throw new Error();
       setIsSaved((v) => !v);
+      // Optimistically update the count
+      setSavedCount((prev) => isSaved ? prev - 1 : prev + 1);
       toast.success(isSaved ? "Removed from saved" : "Saved");
     } catch {
       toast.error("Something went wrong.");
@@ -135,7 +138,7 @@ export function HostelInfo({ hostel, favoritesCount, initialIsSaved = false }: H
         {favoritesCount > 0 && (
           <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
             <Heart className="w-4 h-4" />
-            <span>{favoritesCount} saved</span>
+            <span>{savedCount} saved</span>
           </div>
         )}
       </div>
