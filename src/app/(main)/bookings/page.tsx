@@ -71,7 +71,6 @@ export default async function BookingsPage() {
               const status = STATUS[booking.status as keyof typeof STATUS];
               const img = booking.hostel.coverImage;
               const isPending   = booking.status === "PENDING";
-              const isConfirmed = booking.status === "CONFIRMED";
               const shortId     = booking.id.slice(-8).toUpperCase();
 
               return (

@@ -14,6 +14,8 @@ const eslintConfig = [
       "prefer-const": "error",
       // No console.log in production (console.error is fine)
       "no-console": ["warn", { allow: ["error", "warn"] }],
+      // Allow bare quotes in JSX text — safer than HTML entities for apostrophes
+      "react/no-unescaped-entities": "off",
     },
   },
 ];

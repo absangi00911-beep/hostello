@@ -8,7 +8,7 @@ async function main() {
 
   // Create admin user
   const adminPassword = await hash("admin123456", 12);
-  const admin = await db.user.upsert({
+  await db.user.upsert({
     where: { email: "admin@hostello.pk" },
     update: {},
     create: {

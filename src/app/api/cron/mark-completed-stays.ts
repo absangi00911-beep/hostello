@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`[cron] Marked ${completed.count} bookings as completed`);
+    console.error(`[cron] Marked ${completed.count} bookings as completed`);
 
     return NextResponse.json({
       message: "Completed stays marked",

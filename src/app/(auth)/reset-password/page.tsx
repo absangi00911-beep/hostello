@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +20,6 @@ type Input = z.infer<typeof schema>;
 const INPUT = "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
 function ResetPasswordContent() {
-  const router       = useRouter();
   const searchParams = useSearchParams();
   const token        = searchParams.get("token") ?? "";
 
@@ -93,7 +92,7 @@ function ResetPasswordContent() {
           New password
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
-          Choose something you haven't used before.
+          Choose something you haven&apos;t used before.
         </p>
       </div>
 

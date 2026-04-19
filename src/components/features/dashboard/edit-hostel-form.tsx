@@ -55,17 +55,12 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
   const [images,   setImages]   = useState<string[]>(hostel.images ?? []);
   const [showDelete, setShowDelete] = useState(false);
 
-  // Normalise rules from DB (stored as array of strings)
-  const initialRules = Array.isArray(hostel.rules)
-    ? (hostel.rules as string[]).join("\n")
-    : "";
-
   const {
     register,
     control,
     handleSubmit,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<EditInput>({
     resolver: zodResolver(editSchema),
     defaultValues: {

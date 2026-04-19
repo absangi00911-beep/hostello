@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`[cron] Cancelled ${abandoned.count} abandoned payment bookings`);
+    console.error(`[cron] Cancelled ${abandoned.count} abandoned payment bookings`);
 
     return NextResponse.json({
       message: "Abandoned payments cancelled",

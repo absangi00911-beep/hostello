@@ -56,7 +56,7 @@ function LoginContent() {
           Sign in
         </h1>
         <p className="mt-2 text-sm text-(--color-muted)">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-semibold text-(--color-ink) underline underline-offset-2 hover:text-(--color-brand-700)">
             Create one
           </Link>
