@@ -27,11 +27,20 @@ export function ContactForm() {
     formState: { errors, isSubmitting },
   } = useForm<Input>({ resolver: zodResolver(schema) });
 
-  async function onSubmit(_data: Input) {
-    // In production: POST to /api/contact → Resend email
-    await new Promise((r) => setTimeout(r, 800));
+  async function onSubmit(data: Input) {
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const payload = await res.json();
+
+    if (!res.ok) {
+      throw new Error(payload.error || "We couldn't send your message right now.");
+    }
+
     setSent(true);
-    toast.success("Message sent! We'll reply within 24 hours.");
+    toast.success(payload.message || "Message sent! We'll reply within 24 hours.");
   }
 
   if (sent) {
@@ -47,7 +56,7 @@ export function ContactForm() {
           Message received
         </h2>
         <p className="text-sm text-[var(--color-muted)]">
-          We'll get back to you within 24 hours.
+          We&apos;ll get back to you within 24 hours.
         </p>
       </div>
     );
@@ -55,7 +64,17 @@ export function ContactForm() {
 
   return (
     <div className="bg-white rounded-2xl border border-[var(--color-border)] p-7">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form
+        onSubmit={handleSubmit(async (data) => {
+          try {
+            await onSubmit(data);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Something went wrong");
+          }
+        })}
+        className="space-y-5"
+        noValidate
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">Name</label>

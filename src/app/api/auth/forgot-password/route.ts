@@ -5,12 +5,13 @@ import { passwordResetEmail } from "@/lib/email-templates/password-reset";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { getRequestOrigin } from "@/lib/app-url";
 
 const schema = z.object({ email: z.string().email() });
 
 export async function POST(req: NextRequest) {
   // 3 reset requests per IP per 15 minutes
-  const rl = rateLimit(`reset:${getIp(req)}`, { limit: 3, windowMs: 15 * 60 * 1000 });
+  const rl = await rateLimit(`reset:${getIp(req)}`, { limit: 3, windowMs: 15 * 60 * 1000 });
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       data: { token, userId: user.id, expiresAt },
     });
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+    const resetUrl = `${getRequestOrigin(req)}/reset-password?token=${token}`;
     const template = passwordResetEmail({ name: user.name, resetUrl });
 
     void sendEmail({ to: user.email, ...template });

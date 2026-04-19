@@ -41,19 +41,19 @@ function LoginContent() {
   }
 
   return (
-    <div className="w-full max-w-[400px]">
+    <div className="w-full max-w-100">
 
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-3xl font-extrabold text-[var(--color-ink)]"
+          className="text-3xl font-extrabold text-(--color-ink)"
           style={{ fontFamily: "var(--font-display)" }}
         >
           Sign in
         </h1>
-        <p className="mt-2 text-sm text-[var(--color-muted)]">
+        <p className="mt-2 text-sm text-(--color-muted)">
           Don't have an account?{" "}
-          <Link href="/signup" className="font-semibold text-[var(--color-ink)] underline underline-offset-2 hover:text-[var(--color-brand-700)]">
+          <Link href="/signup" className="font-semibold text-(--color-ink) underline underline-offset-2 hover:text-(--color-brand-700)">
             Create one
           </Link>
         </p>
@@ -62,7 +62,7 @@ function LoginContent() {
       {/* Error */}
       {serverErr && (
         <div className="mb-5 flex items-start gap-2.5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3.5">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           {serverErr}
         </div>
       )}
@@ -71,7 +71,7 @@ function LoginContent() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
         <div>
-          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
             Email
           </label>
           <input
@@ -88,12 +88,12 @@ function LoginContent() {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-sm font-semibold text-[var(--color-ink-soft)]">
+            <label className="text-sm font-semibold text-ink-soft">
               Password
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+              className="text-xs font-medium text-(--color-muted) hover:text-(--color-ink) transition-colors"
             >
               Forgot?
             </Link>
@@ -109,7 +109,7 @@ function LoginContent() {
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-ink) transition-colors"
               aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -123,7 +123,7 @@ function LoginContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
+          className="w-full h-11 rounded-xl bg-(--color-ink) text-white text-sm font-bold hover:bg-ink-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />

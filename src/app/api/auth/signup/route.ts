@@ -8,7 +8,7 @@ import { rateLimit, getIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   // 5 signups per IP per hour
-  const rl = rateLimit(`signup:${getIp(req)}`, { limit: 5, windowMs: 60 * 60 * 1000 });
+  const rl = await rateLimit(`signup:${getIp(req)}`, { limit: 5, windowMs: 60 * 60 * 1000 });
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }

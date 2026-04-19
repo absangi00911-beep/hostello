@@ -9,7 +9,7 @@ import { rateLimit, getIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   // 10 booking requests per user IP per hour
-  const rl = rateLimit(`booking:${getIp(req)}`, { limit: 10, windowMs: 60 * 60 * 1000 });
+  const rl = await rateLimit(`booking:${getIp(req)}`, { limit: 10, windowMs: 60 * 60 * 1000 });
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {

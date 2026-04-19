@@ -38,10 +38,20 @@ export function ReportForm() {
     defaultValues: { type: "listing" },
   });
 
-  async function onSubmit(_data: Input) {
-    await new Promise((r) => setTimeout(r, 700));
+  async function onSubmit(data: Input) {
+    const res = await fetch("/api/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const payload = await res.json();
+
+    if (!res.ok) {
+      throw new Error(payload.error || "We couldn't submit your report right now.");
+    }
+
     setSent(true);
-    toast.success("Report submitted. We review all reports within 48 hours.");
+    toast.success(payload.message || "Report submitted. We review all reports within 48 hours.");
   }
 
   if (sent) {
@@ -55,7 +65,7 @@ export function ReportForm() {
           Report received
         </h2>
         <p className="text-sm text-[var(--color-muted)]">
-          Thank you. We'll investigate and take action within 48 hours.
+          Thank you. We&apos;ll investigate and take action within 48 hours.
         </p>
       </div>
     );
@@ -63,7 +73,17 @@ export function ReportForm() {
 
   return (
     <div className="bg-white rounded-2xl border border-[var(--color-border)] p-7">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form
+        onSubmit={handleSubmit(async (data) => {
+          try {
+            await onSubmit(data);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Something went wrong");
+          }
+        })}
+        className="space-y-5"
+        noValidate
+      >
         <div>
           <label className="block text-sm font-medium text-[var(--color-text)] mb-1.5">Issue type</label>
           <select

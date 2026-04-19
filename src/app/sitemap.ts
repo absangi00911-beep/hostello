@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
+import { getAppUrl } from "@/lib/app-url";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+const BASE_URL = getAppUrl();
 
 export const revalidate = 3600; // regenerate every hour
 

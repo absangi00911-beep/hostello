@@ -1,4 +1,6 @@
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+import { getAppUrl } from "@/lib/app-url";
+
+const APP_URL = getAppUrl();
 
 /**
  * Wraps email content in a consistent shell.

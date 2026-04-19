@@ -7,6 +7,7 @@ import { CalendarDays, Users, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice, calculateMonths } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from "@/lib/payment-methods";
 
 interface BookingCardProps {
   hostelId: string;
@@ -16,22 +17,16 @@ interface BookingCardProps {
   maxStay?: number;
 }
 
-const PAYMENT_METHODS = [
-  { value: "jazzcash",  label: "JazzCash",      emoji: "📱" },
-  { value: "easypaisa", label: "EasyPaisa",     emoji: "💚" },
-  { value: "safepay",   label: "Card",          emoji: "💳" },
-] as const;
-
 const DATE_INPUT =
   "w-full h-10 pl-9 pr-3 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
-export function BookingCard({ hostelId, hostelName, pricePerMonth, minStay, maxStay }: BookingCardProps) {
+export function BookingCard({ hostelId, hostelName: _hostelName, pricePerMonth, minStay, maxStay }: BookingCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [checkIn,  setCheckIn]  = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests,   setGuests]   = useState(1);
-  const [payment,  setPayment]  = useState<string>("jazzcash");
+  const [payment,  setPayment]  = useState<string>(DEFAULT_PAYMENT_METHOD);
   const [loading,  setLoading]  = useState(false);
 
   const today  = new Date().toISOString().split("T")[0];
@@ -146,19 +141,29 @@ export function BookingCard({ hostelId, hostelName, pricePerMonth, minStay, maxS
               <button
                 key={pm.value}
                 type="button"
-                onClick={() => setPayment(pm.value)}
+                onClick={() => pm.enabled && setPayment(pm.value)}
+                disabled={!pm.enabled}
+                title={pm.hint}
                 className={cn(
                   "py-2.5 rounded-xl border text-xs font-semibold transition-all flex flex-col items-center gap-1",
                   payment === pm.value
                     ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
-                    : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-ink-soft)]"
+                    : pm.enabled
+                      ? "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-ink-soft)]"
+                      : "border-[var(--color-border)] text-[var(--color-muted)] opacity-55 cursor-not-allowed"
                 )}
               >
                 <span className="text-base">{pm.emoji}</span>
                 {pm.label}
+                <span className="text-[10px] font-medium uppercase tracking-wide">
+                  {pm.hint}
+                </span>
               </button>
             ))}
           </div>
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
+            Card checkout is live today. JazzCash and EasyPaisa will be enabled once their flows are ready.
+          </p>
         </div>
 
         {/* Breakdown */}
@@ -189,7 +194,7 @@ export function BookingCard({ hostelId, hostelName, pricePerMonth, minStay, maxS
         </button>
 
         <p className="text-xs text-center text-[var(--color-muted)]">
-          You won't be charged until the owner confirms.
+          You won&apos;t be charged until the owner confirms.
         </p>
       </div>
     </div>

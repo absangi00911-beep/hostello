@@ -8,12 +8,17 @@
  *   NEXT_PUBLIC_SAFEPAY_ENV — "sandbox" | "production"
  */
 
-const BASE = process.env.NEXT_PUBLIC_SAFEPAY_ENV === "production"
-  ? "https://api.getsafepay.com"
-  : "https://sandbox.api.getsafepay.com";
+import { getAppUrl } from "@/lib/app-url";
 
-const SECRET = process.env.SAFEPAY_SECRET ?? "";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+function getSafepayBaseUrl() {
+  return process.env.NEXT_PUBLIC_SAFEPAY_ENV === "production"
+    ? "https://api.getsafepay.com"
+    : "https://sandbox.api.getsafepay.com";
+}
+
+function getSafepaySecret() {
+  return process.env.SAFEPAY_SECRET ?? "";
+}
 
 export interface SafepaySession {
   token:      string;
@@ -30,34 +35,40 @@ export async function createCheckoutSession({
   orderId,
   customerEmail,
   customerName,
+  appUrl = getAppUrl(),
 }: {
   bookingId:     string;
   amount:        number;
   orderId:       string;
   customerEmail: string;
   customerName:  string;
+  appUrl?: string;
 }): Promise<SafepaySession> {
+  const baseUrl = getSafepayBaseUrl();
+  const secret = getSafepaySecret();
+  const origin = appUrl.replace(/\/+$/, "");
+
   // Safepay uses integer amounts in PKR (no paisa)
   const payload = {
-    client:           SECRET,
+    client:           secret,
     amount:           Math.round(amount),
     currency:         "PKR",
     order_id:         orderId,
     source:           "custom",
-    cancel_url:       `${APP_URL}/bookings/${bookingId}?payment=cancelled`,
-    redirect_url:     `${APP_URL}/payment/success?bookingId=${bookingId}`,
-    webhook_url:      `${APP_URL}/api/payment/webhook`,
+    cancel_url:       `${origin}/bookings/${bookingId}?payment=cancelled`,
+    redirect_url:     `${origin}/payment/success?bookingId=${bookingId}`,
+    webhook_url:      `${origin}/api/payment/webhook`,
     customer: {
       email: customerEmail,
       name:  customerName,
     },
   };
 
-  const res = await fetch(`${BASE}/order/v1/init`, {
+  const res = await fetch(`${baseUrl}/order/v1/init`, {
     method:  "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-SFPY-MERCHANT-SECRET": SECRET,
+      "X-SFPY-MERCHANT-SECRET": secret,
     },
     body: JSON.stringify(payload),
   });
@@ -73,7 +84,7 @@ export async function createCheckoutSession({
   const token = data?.data?.token as string;
   if (!token) throw new Error("No token in Safepay response");
 
-  const redirectUrl = `${BASE.replace("api.", "")}/checkout?token=${token}`;
+  const redirectUrl = `${baseUrl.replace("api.", "")}/checkout?token=${token}`;
 
   return { token, redirectUrl };
 }
@@ -86,7 +97,7 @@ export async function verifyWebhookSignature(
   payload: string,
   signature: string
 ): Promise<boolean> {
-  const secret = process.env.SAFEPAY_WEBHOOK_SECRET ?? SECRET;
+  const secret = process.env.SAFEPAY_WEBHOOK_SECRET ?? getSafepaySecret();
   const encoder = new TextEncoder();
 
   const key = await crypto.subtle.importKey(

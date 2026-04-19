@@ -1,4 +1,5 @@
 import { emailLayout, emailButton } from "./layout";
+import { getAppUrl } from "@/lib/app-url";
 
 interface WelcomeEmailProps {
   name: string;
@@ -11,7 +12,7 @@ interface WelcomeEmailProps {
  * - Owners get a link to list their first hostel.
  */
 export function welcomeEmail({ name, role }: WelcomeEmailProps) {
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+  const APP_URL = getAppUrl();
   const firstName = name.split(" ")[0];
 
   const isOwner = role === "OWNER";

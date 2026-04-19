@@ -21,7 +21,6 @@ export async function GET(
     const now = new Date();
     const months = Array.from({ length: 12 }, (_, i) => addMonths(now, i));
 
-    // Fetch all confirmed / pending bookings in this window
     const windowStart = startOfMonth(months[0]);
     const windowEnd = endOfMonth(months[11]);
 
@@ -35,7 +34,6 @@ export async function GET(
       select: { checkIn: true, checkOut: true, guests: true },
     });
 
-    // For each month, count how many beds are occupied per day and average
     const calendar = months.map((month) => {
       const days = eachDayOfInterval({
         start: startOfMonth(month),
@@ -54,8 +52,8 @@ export async function GET(
       const rate = hostel.capacity > 0 ? avgOccupied / hostel.capacity : 0;
 
       return {
-        month: month.toISOString().slice(0, 7), // "2025-01"
-        occupancyRate: Math.round(rate * 100),  // 0–100
+        month: month.toISOString().slice(0, 7),
+        occupancyRate: Math.round(rate * 100),
         available: hostel.capacity - Math.round(avgOccupied),
       };
     });

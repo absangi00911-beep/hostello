@@ -60,26 +60,26 @@ function SignupContent() {
   }
 
   return (
-    <div className="w-full max-w-[400px]">
+    <div className="w-full max-w-100">
 
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-3xl font-extrabold text-[var(--color-ink)]"
+          className="text-3xl font-extrabold text-(--color-ink)"
           style={{ fontFamily: "var(--font-display)" }}
         >
           Create account
         </h1>
-        <p className="mt-2 text-sm text-[var(--color-muted)]">
+        <p className="mt-2 text-sm text-(--color-muted)">
           Already have one?{" "}
-          <Link href="/login" className="font-semibold text-[var(--color-ink)] underline underline-offset-2 hover:text-[var(--color-brand-700)]">
+          <Link href="/login" className="font-semibold text-(--color-ink) underline underline-offset-2 hover:text-(--color-brand-700)">
             Sign in
           </Link>
         </p>
       </div>
 
       {/* Role toggle */}
-      <div className="flex rounded-xl border border-[var(--color-border)] p-1 mb-6 bg-[var(--color-surface)] gap-1">
+      <div className="flex rounded-xl border border-border p-1 mb-6 bg-surface gap-1">
         {(["STUDENT", "OWNER"] as const).map((r) => (
           <button
             key={r}
@@ -88,8 +88,8 @@ function SignupContent() {
             className={cn(
               "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
               role === r
-                ? "bg-[var(--color-ink)] text-white shadow-sm"
-                : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                ? "bg-(--color-ink) text-white shadow-sm"
+                : "text-(--color-muted) hover:text-(--color-ink)"
             )}
           >
             {r === "STUDENT" ? "I'm a student" : "I own a hostel"}
@@ -100,7 +100,7 @@ function SignupContent() {
       {/* Error */}
       {serverErr && (
         <div className="mb-5 flex items-start gap-2.5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3.5">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           {serverErr}
         </div>
       )}
@@ -110,7 +110,7 @@ function SignupContent() {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
+            <label className="block text-sm font-semibold text-ink-soft mb-1.5">
               Full name
             </label>
             <input
@@ -126,7 +126,7 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
             Email
           </label>
           <input
@@ -142,8 +142,8 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
-            Phone <span className="text-[var(--color-muted)] font-normal">(optional)</span>
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+            Phone <span className="text-(--color-muted) font-normal">(optional)</span>
           </label>
           <input
             {...register("phone")}
@@ -158,7 +158,7 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
             Password
           </label>
           <div className="relative">
@@ -172,7 +172,7 @@ function SignupContent() {
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-ink) transition-colors"
               aria-label={showPw ? "Hide" : "Show"}
             >
               {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -186,7 +186,7 @@ function SignupContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
+          className="w-full h-11 rounded-xl bg-(--color-ink) text-white text-sm font-bold hover:bg-ink-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -195,11 +195,11 @@ function SignupContent() {
           )}
         </button>
 
-        <p className="text-xs text-center text-[var(--color-muted)]">
+        <p className="text-xs text-center text-(--color-muted)">
           By creating an account you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-[var(--color-ink)]">Terms</Link>
+          <Link href="/terms" className="underline hover:text-(--color-ink)">Terms</Link>
           {" "}and{" "}
-          <Link href="/privacy" className="underline hover:text-[var(--color-ink)]">Privacy Policy</Link>.
+          <Link href="/privacy" className="underline hover:text-(--color-ink)">Privacy Policy</Link>.
         </p>
       </form>
     </div>

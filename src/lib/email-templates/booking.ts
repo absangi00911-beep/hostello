@@ -1,6 +1,7 @@
 import { emailLayout, emailButton, emailRow } from "./layout";
+import { getAppUrl } from "@/lib/app-url";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+const APP_URL = getAppUrl();
 
 interface BookingEmailProps {
   studentName: string;
@@ -39,7 +40,7 @@ function formatPrice(n: number) {
  */
 export function bookingNotificationEmail(props: BookingEmailProps) {
   const {
-    studentName, hostelName, hostelSlug,
+    studentName, hostelName,
     checkIn, checkOut, months, total, paymentMethod,
   } = props;
 
@@ -88,7 +89,7 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
  */
 export function bookingConfirmationEmail(props: BookingEmailProps) {
   const {
-    studentName, hostelName, hostelSlug,
+    studentName, hostelName,
     bookingId, checkIn, checkOut, months, total, paymentMethod,
   } = props;
 

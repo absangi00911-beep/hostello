@@ -1,7 +1,5 @@
 import { emailLayout, emailButton } from "./layout";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
-
 export function passwordResetEmail({
   name, resetUrl,
 }: {

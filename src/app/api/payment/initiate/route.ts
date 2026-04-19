@@ -3,10 +3,11 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createCheckoutSession } from "@/lib/safepay";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { getRequestOrigin } from "@/lib/app-url";
 
 export async function POST(req: NextRequest) {
   // 20 payment initiations per IP per hour
-  const rl = rateLimit(`pay:${getIp(req)}`, { limit: 20, windowMs: 60 * 60 * 1000 });
+  const rl = await rateLimit(`pay:${getIp(req)}`, { limit: 20, windowMs: 60 * 60 * 1000 });
   if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
 
   try {
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
       orderId:   booking.id,
       customerEmail: booking.user.email,
       customerName:  booking.user.name,
+      appUrl: getRequestOrigin(req),
     });
 
     return NextResponse.json({ redirectUrl });

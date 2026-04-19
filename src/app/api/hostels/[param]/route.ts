@@ -19,7 +19,6 @@ const updateSchema = z.object({
   rules:         z.array(z.string()).optional(),
   images:        z.array(z.string().url()).optional(),
   coverImage:    z.string().url().optional(),
-  // Owner can submit for review once images are added
   status:        z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
 });
 
@@ -62,7 +61,7 @@ export async function GET(
         where: { id: hostel.id },
         data: { viewCount: { increment: 1 } },
       })
-      .catch(() => {}); // swallow silently — not critical
+      .catch(() => {});
 
     return NextResponse.json({ data: hostel });
   } catch (err) {
@@ -110,7 +109,6 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    // Guard: can't submit for review without at least one image
     if (data.status === "PENDING_REVIEW") {
       const updatedImages = data.images ?? hostel.images;
       if (updatedImages.length === 0) {
@@ -161,8 +159,6 @@ export async function DELETE(
       return NextResponse.json({ error: "You don't own this hostel." }, { status: 403 });
     }
 
-    // Soft-delete by suspending rather than hard-deleting
-    // (preserves booking history)
     await db.hostel.update({
       where: { id: param },
       data: { status: "SUSPENDED" },

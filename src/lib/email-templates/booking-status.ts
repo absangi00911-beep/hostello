@@ -1,6 +1,7 @@
 import { emailLayout, emailButton } from "./layout";
+import { getAppUrl } from "@/lib/app-url";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+const APP_URL = getAppUrl();
 
 interface BookingStatusEmailProps {
   studentName:  string;
@@ -16,7 +17,7 @@ interface BookingStatusEmailProps {
  */
 export function bookingStatusEmail({
   studentName, studentEmail, hostelName,
-  hostelSlug, bookingId, status,
+  bookingId, status,
 }: BookingStatusEmailProps) {
   const firstName = studentName.split(" ")[0];
   const shortId   = bookingId.slice(-8).toUpperCase();
