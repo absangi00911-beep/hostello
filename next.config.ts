@@ -8,9 +8,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.cloudflare.com" },
     ],
   },
-  experimental: {
-    typedRoutes: true,
-  },
 };
 
 export default nextConfig;

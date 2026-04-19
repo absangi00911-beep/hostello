@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search, GitCompareArrows, MessageCircle, CreditCard, Building2, Star, ShieldCheck, Clock } from "lucide-react";
 
-export const metadata: Metadata = {
 export const revalidate = false; // static — built once, never re-rendered
+
+export const metadata: Metadata = {
   title: "How It Works",
   description: "Learn how HostelLo connects students with verified hostel owners across Pakistan.",
 };

@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     // Send welcome email — fire and forget.
     // If Resend is down, signup still works.
-    const template = welcomeEmail({ name: user.name, role: user.role });
+    const template = welcomeEmail({ name: user.name, role: user.role as "STUDENT" | "OWNER" });
     void sendEmail({ to: user.email, ...template });
 
     return NextResponse.json(

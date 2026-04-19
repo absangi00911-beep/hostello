@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, X } from "lucide-react";
 
-export const metadata: Metadata = {
 export const revalidate = false; // static — built once, never re-rendered
+
+export const metadata: Metadata = {
   title: "Pricing",
   description: "HostelLo pricing — free for students, simple commission for owners.",
 };

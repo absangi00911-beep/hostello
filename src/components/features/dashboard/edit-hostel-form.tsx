@@ -234,9 +234,6 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
             rows={3}
             defaultValue={initialRules}
             placeholder={"One rule per line:\nNo guests after 10pm\nNo smoking"}
-            onChange={(e) => {
-              // handled on submit via defaultValues pattern
-            }}
             className={`${INPUT} h-auto py-3 resize-none`}
             {...register("rules", {
               setValueAs: (v: string) =>
@@ -270,7 +267,7 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
                       checked={on}
                       onChange={() => {
                         const next = on
-                          ? field.value.filter((x: string) => x !== a.id)
+                          ? (field.value ?? []).filter((x: string) => x !== a.id)
                           : [...(field.value ?? []), a.id];
                         field.onChange(next);
                       }}

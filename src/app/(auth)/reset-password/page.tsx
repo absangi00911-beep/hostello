@@ -19,7 +19,7 @@ type Input = z.infer<typeof schema>;
 
 const INPUT = "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const token        = searchParams.get("token") ?? "";
@@ -158,5 +158,15 @@ export default function ResetPasswordPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

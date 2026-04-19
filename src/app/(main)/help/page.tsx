@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search, BookOpen, Building2, CreditCard, ShieldCheck, MessageCircle } from "lucide-react";
 
-export const metadata: Metadata = {
 export const revalidate = false; // static — built once, never re-rendered
+
+export const metadata: Metadata = {
   title: "Help Centre",
   description: "Answers to common questions about HostelLo.",
 };

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const INPUT =
   "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
-export default function SignupPage() {
+function SignupContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const defaultRole  = searchParams.get("role") === "owner" ? "OWNER" : "STUDENT";
@@ -203,5 +203,15 @@ export default function SignupPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupContent />
+    </Suspense>
   );
 }

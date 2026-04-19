@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
 export const revalidate = false; // static — built once, never re-rendered
+
+export const metadata: Metadata = {
   title: "Cookie Policy",
   description: "How HostelLo uses cookies.",
 };

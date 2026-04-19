@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
 export const revalidate = false; // static — built once, never re-rendered
+
+export const metadata: Metadata = {
   title: "Terms of Service",
   description: "HostelLo terms and conditions for students and hostel owners.",
 };
