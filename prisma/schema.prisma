@@ -1,0 +1,319 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  OWNER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  MIXED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum HostelStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  SUSPENDED
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  name          String
+  phone         String?
+  avatar        String?
+  role          Role      @default(STUDENT)
+  bio           String?   @db.Text
+  city          String?
+
+  accounts  Account[]
+  sessions  Session[]
+  hostels   Hostel[]
+  bookings  Booking[]
+  reviews   Review[]
+  favorites      Favorite[]
+  messages       Message[]
+  passwordResets PasswordResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Hostel {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String       @db.Text
+  status      HostelStatus @default(DRAFT)
+
+  // Location
+  city      String
+  area      String?
+  address   String
+  latitude  Float?
+  longitude Float?
+
+  // Details
+  pricePerMonth Float
+  rooms         Int
+  capacity      Int
+  gender        Gender  @default(MIXED)
+  minStay       Int     @default(1) // months
+  maxStay       Int?
+
+  // Features (stored as JSON arrays of strings)
+  amenities String[]
+  rules     String[]
+
+  // Media
+  images    String[]
+  coverImage String?
+
+  // Flags
+  verified Boolean @default(false)
+  featured Boolean @default(false)
+
+  // Stats (denormalized for read performance)
+  viewCount   Int   @default(0)
+  rating      Float @default(0)
+  reviewCount Int   @default(0)
+
+  // Relations
+  owner     User      @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  rooms_rel Room[]
+  bookings  Booking[]
+  reviews   Review[]
+  favorites Favorite[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([city])
+  @@index([slug])
+  @@index([ownerId])
+  @@index([status, featured])
+  @@index([gender])
+  @@index([pricePerMonth])
+  @@map("hostels")
+}
+
+model Room {
+  id       String @id @default(cuid())
+  hostelId String
+  hostel   Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+  pricePerMonth Float
+  capacity      Int
+  available     Int     // tracks remaining spots — used for optimistic locking
+  version       Int     @default(0) // optimistic lock version
+
+  images String[]
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hostelId])
+  @@map("rooms")
+}
+
+model Booking {
+  id String @id @default(cuid())
+
+  hostel   Hostel @relation(fields: [hostelId], references: [id])
+  hostelId String
+  room     Room?  @relation(fields: [roomId], references: [id])
+  roomId   String?
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+
+  checkIn  DateTime
+  checkOut DateTime
+  months   Int
+  guests   Int      @default(1)
+  total    Float
+
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+  transactionId String?       @unique
+
+  status BookingStatus @default(PENDING)
+  notes  String?       @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hostelId])
+  @@index([userId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@map("bookings")
+}
+
+model Review {
+  id String @id @default(cuid())
+
+  hostel   Hostel @relation(fields: [hostelId], references: [id])
+  hostelId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+
+  rating  Int    // 1–5
+  title   String?
+  comment String @db.Text
+
+  cleanliness Int @default(0)
+  location    Int @default(0)
+  value       Int @default(0)
+  safety      Int @default(0)
+
+  ownerReply  String?  @db.Text
+  repliedAt   DateTime?
+  verified    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([hostelId, userId])
+  @@index([hostelId])
+  @@index([userId])
+  @@map("reviews")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model Favorite {
+  id       String @id @default(cuid())
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  hostel   Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hostelId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+model Conversation {
+  id String @id @default(cuid())
+
+  hostelId String
+  hostelName String
+
+  participantIds String[]
+  messages       Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  content String  @db.Text
+  read    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("messages")
+}

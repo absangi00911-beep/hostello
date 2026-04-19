@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Fonts ─────────────────────────────────────────────────────────────── */
+  --font-display: var(--font-syne), "Arial Black", sans-serif;
+  --font-sans:    var(--font-inter), "system-ui", sans-serif;
+
+  /* ── Brand: Electric Green ──────────────────────────────────────────────── */
+  --color-brand-50:  #edfff5;
+  --color-brand-100: #d5ffea;
+  --color-brand-200: #aeffcf;
+  --color-brand-300: #70ffaa;
+  --color-brand-400: #00f570;
+  --color-brand-500: #00DC62;
+  --color-brand-600: #00b84f;
+  --color-brand-700: #009040;
+  --color-brand-800: #007134;
+  --color-brand-900: #005C2B;
+  --color-brand-950: #002E16;
+
+  /* ── Neutrals ───────────────────────────────────────────────────────────── */
+  --color-ink:        #0A0A0A;   /* near-black headlines */
+  --color-ink-soft:   #3D3D3D;   /* subheadings */
+  --color-ink-muted:  #6E6E6E;   /* body copy, labels */
+  --color-ink-faint:  #ADADAD;   /* placeholders, disabled */
+
+  --color-surface:    #FFFFFF;
+  --color-ground:     #F5F5F5;   /* page background — off-white */
+  --color-border:     #E8E8E8;
+  --color-border-dark:#1A1A1A;   /* dark borders for contrast */
+
+  /* ── Semantic aliases ───────────────────────────────────────────────────── */
+  --color-background: var(--color-ground);
+  --color-text:       var(--color-ink);
+  --color-muted:      var(--color-ink-muted);
+
+  /* ── Primary maps to brand ──────────────────────────────────────────────── */
+  --color-primary-50:  var(--color-brand-50);
+  --color-primary-100: var(--color-brand-100);
+  --color-primary-500: var(--color-brand-500);
+  --color-primary-600: var(--color-brand-600);
+  --color-primary-700: var(--color-brand-700);
+  --color-primary-800: var(--color-brand-800);
+  --color-primary-900: var(--color-brand-900);
+  --color-primary-950: var(--color-brand-950);
+
+  /* ── Accent: warm yellow — used sparingly ───────────────────────────────── */
+  --color-accent-400: #FFD84D;
+  --color-accent-500: #FFC107;
+  --color-accent-600: #E5AC00;
+
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow-card:       0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+  --shadow-strong:     0 20px 60px rgba(0,0,0,0.15);
+
+  /* ── Easing ─────────────────────────────────────────────────────────────── */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+
+/* ─── Focus ──────────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D0D0D0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #ADADAD; }
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-fade-in     { animation: fade-in 0.4s var(--ease-smooth) both; }
+.animate-scale-in    { animation: scale-in 0.3s var(--ease-spring) both; }
+.animate-slide-right { animation: slide-in-right 0.35s var(--ease-smooth) both; }
+.animate-marquee     { animation: marquee 28s linear infinite; }
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ─── Card hover ─────────────────────────────────────────────────────────── */
+
+.card-hover {
+  transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
