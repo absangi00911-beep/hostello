@@ -50,7 +50,9 @@ export async function POST(req: NextRequest) {
     const resetUrl = `${getRequestOrigin(req)}/reset-password?token=${token}`;
     const template = passwordResetEmail({ name: user.name, resetUrl });
 
-    void sendEmail({ to: user.email, ...template });
+    sendEmail({ to: user.email, ...template }).catch(() => {
+      // Silently ignore email failures
+    });
 
     return NextResponse.json({ message: "If that email exists, a reset link has been sent." });
   } catch (err) {

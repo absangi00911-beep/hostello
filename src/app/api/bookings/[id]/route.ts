@@ -117,7 +117,7 @@ export async function PATCH(
     });
 
     // Notify student by email — fire and forget
-    void sendEmail(
+    sendEmail(
       bookingStatusEmail({
         studentName:  booking.user.name,
         studentEmail: booking.user.email,
@@ -126,7 +126,9 @@ export async function PATCH(
         bookingId:    booking.id,
         status:       newStatus,
       })
-    );
+    ).catch(() => {
+      // Silently ignore email failures
+    });
 
     return NextResponse.json({
       data: updated,

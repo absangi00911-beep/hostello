@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Notify student that payment + confirmation is done
-    void sendEmail(
+    sendEmail(
       bookingStatusEmail({
         studentName:  booking.user.name,
         studentEmail: booking.user.email,
@@ -65,7 +65,9 @@ export async function POST(req: NextRequest) {
         bookingId:    booking.id,
         status:       "CONFIRMED",
       })
-    );
+    ).catch(() => {
+      // Silently ignore email failures
+    });
 
     return NextResponse.json({ received: true });
   } catch (err) {
