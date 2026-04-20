@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
           }
         : {}),
       ...(amenities?.length && {
-        amenities: { hasEvery: amenities },
+        amenities: { hasSome: amenities },
       }),
       ...(q && {
         OR: [

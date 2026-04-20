@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const revalidate = false; // static — built once, never re-rendered
 
 export const metadata: Metadata = {
+  title: "Privacy Policy — HostelLo",
+  description: "Learn how HostelLo collects, uses, and protects your personal data. We are committed to your privacy and transparency.",
 };
 
 const LAST_UPDATED = "1 January 2025";

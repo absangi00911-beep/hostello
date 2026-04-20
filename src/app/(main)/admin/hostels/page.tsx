@@ -6,6 +6,7 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { VerifyHostelButton } from "@/components/features/admin/verify-hostel-button";
 import { SuspendHostelButton } from "@/components/features/admin/suspend-hostel-button";
+import type { HostelStatus } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Admin — Hostels" };
 
@@ -23,8 +24,10 @@ export default async function AdminHostelsPage(props: { searchParams: Promise<{ 
   const { status: filterStatus } = await props.searchParams;
   
   // Map query param to valid status enum
-  const validStatuses = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"];
-  const selectedStatus = filterStatus && validStatuses.includes(filterStatus) ? filterStatus : undefined;
+  const validStatuses: HostelStatus[] = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"];
+  const selectedStatus = filterStatus && validStatuses.includes(filterStatus as HostelStatus) 
+    ? (filterStatus as HostelStatus) 
+    : undefined;
 
   const hostels = await db.hostel.findMany({
     where: selectedStatus ? { status: selectedStatus as any } : undefined,

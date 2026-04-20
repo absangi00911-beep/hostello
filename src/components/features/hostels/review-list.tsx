@@ -54,16 +54,16 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
 
   // Compute sub-rating averages
   const avgCleanliness = reviews.length
-    ? reviews.reduce((s, r) => s + (r.cleanliness ?? 0), 0) / reviews.filter((r) => r.cleanliness).length || 0
+    ? reviews.reduce((s, r) => s + (r.cleanliness ?? 0), 0) / (reviews.filter((r) => r.cleanliness).length || 1)
     : 0;
   const avgLocation = reviews.length
-    ? reviews.reduce((s, r) => s + (r.location ?? 0), 0) / reviews.filter((r) => r.location).length || 0
+    ? reviews.reduce((s, r) => s + (r.location ?? 0), 0) / (reviews.filter((r) => r.location).length || 1)
     : 0;
   const avgValue = reviews.length
-    ? reviews.reduce((s, r) => s + (r.value ?? 0), 0) / reviews.filter((r) => r.value).length || 0
+    ? reviews.reduce((s, r) => s + (r.value ?? 0), 0) / (reviews.filter((r) => r.value).length || 1)
     : 0;
   const avgSafety = reviews.length
-    ? reviews.reduce((s, r) => s + (r.safety ?? 0), 0) / reviews.filter((r) => r.safety).length || 0
+    ? reviews.reduce((s, r) => s + (r.safety ?? 0), 0) / (reviews.filter((r) => r.safety).length || 1)
     : 0;
 
   return (
