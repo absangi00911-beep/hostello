@@ -47,16 +47,18 @@ async function getCityStats() {
     "Peshawar",
     "Rawalpindi",
     "Quetta",
+    "Bahawalpur",
   ];
-  const results = await Promise.all(
-    cities.map(async (city) => ({
-      city,
-      count: await db.hostel.count({
-        where: { city, status: "ACTIVE" },
-      }),
-    }))
-  );
-  return results;
+
+  // Single query instead of 8 separate COUNT calls
+  const rows = await db.hostel.groupBy({
+    by: ["city"],
+    where: { city: { in: cities }, status: "ACTIVE" },
+    _count: { id: true },
+  });
+
+  const countMap = Object.fromEntries(rows.map((r) => [r.city, r._count.id]));
+  return cities.map((city) => ({ city, count: countMap[city] ?? 0 }));
 }
 
 export default async function HomePage() {

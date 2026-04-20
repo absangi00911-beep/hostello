@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
     const rawBody  = await req.text();
     const signature = req.headers.get("x-sfpy-signature") ?? "";
 
-    // Verify webhook is genuinely from Safepay
     const valid = await verifyWebhookSignature(rawBody, signature);
     if (!valid) {
       console.warn("[webhook] Invalid Safepay signature — rejected");
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(rawBody);
     const type  = event?.type as string;
 
-    // Only handle successful payments
     if (type !== "payment:success") {
       return NextResponse.json({ received: true });
     }
@@ -27,7 +25,6 @@ export async function POST(req: NextRequest) {
     const orderId = event?.data?.order_id as string;
     if (!orderId) return NextResponse.json({ error: "No order_id." }, { status: 400 });
 
-    // orderId is the bookingId (set in createCheckoutSession)
     const booking = await db.booking.findUnique({
       where: { id: orderId },
       include: {
@@ -41,9 +38,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking not found." }, { status: 404 });
     }
 
+    // Idempotency guard
     if (booking.paymentStatus === "PAID") {
-      // Already processed — idempotent response
       return NextResponse.json({ received: true });
+    }
+
+    // Amount verification — prevents confirming bookings where the paid amount
+    // does not match the server-side total. Safepay sends amount in PKR integer.
+    const paidAmount = event?.data?.amount as number | undefined;
+    if (paidAmount !== undefined) {
+      const expectedAmount = Math.round(booking.total);
+      if (paidAmount !== expectedAmount) {
+        console.error(
+          `[webhook] Amount mismatch on booking ${orderId}: ` +
+          `expected PKR ${expectedAmount}, received PKR ${paidAmount}`
+        );
+        // Do NOT confirm the booking. Log for manual review.
+        return NextResponse.json(
+          { error: "Amount mismatch — booking held for manual review." },
+          { status: 400 }
+        );
+      }
     }
 
     await db.booking.update({
@@ -51,11 +66,10 @@ export async function POST(req: NextRequest) {
       data: {
         paymentStatus: "PAID",
         status:        "CONFIRMED",
-        transactionId: event?.data?.transaction_id ?? null,
+        transactionId: (event?.data?.transaction_id as string | undefined) ?? null,
       },
     });
 
-    // Notify student that payment + confirmation is done
     sendEmail(
       bookingStatusEmail({
         studentName:  booking.user.name,
@@ -65,9 +79,7 @@ export async function POST(req: NextRequest) {
         bookingId:    booking.id,
         status:       "CONFIRMED",
       })
-    ).catch(() => {
-      // Silently ignore email failures
-    });
+    ).catch(() => {});
 
     return NextResponse.json({ received: true });
   } catch (err) {

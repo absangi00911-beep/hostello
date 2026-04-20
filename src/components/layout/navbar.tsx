@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Heart, BookOpen, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
+import { MessageSquare } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/hostels", label: "Browse" },
@@ -124,6 +125,7 @@ export function Navbar() {
                           <DropdownLink href="/favorites" icon={Heart} label="Saved Hostels" />
                           <DropdownLink href="/bookings" icon={BookOpen} label="My Bookings" />
                           <DropdownLink href="/profile" icon={User} label="Profile" />
+                          <DropdownLink href="/messages" icon={MessageSquare} label="Messages" />
                         </div>
                         <div className="border-t border-[var(--color-border)] py-1">
                           <button
@@ -196,6 +198,9 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+               <Link href="/messages" className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors">
+                Messages
+              </Link>
             </div>
             <div className="px-4 pt-2 pb-4 border-t border-[var(--color-border)] mt-2 space-y-2">
               {session ? (

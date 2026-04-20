@@ -48,10 +48,9 @@ export function getInitials(name: string): string {
 }
 
 export function calculateMonths(checkIn: Date, checkOut: Date): number {
-  const months =
-    (checkOut.getFullYear() - checkIn.getFullYear()) * 12 +
-    (checkOut.getMonth() - checkIn.getMonth());
-  return Math.max(1, months);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const days = Math.round((checkOut.getTime() - checkIn.getTime()) / msPerDay);
+  return Math.max(1, Math.ceil(days / 30));
 }
 
 export function buildSearchParams(params: Record<string, unknown>): string {
