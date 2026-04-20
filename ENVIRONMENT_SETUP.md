@@ -2,72 +2,109 @@
 
 ## Required for Production Deployment
 
-### Cron Job Execution
+### Upstash QStash (Cron Jobs) - REQUIRED for Hobby Plan
+
+Since Vercel crons are not available on the Hobby tier, we use **Upstash QStash** for scheduled jobs.
 
 ```bash
+QSTASH_TOKEN=your-qstash-token-here
 CRON_SECRET=your-random-secret-here
+APP_URL=https://your-app.vercel.app  # Production URL after deployment
 ```
 
-This secret must match what you configure in Vercel Cron settings or your external cron service. It prevents unauthorized calls to the cron endpoints.
+Get `QSTASH_TOKEN` from: https://console.upstash.com/qstash
 
-Generate with:
+Generate `CRON_SECRET` with:
 ```bash
 openssl rand -base64 32
 ```
 
 ---
 
+## Setup Instructions
+
+### 1. Create Upstash QStash Account
+
+1. Go to [console.upstash.com](https://console.upstash.com/)
+2. Select **QStash** from the menu
+3. Copy your API Token
+
+### 2. Add Environment Variables
+
+Add to your `.env.local` (development) and Vercel dashboard (production):
+
+```bash
+# Upstash QStash
+QSTASH_TOKEN=your-token-from-upstash
+CRON_SECRET=your-random-secret
+APP_URL=http://localhost:3000  # Development
+
+# Production (update in Vercel dashboard)
+APP_URL=https://your-app.vercel.app
+```
+
+### 3. Schedule the Jobs
+
+Once deployed to Vercel, run:
+
+```bash
+npm run schedule-cron
+```
+
+This creates the recurring schedules in Upstash QStash.
+
+---
+
 ## Cron Jobs Available
 
-Two background jobs run automatically on Vercel:
+Two background jobs run automatically:
 
 ### 1. Mark Completed Stays
 - **Endpoint:** `POST /api/cron/mark-completed-stays`
-- **Schedule:** Daily at 00:00 UTC
+- **Schedule:** Daily at 00:00 UTC (0 0 * * *)
 - **Purpose:** Transitions CONFIRMED bookings to COMPLETED after checkout date
 - **Impact:** Enables review system (users can only review COMPLETED stays)
 
 ### 2. Cancel Abandoned Payments
 - **Endpoint:** `POST /api/cron/cancel-abandoned-payments`
-- **Schedule:** Every 5 minutes
+- **Schedule:** Every 5 minutes (* * * * */5)
 - **Purpose:** Cancels PENDING bookings that have no payment after 30 minutes
 - **Impact:** Frees up hostel capacity blocked by abandoned bookings
 
 ---
 
-## Configuration in Vercel
+## Verify Cron Jobs are Running
 
-The `vercel.json` file already contains the cron schedules. No additional configuration needed in Vercel dashboard — it auto-reads from `vercel.json`.
+### Check Upstash Dashboard
 
-### Verify Cron is Working
+1. Go to https://console.upstash.com/qstash
+2. Click on **Schedules**
+3. You should see both cron jobs listed:
+   - `mark-completed-stays` (daily)
+   - `cancel-abandoned-payments` (every 5 min)
 
-1. Deploy to Vercel
-2. Check **Vercel Dashboard** → Project → **Crons** tab
-3. Both jobs should appear there
+### View Execution Logs
 
-### Debug Cron Execution
-
-Cron execution logs appear in:
-- Vercel Dashboard → Functions
-- Any failed requests will show in error logs
+- Click on any schedule to see execution history
+- Failed executions will show error details
 
 ---
 
 ## Testing Cron Locally
 
-To test cron endpoints without Vercel, use curl:
+To test cron endpoints without Upstash, use curl:
 
 ```bash
 # Test mark-completed-stays
 curl -X POST http://localhost:3000/api/cron/mark-completed-stays \
-  -H "Authorization: Bearer your-secret-here"
+  -H "Authorization: Bearer your-cron-secret"
 
 # Test cancel-abandoned-payments
 curl -X POST http://localhost:3000/api/cron/cancel-abandoned-payments \
-  -H "Authorization: Bearer your-secret-here"
+  -H "Authorization: Bearer your-cron-secret"
 ```
 
-Replace `your-secret-here` with the `CRON_SECRET` value you set locally.
+Replace `your-cron-secret` with the `CRON_SECRET` value you set locally.
 
 ---
 
@@ -90,9 +127,11 @@ Before pushing to production, ensure these are set in your Vercel environment:
 
 | Variable | Required | Where to get it |
 |----------|----------|-----------------|
+| `QSTASH_TOKEN` | ✅ Yes | Upstash QStash console |
 | `CRON_SECRET` | ✅ Yes | Generate yourself |
-| `UPSTASH_REDIS_REST_URL` | ✅ Yes | Upstash console |
-| `UPSTASH_REDIS_REST_TOKEN` | ✅ Yes | Upstash console |
+| `APP_URL` | ✅ Yes | Your Vercel production URL |
+| `UPSTASH_REDIS_REST_URL` | ✅ Yes | Upstash Redis console |
+| `UPSTASH_REDIS_REST_TOKEN` | ✅ Yes | Upstash Redis console |
 | Other existing vars | ✅ Yes | (database, auth, payment, etc.) |
 
 All other environment variables remain the same as before.

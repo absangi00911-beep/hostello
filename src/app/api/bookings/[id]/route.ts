@@ -14,7 +14,6 @@ export async function GET(
 
     const { id } = await params;
 
-    // Fetch for student OR hostel owner
     const booking = await db.booking.findUnique({
       where: { id },
       include: {
@@ -88,10 +87,26 @@ export async function PATCH(
         return NextResponse.json({ error: "Booking cannot be cancelled." }, { status: 400 });
       }
 
-      const updated = await db.booking.update({
-        where: { id },
-        data: { status: "CANCELLED" },
-        select: { id: true, status: true },
+      // Use a transaction to atomically cancel the booking and restore room availability
+      const updated = await db.$transaction(async (tx) => {
+        const cancelled = await tx.booking.update({
+          where: { id },
+          data: { status: "CANCELLED" },
+          select: { id: true, status: true, roomId: true },
+        });
+
+        // Restore room availability if a specific room was booked
+        if (cancelled.roomId) {
+          await tx.room.update({
+            where: { id: cancelled.roomId },
+            data: {
+              available: { increment: 1 },
+              version: { increment: 1 },
+            },
+          });
+        }
+
+        return cancelled;
       });
 
       return NextResponse.json({ data: updated, message: "Booking cancelled." });
@@ -110,10 +125,26 @@ export async function PATCH(
 
     const newStatus = action === "confirm" ? "CONFIRMED" : "CANCELLED";
 
-    const updated = await db.booking.update({
-      where: { id },
-      data: { status: newStatus },
-      select: { id: true, status: true },
+    // Use a transaction so decline also restores room availability atomically
+    const updated = await db.$transaction(async (tx) => {
+      const result = await tx.booking.update({
+        where: { id },
+        data: { status: newStatus },
+        select: { id: true, status: true, roomId: true },
+      });
+
+      // Restore room availability when owner declines
+      if (newStatus === "CANCELLED" && result.roomId) {
+        await tx.room.update({
+          where: { id: result.roomId },
+          data: {
+            available: { increment: 1 },
+            version: { increment: 1 },
+          },
+        });
+      }
+
+      return result;
     });
 
     // Notify student by email — fire and forget

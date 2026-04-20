@@ -22,6 +22,35 @@ const updateSchema = z.object({
   status:        z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
 });
 
+/**
+ * Returns a list of allowed image URL origins based on environment.
+ * In production, only the R2 bucket is permitted.
+ * In development (or when R2 is not configured), Unsplash is also allowed
+ * so that seed data and local testing work without S3 credentials.
+ */
+function getAllowedImageOrigins(): string[] {
+  const origins: string[] = [];
+
+  const r2PublicUrl = process.env.R2_PUBLIC_URL;
+  if (r2PublicUrl) {
+    origins.push(r2PublicUrl.replace(/\/+$/, ""));
+  }
+
+  // Allow Unsplash in development or when R2 is not configured (seed data)
+  if (process.env.NODE_ENV !== "production" || !r2PublicUrl) {
+    origins.push("https://images.unsplash.com");
+  }
+
+  return origins;
+}
+
+function isImageUrlAllowed(url: string): boolean {
+  const allowedOrigins = getAllowedImageOrigins();
+  // If no origins are configured at all, allow everything (bare dev setup)
+  if (allowedOrigins.length === 0) return true;
+  return allowedOrigins.some((origin) => url.startsWith(origin));
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ param: string }> }
@@ -85,7 +114,6 @@ export async function PATCH(
 
     const { param } = await params;
 
-    // Confirm the hostel belongs to this owner (or user is admin)
     const hostel = await db.hostel.findUnique({
       where: { id: param },
       select: { ownerId: true, images: true, status: true },
@@ -109,11 +137,10 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    // Validate image URLs to ensure they come from our R2 bucket (prevent arbitrary external URLs)
-    const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
-    if (data.images && R2_PUBLIC_URL) {
+    // Validate image URLs against allowed origins
+    if (data.images) {
       for (const imageUrl of data.images) {
-        if (!imageUrl.startsWith(R2_PUBLIC_URL)) {
+        if (!isImageUrlAllowed(imageUrl)) {
           return NextResponse.json(
             { error: "Image URLs must be from the authorized image storage." },
             { status: 400 }
@@ -121,13 +148,11 @@ export async function PATCH(
         }
       }
     }
-    if (data.coverImage && R2_PUBLIC_URL) {
-      if (!data.coverImage.startsWith(R2_PUBLIC_URL)) {
-        return NextResponse.json(
-          { error: "Cover image URL must be from the authorized image storage." },
-          { status: 400 }
-        );
-      }
+    if (data.coverImage && !isImageUrlAllowed(data.coverImage)) {
+      return NextResponse.json(
+        { error: "Cover image URL must be from the authorized image storage." },
+        { status: 400 }
+      );
     }
 
     if (data.status === "PENDING_REVIEW") {
@@ -180,16 +205,15 @@ export async function DELETE(
       return NextResponse.json({ error: "You don't own this hostel." }, { status: 403 });
     }
 
-    // Use a transaction to atomically suspend hostel and cancel active bookings
     await db.$transaction([
       db.hostel.update({
         where: { id: param },
         data: { status: "SUSPENDED" },
       }),
       db.booking.updateMany({
-        where: { 
-          hostelId: param, 
-          status: { in: ["PENDING", "CONFIRMED"] } 
+        where: {
+          hostelId: param,
+          status: { in: ["PENDING", "CONFIRMED"] },
         },
         data: { status: "CANCELLED" },
       }),

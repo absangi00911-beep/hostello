@@ -1,28 +1,32 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { verifyUpstashRequest, getUpstashMetadata } from "@/lib/verify-upstash";
 
 /**
  * Cron job to transition CONFIRMED bookings to COMPLETED after checkout date.
  * 
  * This enables the review system — users can only review after a stay is marked COMPLETED.
  * 
- * Trigger: Via Vercel Cron once daily at midnight UTC
+ * Trigger: Via Upstash QStash daily at midnight UTC
  * Endpoint: POST /api/cron/mark-completed-stays
  * 
  * Required env vars:
- *   CRON_SECRET - to verify requests
+ *   CRON_SECRET - to verify requests (sent by Upstash with Authorization header)
+ *   QSTASH_CURRENT_SIGNING_KEY - optional, for extra security
  */
 
 export const maxDuration = 60; // 60 seconds for serverless timeout
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify request is from trusted cron source
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-    
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      console.warn("[cron] Unauthorized mark-completed-stays request");
+    // Verify request is from Upstash or authorized source
+    try {
+      await verifyUpstashRequest(req, { acceptBearerToken: true });
+    } catch (error) {
+      console.warn(
+        "[cron] Unauthorized mark-completed-stays request:",
+        error instanceof Error ? error.message : String(error)
+      );
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

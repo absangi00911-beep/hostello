@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
 
-const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites"];
+const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites", "/messages"];
 const ADMIN_ONLY = ["/admin"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
