@@ -29,12 +29,13 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",  // unsafe-eval needed for Next.js dev; lock down in prod if possible
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' blob: data: https://images.unsplash.com https://*.r2.dev https://*.cloudflare.com",
+      "img-src 'self' blob: data: https://images.unsplash.com https://*.r2.dev https://*.cloudflare.com https://*.tile.openstreetmap.org",
       "connect-src 'self' https://*.neon.tech https://*.upstash.io https://api.resend.com https://*.getsafepay.com https://sandbox.api.getsafepay.com",
-      "frame-src 'none'",
+      // Allow OpenStreetMap embeds for the hostel location map
+      "frame-src https://www.openstreetmap.org",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

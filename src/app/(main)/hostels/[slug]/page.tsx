@@ -8,12 +8,12 @@ import { HostelAmenities } from "@/components/features/hostels/hostel-amenities"
 import { ReviewList } from "@/components/features/hostels/review-list";
 import { ReviewForm } from "@/components/features/hostels/review-form";
 import { AvailabilityCalendar } from "@/components/features/hostels/availability-calendar";
+import { HostelMap } from "@/components/features/hostels/hostel-map";
 
 // Re-validate each hostel page every hour in the background
 export const revalidate = 3600;
 
 // Pre-render the top 50 most-viewed hostels at build time.
-// All other slugs are generated on-demand and cached.
 export async function generateStaticParams() {
   const hostels = await db.hostel.findMany({
     where: { status: "ACTIVE" },
@@ -23,6 +23,7 @@ export async function generateStaticParams() {
   });
   return hostels.map((h) => ({ slug: h.slug }));
 }
+
 import { BookingCard } from "@/components/features/booking/booking-card";
 import { OwnerCard } from "@/components/features/hostels/owner-card";
 import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
@@ -123,6 +124,15 @@ export default async function HostelDetailPage({ params }: PageProps) {
               initialIsSaved={initialIsSaved}
             />
             <HostelAmenities amenities={hostel.amenities} rules={hostel.rules} />
+
+            {/* Location map — shown whenever address is present */}
+            <HostelMap
+              name={hostel.name}
+              address={hostel.address}
+              latitude={hostel.latitude}
+              longitude={hostel.longitude}
+            />
+
             <AvailabilityCalendar hostelSlug={hostel.slug} />
             <ReviewList
               reviews={hostel.reviews}
@@ -143,6 +153,8 @@ export default async function HostelDetailPage({ params }: PageProps) {
                 pricePerMonth={hostel.pricePerMonth}
                 minStay={hostel.minStay}
                 maxStay={hostel.maxStay ?? undefined}
+                rating={hostel.rating}
+                reviewCount={hostel.reviewCount}
               />
               <OwnerCard owner={hostel.owner} />
             </div>

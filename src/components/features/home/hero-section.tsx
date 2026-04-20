@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MapPin, ArrowRight } from "lucide-react";
+import { Search, MapPin, ArrowRight, GraduationCap } from "lucide-react";
 import { CITIES } from "@/config/amenities";
+import { POPULAR_UNIVERSITIES } from "@/config/universities";
 import { buildSearchParams } from "@/lib/utils";
 import Link from "next/link";
 
+// These reflect real facts about the platform at launch
 const HERO_STATS = [
-  { value: "500+", label: "Hostels listed" },
-  { value: "12k+", label: "Students housed" },
-  { value: "8",    label: "Cities covered" },
+  { value: "8",        label: "Cities covered" },
+  { value: "Verified", label: "Every listing"  },
+  { value: "Zero",     label: "Fees for students" },
 ];
 
 const MARQUEE_CITIES = [
@@ -23,12 +25,17 @@ const MARQUEE_CITIES = [
 export function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [city, setCity] = useState("");
+  const [city,  setCity]  = useState("");
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const params = buildSearchParams({ q: query, city });
     router.push(`/hostels${params ? `?${params}` : ""}`);
+  }
+
+  function handleUniversityClick(shortName: string, uniCity: string) {
+    const params = buildSearchParams({ q: shortName, city: uniCity });
+    router.push(`/hostels?${params}`);
   }
 
   return (
@@ -105,7 +112,7 @@ export function HeroSection() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
             <input
               type="text"
-              placeholder="University, area, hostel name…"
+              placeholder="University, area, or hostel name…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full h-14 pl-11 pr-4 rounded-2xl bg-white/8 border border-white/12 text-white placeholder:text-white/30 text-sm outline-none focus:border-[var(--color-brand-500)] focus:bg-white/10 transition-all backdrop-blur-sm"
@@ -137,12 +144,12 @@ export function HeroSection() {
           </button>
         </form>
 
-        {/* Quick city links */}
+        {/* Quick links — cities */}
         <div
-          className="mt-5 flex items-center gap-2 flex-wrap"
-          style={{ animation: "heroFadeUp 0.6s 0.38s ease both" }}
+          className="mt-4 flex items-center gap-2 flex-wrap"
+          style={{ animation: "heroFadeUp 0.6s 0.36s ease both" }}
         >
-          <span className="text-xs text-white/30 mr-1">Popular:</span>
+          <span className="text-xs text-white/30 mr-1">Cities:</span>
           {["Lahore", "Islamabad", "Karachi"].map((c) => (
             <Link
               key={c}
@@ -154,10 +161,30 @@ export function HeroSection() {
           ))}
         </div>
 
+        {/* Quick links — universities */}
+        <div
+          className="mt-2 flex items-center gap-2 flex-wrap"
+          style={{ animation: "heroFadeUp 0.6s 0.42s ease both" }}
+        >
+          <span className="text-xs text-white/30 mr-1 flex items-center gap-1">
+            <GraduationCap className="w-3 h-3" /> Near:
+          </span>
+          {POPULAR_UNIVERSITIES.map((u) => (
+            <button
+              key={u.shortName}
+              type="button"
+              onClick={() => handleUniversityClick(u.shortName, u.city)}
+              className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-400)] transition-colors cursor-pointer"
+            >
+              {u.shortName}
+            </button>
+          ))}
+        </div>
+
         {/* Stats row */}
         <div
-          className="mt-16 flex items-center gap-10"
-          style={{ animation: "heroFadeUp 0.6s 0.45s ease both" }}
+          className="mt-14 flex items-center gap-10"
+          style={{ animation: "heroFadeUp 0.6s 0.48s ease both" }}
         >
           {HERO_STATS.map((stat, i) => (
             <div key={stat.label} className="flex items-center gap-10">
