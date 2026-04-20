@@ -108,21 +108,19 @@ function SignupContent() {
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
-            <label className="block text-sm font-semibold text-ink-soft mb-1.5">
-              Full name
-            </label>
-            <input
-              {...register("name")}
-              autoComplete="name"
-              placeholder="Ali Raza"
-              className={INPUT}
-            />
-            {errors.name && (
-              <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>
-            )}
-          </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+            Full name
+          </label>
+          <input
+            {...register("name")}
+            autoComplete="name"
+            placeholder="Ali Raza"
+            className={INPUT}
+          />
+          {errors.name && (
+            <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
@@ -180,6 +178,22 @@ function SignupContent() {
           </div>
           {errors.password && (
             <p className="mt-1.5 text-xs text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+            Confirm password
+          </label>
+          <input
+            {...register("confirmPassword")}
+            type={showPw ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="Repeat your password"
+            className={INPUT}
+          />
+          {errors.confirmPassword && (
+            <p className="mt-1.5 text-xs text-red-600">{errors.confirmPassword.message}</p>
           )}
         </div>
 
