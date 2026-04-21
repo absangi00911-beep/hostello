@@ -2,8 +2,8 @@
 
 @theme {
   /* ── Fonts ─────────────────────────────────────────────────────────────── */
-  --font-display: var(--font-syne), "Arial Black", sans-serif;
-  --font-sans:    var(--font-inter), "system-ui", sans-serif;
+  --font-display: var(--font-display), "Arial Black", sans-serif;
+  --font-sans:    var(--font-sans), "system-ui", sans-serif;
 
   /* ── Brand: Electric Green ──────────────────────────────────────────────── */
   --color-brand-50:  #edfff5;
@@ -19,15 +19,15 @@
   --color-brand-950: #002E16;
 
   /* ── Neutrals ───────────────────────────────────────────────────────────── */
-  --color-ink:        #0A0A0A;   /* near-black headlines */
-  --color-ink-soft:   #3D3D3D;   /* subheadings */
-  --color-ink-muted:  #6E6E6E;   /* body copy, labels */
-  --color-ink-faint:  #ADADAD;   /* placeholders, disabled */
+  --color-ink:        #0A0A0A;
+  --color-ink-soft:   #3D3D3D;
+  --color-ink-muted:  #6E6E6E;
+  --color-ink-faint:  #ADADAD;
 
   --color-surface:    #FFFFFF;
-  --color-ground:     #F5F5F5;   /* page background — off-white */
+  --color-ground:     #F5F5F5;
   --color-border:     #E8E8E8;
-  --color-border-dark:#1A1A1A;   /* dark borders for contrast */
+  --color-border-dark:#1A1A1A;
 
   /* ── Semantic aliases ───────────────────────────────────────────────────── */
   --color-background: var(--color-ground);
@@ -44,7 +44,7 @@
   --color-primary-900: var(--color-brand-900);
   --color-primary-950: var(--color-brand-950);
 
-  /* ── Accent: warm yellow — used sparingly ───────────────────────────────── */
+  /* ── Accent: warm yellow ─────────────────────────────────────────────────── */
   --color-accent-400: #FFD84D;
   --color-accent-500: #FFC107;
   --color-accent-600: #E5AC00;
@@ -74,7 +74,10 @@ body {
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-sans);
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 /* ─── Typography ─────────────────────────────────────────────────────────── */
@@ -83,9 +86,18 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 800;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   color: var(--color-ink);
 }
+
+p, li, span, label, input, textarea, select, button {
+  font-family: var(--font-sans);
+}
+
+/* Tighter tracking for large display text */
+h1 { letter-spacing: -0.04em; }
+h2 { letter-spacing: -0.032em; }
+h3 { letter-spacing: -0.025em; }
 
 /* ─── Focus ──────────────────────────────────────────────────────────────── */
 

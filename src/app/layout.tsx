@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
-import { Syne, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
 
-const syne = Syne({
+const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-syne",
-  weight: ["700", "800"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
+  axes: ["opsz"],
 });
 
-const inter = Inter({
+const figtree = Figtree({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" dir="ltr" className={`${syne.variable} ${inter.variable}`}>
+    <html lang="en" dir="ltr" className={`${bricolageGrotesque.variable} ${figtree.variable}`}>
       <body>
         <Providers>
           {children}
@@ -47,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 background: "#fff",
                 border: "1px solid #E8E8E8",
                 color: "#0A0A0A",
-                fontFamily: "var(--font-inter)",
+                fontFamily: "var(--font-sans)",
                 borderRadius: "12px",
               },
             }}
