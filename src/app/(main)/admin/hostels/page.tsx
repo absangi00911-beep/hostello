@@ -6,7 +6,7 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { VerifyHostelButton } from "@/components/features/admin/verify-hostel-button";
 import { SuspendHostelButton } from "@/components/features/admin/suspend-hostel-button";
-import type { HostelStatus } from "@prisma/client";
+import { HostelStatus } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Admin — Hostels" };
 
@@ -17,20 +17,37 @@ const STATUS_CLS: Record<string, string> = {
   SUSPENDED:      "text-red-700 bg-red-50 border-red-200",
 };
 
-export default async function AdminHostelsPage(props: { searchParams: Promise<{ status?: string }> }) {
+// Explicit list of statuses the filter UI supports.
+// Typed as the Prisma enum so no cast is ever needed downstream.
+const FILTER_STATUSES = [
+  HostelStatus.DRAFT,
+  HostelStatus.PENDING_REVIEW,
+  HostelStatus.ACTIVE,
+  HostelStatus.SUSPENDED,
+] as const;
+
+type FilterStatus = (typeof FILTER_STATUSES)[number];
+
+function parseStatus(raw: string | undefined): FilterStatus | undefined {
+  // Type-safe parse: only return a value if it is a member of the enum.
+  // This removes the need for `as any` in the Prisma query entirely.
+  return FILTER_STATUSES.find((s) => s === raw);
+}
+
+export default async function AdminHostelsPage(props: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
   const { status: filterStatus } = await props.searchParams;
-  
-  // Map query param to valid status enum
-  const validStatuses: HostelStatus[] = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"];
-  const selectedStatus = filterStatus && validStatuses.includes(filterStatus as HostelStatus) 
-    ? (filterStatus as HostelStatus) 
-    : undefined;
+
+  // parseStatus returns undefined if the value is absent or not a valid enum member.
+  // Passing undefined to Prisma's where clause omits the filter entirely — no cast needed.
+  const selectedStatus = parseStatus(filterStatus);
 
   const hostels = await db.hostel.findMany({
-    where: selectedStatus ? { status: selectedStatus as any } : undefined,
+    where: selectedStatus ? { status: selectedStatus } : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     select: {
       id: true, slug: true, name: true, city: true, status: true, verified: true,
@@ -54,12 +71,12 @@ export default async function AdminHostelsPage(props: { searchParams: Promise<{ 
 
         {/* Filter tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[
-            { value: undefined, label: "All" },
-            { value: "PENDING_REVIEW", label: "Needs review" },
-            { value: "ACTIVE", label: "Active" },
-            { value: "SUSPENDED", label: "Suspended" },
-          ].map(({ value, label }) => (
+          {([
+            { value: undefined,                    label: "All" },
+            { value: HostelStatus.PENDING_REVIEW,  label: "Needs review" },
+            { value: HostelStatus.ACTIVE,          label: "Active" },
+            { value: HostelStatus.SUSPENDED,       label: "Suspended" },
+          ] as const).map(({ value, label }) => (
             <Link
               key={value ?? "all"}
               href={value ? `/admin/hostels?status=${value}` : "/admin/hostels"}

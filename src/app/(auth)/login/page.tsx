@@ -36,10 +36,20 @@ function LoginContent() {
       setServerErr("That email and password combination doesn't match.");
       return;
     }
-    // Validate callbackUrl is a safe relative path to prevent open redirect attacks
-    const safeUrl = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
-      ? callbackUrl
-      : "/dashboard";
+
+    // Validate callbackUrl is a same-origin path to prevent open redirect attacks.
+    // A simple startsWith("/") check does NOT stop /\evil.com or encoded variants.
+    // Parsing with the URL constructor and comparing origins is the only safe approach.
+    let safeUrl = "/dashboard";
+    try {
+      const resolved = new URL(callbackUrl, window.location.origin);
+      if (resolved.origin === window.location.origin) {
+        safeUrl = resolved.pathname + resolved.search + resolved.hash;
+      }
+    } catch {
+      // malformed URL — fall through to default
+    }
+
     router.push(safeUrl);
     router.refresh();
   }

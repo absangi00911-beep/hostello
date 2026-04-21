@@ -20,12 +20,27 @@ export async function POST(req: NextRequest) {
     const booking = await db.booking.findUnique({
       where: { id: bookingId, userId: session.user.id },
       select: {
-        id: true, total: true, paymentStatus: true,
+        id: true,
+        total: true,
+        status: true,
+        paymentStatus: true,
         user: { select: { name: true, email: true } },
       },
     });
 
     if (!booking) return NextResponse.json({ error: "Booking not found." }, { status: 404 });
+
+    // Guard 1: only initiate payment for bookings that are still pending.
+    // Without this check a cancelled or completed booking could be re-paid,
+    // creating a confirmed booking that was already cancelled/refunded.
+    if (booking.status !== "PENDING") {
+      return NextResponse.json(
+        { error: `Cannot pay for a booking with status "${booking.status}".` },
+        { status: 400 }
+      );
+    }
+
+    // Guard 2: idempotency — never double-charge an already-paid booking.
     if (booking.paymentStatus === "PAID") {
       return NextResponse.json({ error: "Booking is already paid." }, { status: 400 });
     }
