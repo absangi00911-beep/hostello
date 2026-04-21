@@ -90,7 +90,15 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
             animation: "heroFadeUp 0.6s 0.1s ease both",
           }}
         >
-          Find your
+          <span
+            style={{
+              display: "inline-block",
+              textShadow: "0 0 30px rgba(0, 220, 98, 0.6), 0 0 60px rgba(0, 220, 98, 0.3)",
+              paddingRight: "0.2em",
+            }}
+          >
+            Find your
+          </span>
           <span
             className="block"
             style={{
