@@ -7,7 +7,7 @@ import { Providers } from "@/components/providers";
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "variable",
   display: "swap",
   axes: ["opsz"],
 });
