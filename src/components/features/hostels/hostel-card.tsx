@@ -82,7 +82,11 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
           </span>
         </div>
 
-        {/* Compare toggle */}
+        {/* Compare toggle — ALWAYS visible on mobile (not hover-only).
+          On desktop it stays hidden until hover, but on touch devices the
+          hover state is never triggered so we make it permanently visible
+          for screens ≤ md.
+        */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -93,7 +97,8 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
             "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all",
             isComparing
               ? "bg-[var(--color-brand-500)] text-[var(--color-ink)]"
-              : "bg-white/90 backdrop-blur-sm text-[var(--color-muted)] opacity-0 group-hover:opacity-100 hover:bg-white"
+              : // Always show on mobile (sm:), hide until hover on larger screens
+                "bg-white/90 backdrop-blur-sm text-[var(--color-muted)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white"
           )}
           title={!isComparing && isFull() ? "Compare list is full" : isComparing ? "Remove from compare" : "Add to compare"}
           aria-label="Toggle compare"

@@ -4,7 +4,10 @@ import { db } from "@/lib/db";
 import { signupSchema } from "@/lib/validations";
 import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/email-templates/welcome";
+import { verificationEmail } from "@/lib/email-templates/verification";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { randomBytes } from "crypto";
+import { getRequestOrigin } from "@/lib/app-url";
 
 export async function POST(req: NextRequest) {
   // 5 signups per IP per hour
@@ -43,16 +46,38 @@ export async function POST(req: NextRequest) {
         password: hashed,
         phone: phone || null,
         role,
+        // emailVerified is intentionally null until the user clicks the link
       },
       select: { id: true, name: true, email: true, role: true },
     });
 
-    // Send welcome email — fire and forget.
-    // If Resend is down, signup still works.
-    const template = welcomeEmail({ name: user.name, role: user.role as "STUDENT" | "OWNER" });
-    sendEmail({ to: user.email, ...template }).catch(() => {
-      // Silently ignore email failures — they don't affect signup
-    });
+    const origin = getRequestOrigin(req);
+
+    // Generate and store a verification token, then send the email.
+    // Both are fire-and-forget — a failure never breaks signup.
+    void (async () => {
+      try {
+        // Delete any lingering tokens for this address
+        await db.verificationToken.deleteMany({ where: { identifier: email } });
+
+        const token = randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 h
+
+        await db.verificationToken.create({
+          data: { token, identifier: email, expires },
+        });
+
+        const verifyUrl = `${origin}/api/auth/verify-email?token=${token}`;
+        const verifyTemplate = verificationEmail({ name: user.name, verifyUrl });
+        await sendEmail({ to: user.email, ...verifyTemplate });
+      } catch (err) {
+        console.error("[signup] Failed to send verification email:", err);
+      }
+    })();
+
+    // Welcome email (separate, fire-and-forget)
+    const welcomeTemplate = welcomeEmail({ name: user.name, role: user.role as "STUDENT" | "OWNER" });
+    sendEmail({ to: user.email, ...welcomeTemplate }).catch(() => {});
 
     return NextResponse.json(
       { data: user, message: "Account created successfully." },

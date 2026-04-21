@@ -9,11 +9,13 @@ import { ReviewList } from "@/components/features/hostels/review-list";
 import { ReviewForm } from "@/components/features/hostels/review-form";
 import { AvailabilityCalendar } from "@/components/features/hostels/availability-calendar";
 import { HostelMap } from "@/components/features/hostels/hostel-map";
+import { BookingCard } from "@/components/features/booking/booking-card";
+import { OwnerCard } from "@/components/features/hostels/owner-card";
+import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
+import { ContactOwnerButton } from "@/components/features/hostels/contact-owner-button";
 
-// Re-validate each hostel page every hour in the background
 export const revalidate = 3600;
 
-// Pre-render the top 50 most-viewed hostels at build time.
 export async function generateStaticParams() {
   const hostels = await db.hostel.findMany({
     where: { status: "ACTIVE" },
@@ -23,10 +25,6 @@ export async function generateStaticParams() {
   });
   return hostels.map((h) => ({ slug: h.slug }));
 }
-
-import { BookingCard } from "@/components/features/booking/booking-card";
-import { OwnerCard } from "@/components/features/hostels/owner-card";
-import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -86,6 +84,10 @@ export default async function HostelDetailPage({ params }: PageProps) {
   const [hostel, session] = await Promise.all([getHostel(slug), auth()]);
   if (!hostel) notFound();
 
+  const isLoggedIn = !!session;
+  // Don't show the contact button if the session user IS the owner
+  const isOwner = session?.user?.id === hostel.owner.id;
+
   const [initialIsSaved, hasCompletedStay, existingReview] = await Promise.all([
     session
       ? db.favorite
@@ -125,7 +127,6 @@ export default async function HostelDetailPage({ params }: PageProps) {
             />
             <HostelAmenities amenities={hostel.amenities} rules={hostel.rules} />
 
-            {/* Location map — shown whenever address is present */}
             <HostelMap
               name={hostel.name}
               address={hostel.address}
@@ -145,6 +146,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
             )}
           </div>
 
+          {/* ── Sidebar ── */}
           <div className="w-full lg:w-80 flex-shrink-0">
             <div className="lg:sticky lg:top-24 space-y-4">
               <BookingCard
@@ -156,7 +158,34 @@ export default async function HostelDetailPage({ params }: PageProps) {
                 rating={hostel.rating}
                 reviewCount={hostel.reviewCount}
               />
-              <OwnerCard owner={hostel.owner} />
+
+              {/* Contact owner button — visible to logged-in non-owners */}
+              {isLoggedIn && !isOwner && (
+                <ContactOwnerButton
+                  hostelId={hostel.id}
+                  hostelName={hostel.name}
+                />
+              )}
+
+              {/* Prompt unauthenticated visitors to sign in to contact */}
+              {!isLoggedIn && (
+                <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 text-center">
+                  <p className="text-sm text-[var(--color-muted)] mb-3">
+                    Have questions before booking?
+                  </p>
+                  <a
+                    href="/login"
+                    className="block w-full py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+                  >
+                    Sign in to message owner
+                  </a>
+                </div>
+              )}
+
+              <OwnerCard
+                owner={hostel.owner}
+                showContact={isLoggedIn && !isOwner}
+              />
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "HostelLo — Find Student Hostels in Pakistan",
 };
 
-export const revalidate = 3600; // revalidate hourly
+export const revalidate = 3600;
 
 async function getFeaturedHostels() {
   return db.hostel.findMany({
@@ -50,7 +50,7 @@ async function getCityStats() {
     "Bahawalpur",
   ];
 
-  // Single query instead of 8 separate COUNT calls
+  // Single query to get counts for all cities
   const rows = await db.hostel.groupBy({
     by: ["city"],
     where: { city: { in: cities }, status: "ACTIVE" },
@@ -61,15 +61,29 @@ async function getCityStats() {
   return cities.map((city) => ({ city, count: countMap[city] ?? 0 }));
 }
 
+/** Real counts fetched from the database at build/revalidation time */
+async function getPlatformStats() {
+  const [hostelCount, bookingCount] = await Promise.all([
+    db.hostel.count({ where: { status: "ACTIVE" } }),
+    db.booking.count({ where: { status: { in: ["CONFIRMED", "COMPLETED"] } } }),
+  ]);
+
+  return { hostelCount, bookingCount };
+}
+
 export default async function HomePage() {
-  const [featured, cityStats] = await Promise.all([
+  const [featured, cityStats, stats] = await Promise.all([
     getFeaturedHostels(),
     getCityStats(),
+    getPlatformStats(),
   ]);
 
   return (
     <>
-      <HeroSection />
+      <HeroSection
+        hostelCount={stats.hostelCount}
+        studentsHoused={stats.bookingCount}
+      />
       <TrustBanner />
       <CityCards stats={cityStats} />
       <FeaturedHostels hostels={featured} />

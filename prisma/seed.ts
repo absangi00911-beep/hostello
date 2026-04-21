@@ -4,11 +4,14 @@ import { hash } from "bcryptjs";
 const db = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database...");
+  console.log("Seeding database…");
 
   // ─── Users ────────────────────────────────────────────────────────────────
 
-  const adminPassword = await hash("admin123456", 12);
+  const adminPassword  = await hash("admin123456",   12);
+  const ownerPassword  = await hash("owner123456",   12);
+  const studentPassword = await hash("student123456", 12);
+
   await db.user.upsert({
     where: { email: "admin@hostello.pk" },
     update: {},
@@ -17,10 +20,9 @@ async function main() {
       password: adminPassword,
       name: "HostelLo Admin",
       role: "ADMIN",
+      emailVerified: new Date(),
     },
   });
-
-  const ownerPassword = await hash("owner123456", 12);
 
   const owner1 = await db.user.upsert({
     where: { email: "ali.raza@hostello.pk" },
@@ -32,6 +34,7 @@ async function main() {
       phone: "+92-300-1234567",
       role: "OWNER",
       city: "Lahore",
+      emailVerified: new Date(),
     },
   });
 
@@ -45,6 +48,7 @@ async function main() {
       phone: "+92-311-9876543",
       role: "OWNER",
       city: "Islamabad",
+      emailVerified: new Date(),
     },
   });
 
@@ -58,6 +62,7 @@ async function main() {
       phone: "+92-321-5554321",
       role: "OWNER",
       city: "Karachi",
+      emailVerified: new Date(),
     },
   });
 
@@ -71,10 +76,9 @@ async function main() {
       phone: "+92-333-7778899",
       role: "OWNER",
       city: "Faisalabad",
+      emailVerified: new Date(),
     },
   });
-
-  const studentPassword = await hash("student123456", 12);
 
   const student1 = await db.user.upsert({
     where: { email: "hamza@hostello.pk" },
@@ -85,14 +89,18 @@ async function main() {
       name: "Hamza Malik",
       role: "STUDENT",
       city: "Lahore",
+      emailVerified: new Date(),
     },
   });
 
-  // ─── Hostels ──────────────────────────────────────────────────────────────
+  // ─── Hostels ─────────────────────────────────────────────────────────────
+  // NOTE: rating and reviewCount are intentionally omitted (default 0).
+  // They are denormalized fields recomputed by the review API whenever a
+  // review is submitted. Hard-coding non-zero values here would create
+  // phantom ratings with no real reviews backing them.
 
   const hostelData = [
     // ── LAHORE ──────────────────────────────────────────────────────────────
-
     {
       name: "Green Valley Boys Hostel",
       slug: "green-valley-boys-hostel",
@@ -117,8 +125,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
       verified: true,
       featured: true,
-      rating: 4.6,
-      reviewCount: 24,
       ownerId: owner1.id,
       status: HostelStatus.ACTIVE,
     },
@@ -145,8 +151,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1631049421450-348ccd7f8949?w=800&q=80",
       verified: true,
       featured: true,
-      rating: 4.8,
-      reviewCount: 31,
       ownerId: owner1.id,
       status: HostelStatus.ACTIVE,
     },
@@ -173,8 +177,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.3,
-      reviewCount: 17,
       ownerId: owner1.id,
       status: HostelStatus.ACTIVE,
     },
@@ -200,14 +202,10 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.2,
-      reviewCount: 11,
       ownerId: owner1.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── ISLAMABAD ────────────────────────────────────────────────────────────
-
     {
       name: "Capital View Hostel",
       slug: "capital-view-hostel",
@@ -231,8 +229,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1562438668-bcf0ca6578f0?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.3,
-      reviewCount: 18,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
@@ -258,8 +254,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.1,
-      reviewCount: 9,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
@@ -285,19 +279,15 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80",
       verified: true,
       featured: true,
-      rating: 4.7,
-      reviewCount: 14,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── KARACHI ──────────────────────────────────────────────────────────────
-
     {
       name: "Karachi Central Boys Hostel",
       slug: "karachi-central-boys-hostel",
       description:
-        "Strategically located near University of Karachi and NED University. Spacious rooms, reliable power backup, and a canteen on site. Monthly packages with meals available. Well-connected to public transport.",
+        "Strategically located near University of Karachi and NED University. Spacious rooms, reliable power backup, and a canteen on site. Monthly packages with meals available.",
       city: "Karachi",
       area: "University Road",
       address: "Plot 35, University Road, Karachi",
@@ -315,8 +305,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.0,
-      reviewCount: 22,
       ownerId: owner3.id,
       status: HostelStatus.ACTIVE,
     },
@@ -342,8 +330,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.5,
-      reviewCount: 8,
       ownerId: owner3.id,
       status: HostelStatus.ACTIVE,
     },
@@ -369,14 +355,10 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 3.9,
-      reviewCount: 13,
       ownerId: owner3.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── FAISALABAD ───────────────────────────────────────────────────────────
-
     {
       name: "Agri Students Hostel",
       slug: "agri-students-hostel",
@@ -399,8 +381,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.4,
-      reviewCount: 19,
       ownerId: owner4.id,
       status: HostelStatus.ACTIVE,
     },
@@ -426,19 +406,15 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbe?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.1,
-      reviewCount: 7,
       ownerId: owner4.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── MULTAN ───────────────────────────────────────────────────────────────
-
     {
       name: "BZU Scholar Hostel",
       slug: "bzu-scholar-hostel",
       description:
-        "Steps away from Bahauddin Zakariya University's main gate. BZU Scholar Hostel offers some of Multan's most affordable rooms with three meals, a study hall, and uninterrupted power. Popular with medical and engineering students.",
+        "Steps away from Bahauddin Zakariya University's main gate. BZU Scholar Hostel offers some of Multan's most affordable rooms with three meals, a study hall, and uninterrupted power.",
       city: "Multan",
       area: "Bosan Road",
       address: "University Chowk, Bosan Road, Multan",
@@ -456,8 +432,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.2,
-      reviewCount: 16,
       ownerId: owner4.id,
       status: HostelStatus.ACTIVE,
     },
@@ -465,7 +439,7 @@ async function main() {
       name: "Royal Girls Hostel Multan",
       slug: "royal-girls-hostel-multan",
       description:
-        "A clean, affordable option for female students near NFC IET and BZU. Shared and private rooms with meals included. Lady warden resident on-site. Well-maintained bathrooms and a rooftop sitting area.",
+        "A clean, affordable option for female students near NFC IET and BZU. Shared and private rooms with meals included. Lady warden resident on-site.",
       city: "Multan",
       area: "Shah Rukn-e-Alam Colony",
       address: "Block D, Shah Rukn-e-Alam Colony, Multan",
@@ -483,19 +457,15 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.0,
-      reviewCount: 5,
       ownerId: owner4.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── PESHAWAR ─────────────────────────────────────────────────────────────
-
     {
       name: "Scholar Boys Hostel Peshawar",
       slug: "scholar-boys-hostel-peshawar",
       description:
-        "Located near UET Peshawar and the University of Peshawar. Scholar Boys Hostel is one of the few hostels in the city with fiber internet and a dedicated exam preparation room. Meals included in the monthly fee.",
+        "Located near UET Peshawar and the University of Peshawar. Scholar Boys Hostel is one of the few hostels in the city with fiber internet and a dedicated exam preparation room.",
       city: "Peshawar",
       area: "University Campus Road",
       address: "Near UET Gate 2, University Road, Peshawar",
@@ -513,8 +483,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.2,
-      reviewCount: 12,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
@@ -522,7 +490,7 @@ async function main() {
       name: "Hayatabad Girls Hostel",
       slug: "hayatabad-girls-hostel",
       description:
-        "A safe, family-run women's hostel in the residential Phase 5 of Hayatabad. Well-connected to KMU and Women University Peshawar by public transport. AC rooms, in-house meals, and female warden.",
+        "A safe, family-run women's hostel in the residential Phase 5 of Hayatabad. Well-connected to KMU and Women University Peshawar by public transport.",
       city: "Peshawar",
       area: "Hayatabad Phase 5",
       address: "Street 4, Phase 5, Hayatabad, Peshawar",
@@ -540,14 +508,10 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1586105251261-72a756497a11?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.1,
-      reviewCount: 6,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── RAWALPINDI ───────────────────────────────────────────────────────────
-
     {
       name: "Pindi Boys Hostel",
       slug: "pindi-boys-hostel",
@@ -570,8 +534,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.0,
-      reviewCount: 10,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
@@ -579,7 +541,7 @@ async function main() {
       name: "Satellite Town Girls Hostel",
       slug: "satellite-town-girls-hostel",
       description:
-        "Established women's hostel in Satellite Town, popular with Foundation University and UAAR students. Well-lit rooms, three meals, and a reliable lady warden. Separate entrance and parking for families on move-in day.",
+        "Established women's hostel in Satellite Town, popular with Foundation University and UAAR students. Well-lit rooms, three meals, and a reliable lady warden.",
       city: "Rawalpindi",
       area: "Satellite Town",
       address: "Block A, Satellite Town, Rawalpindi",
@@ -597,14 +559,10 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80",
       verified: true,
       featured: false,
-      rating: 4.3,
-      reviewCount: 9,
       ownerId: owner2.id,
       status: HostelStatus.ACTIVE,
     },
-
     // ── QUETTA ───────────────────────────────────────────────────────────────
-
     {
       name: "Baloch Scholars Hostel",
       slug: "baloch-scholars-hostel",
@@ -627,8 +585,6 @@ async function main() {
       coverImage: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80",
       verified: false,
       featured: false,
-      rating: 4.0,
-      reviewCount: 8,
       ownerId: owner4.id,
       status: HostelStatus.ACTIVE,
     },
@@ -642,10 +598,14 @@ async function main() {
     });
   }
 
-  // ─── Review ───────────────────────────────────────────────────────────────
+  // ─── One real review for Green Valley ────────────────────────────────────
+  // This is the ONLY review seeded. rating/reviewCount on the hostel row
+  // are updated atomically by the review API — run this after seeding if you
+  // want them reflected immediately, or they'll update on the next real review.
 
   const greenValley = await db.hostel.findUnique({
     where: { slug: "green-valley-boys-hostel" },
+    select: { id: true },
   });
 
   if (greenValley) {
@@ -666,12 +626,27 @@ async function main() {
         verified: true,
       },
     });
+
+    // Recompute the denormalized rating/reviewCount on the hostel row
+    // so the listing reflects the real review immediately after seeding.
+    const agg = await db.review.aggregate({
+      where: { hostelId: greenValley.id },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+    await db.hostel.update({
+      where: { id: greenValley.id },
+      data: {
+        rating: agg._avg.rating ?? 0,
+        reviewCount: agg._count.rating,
+      },
+    });
   }
 
-  console.log(`Seeded:
+  console.log(`\nSeeded:
   - ${hostelData.length} hostels across 8 cities
-  - 5 users (1 admin, 3 owners, 1 student)
-  - 1 review
+  - 5 users (1 admin, 3 owners, 1 student) — all with verified emails
+  - 1 real review (Green Valley — rating recomputed from actual data)
   `);
 }
 

@@ -10,16 +10,10 @@ const loginSchema = z.object({
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // PrismaAdapter removed: not needed with JWT strategy + Credentials-only auth.
-  // Re-add it only when adding OAuth providers (Google, GitHub, etc.) that need
-  // to persist access tokens and linked accounts to the database.
   session: { strategy: "jwt" },
   trustHost: true,
   pages: {
     signIn: "/login",
-    // Do NOT redirect auth errors to /login — that creates a loop where
-    // SessionProvider's fetch to /api/auth/session gets an HTML redirect
-    // instead of JSON, causing the ClientFetchError shown in the console.
   },
   providers: [
     Credentials({
@@ -47,10 +41,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             image: user.avatar,
             role: user.role,
+            emailVerified: !!user.emailVerified,
           };
         } catch {
-          // Database unreachable — return null so NextAuth responds with JSON,
-          // not an HTML crash page.
           return null;
         }
       },
@@ -61,12 +54,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        // Cast needed because NextAuth's User type doesn't include custom fields
+        token.emailVerified = (user as { emailVerified?: boolean }).emailVerified ?? false;
       }
       return token;
     },
     session({ session, token }) {
       session.user.id = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
+      session.user.emailVerified = token.emailVerified as boolean;
       return session;
     },
   },

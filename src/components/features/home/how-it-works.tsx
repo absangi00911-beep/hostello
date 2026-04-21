@@ -17,7 +17,7 @@ const STEPS = [
   {
     number: "04",
     title: "Book and move in",
-    body: "Pay via JazzCash, EasyPaisa, or card. Get a confirmation and receipt by email instantly.",
+    body: "Pay securely by card. JazzCash and EasyPaisa coming soon. Get a confirmation and receipt by email instantly.",
   },
 ];
 

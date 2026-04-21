@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, RefreshCw } from "lucide-react";
 import { formatDate, getInitials } from "@/lib/utils";
 import Image from "next/image";
 
@@ -33,16 +33,97 @@ const messageSchema = z.object({
 });
 type MessageInput = z.infer<typeof messageSchema>;
 
+/** Poll for new messages every 8 seconds while the tab is visible */
+const POLL_INTERVAL_MS = 8000;
+
 export function ConversationThread({
   conversationId,
   currentUserId,
   hostelName,
   initialMessages = [],
 }: ConversationThreadProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [loading, setLoading] = useState(initialMessages.length === 0);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages]       = useState<Message[]>(initialMessages);
+  const [loading, setLoading]         = useState(initialMessages.length === 0);
+  const [pollingError, setPollingError] = useState(false);
+  const bottomRef  = useRef<HTMLDivElement>(null);
+  const lastIdRef  = useRef<string | undefined>(messages.at(-1)?.id);
 
+  // ── Fetch all messages (initial load) ────────────────────────────────────
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res  = await fetch(`/api/conversations/${conversationId}`);
+      const json = await res.json();
+      if (json.data?.messages) {
+        setMessages(json.data.messages);
+        lastIdRef.current = json.data.messages.at(-1)?.id;
+        setPollingError(false);
+      }
+    } catch {
+      setPollingError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [conversationId]);
+
+  // Initial load if no messages passed from server
+  useEffect(() => {
+    if (initialMessages.length === 0) {
+      fetchMessages();
+    }
+  }, [fetchMessages, initialMessages.length]);
+
+  // ── Polling ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+
+    function startPolling() {
+      timer = setInterval(async () => {
+        // Only poll when the tab is visible to avoid wasted requests
+        if (document.visibilityState !== "visible") return;
+
+        try {
+          const res  = await fetch(`/api/conversations/${conversationId}`);
+          const json = await res.json();
+          if (!res.ok || !json.data?.messages) return;
+
+          const incoming: Message[] = json.data.messages;
+          const newLastId = incoming.at(-1)?.id;
+
+          // Only update state if there are genuinely new messages
+          if (newLastId && newLastId !== lastIdRef.current) {
+            setMessages(incoming);
+            lastIdRef.current = newLastId;
+            setPollingError(false);
+          }
+        } catch {
+          setPollingError(true);
+        }
+      }, POLL_INTERVAL_MS);
+    }
+
+    startPolling();
+
+    // Pause/resume polling based on tab visibility
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        // Immediately fetch when the tab comes back into view
+        fetchMessages();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [conversationId, fetchMessages]);
+
+  // ── Auto-scroll on new messages ───────────────────────────────────────────
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ── Send message ──────────────────────────────────────────────────────────
   const {
     register,
     handleSubmit,
@@ -52,32 +133,19 @@ export function ConversationThread({
     resolver: zodResolver(messageSchema),
   });
 
-  useEffect(() => {
-    if (initialMessages.length === 0) {
-      fetch(`/api/conversations/${conversationId}`)
-        .then((r) => r.json())
-        .then((json) => {
-          if (json.data?.messages) setMessages(json.data.messages);
-        })
-        .catch(() => toast.error("Failed to load messages"))
-        .finally(() => setLoading(false));
-    }
-  }, [conversationId, initialMessages.length]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   async function onSubmit(data: MessageInput) {
     try {
-      const res = await fetch(`/api/conversations/${conversationId}`, {
-        method: "POST",
+      const res  = await fetch(`/api/conversations/${conversationId}`, {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body:    JSON.stringify(data),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to send message");
+
+      // Optimistically append before the next poll cycle
       setMessages((prev) => [...prev, json.data]);
+      lastIdRef.current = json.data.id;
       reset();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -95,10 +163,35 @@ export function ConversationThread({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[var(--color-border)]">
-        <p className="text-sm font-bold text-[var(--color-ink)]">{hostelName}</p>
-        <p className="text-xs text-[var(--color-muted)]">{messages.length} messages</p>
+      <div className="px-5 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
+        <div>
+          <p className="text-sm font-bold text-[var(--color-ink)]">{hostelName}</p>
+          <p className="text-xs text-[var(--color-muted)]">{messages.length} messages</p>
+        </div>
+
+        {pollingError && (
+          <button
+            onClick={fetchMessages}
+            className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+            title="Refresh messages"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </button>
+        )}
       </div>
+
+      {/* Polling status indicator */}
+      {pollingError && (
+        <div className="px-5 py-2 bg-amber-50 border-b border-amber-100">
+          <p className="text-xs text-amber-700">
+            Connection issue — messages may be delayed.{" "}
+            <button onClick={fetchMessages} className="font-semibold underline">
+              Retry
+            </button>
+          </p>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -189,7 +282,7 @@ export function ConversationThread({
           </button>
         </form>
         <p className="text-xs text-[var(--color-muted)] mt-1.5">
-          Press Enter to send, Shift+Enter for new line.
+          Enter to send · Shift+Enter for new line · Updates every {POLL_INTERVAL_MS / 1000}s
         </p>
       </div>
     </div>

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { CalendarDays, Users, ArrowRight, Loader2, Star, ChevronDown } from "lucide-react";
+import { Users, ArrowRight, Loader2, Star, ChevronDown, Info } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice, calculateMonths } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from "@/lib/payment-methods";
+import { MoveInPicker, DurationPicker, addMonths, monthToDateStr } from "./month-picker";
 
 interface BookingCardProps {
   hostelId: string;
@@ -15,16 +16,9 @@ interface BookingCardProps {
   pricePerMonth: number;
   minStay: number;
   maxStay?: number;
-  /** Pass from the hostel record so the card can show social proof */
   rating?: number;
   reviewCount?: number;
 }
-
-// Security deposit is 2 months rent — standard practice across Pakistan
-const SECURITY_DEPOSIT_MONTHS = 2;
-
-const DATE_INPUT =
-  "w-full h-10 pl-9 pr-3 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
 const STEPS = [
   { n: "1", text: "Owner reviews your request" },
@@ -43,33 +37,49 @@ export function BookingCard({
 }: BookingCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [checkIn,  setCheckIn]  = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests,   setGuests]   = useState(1);
-  const [payment,  setPayment]  = useState<string>(DEFAULT_PAYMENT_METHOD);
-  const [loading,  setLoading]  = useState(false);
-  const [showSteps, setShowSteps] = useState(false);
 
-  const today  = new Date().toISOString().split("T")[0];
-  const months = checkIn && checkOut ? calculateMonths(new Date(checkIn), new Date(checkOut)) : null;
-  const rentTotal    = months ? months * pricePerMonth : null;
-  const depositTotal = pricePerMonth * SECURITY_DEPOSIT_MONTHS;
-  const grandTotal   = rentTotal !== null ? rentTotal + depositTotal : null;
+  /** "YYYY-MM" or empty */
+  const [moveInMonth, setMoveInMonth] = useState("");
+  const [duration, setDuration]       = useState(minStay);
+  const [guests, setGuests]           = useState(1);
+  const [payment, setPayment]         = useState<string>(DEFAULT_PAYMENT_METHOD);
+  const [loading, setLoading]         = useState(false);
+  const [showSteps, setShowSteps]     = useState(false);
 
-  const hasRating = rating !== undefined && rating > 0 && reviewCount !== undefined && reviewCount > 0;
+  // Derive ISO date strings from the month picker values
+  const checkIn  = moveInMonth ? monthToDateStr(moveInMonth) : "";
+  const checkOut = moveInMonth ? addMonths(moveInMonth, duration) : "";
+  const months   = moveInMonth ? duration : null;
+  const rentTotal = months !== null ? months * pricePerMonth : null;
+
+  const hasRating =
+    rating !== undefined && rating > 0 &&
+    reviewCount !== undefined && reviewCount > 0;
 
   async function handleBook() {
     if (!session) { toast.error("Sign in to book"); router.push("/login"); return; }
-    if (!checkIn || !checkOut) { toast.error("Pick your move-in and move-out dates"); return; }
-    if (months && months < minStay) { toast.error(`Minimum stay is ${minStay} month${minStay !== 1 ? "s" : ""}`); return; }
-    if (maxStay && months && months > maxStay) { toast.error(`Maximum stay is ${maxStay} months`); return; }
+    if (!moveInMonth) { toast.error("Choose a move-in month"); return; }
+    if (months && months < minStay) {
+      toast.error(`Minimum stay is ${minStay} month${minStay !== 1 ? "s" : ""}`);
+      return;
+    }
+    if (maxStay && months && months > maxStay) {
+      toast.error(`Maximum stay is ${maxStay} months`);
+      return;
+    }
 
     setLoading(true);
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hostelId, checkIn, checkOut, guests, paymentMethod: payment }),
+        body: JSON.stringify({
+          hostelId,
+          checkIn,
+          checkOut,
+          guests,
+          paymentMethod: payment,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Booking failed");
@@ -77,9 +87,9 @@ export function BookingCard({
       const bookingId = data.data.id;
 
       const payRes = await fetch("/api/payment/initiate", {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ bookingId }),
+        body: JSON.stringify({ bookingId }),
       });
       const payData = await payRes.json();
 
@@ -119,8 +129,6 @@ export function BookingCard({
               </p>
             )}
           </div>
-
-          {/* Rating badge */}
           {hasRating && (
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--color-accent-500)]/10 border border-[var(--color-accent-500)]/20 flex-shrink-0">
               <Star className="w-3.5 h-3.5 text-[var(--color-accent-500)] fill-current" />
@@ -133,25 +141,29 @@ export function BookingCard({
 
       <div className="p-5 space-y-4">
 
-        {/* ── Dates ── */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-1.5">Move in</label>
-            <div className="relative">
-              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-muted)] pointer-events-none" />
-              <input type="date" value={checkIn} min={today}
-                onChange={(e) => setCheckIn(e.target.value)} className={DATE_INPUT} />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-1.5">Move out</label>
-            <div className="relative">
-              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-muted)] pointer-events-none" />
-              <input type="date" value={checkOut} min={checkIn || today}
-                onChange={(e) => setCheckOut(e.target.value)} className={DATE_INPUT} />
-            </div>
-          </div>
-        </div>
+        {/* ── Move-in month ── */}
+        <MoveInPicker value={moveInMonth} onChange={setMoveInMonth} />
+
+        {/* ── Duration ── */}
+        <DurationPicker
+          value={duration}
+          onChange={setDuration}
+          min={minStay}
+          max={maxStay ?? 24}
+        />
+
+        {/* Move-out display */}
+        {moveInMonth && (
+          <p className="text-xs text-[var(--color-muted)] -mt-1">
+            Move-out:{" "}
+            <span className="font-semibold text-[var(--color-ink)]">
+              {new Date(checkOut).toLocaleDateString("en-PK", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+          </p>
+        )}
 
         {/* ── Guests ── */}
         <div>
@@ -159,8 +171,9 @@ export function BookingCard({
           <div className="relative">
             <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-muted)] pointer-events-none" />
             <select
-              value={guests} onChange={(e) => setGuests(Number(e.target.value))}
-              className={cn(DATE_INPUT, "appearance-none cursor-pointer")}
+              value={guests}
+              onChange={(e) => setGuests(Number(e.target.value))}
+              className="w-full h-10 pl-9 pr-3 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all appearance-none cursor-pointer"
             >
               {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>
@@ -191,9 +204,7 @@ export function BookingCard({
               >
                 <span className="text-base">{pm.emoji}</span>
                 {pm.label}
-                <span className="text-[10px] font-medium uppercase tracking-wide">
-                  {pm.hint}
-                </span>
+                <span className="text-[10px] font-medium uppercase tracking-wide">{pm.hint}</span>
               </button>
             ))}
           </div>
@@ -206,18 +217,16 @@ export function BookingCard({
               <span>{formatPrice(pricePerMonth)} × {months} month{months !== 1 ? "s" : ""}</span>
               <span>{formatPrice(rentTotal)}</span>
             </div>
-            <div className="flex justify-between text-[var(--color-muted)]">
-              <span className="flex items-center gap-1">
-                Security deposit
-                <span className="text-[10px] bg-[var(--color-border)] text-[var(--color-muted)] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide">
-                  refundable
-                </span>
-              </span>
-              <span>{formatPrice(depositTotal)}</span>
-            </div>
             <div className="flex justify-between font-bold text-[var(--color-ink)] pt-2 border-t border-[var(--color-border)]">
-              <span>Total due now</span>
-              <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(grandTotal!)}</span>
+              <span>Total due at booking</span>
+              <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(rentTotal)}</span>
+            </div>
+            {/* Security deposit note — collected by owner, not through platform */}
+            <div className="flex items-start gap-1.5 pt-1">
+              <Info className="w-3.5 h-3.5 text-[var(--color-muted)] mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
+                The owner may collect a refundable security deposit (typically 2 months' rent) directly on move-in day. This is separate from the amount charged here.
+              </p>
             </div>
           </div>
         )}

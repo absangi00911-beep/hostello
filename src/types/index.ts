@@ -85,10 +85,12 @@ declare module "next-auth" {
       email: string;
       image?: string | null;
       role: UserRole;
+      emailVerified: boolean;
     };
   }
   interface User {
     role: UserRole;
+    emailVerified?: boolean;
   }
 }
 
@@ -96,5 +98,6 @@ declare module "@auth/core/jwt" {
   interface JWT {
     id?: string;
     role?: UserRole;
+    emailVerified?: boolean;
   }
 }

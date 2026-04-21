@@ -8,13 +8,6 @@ import { POPULAR_UNIVERSITIES } from "@/config/universities";
 import { buildSearchParams } from "@/lib/utils";
 import Link from "next/link";
 
-// These reflect real facts about the platform at launch
-const HERO_STATS = [
-  { value: "8",        label: "Cities covered" },
-  { value: "Verified", label: "Every listing"  },
-  { value: "Zero",     label: "Fees for students" },
-];
-
 const MARQUEE_CITIES = [
   "Lahore", "Islamabad", "Karachi", "Faisalabad",
   "Multan", "Peshawar", "Rawalpindi", "Quetta",
@@ -22,10 +15,29 @@ const MARQUEE_CITIES = [
   "Multan", "Peshawar", "Rawalpindi", "Quetta",
 ];
 
-export function HeroSection() {
+interface HeroSectionProps {
+  /** Live count from the database */
+  hostelCount: number;
+  /** Confirmed + completed bookings count */
+  studentsHoused: number;
+}
+
+function formatStat(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(".0", "")}k+`;
+  if (n === 0) return "—";
+  return String(n);
+}
+
+export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [city,  setCity]  = useState("");
+
+  const HERO_STATS = [
+    { value: String(hostelCount),       label: hostelCount === 1 ? "Hostel listed" : "Hostels listed" },
+    { value: formatStat(studentsHoused), label: "Students housed" },
+    { value: "8",                        label: "Cities covered" },
+  ];
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -107,7 +119,6 @@ export function HeroSection() {
           style={{ animation: "heroFadeUp 0.6s 0.3s ease both" }}
           className="mt-10 flex flex-col sm:flex-row gap-2 max-w-2xl"
         >
-          {/* Query input */}
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
             <input
@@ -119,7 +130,6 @@ export function HeroSection() {
             />
           </div>
 
-          {/* City select */}
           <div className="relative">
             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
             <select
@@ -134,7 +144,6 @@ export function HeroSection() {
             </select>
           </div>
 
-          {/* Search button */}
           <button
             type="submit"
             className="h-14 px-8 rounded-2xl bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] transition-colors whitespace-nowrap flex items-center gap-2"
@@ -181,7 +190,7 @@ export function HeroSection() {
           ))}
         </div>
 
-        {/* Stats row */}
+        {/* Stats row — real data from DB */}
         <div
           className="mt-14 flex items-center gap-10"
           style={{ animation: "heroFadeUp 0.6s 0.48s ease both" }}
@@ -212,12 +221,12 @@ export function HeroSection() {
         aria-hidden="true"
       >
         <div className="flex animate-marquee whitespace-nowrap gap-0">
-          {MARQUEE_CITIES.map((city, i) => (
+          {MARQUEE_CITIES.map((c, i) => (
             <span
               key={i}
               className="inline-flex items-center gap-3 px-6 text-xs font-semibold tracking-widest text-white/20 uppercase"
             >
-              {city}
+              {c}
               <span className="w-1 h-1 rounded-full bg-[var(--color-brand-500)] flex-shrink-0" />
             </span>
           ))}
