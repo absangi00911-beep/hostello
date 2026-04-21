@@ -55,6 +55,7 @@ model User {
   role          Role      @default(STUDENT)
   bio           String?   @db.Text
   city          String?
+  tokenVersion  Int       @default(0)
 
   accounts  Account[]
   sessions  Session[]

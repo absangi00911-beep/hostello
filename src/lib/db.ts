@@ -11,6 +11,7 @@ export const db =
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
+    // Connection URL is now managed by prisma.config.ts
   });
 
 if (process.env.NODE_ENV !== "production") {

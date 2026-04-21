@@ -1,10 +1,6 @@
 import type { Hostel, User, Review, Booking, Room } from "@prisma/client";
 
-// ─── Re-exports ──────────────────────────────────────────────────────────────
-
 export type { Hostel, User, Review, Booking, Room };
-
-// ─── Compound types ──────────────────────────────────────────────────────────
 
 export type HostelWithOwner = Hostel & {
   owner: Pick<User, "id" | "name" | "avatar" | "phone">;
@@ -22,8 +18,6 @@ export type ReviewWithUser = Review & {
 export type BookingWithHostel = Booking & {
   hostel: Pick<Hostel, "id" | "name" | "slug" | "coverImage" | "city">;
 };
-
-// ─── Search & filter types ───────────────────────────────────────────────────
 
 export interface HostelFilters {
   city?: string;
@@ -49,15 +43,11 @@ export interface PaginatedResponse<T> {
   hasMore: boolean;
 }
 
-// ─── Compare store types ─────────────────────────────────────────────────────
-
 export interface CompareItem {
   slug: string;
   name: string;
   image: string | null;
 }
-
-// ─── Amenity config ───────────────────────────────────────────────────────────
 
 export interface AmenityConfig {
   id: string;
@@ -65,15 +55,11 @@ export interface AmenityConfig {
   icon: string;
 }
 
-// ─── API response types ───────────────────────────────────────────────────────
-
 export interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
 }
-
-// ─── Auth types ───────────────────────────────────────────────────────────────
 
 export type UserRole = "STUDENT" | "OWNER" | "ADMIN";
 
@@ -99,5 +85,6 @@ declare module "@auth/core/jwt" {
     id?: string;
     role?: UserRole;
     emailVerified?: boolean;
+    tokenVersion?: number; // mirrors User.tokenVersion; mismatch means password was reset
   }
 }

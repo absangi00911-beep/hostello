@@ -1,5 +1,14 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
+import { verifyCsrfOrigin } from "@/lib/csrf";
+
+// API route prefixes that are exempt from the CSRF origin check because they
+// use their own authentication mechanism (Bearer tokens, HMAC signatures).
+const CSRF_EXEMPT: string[] = [
+  "/api/auth/",          // NextAuth routes
+  "/api/cron/",          // Upstash QStash — Bearer token auth
+  "/api/payment/webhook", // Safepay — HMAC signature auth
+];
 
 const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites", "/messages"];
 const ADMIN_ONLY = ["/admin"];
@@ -7,9 +16,20 @@ const AUTH_ONLY  = ["/login", "/signup"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const isLoggedIn   = !!req.auth;
-  const role         = req.auth?.user?.role;
+  const isLoggedIn = !!req.auth;
+  const role = req.auth?.user?.role;
 
+  // ── CSRF protection ────────────────────────────────────────────────────
+  // Applied to every state-mutating API route that isn't exempt.
+  if (
+    pathname.startsWith("/api/") &&
+    !CSRF_EXEMPT.some((p) => pathname.startsWith(p))
+  ) {
+    const csrfError = verifyCsrfOrigin(req);
+    if (csrfError) return csrfError;
+  }
+
+  // ── Route-level auth guards ────────────────────────────────────────────
   if (PROTECTED.some((p) => pathname.startsWith(p)) && !isLoggedIn) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
@@ -31,5 +51,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

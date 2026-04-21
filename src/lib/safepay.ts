@@ -21,51 +21,46 @@ function getSafepaySecret() {
 }
 
 export interface SafepaySession {
-  token:      string;
+  token: string;
   redirectUrl: string;
 }
 
-/**
- * Create a Safepay checkout session.
- * Returns a token and the URL to redirect the user to.
- */
 export async function createCheckoutSession({
   bookingId,
-  amount,       // in PKR
+  amount,
   orderId,
   customerEmail,
   customerName,
   appUrl = getAppUrl(),
 }: {
-  bookingId:     string;
-  amount:        number;
-  orderId:       string;
+  bookingId: string;
+  amount: number;
+  orderId: string;
   customerEmail: string;
-  customerName:  string;
+  customerName: string;
   appUrl?: string;
 }): Promise<SafepaySession> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
   const origin = appUrl.replace(/\/+$/, "");
 
-  // Safepay uses integer amounts in PKR (no paisa)
   const payload = {
-    client:           secret,
-    amount:           Math.round(amount),
-    currency:         "PKR",
-    order_id:         orderId,
-    source:           "custom",
-    cancel_url:       `${origin}/bookings/${bookingId}?payment=cancelled`,
-    redirect_url:     `${origin}/payment/success?bookingId=${bookingId}`,
-    webhook_url:      `${origin}/api/payment/webhook`,
+    client: secret,
+    amount: Math.round(amount),
+    currency: "PKR",
+    order_id: orderId,
+    source: "custom",
+    cancel_url: `${origin}/bookings/${bookingId}?payment=cancelled`,
+    redirect_url: `${origin}/payment/success?bookingId=${bookingId}`,
+    webhook_url: `${origin}/api/payment/webhook`,
     customer: {
       email: customerEmail,
-      name:  customerName,
+      name: customerName,
     },
   };
 
   const res = await fetch(`${baseUrl}/order/v1/init`, {
-    method:  "POST",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-SFPY-MERCHANT-SECRET": secret,
@@ -79,25 +74,34 @@ export async function createCheckoutSession({
   }
 
   const data = await res.json();
-
-  // Safepay returns { data: { token: "...", tracker: "..." } }
   const token = data?.data?.token as string;
   if (!token) throw new Error("No token in Safepay response");
 
   const redirectUrl = `${baseUrl.replace("api.", "")}/checkout?token=${token}`;
-
   return { token, redirectUrl };
 }
 
+const HEX_RE = /^[0-9a-f]+$/i;
+
 /**
- * Verify the HMAC signature Safepay sends on webhook calls.
- * Returns false if the signature doesn't match — reject the request.
+ * Verify the HMAC-SHA256 signature Safepay sends on webhook calls.
+ *
+ * Security notes:
+ * - The signature parameter is validated as a hex string before any Buffer
+ *   operations; non-hex input (including empty strings) returns false rather
+ *   than throwing a RangeError inside timingSafeEqual.
+ * - Buffer lengths are compared before the timing-safe comparison to avoid a
+ *   Node.js crash on mismatched lengths.
  */
 export async function verifyWebhookSignature(
   payload: string,
-  signature: string
+  signature: string,
 ): Promise<boolean> {
-  const secret = process.env.SAFEPAY_WEBHOOK_SECRET ?? getSafepaySecret();
+  // Reject immediately if the signature is absent or not valid hex.
+  if (!signature || !HEX_RE.test(signature)) return false;
+
+  const secret =
+    process.env.SAFEPAY_WEBHOOK_SECRET ?? getSafepaySecret();
   const encoder = new TextEncoder();
 
   const key = await crypto.subtle.importKey(
@@ -105,25 +109,29 @@ export async function verifyWebhookSignature(
     encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
 
-  const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  const hex    = Array.from(new Uint8Array(signed))
+  const signed = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(payload),
+  );
+
+  const expected = Array.from(new Uint8Array(signed))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  // Use timing-safe comparison to prevent timing attacks on webhook signature
-  const { timingSafeEqual } = await import("crypto");
-  const sigBuffer = Buffer.from(signature, "hex");
-  const hexBuffer = Buffer.from(hex, "hex");
-  
-  if (sigBuffer.length !== hexBuffer.length) {
-    return false;
-  }
-  
   try {
-    return timingSafeEqual(sigBuffer, hexBuffer);
+    const { timingSafeEqual } = await import("crypto");
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expected, "hex");
+
+    // timingSafeEqual throws if buffers have different lengths.
+    // The length check here prevents that and avoids a timing leak.
+    if (sigBuf.length === 0 || sigBuf.length !== expBuf.length) return false;
+
+    return timingSafeEqual(sigBuf, expBuf);
   } catch {
     return false;
   }
