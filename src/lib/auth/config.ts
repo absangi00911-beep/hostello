@@ -62,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       session.user.id = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
-      session.user.emailVerified = token.emailVerified as boolean;
+     (session.user as unknown as { emailVerified: boolean }).emailVerified = token.emailVerified as boolean;
       return session;
     },
   },
