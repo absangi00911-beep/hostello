@@ -94,7 +94,10 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
             style={{
               display: "inline-block",
               textShadow: "0 0 30px rgba(0, 220, 98, 0.6), 0 0 60px rgba(0, 220, 98, 0.3)",
-              paddingRight: "0.2em",
+              border: "2px solid #00DC62",
+              borderRadius: "12px",
+              paddingLeft: "0.5em",
+              paddingRight: "0.5em",
             }}
           >
             Find your
