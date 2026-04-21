@@ -93,8 +93,7 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
           <span
             style={{
               display: "inline-block",
-              textShadow: "0 0 30px rgba(0, 220, 98, 0.6), 0 0 60px rgba(0, 220, 98, 0.3)",
-              WebkitTextStroke: "1.5px #00DC62",
+              WebkitTextStroke: "0.5px #00DC62",
             }}
           >
             Find your
