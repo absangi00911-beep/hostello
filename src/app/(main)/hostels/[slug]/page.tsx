@@ -193,7 +193,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
 
               <OwnerCard
                 owner={hostel.owner}
-                showContact={hasConfirmedBooking && !isOwner}
+                hasConfirmedBooking={hasConfirmedBooking && !isOwner}
               />
             </div>
           </div>

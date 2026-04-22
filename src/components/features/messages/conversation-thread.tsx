@@ -302,7 +302,7 @@ export function ConversationThread({
           </button>
         </form>
         <p className="text-xs text-[var(--color-muted)] mt-1.5">
-          Enter to send · Shift+Enter for new line · Updates every {POLL_INTERVAL_MS / 1000}s
+          Enter to send · Shift+Enter for new line · Updates every {POLL_INTERVAL_MIN_MS / 1000}s
         </p>
       </div>
     </div>
