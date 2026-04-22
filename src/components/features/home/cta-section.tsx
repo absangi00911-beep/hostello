@@ -36,7 +36,14 @@ export function CtaSection() {
                 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Have a hostel?
+                <span
+                  style={{
+                    display: "inline-block",
+                    WebkitTextStroke: "0.5px #00DC62",
+                  }}
+                >
+                  Have a hostel?
+                </span>
                 <br />
                 <span
                   style={{
