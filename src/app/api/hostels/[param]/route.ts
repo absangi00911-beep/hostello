@@ -109,8 +109,8 @@ export async function GET(
             id: true,
             name: true,
             avatar: true,
-            phone: true,
             createdAt: true,
+            _count: { select: { hostels: true } },
           },
         },
         reviews: {

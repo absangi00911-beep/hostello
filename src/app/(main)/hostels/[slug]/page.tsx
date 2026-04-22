@@ -65,7 +65,9 @@ async function getHostel(slug: string) {
   return hostel;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const hostel = await db.hostel.findUnique({
     where: { slug },
@@ -88,11 +90,18 @@ export default async function HostelDetailPage({ params }: PageProps) {
   // Don't show the contact button if the session user IS the owner
   const isOwner = session?.user?.id === hostel.owner.id;
 
-  const [initialIsSaved, hasCompletedStay, hasConfirmedBooking, existingReview] = await Promise.all([
+  const [
+    initialIsSaved,
+    hasCompletedStay,
+    hasConfirmedBooking,
+    existingReview,
+  ] = await Promise.all([
     session
       ? db.favorite
           .findUnique({
-            where: { userId_hostelId: { userId: session.user.id, hostelId: hostel.id } },
+            where: {
+              userId_hostelId: { userId: session.user.id, hostelId: hostel.id },
+            },
             select: { id: true },
           })
           .then(Boolean)
@@ -100,7 +109,11 @@ export default async function HostelDetailPage({ params }: PageProps) {
     session
       ? db.booking
           .findFirst({
-            where: { hostelId: hostel.id, userId: session.user.id, status: "COMPLETED" },
+            where: {
+              hostelId: hostel.id,
+              userId: session.user.id,
+              status: "COMPLETED",
+            },
             select: { id: true },
           })
           .then(Boolean)
@@ -108,18 +121,34 @@ export default async function HostelDetailPage({ params }: PageProps) {
     session
       ? db.booking
           .findFirst({
-            where: { hostelId: hostel.id, userId: session.user.id, status: "CONFIRMED" },
+            where: {
+              hostelId: hostel.id,
+              userId: session.user.id,
+              status: "CONFIRMED",
+            },
             select: { id: true },
           })
           .then(Boolean)
       : Promise.resolve(false),
     session
       ? db.review.findUnique({
-          where: { hostelId_userId: { hostelId: hostel.id, userId: session.user.id } },
+          where: {
+            hostelId_userId: { hostelId: hostel.id, userId: session.user.id },
+          },
           select: { id: true },
         })
       : Promise.resolve(null),
   ]);
+
+  const ownerPhone =
+    hasConfirmedBooking && !isOwner
+      ? await db.user
+          .findUnique({
+            where: { id: hostel.owner.id },
+            select: { phone: true },
+          })
+          .then((u) => u?.phone ?? null)
+      : null;
 
   return (
     <div className="min-h-screen pt-16">
@@ -133,7 +162,10 @@ export default async function HostelDetailPage({ params }: PageProps) {
               favoritesCount={hostel._count.favorites}
               initialIsSaved={initialIsSaved}
             />
-            <HostelAmenities amenities={hostel.amenities} rules={hostel.rules} />
+            <HostelAmenities
+              amenities={hostel.amenities}
+              rules={hostel.rules}
+            />
 
             <HostelMap
               name={hostel.name}
@@ -192,7 +224,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
               )}
 
               <OwnerCard
-                owner={hostel.owner}
+                owner={{ ...hostel.owner, phone: ownerPhone }}
                 hasConfirmedBooking={hasConfirmedBooking && !isOwner}
               />
             </div>
