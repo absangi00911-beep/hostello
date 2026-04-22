@@ -34,7 +34,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Headline */}
         <div className="relative">
           <p className="text-xs font-bold tracking-widest text-[var(--color-brand-500)] uppercase mb-5">
-            Trusted by 12,000+ students
+            Pakistan&apos;s verified hostel marketplace
           </p>
           <h2
             className="text-4xl xl:text-5xl font-extrabold text-white leading-tight"

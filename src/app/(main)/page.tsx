@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "HostelLo — Find Student Hostels in Pakistan",
 };
 
-export const revalidate = 3600;
+export const revalidate = 60; // drop to 1 min during early launch
 
 async function getFeaturedHostels() {
   return db.hostel.findMany({
