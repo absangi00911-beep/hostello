@@ -38,7 +38,14 @@ export function CtaSection() {
               >
                 Have a hostel?
                 <br />
-                List it free.
+                <span
+                  style={{
+                    display: "inline-block",
+                    WebkitTextStroke: "0.5px #00DC62",
+                  }}
+                >
+                  List it free.
+                </span>
               </h2>
               <p className="mt-5 text-white/50 text-base leading-relaxed max-w-md">
                 Reach thousands of students searching near their university.
