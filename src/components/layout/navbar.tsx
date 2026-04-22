@@ -5,22 +5,21 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Heart, BookOpen, Plus } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Heart, BookOpen, Plus, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
-import { MessageSquare } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/hostels", label: "Browse" },
+  { href: "/hostels",      label: "Browse" },
   { href: "/how-it-works", label: "How it works" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/pricing",      label: "Pricing" },
 ];
 
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled,     setScrolled]     = useState(false);
+  const [mobileOpen,   setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const isHome = pathname === "/";
@@ -52,7 +51,7 @@ export function Navbar() {
 
           <Logo solid={solid} />
 
-          {/* Desktop nav */}
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1 flex-1">
             {NAV_LINKS.map((link) => (
               <Link
@@ -85,7 +84,7 @@ export function Navbar() {
                     )}
                   >
                     <Plus className="w-4 h-4" />
-                    List Hostel
+                    List hostel
                   </Link>
                 )}
 
@@ -121,11 +120,11 @@ export function Navbar() {
                           <p className="text-sm font-semibold text-[var(--color-ink)] truncate">{session.user.email}</p>
                         </div>
                         <div className="py-1">
-                          <DropdownLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
-                          <DropdownLink href="/favorites" icon={Heart} label="Saved Hostels" />
-                          <DropdownLink href="/bookings" icon={BookOpen} label="My Bookings" />
-                          <DropdownLink href="/profile" icon={User} label="Profile" />
-                          <DropdownLink href="/messages" icon={MessageSquare} label="Messages" />
+                          <DropdownLink href="/dashboard"  icon={LayoutDashboard} label="Dashboard" />
+                          <DropdownLink href="/favorites"  icon={Heart}           label="Saved hostels" />
+                          <DropdownLink href="/bookings"   icon={BookOpen}        label="My bookings" />
+                          <DropdownLink href="/profile"    icon={User}            label="Profile" />
+                          <DropdownLink href="/messages"   icon={MessageSquare}   label="Messages" />
                         </div>
                         <div className="border-t border-[var(--color-border)] py-1">
                           <button
@@ -133,7 +132,7 @@ export function Navbar() {
                             className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
-                            Sign Out
+                            Sign out
                           </button>
                         </div>
                       </motion.div>
@@ -143,6 +142,18 @@ export function Navbar() {
               </>
             ) : (
               <>
+                {/* Owner acquisition — visible to unauthenticated visitors */}
+                <Link
+                  href="/signup?role=owner"
+                  className={cn(
+                    "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                    solid
+                      ? "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
+                      : "text-white/60 hover:text-white hover:bg-white/8"
+                  )}
+                >
+                  List a hostel
+                </Link>
                 <Link
                   href="/login"
                   className={cn(
@@ -198,7 +209,10 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-               <Link href="/messages" className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors">
+              <Link
+                href="/messages"
+                className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+              >
                 Messages
               </Link>
             </div>
@@ -209,20 +223,35 @@ export function Navbar() {
                     <p className="text-xs text-[var(--color-muted)]">Signed in as</p>
                     <p className="text-sm font-semibold text-[var(--color-ink)]">{session.user.name}</p>
                   </div>
-                  <Link href="/dashboard" className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)]">Dashboard</Link>
+                  <Link href="/dashboard" className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)]">
+                    Dashboard
+                  </Link>
                   <button
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50"
                   >
-                    Sign Out
+                    Sign out
                   </button>
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="block px-3 py-3 rounded-xl text-sm font-medium text-center border border-[var(--color-border)] hover:bg-[var(--color-ground)] transition-colors">
+                  {/* Owner acquisition in mobile menu */}
+                  <Link
+                    href="/signup?role=owner"
+                    className="block px-3 py-3 rounded-xl text-sm font-medium text-center border border-[var(--color-border)] text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+                  >
+                    List a hostel
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="block px-3 py-3 rounded-xl text-sm font-medium text-center border border-[var(--color-border)] hover:bg-[var(--color-ground)] transition-colors"
+                  >
                     Sign in
                   </Link>
-                  <Link href="/signup" className="block px-3 py-3 rounded-xl text-sm font-bold text-center bg-[var(--color-brand-500)] text-[var(--color-ink)] hover:bg-[var(--color-brand-400)] transition-colors">
+                  <Link
+                    href="/signup"
+                    className="block px-3 py-3 rounded-xl text-sm font-bold text-center bg-[var(--color-brand-500)] text-[var(--color-ink)] hover:bg-[var(--color-brand-400)] transition-colors"
+                  >
                     Get started
                   </Link>
                 </>
@@ -241,7 +270,10 @@ export function Navbar() {
 
 function DropdownLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors">
+    <Link
+      href={href}
+      className="flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+    >
       <Icon className="w-4 h-4 text-[var(--color-muted)]" />
       {label}
     </Link>

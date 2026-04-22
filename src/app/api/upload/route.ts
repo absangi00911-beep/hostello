@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { MAX_IMAGE_SIZE_MB, ACCEPTED_IMAGE_TYPES, MAX_IMAGES_PER_HOSTEL } from "@/config/constants";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/upload
@@ -65,6 +66,12 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 5 uploads per 10 minutes per user (not IP)
+    const rl = await rateLimit(`upload:${session.user.id}`, { limit: 5, windowMs: 10 * 60 * 1000 });
+    if (!rl.ok) {
+      return NextResponse.json({ error: "Upload limit reached. Try again later." }, { status: 429 });
     }
 
     const formData = await req.formData();

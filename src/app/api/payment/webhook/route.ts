@@ -43,22 +43,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    // Amount verification — prevents confirming bookings where the paid amount
-    // does not match the server-side total. Safepay sends amount in PKR integer.
-    const paidAmount = event?.data?.amount as number | undefined;
-    if (paidAmount !== undefined) {
-      const expectedAmount = Math.round(booking.total);
-      if (paidAmount !== expectedAmount) {
-        console.error(
-          `[webhook] Amount mismatch on booking ${orderId}: ` +
-          `expected PKR ${expectedAmount}, received PKR ${paidAmount}`
-        );
-        // Do NOT confirm the booking. Log for manual review.
-        return NextResponse.json(
-          { error: "Amount mismatch — booking held for manual review." },
-          { status: 400 }
-        );
-      }
+    // Amount verification — REQUIRED to prevent free booking confirmation
+    // Safepay sends amount in PKR integer. Field must always be present and match.
+    const paidAmount = event?.data?.amount;
+    if (typeof paidAmount !== "number") {
+      console.error(
+        `[webhook] Missing or invalid amount on booking ${orderId} — rejecting for security`
+      );
+      return NextResponse.json(
+        { error: "Amount field required." },
+        { status: 400 }
+      );
+    }
+
+    const expectedAmount = Math.round(booking.total);
+    if (paidAmount !== expectedAmount) {
+      console.error(
+        `[webhook] Amount mismatch on booking ${orderId}: ` +
+        `expected PKR ${expectedAmount}, received PKR ${paidAmount}`
+      );
+      // Do NOT confirm the booking. Log for manual review.
+      return NextResponse.json(
+        { error: "Amount mismatch — booking held for manual review." },
+        { status: 400 }
+      );
     }
 
     await db.booking.update({

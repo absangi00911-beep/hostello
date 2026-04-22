@@ -3,9 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { searchParamsSchema, hostelCreateSchema } from "@/lib/validations";
 import { rateLimit, getIp } from "@/lib/rate-limit";
-import { slugify } from "@/lib/utils";
-import { sendEmail } from "@/lib/email";
-import { newListingAdminEmail } from "@/lib/email-templates/new-listing";
+import { createHostelRecord } from "@/lib/hostel-service";
 import type { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
@@ -157,53 +155,13 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    // Generate a unique slug
-    const baseSlug = slugify(data.name);
-    let slug = baseSlug;
-    let attempt = 0;
-
-    while (await db.hostel.findUnique({ where: { slug }, select: { id: true } })) {
-      attempt++;
-      slug = `${baseSlug}-${attempt}`;
-    }
-
-    const hostel = await db.hostel.create({
-      data: {
-        name: data.name,
-        slug,
-        description: data.description,
-        city: data.city,
-        area: data.area ?? null,
-        address: data.address,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
-        pricePerMonth: data.pricePerMonth,
-        rooms: data.rooms,
-        capacity: data.capacity,
-        gender: data.gender,
-        minStay: data.minStay,
-        maxStay: data.maxStay ?? null,
-        amenities: data.amenities,
-        rules: data.rules ?? [],
-        images: Array.isArray(body.images) ? body.images : [],
-        coverImage: typeof body.coverImage === "string" ? body.coverImage : null,
-        status: "PENDING_REVIEW",
-        ownerId: session.user.id,
-      },
-      select: { id: true, slug: true, name: true, status: true, city: true, pricePerMonth: true },
-    });
-
-    // Notify admin — fire and forget, never blocks the response
-    void sendEmail(
-      newListingAdminEmail({
-        ownerName: session.user.name,
-        ownerEmail: session.user.email,
-        hostelName: hostel.name,
-        hostelId: hostel.id,
-        city: hostel.city,
-        pricePerMonth: hostel.pricePerMonth,
-      })
-    ).catch((err) => console.error("[create-hostel] Admin notification failed:", err));
+    const hostel = await createHostelRecord(
+      session.user.id,
+      session.user.name,
+      session.user.email,
+      data,
+      body
+    );
 
     return NextResponse.json(
       { data: hostel, message: "Hostel submitted for review. We'll notify you once it's approved." },

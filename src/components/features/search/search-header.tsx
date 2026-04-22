@@ -1,4 +1,4 @@
-import { SlidersHorizontal, Search } from "lucide-react";
+import { SlidersHorizontal, Search, MapPin } from "lucide-react";
 import { MobileFilterSheet } from "@/components/features/search/mobile-filter-sheet";
 
 interface SearchHeaderProps {
@@ -16,7 +16,7 @@ function getTitle(params: Record<string, string | string[]>): string {
     return `${g} hostels in ${city}`;
   }
   if (city) return `Hostels in ${city}`;
-  return "All Hostels";
+  return "Browse hostels across Pakistan";
 }
 
 export function SearchHeader({ params }: SearchHeaderProps) {

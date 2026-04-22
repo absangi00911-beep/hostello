@@ -11,11 +11,11 @@ interface OwnerCardProps {
     createdAt: Date;
     _count: { hostels: number };
   };
-  /** Only show contact details to authenticated users */
-  showContact?: boolean;
+  /** Only show contact details to users with a confirmed booking */
+  hasConfirmedBooking?: boolean;
 }
 
-export function OwnerCard({ owner, showContact = false }: OwnerCardProps) {
+export function OwnerCard({ owner, hasConfirmedBooking = false }: OwnerCardProps) {
   return (
     <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
 
@@ -42,7 +42,8 @@ export function OwnerCard({ owner, showContact = false }: OwnerCardProps) {
       </div>
 
       <div className="pt-4">
-        {showContact && owner.phone ? (
+        {hasConfirmedBooking && owner.phone ? (
+          /* Show phone only post-confirmation — legitimate contact for move-in coordination */
           <a
             href={`tel:${owner.phone}`}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] transition-colors"
@@ -50,22 +51,15 @@ export function OwnerCard({ owner, showContact = false }: OwnerCardProps) {
             <Phone className="w-4 h-4" />
             Call owner
           </a>
-        ) : showContact && !owner.phone ? (
-          <p className="text-xs text-center text-[var(--color-muted)]">
-            Contact details shared after booking is confirmed.
-          </p>
-        ) : (
-          /* Not logged in — prompt sign-in rather than leaking the number */
+        ) : !hasConfirmedBooking ? (
+          /* Pre-confirmation: prompt to use messaging system instead — prevents platform bypass */
           <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)]">
             <Lock className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
             <p className="text-xs text-[var(--color-muted)]">
-              <a href="/login" className="font-semibold text-[var(--color-ink)] hover:underline">
-                Sign in
-              </a>{" "}
-              to see owner contact details.
+              Contact details shared after booking is confirmed.
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

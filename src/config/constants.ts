@@ -1,8 +1,13 @@
 // App metadata
 export const APP_NAME = "HostelLo";
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk";
+// NOTE: Use getAppUrl() from @/lib/app-url instead of APP_URL for proper multi-instance support
 export const APP_DESCRIPTION =
-  "Find verified student hostels across Pakistan. Filter by price, gender, and amenities.";
+  "Find verified student hostels across Pakistan. Filter by price, gender, and amenities";
+
+// Support channels
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL ?? "support@hostello.pk";
+export const LEGAL_EMAIL = "legal@hostello.pk";
+export const PRIVACY_EMAIL = "privacy@hostello.pk";
 
 // Pagination defaults
 export const DEFAULT_PAGE_SIZE = 12;

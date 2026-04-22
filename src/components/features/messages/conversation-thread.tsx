@@ -33,8 +33,11 @@ const messageSchema = z.object({
 });
 type MessageInput = z.infer<typeof messageSchema>;
 
-/** Poll for new messages every 8 seconds while the tab is visible */
-const POLL_INTERVAL_MS = 8000;
+/** Initial poll interval when connection is healthy */
+const POLL_INTERVAL_MIN_MS = 8000;
+
+/** Max backoff on repeated errors to avoid hammering during outages */
+const POLL_INTERVAL_MAX_MS = 60000;
 
 export function ConversationThread({
   conversationId,
@@ -45,6 +48,7 @@ export function ConversationThread({
   const [messages, setMessages]       = useState<Message[]>(initialMessages);
   const [loading, setLoading]         = useState(initialMessages.length === 0);
   const [pollingError, setPollingError] = useState(false);
+  const [pollInterval, setPollInterval] = useState(POLL_INTERVAL_MIN_MS);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const lastIdRef  = useRef<string | undefined>(messages.at(-1)?.id);
 
@@ -57,6 +61,8 @@ export function ConversationThread({
         setMessages(json.data.messages);
         lastIdRef.current = json.data.messages.at(-1)?.id;
         setPollingError(false);
+        // Reset to fast polling on successful response
+        setPollInterval(POLL_INTERVAL_MIN_MS);
       }
     } catch {
       setPollingError(true);
@@ -72,7 +78,7 @@ export function ConversationThread({
     }
   }, [fetchMessages, initialMessages.length]);
 
-  // ── Polling ───────────────────────────────────────────────────────────────
+  // ── Polling with exponential backoff ───────────────────────────────────────
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
 
@@ -84,7 +90,14 @@ export function ConversationThread({
         try {
           const res  = await fetch(`/api/conversations/${conversationId}`);
           const json = await res.json();
-          if (!res.ok || !json.data?.messages) return;
+          if (!res.ok || !json.data?.messages) {
+            // Server error — increase backoff
+            setPollInterval((prev) =>
+              Math.min(prev * 1.5, POLL_INTERVAL_MAX_MS)
+            );
+            setPollingError(true);
+            return;
+          }
 
           const incoming: Message[] = json.data.messages;
           const newLastId = incoming.at(-1)?.id;
@@ -93,12 +106,19 @@ export function ConversationThread({
           if (newLastId && newLastId !== lastIdRef.current) {
             setMessages(incoming);
             lastIdRef.current = newLastId;
-            setPollingError(false);
           }
+
+          // Successful poll — reset backoff
+          setPollingError(false);
+          setPollInterval(POLL_INTERVAL_MIN_MS);
         } catch {
+          // Network error — increase backoff
+          setPollInterval((prev) =>
+            Math.min(prev * 1.5, POLL_INTERVAL_MAX_MS)
+          );
           setPollingError(true);
         }
-      }, POLL_INTERVAL_MS);
+      }, pollInterval);
     }
 
     startPolling();
@@ -116,7 +136,7 @@ export function ConversationThread({
       clearInterval(timer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [conversationId, fetchMessages]);
+  }, [conversationId, fetchMessages, pollInterval]);
 
   // ── Auto-scroll on new messages ───────────────────────────────────────────
   useEffect(() => {

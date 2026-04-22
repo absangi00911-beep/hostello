@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -78,8 +79,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
       <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5 flex items-center gap-5">
         <div className="w-16 h-16 rounded-2xl bg-[var(--color-ink)] text-white flex items-center justify-center text-xl font-bold flex-shrink-0 overflow-hidden">
           {user.avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+            <Image
+              src={user.avatar}
+              alt={user.name}
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           ) : (
             getInitials(user.name)
           )}

@@ -88,7 +88,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
   // Don't show the contact button if the session user IS the owner
   const isOwner = session?.user?.id === hostel.owner.id;
 
-  const [initialIsSaved, hasCompletedStay, existingReview] = await Promise.all([
+  const [initialIsSaved, hasCompletedStay, hasConfirmedBooking, existingReview] = await Promise.all([
     session
       ? db.favorite
           .findUnique({
@@ -101,6 +101,14 @@ export default async function HostelDetailPage({ params }: PageProps) {
       ? db.booking
           .findFirst({
             where: { hostelId: hostel.id, userId: session.user.id, status: "COMPLETED" },
+            select: { id: true },
+          })
+          .then(Boolean)
+      : Promise.resolve(false),
+    session
+      ? db.booking
+          .findFirst({
+            where: { hostelId: hostel.id, userId: session.user.id, status: "CONFIRMED" },
             select: { id: true },
           })
           .then(Boolean)
@@ -151,6 +159,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
             <div className="lg:sticky lg:top-24 space-y-4">
               <BookingCard
                 hostelId={hostel.id}
+                hostelSlug={hostel.slug}
                 hostelName={hostel.name}
                 pricePerMonth={hostel.pricePerMonth}
                 minStay={hostel.minStay}
@@ -184,7 +193,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
 
               <OwnerCard
                 owner={hostel.owner}
-                showContact={isLoggedIn && !isOwner}
+                showContact={hasConfirmedBooking && !isOwner}
               />
             </div>
           </div>

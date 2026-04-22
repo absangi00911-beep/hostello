@@ -34,14 +34,14 @@ export function MoveInPicker({ value, onChange }: MoveInPickerProps) {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1; // 1-indexed
 
-  const selectedYear = value ? parseInt(value.split("-")[0]) : currentYear;
+  const selectedYear = value ? parseInt(value.split("-")[0], 10) : currentYear;
   const selectedMonth = value ? value.split("-")[1] : "";
 
   const years = [currentYear, currentYear + 1, currentYear + 2];
 
   const availableMonths = MONTHS.filter((m) => {
     if (selectedYear > currentYear) return true;
-    return parseInt(m.value) >= currentMonth;
+    return parseInt(m.value, 10) >= currentMonth;
   });
 
   function emit(year: number, month: string) {

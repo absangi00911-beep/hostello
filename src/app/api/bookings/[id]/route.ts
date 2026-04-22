@@ -78,6 +78,14 @@ export async function PATCH(
     const isHostelOwner = booking.hostel.ownerId === session.user.id;
     const isAdmin       = session.user.role === "ADMIN";
 
+    // Log admin actions for audit trail
+    if (isAdmin && !isStudent && !isHostelOwner) {
+      console.log(
+        `[audit] Admin ${session.user.id} (${session.user.email}) performed "${action}" on booking ${id} ` +
+        `(hostel: ${booking.hostel.name}, student: ${booking.user.email})`
+      );
+    }
+
     // ── Cancel (student or admin only) ────────────────────────────────────────
     if (action === "cancel") {
       if (!isStudent && !isAdmin) {

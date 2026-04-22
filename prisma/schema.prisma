@@ -65,6 +65,7 @@ model User {
   favorites      Favorite[]
   messages       Message[]
   passwordResets PasswordResetToken[]
+  priceAlerts    PriceAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -159,6 +160,8 @@ model Hostel {
   bookings  Booking[]
   reviews   Review[]
   favorites Favorite[]
+  conversations Conversation[]
+  priceAlerts PriceAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -289,8 +292,9 @@ model Favorite {
 model Conversation {
   id String @id @default(cuid())
 
-  hostelId String
-  hostelName String
+  hostel     Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId   String
+  hostelName String // Snapshot of hostel name at conversation time — intentionally stale
 
   participantIds String[]
   messages       Message[]
@@ -298,6 +302,7 @@ model Conversation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([hostelId])
   @@map("conversations")
 }
 
@@ -317,4 +322,30 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@map("messages")
+}
+
+model PriceAlert {
+  id       String   @id @default(cuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  hostel   Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId String
+  
+  // Alert triggers when price drops below this threshold
+  targetPrice Float
+  
+  // Whether the alert is still active
+  active Boolean @default(true)
+  
+  // When the user last received an alert for this hostel
+  lastAlertAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, hostelId])
+  @@index([userId])
+  @@index([hostelId])
+  @@index([active])
+  @@map("price_alerts")
 }

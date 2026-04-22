@@ -32,7 +32,7 @@ const STUDENT_STEPS = [
     icon: CreditCard,
     step: "04",
     title: "Book and pay securely",
-    body: "Pay via JazzCash, EasyPaisa, or card through Safepay. You get a booking reference immediately and a receipt by email.",
+    body: "Pay securely by card through Safepay. You get a booking reference immediately and a receipt by email. JazzCash and EasyPaisa support launching soon.",
   },
 ];
 

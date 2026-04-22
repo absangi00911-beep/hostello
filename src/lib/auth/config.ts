@@ -3,6 +3,11 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import {
+  getTokenVersion,
+  setTokenVersion,
+  invalidateTokenVersion,
+} from "@/lib/auth/token-version-cache";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -10,37 +15,33 @@ const loginSchema = z.object({
 });
 
 // ── Token-version cache ────────────────────────────────────────────────────
-// Purpose: reduces DB round-trips on every auth() call while still detecting
-// password resets within the TTL window (~30 s). On multi-instance deployments
-// the window is per-instance; replace with Redis if sub-second revocation is
-// required across instances.
+// Purpose: Reduces DB round-trips on every auth() call while detecting
+// password resets across all instances via Redis. TTL is ~30 seconds.
+// 
+// When a password is reset, invalidateTokenVersion() clears the Redis key,
+// causing the user's next request to fetch from DB and get the new tokenVersion.
+// If tokenVersion was incremented, the JWT no longer matches and session is revoked.
 
-const TV_TTL_MS = 30_000;
-
-interface CacheEntry {
-  version: number;
-  expiresAt: number;
-}
-
-const tvCache = new Map<string, CacheEntry>();
-
-// Called by the password-reset handler to immediately invalidate the local
-// cache for this instance (best-effort; remote instances drain naturally).
-export function invalidateLocalSessionCache(userId: string): void {
-  tvCache.delete(userId);
+/**
+ * Revoke all sessions for a user (e.g., after password reset).
+ * Invalidates the Redis cache so the next auth() call fetches the new tokenVersion.
+ */
+export async function invalidateLocalSessionCache(userId: string): Promise<void> {
+  await invalidateTokenVersion(userId);
 }
 
 async function validateTokenVersion(
   userId: string,
   claimed: number,
 ): Promise<boolean> {
-  const now = Date.now();
-  const cached = tvCache.get(userId);
+  // Try Redis cache first (fast path on warm cache)
+  let cachedVersion = await getTokenVersion(userId);
 
-  if (cached && cached.expiresAt > now) {
-    return cached.version === claimed;
+  if (cachedVersion !== null) {
+    return cachedVersion === claimed;
   }
 
+  // Cache miss or Redis unavailable — fetch from DB
   const user = await db.user.findUnique({
     where: { id: userId },
     select: { tokenVersion: true },
@@ -48,7 +49,9 @@ async function validateTokenVersion(
 
   if (!user) return false;
 
-  tvCache.set(userId, { version: user.tokenVersion, expiresAt: now + TV_TTL_MS });
+  // Populate cache for subsequent requests
+  await setTokenVersion(userId, user.tokenVersion);
+
   return user.tokenVersion === claimed;
 }
 
@@ -92,8 +95,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tokenVersion: user.tokenVersion,
           } as any;
-        } catch {
-          return null;
+        } catch (err) {
+          // Distinguish between auth failures and infrastructure failures.
+          // DB timeout / connection error should not look like "wrong password".
+          console.error("[auth] Database error during authorization:", err);
+          throw new Error(
+            "Authentication service unavailable. Try again shortly."
+          );
         }
       },
     }),

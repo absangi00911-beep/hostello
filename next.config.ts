@@ -53,6 +53,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "pub-*.r2.dev" },
       { protocol: "https", hostname: "*.cloudflare.com" },
+      // OAuth providers for user avatars
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "*.gravatar.com" },
     ],
   },
   async headers() {

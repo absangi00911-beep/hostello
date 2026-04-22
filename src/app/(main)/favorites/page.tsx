@@ -13,7 +13,10 @@ export default async function FavoritesPage() {
   if (!session) redirect("/login");
 
   const favorites = await db.favorite.findMany({
-    where: { userId: session.user.id },
+    where: {
+      userId: session.user.id,
+      hostel: { status: "ACTIVE" }, // Only show favorites for active hostels
+    },
     orderBy: { createdAt: "desc" },
     include: {
       hostel: {

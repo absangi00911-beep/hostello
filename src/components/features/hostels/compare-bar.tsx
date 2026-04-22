@@ -19,7 +19,7 @@ export function CompareBar() {
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4"
         >
-          <div className="bg-[var(--color-primary-950)] text-white rounded-2xl shadow-2xl px-4 py-3 flex items-center gap-3">
+          <div className="bg-[var(--color-ink)] text-white rounded-2xl shadow-2xl px-4 py-3 flex items-center gap-3">
             {/* Items */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {items.map((item) => (

@@ -86,6 +86,24 @@ export async function POST(req: NextRequest) {
     const total = months * hostel.pricePerMonth;
 
     const booking = await db.$transaction(async (tx) => {
+      // Hostel-level bookings (roomId is null) — check for overlapping active bookings
+      if (!roomId) {
+        const overlap = await tx.booking.findFirst({
+          where: {
+            hostelId,
+            userId: session.user.id,
+            status: { in: ["PENDING", "CONFIRMED"] },
+            checkIn: { lt: checkOut },
+            checkOut: { gt: checkIn },
+          },
+        });
+        if (overlap) {
+          throw new Error(
+            "You already have an active booking for this hostel during this period."
+          );
+        }
+      }
+
       if (roomId) {
         const room = await tx.room.findFirst({
           where: { id: roomId, hostelId, available: { gt: 0 } },
@@ -181,6 +199,17 @@ export async function POST(req: NextRequest) {
           error:
             "This room was just booked by someone else. Refresh and try again.",
         },
+        { status: 409 },
+      );
+    }
+
+    // ── Double-booking check → 409 Conflict ────────────────────────────────
+    if (
+      err instanceof Error &&
+      err.message.includes("already have an active booking")
+    ) {
+      return NextResponse.json(
+        { error: err.message },
         { status: 409 },
       );
     }

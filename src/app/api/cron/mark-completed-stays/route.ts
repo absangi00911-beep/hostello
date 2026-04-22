@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { verifyUpstashRequest, getUpstashMetadata } from "@/lib/verify-upstash";
+import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 /**
  * Cron job to transition CONFIRMED bookings to COMPLETED after checkout date.

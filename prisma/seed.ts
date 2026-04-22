@@ -6,11 +6,23 @@ const db = new PrismaClient();
 async function main() {
   console.log("Seeding database…");
 
+  // ─── Validate environment variables ────────────────────────────────────────
+  const seedAdminPw = process.env.SEED_ADMIN_PASSWORD;
+  const seedOwnerPw = process.env.SEED_OWNER_PASSWORD;
+  const seedStudentPw = process.env.SEED_STUDENT_PASSWORD;
+
+  if (!seedAdminPw || !seedOwnerPw || !seedStudentPw) {
+    throw new Error(
+      "Missing required seed environment variables. Set " +
+      "SEED_ADMIN_PASSWORD, SEED_OWNER_PASSWORD, and SEED_STUDENT_PASSWORD."
+    );
+  }
+
   // ─── Users ────────────────────────────────────────────────────────────────
 
-  const adminPassword  = await hash("admin123456",   12);
-  const ownerPassword  = await hash("owner123456",   12);
-  const studentPassword = await hash("student123456", 12);
+  const adminPassword = await hash(seedAdminPw, 12);
+  const ownerPassword = await hash(seedOwnerPw, 12);
+  const studentPassword = await hash(seedStudentPw, 12);
 
   await db.user.upsert({
     where: { email: "admin@hostello.pk" },

@@ -3,6 +3,8 @@
  * All functions throw on non-OK responses with the server's error message.
  */
 
+import { buildSearchParams } from "@/lib/utils";
+
 async function request<T>(
   url: string,
   options?: RequestInit
@@ -51,7 +53,7 @@ export interface PaginatedHostels {
 }
 
 export async function fetchHostels(params: Record<string, string>): Promise<PaginatedHostels> {
-  const qs = new URLSearchParams(params).toString();
+  const qs = buildSearchParams(params);
   const res = await fetch(`/api/hostels${qs ? `?${qs}` : ""}`, {
     next: { revalidate: 30 },
   });

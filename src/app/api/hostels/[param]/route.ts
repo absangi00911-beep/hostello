@@ -34,7 +34,10 @@ function getAllowedImageOrigins(): string[] {
 
 function isImageUrlAllowed(url: string): boolean {
   const allowed = getAllowedImageOrigins();
-  if (allowed.length === 0) return true;
+  if (allowed.length === 0) {
+    console.error("[security] Image allowlist is empty — blocking all URLs");
+    return false;
+  }
   return allowed.some((o) => url.startsWith(o));
 }
 

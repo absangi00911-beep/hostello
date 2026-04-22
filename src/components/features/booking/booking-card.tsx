@@ -1,22 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Users, ArrowRight, Loader2, Star, ChevronDown, Info } from "lucide-react";
 import { toast } from "sonner";
-import { formatPrice, calculateMonths } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from "@/lib/payment-methods";
 import { MoveInPicker, DurationPicker, addMonths, monthToDateStr } from "./month-picker";
 
 interface BookingCardProps {
-  hostelId: string;
-  hostelName: string;
+  hostelId:     string;
+  hostelSlug:   string;
+  hostelName:   string;
   pricePerMonth: number;
-  minStay: number;
-  maxStay?: number;
-  rating?: number;
+  minStay:      number;
+  maxStay?:     number;
+  rating?:      number;
   reviewCount?: number;
 }
 
@@ -28,6 +29,7 @@ const STEPS = [
 
 export function BookingCard({
   hostelId,
+  hostelSlug,
   hostelName: _hostelName,
   pricePerMonth,
   minStay,
@@ -38,18 +40,40 @@ export function BookingCard({
   const router = useRouter();
   const { data: session } = useSession();
 
-  /** "YYYY-MM" or empty */
   const [moveInMonth, setMoveInMonth] = useState("");
-  const [duration, setDuration]       = useState(minStay);
-  const [guests, setGuests]           = useState(1);
-  const [payment, setPayment]         = useState<string>(DEFAULT_PAYMENT_METHOD);
-  const [loading, setLoading]         = useState(false);
-  const [showSteps, setShowSteps]     = useState(false);
+  const [duration,    setDuration]    = useState(minStay);
+  const [guests,      setGuests]      = useState(1);
+  const [payment,     setPayment]     = useState<string>(DEFAULT_PAYMENT_METHOD);
+  const [loading,     setLoading]     = useState(false);
+  const [showSteps,   setShowSteps]   = useState(false);
 
-  // Derive ISO date strings from the month picker values
-  const checkIn  = moveInMonth ? monthToDateStr(moveInMonth) : "";
-  const checkOut = moveInMonth ? addMonths(moveInMonth, duration) : "";
-  const months   = moveInMonth ? duration : null;
+  // ── Availability urgency ──────────────────────────────────────────────────
+  // Fetch the 12-month availability grid and extract the current month's count.
+  // Stored separately from the AvailabilityCalendar component to keep the
+  // booking widget self-contained and avoid prop-drilling from the detail page.
+  const [availableNow, setAvailableNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!hostelSlug) return;
+
+    fetch(`/api/hostels/${hostelSlug}/availability`)
+      .then((r) => r.json())
+      .then((j) => {
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const entry = (j.data ?? []).find(
+          (m: { month: string; available: number }) => m.month === currentMonth
+        );
+        if (entry !== undefined) setAvailableNow(entry.available);
+      })
+      .catch(() => {
+        // Non-critical — silently ignore; the rest of the widget still works.
+      });
+  }, [hostelSlug]);
+
+  // Derived values
+  const checkIn   = moveInMonth ? monthToDateStr(moveInMonth) : "";
+  const checkOut  = moveInMonth ? addMonths(moveInMonth, duration) : "";
+  const months    = moveInMonth ? duration : null;
   const rentTotal = months !== null ? months * pricePerMonth : null;
 
   const hasRating =
@@ -73,13 +97,7 @@ export function BookingCard({
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          hostelId,
-          checkIn,
-          checkOut,
-          guests,
-          paymentMethod: payment,
-        }),
+        body: JSON.stringify({ hostelId, checkIn, checkOut, guests, paymentMethod: payment }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Booking failed");
@@ -107,10 +125,45 @@ export function BookingCard({
     }
   }
 
+  // Scarcity copy and colour — calibrated so low-inventory is visually urgent
+  // without being alarmist when there's ample availability.
+  function AvailabilitySignal() {
+    if (availableNow === null) return null;
+
+    if (availableNow <= 0) {
+      return (
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-red-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+          Fully booked this month
+        </p>
+      );
+    }
+
+    const isLow = availableNow <= 5;
+    const isMid = availableNow <= 15;
+
+    return (
+      <p
+        className={cn(
+          "flex items-center gap-1.5 text-xs font-semibold",
+          isLow ? "text-red-600" : isMid ? "text-amber-600" : "text-[var(--color-brand-700)]"
+        )}
+      >
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full inline-block",
+            isLow ? "bg-red-500" : isMid ? "bg-amber-500" : "bg-[var(--color-brand-500)]"
+          )}
+        />
+        {availableNow} bed{availableNow !== 1 ? "s" : ""} available this month
+      </p>
+    );
+  }
+
   return (
     <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="px-5 py-4 border-b border-[var(--color-border)] bg-[var(--color-ground)]">
         <div className="flex items-start justify-between gap-2">
           <div>
@@ -141,10 +194,14 @@ export function BookingCard({
 
       <div className="p-5 space-y-4">
 
-        {/* ── Move-in month ── */}
+        {/* Move-in month */}
         <MoveInPicker value={moveInMonth} onChange={setMoveInMonth} />
 
-        {/* ── Duration ── */}
+        {/* Availability signal — shown directly under the move-in picker so it
+            informs the user's date choice while intent is still forming. */}
+        <AvailabilitySignal />
+
+        {/* Duration */}
         <DurationPicker
           value={duration}
           onChange={setDuration}
@@ -165,7 +222,7 @@ export function BookingCard({
           </p>
         )}
 
-        {/* ── Guests ── */}
+        {/* Guests */}
         <div>
           <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-1.5">Guests</label>
           <div className="relative">
@@ -182,7 +239,7 @@ export function BookingCard({
           </div>
         </div>
 
-        {/* ── Payment ── */}
+        {/* Payment method */}
         <div>
           <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-2">Pay via</label>
           <div className="grid grid-cols-3 gap-2">
@@ -210,7 +267,7 @@ export function BookingCard({
           </div>
         </div>
 
-        {/* ── Price breakdown ── */}
+        {/* Price breakdown */}
         {months !== null && rentTotal !== null && (
           <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5 space-y-2 text-sm">
             <div className="flex justify-between text-[var(--color-muted)]">
@@ -221,7 +278,6 @@ export function BookingCard({
               <span>Total due at booking</span>
               <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(rentTotal)}</span>
             </div>
-            {/* Security deposit note — collected by owner, not through platform */}
             <div className="flex items-start gap-1.5 pt-1">
               <Info className="w-3.5 h-3.5 text-[var(--color-muted)] mt-0.5 flex-shrink-0" />
               <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
@@ -231,7 +287,7 @@ export function BookingCard({
           </div>
         )}
 
-        {/* ── CTA ── */}
+        {/* CTA */}
         <button
           onClick={handleBook}
           disabled={loading}
@@ -244,7 +300,7 @@ export function BookingCard({
           )}
         </button>
 
-        {/* ── What happens next ── */}
+        {/* What happens next */}
         <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
           <button
             type="button"
