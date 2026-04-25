@@ -1,3 +1,6 @@
+import { escapeHtml } from "@/lib/email";
+import { emailLayout, emailButton } from "./layout";
+
 interface PriceAlertEmailProps {
   userName: string;
   hostelName: string;
@@ -5,6 +8,14 @@ interface PriceAlertEmailProps {
   oldPrice: number;
   newPrice: number;
   targetPrice: number;
+}
+
+function formatPrice(n: number) {
+  return new Intl.NumberFormat("en-PK", {
+    style: "currency",
+    currency: "PKR",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
 export function priceAlertEmail({
@@ -15,42 +26,45 @@ export function priceAlertEmail({
   newPrice,
   targetPrice,
 }: PriceAlertEmailProps) {
-  const { subject, html } = layout({
-    preheader: `${hostelName} price just dropped!`,
-    body: `
-      <p>Hi ${userName},</p>
-      
-      <p>Great news! The monthly price for <strong>${hostelName}</strong> has dropped below your target of <strong>PKR ${targetPrice.toLocaleString()}</strong>.</p>
-      
-      <table role="presentation" cellspacing="0" cellpadding="15" style="width: 100%; background: #f5f5f5; border-radius: 8px; margin: 20px 0;">
+  const escapedUserName = escapeHtml(userName);
+  const escapedHostelName = escapeHtml(hostelName);
+
+  const content = `
+    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
+      Price alert: ${escapedHostelName}
+    </h1>
+    <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
+      Hi ${escapedUserName},<br>
+      Great news! The monthly price for <strong>${escapedHostelName}</strong> has dropped below your target.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+      <tbody>
+        <tr style="border-bottom:1px solid #EAE0D0;">
+          <td style="padding:8px 0;font-size:14px;color:#6B6354;">Old price</td>
+          <td style="padding:8px 0;text-align:right;font-size:15px;color:#6B6354;">${formatPrice(oldPrice)}</td>
+        </tr>
+        <tr style="border-bottom:1px solid #EAE0D0;">
+          <td style="padding:8px 0;font-size:14px;color:#6B6354;">New price</td>
+          <td style="padding:8px 0;text-align:right;font-size:18px;font-weight:700;color:#27ae60;">${formatPrice(newPrice)}</td>
+        </tr>
         <tr>
-          <td style="color: #666; font-size: 14px;">Old price</td>
-          <td style="color: #333; font-weight: bold; text-align: right;">PKR ${oldPrice.toLocaleString()}</td>
+          <td style="padding:8px 0;font-size:14px;color:#6B6354;">Your target</td>
+          <td style="padding:8px 0;text-align:right;font-size:15px;color:#3498db;">${formatPrice(targetPrice)}</td>
         </tr>
-        <tr style="border-top: 1px solid #ddd;">
-          <td style="color: #666; font-size: 14px;">New price</td>
-          <td style="color: #27ae60; font-weight: bold; text-align: right; font-size: 18px;">PKR ${newPrice.toLocaleString()}</td>
-        </tr>
-        <tr style="border-top: 1px solid #ddd;">
-          <td style="color: #666; font-size: 14px;">Your target</td>
-          <td style="color: #3498db; font-weight: bold; text-align: right;">PKR ${targetPrice.toLocaleString()}</td>
-        </tr>
-      </table>
-      
-      <p style="margin: 20px 0;">
-        <a href="${hostelUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-          View Hostel
-        </a>
-      </p>
-      
-      <p style="color: #999; font-size: 12px; margin-top: 30px;">
-        This alert was triggered by your price monitor on Hostello. You can manage your alerts in your profile settings.
-      </p>
-    `,
-  });
+      </tbody>
+    </table>
 
-  return { subject, html };
+    ${emailButton("View hostel", hostelUrl)}
+
+    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
+    <p style="margin:0;font-size:12px;color:#A68B5B;">
+      You received this because a hostel matched your price alert on HostelLo. Manage your alerts in your profile settings.
+    </p>
+  `;
+
+  return {
+    subject: `Price alert: ${escapedHostelName} dropped below your target!`,
+    html: emailLayout(content, `${escapedHostelName} price just dropped!`),
+  };
 }
-
-// Re-export layout for use in this template
-export { layout } from "./layout";

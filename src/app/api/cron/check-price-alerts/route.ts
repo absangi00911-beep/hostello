@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { checkPriceAlerts } from "@/scripts/check-price-alerts";
+import { checkPriceAlerts } from "@/lib/price-alerts";
 
 /**
  * Cron endpoint for checking price alerts
@@ -15,12 +15,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const result = await checkPriceAlerts();
+    const appUrl = process.env.APP_URL || "https://hostello.pk";
+    const result = await checkPriceAlerts(appUrl);
     return NextResponse.json(result);
   } catch (err) {
     console.error("[Cron] Price alert check failed:", err);
     return NextResponse.json(
-      { error: "Cron job failed", details: err instanceof Error ? err.message : "Unknown error" },
+      {
+        error: "Cron job failed",
+        details: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
