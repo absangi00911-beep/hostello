@@ -61,6 +61,13 @@ This creates two recurring jobs in Upstash:
 - **Does:** Cancels bookings stuck in PENDING for 30+ minutes
 - **Why:** Frees up hostel rooms
 
+### 3️⃣ Check Price Alerts
+- **Runs:** Every 6 hours (0 0 */6 * * UTC)
+- **Does:** Monitors active price alerts and sends email notifications when prices drop
+- **Why:** Keeps users informed about price changes for hostels they're watching
+- **Script:** `scripts/check-price-alerts.ts`
+- **Endpoint:** `POST /api/cron/check-price-alerts` (requires CRON_SECRET header)
+
 ---
 
 ## Testing Locally

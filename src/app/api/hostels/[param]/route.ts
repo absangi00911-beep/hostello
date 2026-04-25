@@ -111,6 +111,8 @@ export async function GET(
             avatar: true,
             createdAt: true,
             _count: { select: { hostels: true } },
+            // SECURITY: Never include phone in public API responses
+            // Phone is only exposed through server-side gating after booking verification
           },
         },
         reviews: {

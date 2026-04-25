@@ -14,8 +14,12 @@ import { OwnerCard } from "@/components/features/hostels/owner-card";
 import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
 import { ContactOwnerButton } from "@/components/features/hostels/contact-owner-button";
 import { HostelJsonLd } from "@/components/features/hostels/hostel-json-ld";
+import { PriceAlertForm } from "@/components/features/hostels/price-alert-form";
 
-export const revalidate = 3600;
+// SECURITY: This page is not statically generated because it depends on user authentication state.
+// Showing cached HTML to all visitors could leak sensitive info.
+// Using revalidate 60 for modest caching of public content, but personalized sections are always fresh.
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const hostels = await db.hostel.findMany({
@@ -94,6 +98,7 @@ export default async function HostelDetailPage({ params }: PageProps) {
     hasCompletedStay,
     hasConfirmedBooking,
     existingReview,
+    priceAlert,
   ] = await Promise.all([
     session
       ? db.favorite
@@ -137,10 +142,20 @@ export default async function HostelDetailPage({ params }: PageProps) {
           select: { id: true },
         })
       : Promise.resolve(null),
+    session
+      ? db.priceAlert.findUnique({
+          where: {
+            userId_hostelId: { userId: session.user.id, hostelId: hostel.id },
+          },
+          select: { id: true, targetPrice: true, active: true },
+        })
+      : Promise.resolve(null),
   ]);
 
+  // SECURITY: Only fetch and expose owner phone after confirming the user has a valid booking
+  // and is not the owner themselves. This prevents leaking contact info to unauthorized visitors.
   const ownerPhone =
-    hasConfirmedBooking && !isOwner
+    session && hasConfirmedBooking && !isOwner
       ? await db.user
           .findUnique({
             where: { id: hostel.owner.id },
@@ -220,6 +235,16 @@ export default async function HostelDetailPage({ params }: PageProps) {
                     Sign in to message owner
                   </a>
                 </div>
+              )}
+
+              {/* Price alert form — visible to logged-in users */}
+              {isLoggedIn && !isOwner && (
+                <PriceAlertForm
+                  hostelId={hostel.id}
+                  hostelName={hostel.name}
+                  currentPrice={hostel.pricePerMonth}
+                  existingAlert={priceAlert ?? undefined}
+                />
               )}
 
               <OwnerCard

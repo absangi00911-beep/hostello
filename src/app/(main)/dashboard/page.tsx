@@ -6,7 +6,7 @@ import { formatPrice, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  BookOpen, Heart, Building2, TrendingUp,
+  BookOpen, Heart, Building2, TrendingUp, Bell,
   CheckCircle2, Plus, Eye, Star, ChevronRight,
 } from "lucide-react";
 
@@ -144,6 +144,12 @@ function StudentDashboard({
             className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-colors"
           >
             <Heart className="w-4 h-4" /> Saved
+          </Link>
+          <Link
+            href="/dashboard/price-alerts"
+            className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-colors"
+          >
+            <Bell className="w-4 h-4" /> Alerts
           </Link>
         </div>
 

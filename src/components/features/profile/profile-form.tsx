@@ -23,6 +23,19 @@ const schema = z.object({
 });
 type Input = z.infer<typeof schema>;
 
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+}).refine((data) => data.currentPassword !== data.newPassword, {
+  message: "New password must be different from current password",
+  path: ["newPassword"],
+});
+type PasswordInput = z.infer<typeof passwordSchema>;
+
 const INPUT =
   "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
 
@@ -36,6 +49,7 @@ interface ProfileFormProps {
 export function ProfileForm({ user }: ProfileFormProps) {
   const router  = useRouter();
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const {
     register,
@@ -48,6 +62,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
       phone: user.phone ?? "",
       bio:   user.bio ?? "",
       city:  user.city ?? "",
+    },
+  });
+
+  const {
+    register: registerPassword,
+    handleSubmit: handlePasswordSubmit,
+    formState: { errors: passwordErrors, isDirty: isPasswordDirty },
+    reset: resetPasswordForm,
+  } = useForm<PasswordInput>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -69,6 +97,31 @@ export function ProfileForm({ user }: ProfileFormProps) {
       toast.error(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function onPasswordSubmit(data: PasswordInput) {
+    setChangingPassword(true);
+    try {
+      const res = await fetch("/api/profile/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error ?? "Password change failed");
+      }
+      toast.success("Password changed successfully. Signing you out...");
+      resetPasswordForm();
+      // Sign out and redirect to login
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setChangingPassword(false);
     }
   }
 
@@ -104,7 +157,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       </div>
 
-      {/* Form card */}
+      {/* Personal Information Form */}
       <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6">
         <h2
           className="text-base font-extrabold text-[var(--color-ink)] mb-6"
@@ -165,6 +218,60 @@ export function ProfileForm({ user }: ProfileFormProps) {
             >
               {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {saving ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Change Password Form */}
+      <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6">
+        <h2
+          className="text-base font-extrabold text-[var(--color-ink)] mb-6"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Change password
+        </h2>
+
+        <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-5" noValidate>
+
+          <Field label="Current password" error={passwordErrors.currentPassword?.message} required>
+            <input
+              {...registerPassword("currentPassword")}
+              type="password"
+              placeholder="Enter your current password"
+              autoComplete="current-password"
+              className={INPUT}
+            />
+          </Field>
+
+          <Field label="New password" error={passwordErrors.newPassword?.message} required>
+            <input
+              {...registerPassword("newPassword")}
+              type="password"
+              placeholder="Enter a new password (8+ characters)"
+              autoComplete="new-password"
+              className={INPUT}
+            />
+          </Field>
+
+          <Field label="Confirm new password" error={passwordErrors.confirmPassword?.message} required>
+            <input
+              {...registerPassword("confirmPassword")}
+              type="password"
+              placeholder="Confirm your new password"
+              autoComplete="new-password"
+              className={INPUT}
+            />
+          </Field>
+
+          <div className="pt-2 flex justify-end">
+            <button
+              type="submit"
+              disabled={changingPassword || !isPasswordDirty}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {changingPassword && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {changingPassword ? "Changing…" : "Change password"}
             </button>
           </div>
         </form>

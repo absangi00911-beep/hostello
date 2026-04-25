@@ -1,8 +1,8 @@
-import type { Hostel, Review } from "@prisma/client";
+import type { Hostel, Review, User } from "@prisma/client";
 
 interface HostelJsonLdProps {
   hostel: Pick<Hostel, "id" | "name" | "description" | "address" | "city" | "latitude" | "longitude" | "pricePerMonth" | "rating" | "reviewCount" | "coverImage">;
-  reviews?: Review[];
+  reviews?: (Review & { user: Pick<User, "name"> })[];
   url: string;
 }
 
@@ -50,7 +50,7 @@ export function HostelJsonLd({ hostel, reviews = [], url }: HostelJsonLdProps) {
       ...(review.comment && { reviewBody: review.comment }),
       author: {
         "@type": "Person",
-        name: review.userId, // We only have user ID in this context; could be enhanced
+        name: review.user.name,
       },
       datePublished: review.createdAt.toISOString().split("T")[0],
     })),

@@ -135,3 +135,33 @@ Before pushing to production, ensure these are set in your Vercel environment:
 | Other existing vars | ✅ Yes | (database, auth, payment, etc.) |
 
 All other environment variables remain the same as before.
+
+---
+
+## Maintenance Scripts
+
+### Fix Phantom Review Ratings
+
+**Problem:** If hostels show high ratings with no corresponding reviews, you likely have phantom/corrupted rating data from a previous seed.
+
+**Solution:** Run the review stats reset script to recalculate ratings from actual reviews:
+
+#### Local Development
+```bash
+npx dotenv -e .env.local -- tsx scripts/reset-review-stats.ts
+```
+
+#### Production (via Vercel Postgres CLI)
+```bash
+# After setting DATABASE_URL to your production database
+npx dotenv -e .env.production -- tsx scripts/reset-review-stats.ts
+```
+
+**What it does:**
+- Scans all hostels in the database
+- Calculates the true average rating from actual reviews
+- Recounts the real number of reviews  
+- Updates each hostel's denormalized `rating` and `reviewCount` to match reality
+- Reports what was corrected
+
+**Note:** The seed script now automatically prevents this by resetting all hostel stats to 0 before recomputing. Re-running the seed will fix corrupted data going forward.

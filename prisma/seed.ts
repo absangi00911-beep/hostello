@@ -610,10 +610,21 @@ async function main() {
     });
   }
 
+  // ─── SECURITY: Reset all hostel stats to prevent phantom ratings ────────
+  // Previous seeds may have set non-zero rating/reviewCount. We must reset
+  // them to 0 to prevent displaying phantom reviews with no backing data.
+  // This ensures the seed idempotency never carries forward corrupted data.
+  await db.hostel.updateMany({
+    data: {
+      rating: 0,
+      reviewCount: 0,
+    },
+  });
+
   // ─── One real review for Green Valley ────────────────────────────────────
   // This is the ONLY review seeded. rating/reviewCount on the hostel row
-  // are updated atomically by the review API — run this after seeding if you
-  // want them reflected immediately, or they'll update on the next real review.
+  // are computed from actual reviews. After seeding, Green Valley's stats
+  // reflect its real review; all other hostels start with 0/0.
 
   const greenValley = await db.hostel.findUnique({
     where: { slug: "green-valley-boys-hostel" },

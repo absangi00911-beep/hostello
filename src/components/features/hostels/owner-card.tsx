@@ -42,6 +42,7 @@ export function OwnerCard({ owner, hasConfirmedBooking = false }: OwnerCardProps
       </div>
 
       <div className="pt-4">
+        {/* SECURITY: Only show phone link if explicitly authorized AND phone exists */}
         {hasConfirmedBooking && owner.phone ? (
           /* Show phone only post-confirmation — legitimate contact for move-in coordination */
           <a
@@ -51,7 +52,7 @@ export function OwnerCard({ owner, hasConfirmedBooking = false }: OwnerCardProps
             <Phone className="w-4 h-4" />
             Call owner
           </a>
-        ) : !hasConfirmedBooking ? (
+        ) : !hasConfirmedBooking && hasConfirmedBooking !== undefined ? (
           /* Pre-confirmation: prompt to use messaging system instead — prevents platform bypass */
           <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)]">
             <Lock className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
