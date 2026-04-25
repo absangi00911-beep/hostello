@@ -38,11 +38,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking not found." }, { status: 404 });
     }
 
-    // Idempotency guard
-    if (booking.paymentStatus === "PAID") {
-      return NextResponse.json({ received: true });
-    }
-
     // Amount verification — REQUIRED to prevent free booking confirmation
     // Safepay sends amount in PKR integer. Field must always be present and match.
     const paidAmount = event?.data?.amount;
@@ -69,14 +64,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await db.booking.update({
-      where: { id: orderId },
+    // Use conditional update to ensure idempotency and prevent race conditions.
+    // If this webhook fires twice simultaneously, only the first update succeeds.
+    // The second will match 0 rows (booking is already PAID) and silently no-op.
+    const result = await db.booking.updateMany({
+      where: { 
+        id: orderId,
+        paymentStatus: { not: "PAID" },
+      },
       data: {
         paymentStatus: "PAID",
-        status:        "CONFIRMED",
+        status: "CONFIRMED",
         transactionId: (event?.data?.transaction_id as string | undefined) ?? null,
       },
     });
+
+    if (result.count === 0) {
+      // Booking was already processed by a concurrent webhook or user action.
+      // Return success to ack the webhook without re-processing.
+      console.info(`[webhook] Booking ${orderId} already marked PAID — idempotent no-op`);
+      return NextResponse.json({ received: true });
+    }
 
     sendEmail(
       bookingStatusEmail({

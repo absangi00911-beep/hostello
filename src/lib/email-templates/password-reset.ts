@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 
 export function passwordResetEmail({
@@ -5,7 +6,7 @@ export function passwordResetEmail({
 }: {
   name: string; resetUrl: string;
 }) {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
 
   const content = `
     <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#1A1209;">

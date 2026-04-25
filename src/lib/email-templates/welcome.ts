@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
@@ -13,7 +14,7 @@ interface WelcomeEmailProps {
  */
 export function welcomeEmail({ name, role }: WelcomeEmailProps) {
   const APP_URL = getAppUrl();
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
 
   const isOwner = role === "OWNER";
 

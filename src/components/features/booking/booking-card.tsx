@@ -27,6 +27,28 @@ const STEPS = [
   { n: "3", text: "Pay & collect your move-in details" },
 ];
 
+/**
+ * Programmatically submit a hidden form to the given URL.
+ * Used for JazzCash and EasyPaisa which require a browser POST
+ * to their checkout pages (not a simple redirect).
+ */
+function submitPaymentForm(action: string, params: Record<string, string>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+
+  for (const [name, value] of Object.entries(params)) {
+    const input = document.createElement("input");
+    input.type  = "hidden";
+    input.name  = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
 export function BookingCard({
   hostelId,
   hostelSlug,
@@ -48,9 +70,6 @@ export function BookingCard({
   const [showSteps,   setShowSteps]   = useState(false);
 
   // ── Availability urgency ──────────────────────────────────────────────────
-  // Fetch the 12-month availability grid and extract the current month's count.
-  // Stored separately from the AvailabilityCalendar component to keep the
-  // booking widget self-contained and avoid prop-drilling from the detail page.
   const [availableNow, setAvailableNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -65,9 +84,7 @@ export function BookingCard({
         );
         if (entry !== undefined) setAvailableNow(entry.available);
       })
-      .catch(() => {
-        // Non-critical — silently ignore; the rest of the widget still works.
-      });
+      .catch(() => {});
   }, [hostelSlug]);
 
   // Derived values
@@ -94,30 +111,49 @@ export function BookingCard({
 
     setLoading(true);
     try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
+      // Step 1: create the booking record
+      const res  = await fetch("/api/bookings", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hostelId, checkIn, checkOut, guests, paymentMethod: payment }),
+        body:    JSON.stringify({ hostelId, checkIn, checkOut, guests, paymentMethod: payment }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Booking failed");
 
       const bookingId = data.data.id;
 
-      const payRes = await fetch("/api/payment/initiate", {
-        method: "POST",
+      // Step 2: initiate payment
+      const payRes  = await fetch("/api/payment/initiate", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId }),
+        body:    JSON.stringify({ bookingId }),
       });
       const payData = await payRes.json();
 
-      if (payRes.ok && payData.redirectUrl) {
+      if (!payRes.ok) {
+        // Payment initiation failed — still show the booking page
+        toast.error(payData.error ?? "Payment setup failed. You can retry from your booking.");
+        router.push(`/bookings/${bookingId}`);
+        return;
+      }
+
+      // Redirect-based checkout (Safepay)
+      if (payData.type === "redirect" && payData.redirectUrl) {
         toast.success("Redirecting to payment…");
         window.location.href = payData.redirectUrl;
-      } else {
-        toast.success("Booking request sent!");
-        router.push(`/bookings/${bookingId}`);
+        return;
       }
+
+      // Form-based checkout (JazzCash / EasyPaisa)
+      if (payData.type === "form" && payData.formUrl && payData.params) {
+        toast.success("Redirecting to payment…");
+        submitPaymentForm(payData.formUrl, payData.params);
+        return;
+      }
+
+      // Fallback: unknown response shape — just show the booking
+      toast.success("Booking request sent!");
+      router.push(`/bookings/${bookingId}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -125,8 +161,6 @@ export function BookingCard({
     }
   }
 
-  // Scarcity copy and colour — calibrated so low-inventory is visually urgent
-  // without being alarmist when there's ample availability.
   function AvailabilitySignal() {
     if (availableNow === null) return null;
 
@@ -197,8 +231,7 @@ export function BookingCard({
         {/* Move-in month */}
         <MoveInPicker value={moveInMonth} onChange={setMoveInMonth} />
 
-        {/* Availability signal — shown directly under the move-in picker so it
-            informs the user's date choice while intent is still forming. */}
+        {/* Availability signal */}
         <AvailabilitySignal />
 
         {/* Duration */}
@@ -261,7 +294,7 @@ export function BookingCard({
               >
                 <span className="text-base">{pm.emoji}</span>
                 {pm.label}
-                <span className="text-[10px] font-medium uppercase tracking-wide">{pm.hint}</span>
+                <span className="text-[10px] font-medium">{pm.hint}</span>
               </button>
             ))}
           </div>

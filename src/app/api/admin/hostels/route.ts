@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+import { listingApprovedEmail, listingSuspendedEmail } from "@/lib/email-templates/listing-status";
 import { z } from "zod";
 
 const schema = z.object({
@@ -31,9 +33,56 @@ export async function PATCH(req: NextRequest) {
     const hostel = await db.hostel.update({
       where:  { id: hostelId },
       data,
-      select: { id: true, status: true, verified: true },
+      select: { 
+        id: true, 
+        status: true, 
+        verified: true,
+        name: true,
+        owner: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+      },
     });
-    return NextResponse.json({ data: hostel });
+
+    // Send owner notification email based on action
+    if (action === "verify" || action === "activate") {
+      await sendEmail(
+        listingApprovedEmail({
+          ownerEmail: hostel.owner.email,
+          ownerName: hostel.owner.name,
+          hostelName: hostel.name,
+          hostelId: hostel.id,
+          status: "APPROVED",
+        })
+      ).catch(() => {
+        // Silently ignore email failures but log them
+        console.error(`[email] Failed to send listing approved email to ${hostel.owner.email} for hostel ${hostel.id}`);
+      });
+    } else if (action === "suspend") {
+      await sendEmail(
+        listingSuspendedEmail({
+          ownerEmail: hostel.owner.email,
+          ownerName: hostel.owner.name,
+          hostelName: hostel.name,
+          hostelId: hostel.id,
+          status: "SUSPENDED",
+        })
+      ).catch(() => {
+        // Silently ignore email failures but log them
+        console.error(`[email] Failed to send listing suspended email to ${hostel.owner.email} for hostel ${hostel.id}`);
+      });
+    }
+
+    return NextResponse.json({ 
+      data: {
+        id: hostel.id,
+        status: hostel.status,
+        verified: hostel.verified,
+      }
+    });
   } catch {
     return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
   }

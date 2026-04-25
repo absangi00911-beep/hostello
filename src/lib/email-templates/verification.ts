@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 
 export function verificationEmail({
@@ -7,7 +8,7 @@ export function verificationEmail({
   name: string;
   verifyUrl: string;
 }) {
-  const firstName = name.split(" ")[0];
+  const firstName = escapeHtml(name.split(" ")[0]);
 
   const content = `
     <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">

@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton, emailRow } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
@@ -22,6 +23,10 @@ export function newListingAdminEmail(props: NewListingEmailProps) {
   const APP_URL = getAppUrl();
   const { ownerName, ownerEmail, hostelName, city, pricePerMonth } = props;
 
+  const escapedOwnerName = escapeHtml(ownerName);
+  const escapedHostelName = escapeHtml(hostelName);
+  const escapedCity = escapeHtml(city);
+
   const content = `
     <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
       New listing pending review
@@ -33,10 +38,10 @@ export function newListingAdminEmail(props: NewListingEmailProps) {
 
     <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
       <tbody>
-        ${emailRow("Hostel", hostelName)}
-        ${emailRow("City", city)}
+        ${emailRow("Hostel", escapedHostelName)}
+        ${emailRow("City", escapedCity)}
         ${emailRow("Price", `${formatPrice(pricePerMonth)} / month`)}
-        ${emailRow("Owner", ownerName)}
+        ${emailRow("Owner", escapedOwnerName)}
         ${emailRow("Owner email", ownerEmail)}
       </tbody>
     </table>
@@ -51,7 +56,7 @@ export function newListingAdminEmail(props: NewListingEmailProps) {
 
   return {
     to: process.env.SUPPORT_EMAIL ?? "support@hostello.pk",
-    subject: `New listing pending review: ${hostelName} (${city})`,
-    html: emailLayout(content, `${hostelName} needs your review`),
+    subject: `New listing pending review: ${escapedHostelName} (${escapedCity})`,
+    html: emailLayout(content, `${escapedHostelName} needs your review`),
   };
 }

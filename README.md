@@ -111,15 +111,6 @@ src/
 
 **Logical Tailwind properties throughout**: All directional classes use `ps`/`pe`/`text-start`/`text-end` instead of `pl`/`pr`/`text-left`/`text-right`. Switching to Urdu (RTL) in Phase 2 won't require a layout refactor.
 
-## Test accounts (after seeding)
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@hostello.pk | admin123456 |
-| Owner | ali.raza@hostello.pk | owner123456 |
-| Owner | sara.khan@hostello.pk | owner123456 |
-| Student | hamza@hostello.pk | student123456 |
-
 ## Roadmap
 
 See `STRATEGY.md` for the full 12-week build plan.

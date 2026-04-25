@@ -29,22 +29,26 @@ export default async function MessagesPage() {
     },
   });
 
-  // Compute unread counts
-  const unreadCounts = await Promise.all(
-    conversations.map((conv) =>
-      db.message.count({
-        where: {
-          conversationId: conv.id,
-          read: false,
-          senderId: { not: session.user.id },
-        },
-      })
-    )
+  // Get unread counts with a single aggregation query instead of N+1.
+  // Groups messages by conversationId and counts unread messages per conversation.
+  const unreadCounts = await db.message.groupBy({
+    by: ["conversationId"],
+    where: {
+      conversationId: { in: conversations.map((c) => c.id) },
+      read: false,
+      senderId: { not: session.user.id },
+    },
+    _count: { id: true },
+  });
+
+  // Map the aggregated results into a lookup object for O(1) access.
+  const unreadCountMap = new Map(
+    unreadCounts.map((row) => [row.conversationId, row._count.id])
   );
 
-  const conversationsWithUnread = conversations.map((conv, i) => ({
+  const conversationsWithUnread = conversations.map((conv) => ({
     ...conv,
-    unreadCount: unreadCounts[i],
+    unreadCount: unreadCountMap.get(conv.id) ?? 0,
   }));
 
   return (

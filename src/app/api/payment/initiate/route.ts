@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createCheckoutSession } from "@/lib/safepay";
+import { createJazzCashSession } from "@/lib/jazzcash";
+import { createEasypaisaSession } from "@/lib/easypaisa";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { getRequestOrigin } from "@/lib/app-url";
 
@@ -24,7 +26,9 @@ export async function POST(req: NextRequest) {
         total: true,
         status: true,
         paymentStatus: true,
-        user: { select: { name: true, email: true } },
+        paymentMethod: true,
+        hostel: { select: { name: true } },
+        user:   { select: { name: true, email: true } },
       },
     });
 
@@ -45,16 +49,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking is already paid." }, { status: 400 });
     }
 
+    const appUrl        = getRequestOrigin(req);
+    const paymentMethod = booking.paymentMethod ?? "safepay";
+
+    // ── JazzCash ────────────────────────────────────────────────────────────
+    if (paymentMethod === "jazzcash") {
+      const jcSession = createJazzCashSession({
+        bookingId:   booking.id,
+        amount:      booking.total,
+        orderId:     booking.id,
+        description: `Booking at ${booking.hostel.name}`,
+        appUrl,
+      });
+      return NextResponse.json({
+        type:    "form",
+        formUrl: jcSession.formUrl,
+        params:  jcSession.params,
+      });
+    }
+
+    // ── EasyPaisa ───────────────────────────────────────────────────────────
+    if (paymentMethod === "easypaisa") {
+      const epSession = createEasypaisaSession({
+        bookingId:     booking.id,
+        amount:        booking.total,
+        orderId:       booking.id,
+        customerEmail: booking.user.email,
+        appUrl,
+      });
+      return NextResponse.json({
+        type:    "form",
+        formUrl: epSession.formUrl,
+        params:  epSession.params,
+      });
+    }
+
+    // ── Safepay (default) ───────────────────────────────────────────────────
     const { redirectUrl } = await createCheckoutSession({
-      bookingId: booking.id,
-      amount:    booking.total,
-      orderId:   booking.id,
+      bookingId:     booking.id,
+      amount:        booking.total,
+      orderId:       booking.id,
       customerEmail: booking.user.email,
       customerName:  booking.user.name,
-      appUrl: getRequestOrigin(req),
+      appUrl,
     });
 
-    return NextResponse.json({ redirectUrl });
+    return NextResponse.json({ type: "redirect", redirectUrl });
   } catch (err) {
     console.error("[POST /api/payment/initiate]", err);
     return NextResponse.json({ error: "Payment setup failed." }, { status: 500 });

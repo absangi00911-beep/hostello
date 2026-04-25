@@ -5,9 +5,10 @@ import { verifyCsrfOrigin } from "@/lib/csrf";
 // API route prefixes that are exempt from the CSRF origin check because they
 // use their own authentication mechanism (Bearer tokens, HMAC signatures).
 const CSRF_EXEMPT: string[] = [
-  "/api/auth/",          // NextAuth routes
-  "/api/cron/",          // Upstash QStash — Bearer token auth
+  "/api/auth/",           // NextAuth routes
+  "/api/cron/",           // Upstash QStash — Bearer token auth
   "/api/payment/webhook", // Safepay — HMAC signature auth
+  "/api/payment/callback",// JazzCash / EasyPaisa — gateway POST-back (no Origin header)
 ];
 
 const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites", "/messages"];

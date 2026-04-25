@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton, emailRow } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
@@ -44,18 +45,21 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
     checkIn, checkOut, months, total, paymentMethod,
   } = props;
 
+  const escapedStudentName = escapeHtml(studentName);
+  const escapedHostelName = escapeHtml(hostelName);
+
   const content = `
     <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
       New booking request
     </h1>
     <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
-      <strong>${studentName}</strong> has requested to book <strong>${hostelName}</strong>.
+      <strong>${escapedStudentName}</strong> has requested to book <strong>${escapedHostelName}</strong>.
     </p>
 
     <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
       <tbody>
-        ${emailRow("Student", studentName)}
-        ${emailRow("Hostel", hostelName)}
+        ${emailRow("Student", escapedStudentName)}
+        ${emailRow("Hostel", escapedHostelName)}
         ${emailRow("Check-in", formatDate(checkIn))}
         ${emailRow("Check-out", formatDate(checkOut))}
         ${emailRow("Duration", `${months} month${months !== 1 ? "s" : ""}`)}
@@ -78,8 +82,8 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
 
   return {
     to: props.ownerEmail,
-    subject: `New booking request for ${hostelName}`,
-    html: emailLayout(content, `${studentName} wants to book ${hostelName}`),
+    subject: `New booking request for ${escapedHostelName}`,
+    html: emailLayout(content, `${escapedStudentName} wants to book ${escapedHostelName}`),
   };
 }
 
@@ -93,22 +97,23 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
     bookingId, checkIn, checkOut, months, total, paymentMethod,
   } = props;
 
-  const firstName = studentName.split(" ")[0];
+  const firstName = escapeHtml(studentName.split(" ")[0]);
   const shortId = bookingId.slice(-8).toUpperCase();
+  const escapedHostelName = escapeHtml(hostelName);
 
   const content = `
     <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
       Booking request sent ✓
     </h1>
     <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
-      Hi ${firstName}, your request for <strong>${hostelName}</strong> has been sent to the owner.
+      Hi ${firstName}, your request for <strong>${escapedHostelName}</strong> has been sent to the owner.
       You'll get another email once they confirm.
     </p>
 
     <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
       <tbody>
         ${emailRow("Reference", `#${shortId}`)}
-        ${emailRow("Hostel", hostelName)}
+        ${emailRow("Hostel", escapedHostelName)}
         ${emailRow("Check-in", formatDate(checkIn))}
         ${emailRow("Check-out", formatDate(checkOut))}
         ${emailRow("Duration", `${months} month${months !== 1 ? "s" : ""}`)}
@@ -132,7 +137,7 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
 
   return {
     to: props.studentEmail,
-    subject: `Your booking request for ${hostelName} — ref #${shortId}`,
+    subject: `Your booking request for ${escapedHostelName} — ref #${shortId}`,
     html: emailLayout(content, `Your booking request has been sent.`),
   };
 }

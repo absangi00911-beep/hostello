@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
@@ -19,8 +20,9 @@ export function bookingStatusEmail({
   studentName, studentEmail, hostelName,
   bookingId, status,
 }: BookingStatusEmailProps) {
-  const firstName = studentName.split(" ")[0];
+  const firstName = escapeHtml(studentName.split(" ")[0]);
   const shortId   = bookingId.slice(-8).toUpperCase();
+  const escapedHostelName = escapeHtml(hostelName);
   const confirmed = status === "CONFIRMED";
 
   const content = confirmed
@@ -29,7 +31,7 @@ export function bookingStatusEmail({
         Your booking is confirmed ✓
       </h1>
       <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
-        Hi ${firstName}, the owner of <strong>${hostelName}</strong> has confirmed your stay.
+        Hi ${firstName}, the owner of <strong>${escapedHostelName}</strong> has confirmed your stay.
         Your reference is <strong>#${shortId}</strong>.
       </p>
       <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
@@ -43,7 +45,7 @@ export function bookingStatusEmail({
         Booking request declined
       </h1>
       <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
-        Hi ${firstName}, the owner of <strong>${hostelName}</strong> wasn't able to
+        Hi ${firstName}, the owner of <strong>${escapedHostelName}</strong> wasn't able to
         accommodate your request for ref <strong>#${shortId}</strong>.
       </p>
       <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
@@ -56,8 +58,8 @@ export function bookingStatusEmail({
   return {
     to:      studentEmail,
     subject: confirmed
-      ? `Booking confirmed — ${hostelName} (#${shortId})`
-      : `Booking request declined — ${hostelName} (#${shortId})`,
+      ? `Booking confirmed — ${escapedHostelName} (#${shortId})`
+      : `Booking request declined — ${escapedHostelName} (#${shortId})`,
     html: emailLayout(content),
   };
 }
