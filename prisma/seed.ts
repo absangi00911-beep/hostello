@@ -25,10 +25,10 @@ async function main() {
   const studentPassword = await hash(seedStudentPw, 12);
 
   await db.user.upsert({
-    where: { email: "admin@hostello.pk" },
+    where: { email: "absangi00911@gmail.com" },
     update: {},
     create: {
-      email: "admin@hostello.pk",
+      email: "absangi00911@gmail.com",
       password: adminPassword,
       name: "HostelLo Admin",
       role: "ADMIN",
