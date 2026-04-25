@@ -32,22 +32,25 @@ export async function GET(_req: NextRequest) {
             sender: { select: { id: true, name: true, avatar: true } },
           },
         },
+        _count: {
+          select: {
+            messages: {
+              where: {
+                read: false,
+                senderId: { not: session.user.id },
+              },
+            },
+          },
+        },
       },
     });
 
-    // Attach unread count per conversation
-    const withUnread = await Promise.all(
-      conversations.map(async (conv) => {
-        const unreadCount = await db.message.count({
-          where: {
-            conversationId: conv.id,
-            read: false,
-            senderId: { not: session.user.id },
-          },
-        });
-        return { ...conv, unreadCount };
-      })
-    );
+    // Transform response to include unreadCount
+    const withUnread = conversations.map((conv) => ({
+      ...conv,
+      unreadCount: conv._count.messages,
+      _count: undefined, // remove internal _count field
+    }));
 
     return NextResponse.json({ data: withUnread });
   } catch (err) {

@@ -174,6 +174,7 @@ export default function HowItWorksPage() {
               {
                 q: "How do I know a hostel is trustworthy?",
                 a: "Verified listings have been reviewed by our team. Reviews come only from residents who booked through us — not from anonymous users.",
+                id: "verified",
               },
               {
                 q: "What if something goes wrong after booking?",
@@ -183,8 +184,8 @@ export default function HowItWorksPage() {
                 q: "Can I visit before booking?",
                 a: "Yes. Message the owner to arrange a visit. We encourage it — especially for longer stays.",
               },
-            ].map(({ q, a }) => (
-              <div key={q}>
+            ].map(({ q, a, id }: { q: string; a: string; id?: string }) => (
+              <div key={q} id={id}>
                 <dt className="text-sm font-semibold text-[var(--color-text)] mb-1">{q}</dt>
                 <dd className="text-sm text-[var(--color-muted)] leading-relaxed">{a}</dd>
               </div>

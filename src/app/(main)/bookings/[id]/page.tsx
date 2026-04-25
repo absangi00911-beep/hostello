@@ -10,6 +10,7 @@ import {
   CheckCircle2, Clock, XCircle,
 } from "lucide-react";
 import { CancelBookingButton }    from "@/components/features/booking/cancel-booking-button";
+import { RetryPaymentButton }     from "@/components/features/booking/retry-payment-button";
 import { OwnerBookingActions }    from "@/components/features/booking/owner-booking-actions";
 
 export const metadata: Metadata = { title: "Booking" };
@@ -185,6 +186,11 @@ export default async function BookingDetailPage({ params }: PageProps) {
 
         {/* Actions */}
         <div className="mt-4 space-y-3">
+
+          {/* Student — retry payment on PENDING payment */}
+          {isStudent && booking.paymentStatus !== "PAID" && booking.status === "PENDING" && (
+            <RetryPaymentButton bookingId={booking.id} amount={booking.total} variant="full" />
+          )}
 
           {/* Owner — confirm/decline on PENDING */}
           {(isOwner || isAdmin) && booking.status === "PENDING" && (

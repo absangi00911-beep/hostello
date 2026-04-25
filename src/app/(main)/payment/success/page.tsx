@@ -15,13 +15,15 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
 
   // Verify the booking exists, belongs to the current user, and has been paid
   const session = await auth();
+  if (!session) redirect("/login");
+
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     select: { paymentStatus: true, userId: true, status: true },
   });
 
   // Redirect if booking not found, payment not confirmed, or user not authorized
-  if (!booking || booking.paymentStatus !== "PAID" || (session && booking.userId !== session.user.id)) {
+  if (!booking || booking.paymentStatus !== "PAID" || booking.userId !== session.user.id) {
     redirect(`/bookings/${bookingId}`);
   }
 

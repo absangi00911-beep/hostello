@@ -215,7 +215,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
         className="w-full py-3 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] transition-colors"
       >
         Apply filters
-        {hasFilters ? ` (${[city, gender, verified ? "v" : "", ...amenities].filter(Boolean).length})` : ""}
+        {hasFilters ? ` (${[city, gender, verified ? "v" : "", minPrice, maxPrice, ...amenities].filter(Boolean).length})` : ""}
       </button>
     </div>
   );

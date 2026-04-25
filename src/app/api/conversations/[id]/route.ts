@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const messageSchema = z.object({
@@ -72,6 +73,15 @@ export async function POST(
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 30 messages per user per minute to prevent spam
+    const rl = await rateLimit(`msg:${session.user.id}`, { limit: 30, windowMs: 60 * 1000 });
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Too many messages. Please slow down." },
+        { status: 429 }
+      );
     }
 
     const { id } = await params;

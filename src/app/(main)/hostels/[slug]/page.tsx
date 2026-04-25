@@ -13,6 +13,7 @@ import { BookingCard } from "@/components/features/booking/booking-card";
 import { OwnerCard } from "@/components/features/hostels/owner-card";
 import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
 import { ContactOwnerButton } from "@/components/features/hostels/contact-owner-button";
+import { HostelJsonLd } from "@/components/features/hostels/hostel-json-ld";
 
 export const revalidate = 3600;
 
@@ -45,7 +46,6 @@ async function getHostel(slug: string) {
       },
       reviews: {
         orderBy: { createdAt: "desc" },
-        take: 10,
         include: {
           user: { select: { id: true, name: true, avatar: true } },
         },
@@ -238,6 +238,25 @@ export default async function HostelDetailPage({ params }: PageProps) {
           />
         </div>
       </div>
+
+      {/* JSON-LD structured data for SEO */}
+      <HostelJsonLd
+        hostel={{
+          id: hostel.id,
+          name: hostel.name,
+          description: hostel.description,
+          address: hostel.address,
+          city: hostel.city,
+          latitude: hostel.latitude,
+          longitude: hostel.longitude,
+          pricePerMonth: hostel.pricePerMonth,
+          rating: hostel.rating,
+          reviewCount: hostel.reviewCount,
+          coverImage: hostel.coverImage,
+        }}
+        reviews={hostel.reviews}
+        url={`https://hostello.pk/hostels/${hostel.slug}`}
+      />
     </div>
   );
 }
