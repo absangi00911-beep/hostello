@@ -66,7 +66,7 @@ export function CreateHostelForm() {
   async function onSubmit(data: HostelCreateInput) {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/hostels/create", {
+      const res = await fetch("/api/hostels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, images, coverImage: images[0] ?? null }),

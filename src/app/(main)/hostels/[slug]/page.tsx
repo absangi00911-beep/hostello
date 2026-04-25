@@ -39,7 +39,6 @@ async function getHostel(slug: string) {
           id: true,
           name: true,
           avatar: true,
-          phone: true,
           createdAt: true,
           _count: { select: { hostels: true } },
         },
