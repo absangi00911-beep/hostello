@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, Edit2, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { formatDate, getInitials, cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import type { ReviewWithUser } from "@/types";
 
 interface ReviewListProps {
@@ -48,9 +51,28 @@ function RatingBar({ label, value }: { label: string; value: number }) {
 }
 
 export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }: ReviewListProps) {
+  const router = useRouter();
+  const { data: session } = useSession();
   const [showAll, setShowAll] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const displayed = showAll ? reviews : reviews.slice(0, 4);
+
+  async function handleDeleteReview(reviewId: string) {
+    setDeletingId(reviewId);
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error ?? "Failed to delete review");
+      }
+      toast.success("Review deleted.");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      setDeletingId(null);
+    }
+  }
 
   // Compute sub-rating averages
   const avgCleanliness = reviews.length
@@ -112,7 +134,9 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
 
           {/* Review cards */}
           <div className="space-y-5">
-            {displayed.map((review) => (
+            {displayed.map((review) => {
+              const isAuthor = session?.user?.id === review.userId;
+              return (
               <div key={review.id} className="border-b border-[var(--color-border)] pb-5 last:border-0">
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
@@ -131,7 +155,7 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text)]">
                           {review.user.name}
@@ -140,7 +164,32 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                           {formatDate(review.createdAt)}
                         </p>
                       </div>
-                      <StarRow value={review.rating} />
+                      <div className="flex items-center gap-2">
+                        <StarRow value={review.rating} />
+                        {isAuthor && (
+                          <div className="flex gap-1 ml-2">
+                            <button
+                              onClick={() => router.push(`/bookings/${review.id}/edit-review`)}
+                              title="Edit review"
+                              className="p-1.5 text-[var(--color-muted)] hover:text-[var(--color-primary-700)] hover:bg-[var(--color-sand-50)] rounded transition-colors"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReview(review.id)}
+                              disabled={deletingId === review.id}
+                              title="Delete review"
+                              className="p-1.5 text-[var(--color-muted)] hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                            >
+                              {deletingId === review.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {review.title && (
@@ -166,7 +215,8 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {reviews.length > 4 && (
