@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { useCallback, useState, useRef, useEffect } from "react";
+import { X } from "lucide-react";
 import { CITIES, AMENITIES, SORT_OPTIONS } from "@/config/amenities";
 import { buildSearchParams, cn } from "@/lib/utils";
 
@@ -36,24 +36,106 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
   const [sort,      setSort]      = useState(getStr(initialParams, "sort"));
   const [verified,  setVerified]  = useState(getStr(initialParams, "verified") === "true");
 
-  const apply = useCallback(() => {
+  // Debounce timers for price inputs
+  const minPriceTimer = useRef<NodeJS.Timeout | null>(null);
+  const maxPriceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Helper to update URL immediately with current filters
+  const updateFilters = useCallback((updates: {
+    city?: string;
+    gender?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    amenities?: string[];
+    sort?: string;
+    verified?: boolean;
+  }) => {
+    const newParams = {
+      city: updates.city ?? city,
+      gender: updates.gender ?? gender,
+      minPrice: updates.minPrice ?? minPrice,
+      maxPrice: updates.maxPrice ?? maxPrice,
+      amenities: updates.amenities ?? amenities,
+      sort: updates.sort ?? sort,
+      verified: updates.verified ?? verified,
+    };
+
     const qs = buildSearchParams({
-      city, gender, minPrice, maxPrice, amenities, sort,
-      verified: verified ? "true" : undefined,
+      ...newParams,
+      verified: newParams.verified ? "true" : undefined,
       q: getStr(initialParams, "q"),
     });
-    router.push(`${pathname}${qs ? `?${qs}` : ""}`);
-    onClose?.();
-  }, [city, gender, minPrice, maxPrice, amenities, sort, verified, initialParams, pathname, router, onClose]);
 
-  function reset() {
-    setCity(""); setGender(""); setMinPrice(""); setMaxPrice("");
-    setAmenities([]); setSort(""); setVerified(false);
+    router.push(`${pathname}${qs ? `?${qs}` : ""}`);
+  }, [city, gender, minPrice, maxPrice, amenities, sort, verified, initialParams, pathname, router]);
+
+  const handleCityChange = useCallback((newCity: string) => {
+    setCity(newCity);
+    updateFilters({ city: newCity });
+  }, [updateFilters]);
+
+  const handleGenderChange = useCallback((newGender: string) => {
+    setGender(newGender);
+    updateFilters({ gender: newGender });
+  }, [updateFilters]);
+
+  const handleSortChange = useCallback((newSort: string) => {
+    setSort(newSort);
+    updateFilters({ sort: newSort });
+  }, [updateFilters]);
+
+  const handleVerifiedChange = useCallback((newVerified: boolean) => {
+    setVerified(newVerified);
+    updateFilters({ verified: newVerified });
+  }, [updateFilters]);
+
+  const handleMinPriceChange = useCallback((value: string) => {
+    setMinPrice(value);
+    // Debounce price changes to avoid excessive updates
+    if (minPriceTimer.current) clearTimeout(minPriceTimer.current);
+    minPriceTimer.current = setTimeout(() => {
+      updateFilters({ minPrice: value });
+    }, 300);
+  }, [updateFilters]);
+
+  const handleMaxPriceChange = useCallback((value: string) => {
+    setMaxPrice(value);
+    // Debounce price changes to avoid excessive updates
+    if (maxPriceTimer.current) clearTimeout(maxPriceTimer.current);
+    maxPriceTimer.current = setTimeout(() => {
+      updateFilters({ maxPrice: value });
+    }, 300);
+  }, [updateFilters]);
+
+  const handleAmenitiesChange = useCallback((amenityId: string) => {
+    const newAmenities = amenities.includes(amenityId)
+      ? amenities.filter((x) => x !== amenityId)
+      : [...amenities, amenityId];
+    setAmenities(newAmenities);
+    updateFilters({ amenities: newAmenities });
+  }, [amenities, updateFilters]);
+
+  const reset = useCallback(() => {
+    setCity(""); 
+    setGender(""); 
+    setMinPrice(""); 
+    setMaxPrice("");
+    setAmenities([]); 
+    setSort(""); 
+    setVerified(false);
     router.push(pathname);
     onClose?.();
-  }
+  }, [pathname, router, onClose]);
 
   const hasFilters = city || gender || minPrice || maxPrice || amenities.length || verified;
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (minPriceTimer.current) clearTimeout(minPriceTimer.current);
+      if (maxPriceTimer.current) clearTimeout(maxPriceTimer.current);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -75,13 +157,12 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
       <div>
         <label className={LABEL}>Sort by</label>
         <div className="relative">
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className={SELECT}>
+          <select value={sort} onChange={(e) => handleSortChange(e.target.value)} className={SELECT}>
             <option value="">Relevance</option>
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-muted)]" />
         </div>
       </div>
 
@@ -102,7 +183,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
                 {city === c && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
               </div>
               <input type="radio" name="city" value={c} checked={city === c}
-                onChange={() => setCity(c)} className="sr-only" />
+                onChange={() => handleCityChange(c)} className="sr-only" />
               <span className="text-sm text-[var(--color-ink-soft)]">
                 {c || "All cities"}
               </span>
@@ -123,7 +204,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
           ].map((o) => (
             <button
               key={o.v}
-              onClick={() => setGender(o.v)}
+              onClick={() => handleGenderChange(o.v)}
               className={cn(
                 "py-2 rounded-xl text-xs font-semibold border transition-all",
                 gender === o.v
@@ -143,13 +224,13 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
         <div className="flex items-center gap-2">
           <input
             type="number" placeholder="Min" value={minPrice} min={0}
-            onChange={(e) => setMinPrice(e.target.value)}
+            onChange={(e) => handleMinPriceChange(e.target.value)}
             className={INPUT}
           />
           <span className="text-[var(--color-muted)] text-sm flex-shrink-0">–</span>
           <input
             type="number" placeholder="Max" value={maxPrice} min={0}
-            onChange={(e) => setMaxPrice(e.target.value)}
+            onChange={(e) => handleMaxPriceChange(e.target.value)}
             className={INPUT}
           />
         </div>
@@ -171,7 +252,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
             </svg>
           )}
         </div>
-        <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} className="sr-only" />
+        <input type="checkbox" checked={verified} onChange={(e) => handleVerifiedChange(e.target.checked)} className="sr-only" />
         <span className="text-sm font-medium text-[var(--color-ink-soft)]">Verified only</span>
       </label>
 
@@ -198,7 +279,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
                   )}
                 </div>
                 <input type="checkbox" checked={on}
-                  onChange={() => setAmenities((p) => on ? p.filter((x) => x !== a.id) : [...p, a.id])}
+                  onChange={() => handleAmenitiesChange(a.id)}
                   className="sr-only" />
                 <span className="text-sm text-[var(--color-ink-soft)]">
                   {a.emoji} {a.label}
@@ -209,14 +290,7 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
         </div>
       </div>
 
-      {/* Apply */}
-      <button
-        onClick={apply}
-        className="w-full py-3 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] transition-colors"
-      >
-        Apply filters
-        {hasFilters ? ` (${[city, gender, verified ? "v" : "", minPrice, maxPrice, ...amenities].filter(Boolean).length})` : ""}
-      </button>
+
     </div>
   );
 }
