@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Users, ArrowRight, Loader2, Star, ChevronDown, Info } from "lucide-react";
+import { Users, ArrowRight, Loader2, Star, ChevronDown, Info, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -242,18 +242,34 @@ export function BookingCard({
           max={maxStay ?? 24}
         />
 
-        {/* Move-out display */}
-        {moveInMonth && (
-          <p className="text-xs text-[var(--color-muted)] -mt-1">
-            Move-out:{" "}
-            <span className="font-semibold text-[var(--color-ink)]">
-              {new Date(checkOut).toLocaleDateString("en-PK", {
-                month: "long",
-                year: "numeric",
-              })}
-            </span>
-          </p>
-        )}
+        {/* Check-out date display */}
+        <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5">
+          <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-2">
+            Check-out date
+          </label>
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-[var(--color-brand-500)]" />
+            <p className="text-sm font-semibold text-[var(--color-ink)]">
+              {moveInMonth ? (
+                new Date(checkOut).toLocaleDateString("en-PK", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              ) : (
+                <span className="text-[var(--color-muted)]">Select check-in date & duration</span>
+              )}
+            </p>
+          </div>
+          {moveInMonth && (
+            <p className="text-xs text-[var(--color-muted)] mt-2">
+              {months} month{months !== 1 ? "s" : ""} from{" "}
+              <span className="font-semibold text-[var(--color-ink)]">
+                {new Date(checkIn).toLocaleDateString("en-PK", { month: "short", day: "numeric" })}
+              </span>
+            </p>
+          )}
+        </div>
 
         {/* Guests */}
         <div>

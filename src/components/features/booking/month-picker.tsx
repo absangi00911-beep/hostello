@@ -72,7 +72,7 @@ export function MoveInPicker({ value, onChange }: MoveInPickerProps) {
   return (
     <div>
       <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-1.5">
-        Move-in month
+        Check-in date
       </label>
       <div className="flex gap-1.5">
         <div className="relative flex-1">
