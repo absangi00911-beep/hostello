@@ -218,24 +218,19 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
           ))}
         </div>
 
-        {/* ── Student testimonial ── */}
-        {/*
-          One authentic student quote outperforms all three trust-banner stats
-          combined. Students trust other students, not platform claims.
-          Placed above the stats row so it appears before the fold on most screens.
-        */}
+        {/* ── Value proposition ── */}
         <div
           className="mt-8 flex items-start gap-3 max-w-lg"
           style={{ animation: "heroFadeUp 0.6s 0.46s ease both" }}
         >
           <div className="w-8 h-8 rounded-lg bg-[var(--color-brand-700)] flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">
-            HM
+            ✓
           </div>
           <div>
             <p className="text-sm text-white/65 leading-relaxed">
-              &ldquo;Found a clean room near NUST in 20 minutes. Moved in the following week — no agent, no hassle.&rdquo;
+              Verified listings, real reviews, and direct booking with hostel owners. No middlemen, no hidden fees.
             </p>
-            <p className="text-xs text-white/30 mt-1.5">Hamza Malik · Computer Science, NUST Islamabad</p>
+            <p className="text-xs text-white/30 mt-1.5">Trusted by students across Pakistan</p>
           </div>
         </div>
 
