@@ -3,9 +3,9 @@ import { ShieldCheck, Star, Clock } from "lucide-react";
 const ITEMS = [
   {
     icon: ShieldCheck,
-    stat: "100%",
-    title: "Verified listings",
-    body: "Every hostel is physically checked before it goes live.",
+    stat: "Screened",
+    title: "Trusted listings",
+    body: "Every hostel is reviewed for safety and removed if residents report problems.",
   },
   {
     icon: Star,
