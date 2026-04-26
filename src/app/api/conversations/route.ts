@@ -105,52 +105,50 @@ export async function POST(req: NextRequest) {
 
     const participantIds = [session.user.id, hostel.ownerId].sort();
 
-    // Check if a conversation already exists between these participants for this hostel
-    const existing = await db.conversation.findFirst({
-      where: {
-        hostelId,
-        participants: {
-          every: {
-            userId: { in: participantIds },
+    // Wrap the entire check + create in a transaction to prevent race conditions
+    const result = await db.$transaction(async (tx) => {
+      // Check if a conversation already exists between these participants for this hostel
+      const existing = await tx.conversation.findFirst({
+        where: {
+          hostelId,
+          participants: {
+            every: {
+              userId: { in: participantIds },
+            },
           },
-        },
-      },
-      include: {
-        _count: {
-          select: {
-            participants: true,
-          },
-        },
-      },
-    });
-
-    // Verify it has exactly 2 participants (no extra participants)
-    if (existing && existing._count.participants === 2) {
-      // Add the new message to the existing conversation
-      const message = await db.message.create({
-        data: {
-          conversationId: existing.id,
-          senderId: session.user.id,
-          content: initialMessage,
         },
         include: {
-          sender: { select: { id: true, name: true, avatar: true } },
+          _count: {
+            select: {
+              participants: true,
+            },
+          },
         },
       });
 
-      await db.conversation.update({
-        where: { id: existing.id },
-        data: { updatedAt: new Date() },
-      });
+      // Verify it has exactly 2 participants (no extra participants)
+      if (existing && existing._count.participants === 2) {
+        // Add the new message to the existing conversation
+        const message = await tx.message.create({
+          data: {
+            conversationId: existing.id,
+            senderId: session.user.id,
+            content: initialMessage,
+          },
+          include: {
+            sender: { select: { id: true, name: true, avatar: true } },
+          },
+        });
 
-      return NextResponse.json(
-        { data: { conversation: existing, message }, isNew: false },
-        { status: 200 }
-      );
-    }
+        await tx.conversation.update({
+          where: { id: existing.id },
+          data: { updatedAt: new Date() },
+        });
 
-    // Create new conversation with initial message in a transaction
-    const result = await db.$transaction(async (tx) => {
+        return { conversation: existing, message, isNew: false };
+      }
+
+      // Create new conversation with initial message
       const conversation = await tx.conversation.create({
         data: {
           hostelId,
@@ -172,10 +170,13 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return { conversation, message };
+      return { conversation, message, isNew: true };
     });
 
-    return NextResponse.json({ data: result, isNew: true }, { status: 201 });
+    return NextResponse.json(
+      { data: result, isNew: result.isNew },
+      { status: result.isNew ? 201 : 200 }
+    );
   } catch (err) {
     console.error("[POST /api/conversations]", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });

@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { syncAllHostelsToTypesense } from "@/lib/typesense-sync";
-import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
+import { syncAllHostelsToTypesense, indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 
 /**
  * POST /api/admin/search/sync - Sync all hostels to Typesense

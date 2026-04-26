@@ -48,21 +48,47 @@ export async function GET(req: NextRequest) {
       limit,
     } = parsed.data;
 
-    // Search using Typesense
-    const searchResults = await searchHostels(q || "", {
-      city: city ? city : undefined,
-      gender: gender ? gender : undefined,
-      minPrice,
-      maxPrice,
-      amenities,
-      verified: verified !== undefined ? verified : undefined,
-      sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
-      page,
-      limit,
-    });
+    let hostelIds: string[];
+    let total: number;
 
-    // Extract hostel IDs from search results
-    const hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
+    // Try Typesense first, fall back to Prisma if unavailable
+    try {
+      const searchResults = await searchHostels(q || "", {
+        city: city ? city : undefined,
+        gender: gender ? gender : undefined,
+        minPrice,
+        maxPrice,
+        amenities,
+        verified: verified !== undefined ? verified : undefined,
+        sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
+        page,
+        limit,
+      });
+
+      // Extract hostel IDs from search results
+      hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
+      total = (searchResults as any).found || 0;
+    } catch (searchErr) {
+      console.error("[search] Typesense failed, falling back to Prisma", searchErr);
+
+      // Basic Prisma fallback
+      const whereClause: any = { status: "ACTIVE" };
+      if (city) whereClause.city = city;
+      if (gender) whereClause.gender = gender;
+      if (verified) whereClause.verified = true;
+
+      const fallbackHostels = await db.hostel.findMany({
+        where: whereClause,
+        select: { id: true },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      hostelIds = fallbackHostels.map((h) => h.id);
+
+      // Get total count for pagination
+      total = await db.hostel.count({ where: whereClause });
+    }
 
     // Fetch full hostel details from database
     const hostels = await db.hostel.findMany({
@@ -95,8 +121,6 @@ export async function GET(req: NextRequest) {
     const orderedHostels = hostelIds
       .map((id: string) => hostelMap.get(id))
       .filter((h: any) => h !== undefined);
-
-    const total = (searchResults as any).found || 0;
 
     return NextResponse.json({
       data: orderedHostels,

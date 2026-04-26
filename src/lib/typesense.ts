@@ -66,8 +66,8 @@ export async function initializeHostelCollection() {
     await getClient().collections(HOSTEL_COLLECTION_NAME).retrieve();
     console.log(`✓ Collection "${HOSTEL_COLLECTION_NAME}" already exists`);
     return;
-  } catch (error: any) {
-    if (error.httpStatus === 404) {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'httpStatus' in error && (error as any).httpStatus === 404) {
       // Collection doesn't exist, create it
       console.log(`Creating collection "${HOSTEL_COLLECTION_NAME}"...`);
 

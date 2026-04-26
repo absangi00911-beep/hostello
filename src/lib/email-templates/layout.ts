@@ -13,9 +13,9 @@ export function emailLayout(content: string, previewText = "") {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HostelLo</title>
-  ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;">${previewText}&nbsp;</div>` : ""}
 </head>
 <body style="margin:0;padding:0;background:#FAF7F0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;">${previewText}&nbsp;</div>` : ""}
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF7F0;padding:40px 0;">
     <tr>
       <td align="center">

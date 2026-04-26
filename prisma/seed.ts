@@ -4,17 +4,16 @@ import { hash } from "bcryptjs";
 const db = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database…");
-
   // ─── Validate environment variables ────────────────────────────────────────
+  const seedAdminEmail = process.env.SEED_ADMIN_EMAIL;
   const seedAdminPw = process.env.SEED_ADMIN_PASSWORD;
   const seedOwnerPw = process.env.SEED_OWNER_PASSWORD;
   const seedStudentPw = process.env.SEED_STUDENT_PASSWORD;
 
-  if (!seedAdminPw || !seedOwnerPw || !seedStudentPw) {
+  if (!seedAdminEmail || !seedAdminPw || !seedOwnerPw || !seedStudentPw) {
     throw new Error(
       "Missing required seed environment variables. Set " +
-      "SEED_ADMIN_PASSWORD, SEED_OWNER_PASSWORD, and SEED_STUDENT_PASSWORD."
+      "SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, SEED_OWNER_PASSWORD, and SEED_STUDENT_PASSWORD."
     );
   }
 
@@ -25,10 +24,10 @@ async function main() {
   const studentPassword = await hash(seedStudentPw, 12);
 
   await db.user.upsert({
-    where: { email: "absangi00911@gmail.com" },
+    where: { email: seedAdminEmail },
     update: {},
     create: {
-      email: "absangi00911@gmail.com",
+      email: seedAdminEmail,
       password: adminPassword,
       name: "HostelLo Admin",
       role: "ADMIN",
@@ -665,12 +664,6 @@ async function main() {
       },
     });
   }
-
-  console.log(`\nSeeded:
-  - ${hostelData.length} hostels across 8 cities
-  - 5 users (1 admin, 3 owners, 1 student) — all with verified emails
-  - 1 real review (Green Valley — rating recomputed from actual data)
-  `);
 }
 
 main()

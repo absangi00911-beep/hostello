@@ -381,6 +381,9 @@ model PriceAlert {
   // Alert triggers when price drops below this threshold
   targetPrice Float
   
+  // Last known price (for accurate price comparison in alerts)
+  lastKnownPrice Float?
+  
   // Whether the alert is still active
   active Boolean @default(true)
   

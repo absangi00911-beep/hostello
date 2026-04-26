@@ -62,7 +62,7 @@ function isImageUrlAllowed(url: string): boolean {
     console.error("[security] Image allowlist is empty — blocking all URLs");
     return false;
   }
-  return allowed.some((o) => url.startsWith(o));
+  return allowed.some((o) => url.startsWith(o + "/") || url === o);
 }
 
 // ── R2 cleanup ─────────────────────────────────────────────────────────────

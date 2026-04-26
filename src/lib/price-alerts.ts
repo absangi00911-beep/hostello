@@ -36,8 +36,9 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
         );
 
         try {
-          // Get previous price from history if available (or use the alert creation as baseline)
-          const oldPrice = alert.targetPrice; // Use target as approximate old price
+          // Use the last known price if available, otherwise fall back to target price
+          // For the first alert, we estimate based on the target
+          const oldPrice = alert.lastKnownPrice ?? alert.targetPrice;
           const newPrice = alert.hostel.pricePerMonth;
           const hostelUrl = `${baseUrl}/hostels/${alert.hostel.slug}`;
 
@@ -75,7 +76,7 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
       }
     }
 
-    // Deactivate alerts that triggered and update timestamp
+    // Deactivate alerts that triggered and update timestamp + lastKnownPrice
     if (alertsToUpdate.length > 0) {
       await db.priceAlert.updateMany({
         where: { id: { in: alertsToUpdate.map((a) => a.id) } },
@@ -88,6 +89,18 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
       console.log(
         `[Price Alert] Deactivated ${alertsToUpdate.length} alerts after sending notifications`
       );
+    }
+
+    // Update lastKnownPrice for all active alerts (whether they triggered or not)
+    // This ensures we always have the latest price for comparison
+    const priceUpdates = alerts.map((alert) => 
+      db.priceAlert.update({
+        where: { id: alert.id },
+        data: { lastKnownPrice: alert.hostel.pricePerMonth },
+      })
+    );
+    if (priceUpdates.length > 0) {
+      await Promise.all(priceUpdates);
     }
 
     console.log(

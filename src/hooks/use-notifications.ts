@@ -96,15 +96,17 @@ export function useNotifications(): UseNotificationsReturn {
       });
       if (!res.ok) throw new Error("Failed to delete notification");
 
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-      const deletedNotif = notifications.find((n) => n.id === id);
-      if (deletedNotif && !deletedNotif.read) {
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
+      setNotifications((prev) => {
+        const deletedNotif = prev.find((n) => n.id === id);
+        if (deletedNotif && !deletedNotif.read) {
+          setUnreadCount((c) => Math.max(0, c - 1));
+        }
+        return prev.filter((n) => n.id !== id);
+      });
     } catch (err) {
       console.error("Failed to delete notification:", err);
     }
-  }, [notifications]);
+  }, []);
 
   useEffect(() => {
     fetchNotifications();

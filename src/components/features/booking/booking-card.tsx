@@ -129,24 +129,40 @@ export function BookingCard({
     reviewCount !== undefined && reviewCount > 0;
 
   async function handleBook() {
-    // Prevent double-submission synchronously (before state updates batches)
+    // Prevent double-submission synchronously (before state updates batch)
     if (requestInFlightRef.current) return;
     requestInFlightRef.current = true;
     
-    if (!session) { toast.error("Sign in to book"); router.push("/login"); requestInFlightRef.current = false; return; }
-    if (!moveInMonth) { toast.error("Choose a move-in month"); requestInFlightRef.current = false; return; }
+    // Set loading immediately to disable button visually
+    setLoading(true);
+
+    // Validate inputs and exit early if needed
+    if (!session) {
+      toast.error("Sign in to book");
+      setLoading(false);
+      requestInFlightRef.current = false;
+      router.push("/login");
+      return;
+    }
+    if (!moveInMonth) {
+      toast.error("Choose a move-in month");
+      setLoading(false);
+      requestInFlightRef.current = false;
+      return;
+    }
     if (months && months < minStay) {
       toast.error(`Minimum stay is ${minStay} month${minStay !== 1 ? "s" : ""}`);
+      setLoading(false);
       requestInFlightRef.current = false;
       return;
     }
     if (maxStay && months && months > maxStay) {
       toast.error(`Maximum stay is ${maxStay} months`);
+      setLoading(false);
       requestInFlightRef.current = false;
       return;
     }
 
-    setLoading(true);
     try {
       // Step 1: create the booking record
       const res  = await fetch("/api/bookings", {

@@ -122,7 +122,7 @@ export const bookingSchema = z
     checkIn: z.coerce.date(),
     checkOut: z.coerce.date(),
     guests: z.number().int().min(1).max(4),
-    paymentMethod: z.enum(["jazzcash", "easypaisa", "safepay"]),
+    paymentMethod: z.enum(["safepay"]),
   })
   .refine((data) => data.checkIn >= new Date(new Date().setHours(0, 0, 0, 0)), {
     message: "Check-in must be today or later",

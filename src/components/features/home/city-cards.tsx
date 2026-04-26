@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 interface CityStats {
@@ -57,9 +58,12 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
               className="group col-span-2 row-span-2 relative overflow-hidden rounded-3xl bg-[var(--color-ink)]"
             >
               {CITY_IMAGES[first.city] && (
-                <img
+                <Image
                   src={CITY_IMAGES[first.city]}
                   alt={first.city}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 33vw"
+                  priority
                   className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-500"
                 />
               )}
@@ -88,9 +92,11 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
               className="group col-span-2 row-span-1 relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
             >
               {CITY_IMAGES[second.city] && (
-                <img
+                <Image
                   src={CITY_IMAGES[second.city]}
                   alt={second.city}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 50vw"
                   className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500"
                 />
               )}
@@ -119,9 +125,11 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
               className="group relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
             >
               {CITY_IMAGES[city] && (
-                <img
+                <Image
                   src={CITY_IMAGES[city]}
                   alt={city}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                   className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-30 group-hover:scale-105 transition-all duration-500"
                 />
               )}

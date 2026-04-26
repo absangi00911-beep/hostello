@@ -125,7 +125,7 @@ export async function PATCH(
         title: "Booking Cancelled",
         message: `${booking.user.name} has cancelled their booking for ${booking.hostel.name}.`,
         bookingId: id,
-        hostelId: booking.hostel.ownerId,
+        hostelId: booking.hostelId,
       });
 
       return NextResponse.json({ data: updated, message: "Booking cancelled." });
@@ -193,7 +193,7 @@ export async function PATCH(
       title: notificationTitle,
       message: notificationMessage,
       bookingId: booking.id,
-      hostelId: booking.hostel.ownerId,
+      hostelId: booking.hostelId,
     });
 
     return NextResponse.json({
