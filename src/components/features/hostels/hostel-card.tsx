@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Star, Users, BadgeCheck, GitCompareArrows } from "lucide-react";
+import { MapPin, Star, Users, BadgeCheck, GitCompareArrows, Sparkles, MessageSquare } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { AMENITY_MAP } from "@/config/amenities";
 import { useCompareStore } from "@/stores/compare";
@@ -22,9 +22,18 @@ interface HostelCardProps {
     verified: boolean;
     rating: number;
     reviewCount: number;
+    createdAt: Date | string;
     owner: { id: string; name: string; avatar?: string | null };
   };
   className?: string;
+}
+
+// Helper: Check if hostel is "new" (created within last 7 days)
+function isNewListing(createdAt: Date | string): boolean {
+  const created = new Date(createdAt);
+  const now = new Date();
+  const daysOld = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+  return daysOld <= 7;
 }
 
 const GENDER_LABELS: Record<string, string> = {
@@ -126,8 +135,8 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
           {hostel.name}
         </h3>
 
-        {/* Rating */}
-        {hostel.reviewCount > 0 && (
+        {/* Rating or Social Proof */}
+        {hostel.reviewCount > 0 ? (
           <div className="flex items-center gap-1.5 mb-3">
             <Star className="w-3.5 h-3.5 text-[var(--color-accent-500)] fill-current" />
             <span className="text-sm font-bold text-[var(--color-ink)]">
@@ -135,6 +144,20 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
             </span>
             <span className="text-xs text-[var(--color-muted)]">
               ({hostel.reviewCount})
+            </span>
+          </div>
+        ) : isNewListing(hostel.createdAt) ? (
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 w-fit">
+            <Sparkles className="w-3.5 h-3.5 text-[var(--color-brand-500)]" />
+            <span className="text-xs font-semibold text-[var(--color-brand-700)]">
+              New listing
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] w-fit">
+            <MessageSquare className="w-3.5 h-3.5 text-[var(--color-muted)]" />
+            <span className="text-xs font-semibold text-[var(--color-muted)]">
+              First to review
             </span>
           </div>
         )}

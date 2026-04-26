@@ -31,6 +31,7 @@ export async function SimilarHostels({ currentSlug, city, gender }: SimilarHoste
       verified: true,
       rating: true,
       reviewCount: true,
+      createdAt: true,
       owner: { select: { id: true, name: true, avatar: true } },
     },
   });

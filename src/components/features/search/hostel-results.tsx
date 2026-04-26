@@ -79,6 +79,7 @@ export async function HostelResults({ params }: HostelResultsProps) {
       verified: true,
       rating: true,
       reviewCount: true,
+      createdAt: true,
       capacity: true,
       rooms: true,
       owner: { select: { id: true, name: true, avatar: true } },

@@ -17,6 +17,7 @@ type FeaturedHostel = Pick<
   | "verified"
   | "rating"
   | "reviewCount"
+  | "createdAt"
 > & {
   owner: Pick<User, "id" | "name" | "avatar">;
 };

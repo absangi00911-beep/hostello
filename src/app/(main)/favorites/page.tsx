@@ -24,7 +24,7 @@ export default async function FavoritesPage() {
           id: true, name: true, slug: true, city: true, area: true,
           pricePerMonth: true, gender: true, amenities: true,
           coverImage: true, images: true, verified: true,
-          rating: true, reviewCount: true,
+          rating: true, reviewCount: true, createdAt: true,
           owner: { select: { id: true, name: true, avatar: true } },
         },
       },
