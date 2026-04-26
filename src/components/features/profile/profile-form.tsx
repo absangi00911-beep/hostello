@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { getInitials } from "@/lib/utils";
 import { CITIES } from "@/config/amenities";
 import { Loader2 } from "lucide-react";
+import { DeleteAccountForm } from "./delete-account-form";
 
 const schema = z.object({
   name:  z.string().min(2, "Name must be at least 2 characters"),
@@ -276,6 +277,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
           </div>
         </form>
       </div>
+
+      {/* Delete Account Section */}
+      <DeleteAccountForm />
     </div>
   );
 }
