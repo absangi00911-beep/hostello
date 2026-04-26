@@ -27,6 +27,9 @@ export async function GET(
     const conversation = await db.conversation.findUnique({
       where: { id },
       include: {
+        participants: {
+          select: { userId: true },
+        },
         messages: {
           orderBy: { createdAt: "asc" },
           include: {
@@ -40,7 +43,8 @@ export async function GET(
       return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
     }
 
-    if (!conversation.participantIds.includes(session.user.id) && session.user.role !== "ADMIN") {
+    const userIds = conversation.participants.map((p) => p.userId);
+    if (!userIds.includes(session.user.id) && session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
 
@@ -88,14 +92,20 @@ export async function POST(
 
     const conversation = await db.conversation.findUnique({
       where: { id },
-      select: { id: true, participantIds: true },
+      select: {
+        id: true,
+        participants: {
+          select: { userId: true },
+        },
+      },
     });
 
     if (!conversation) {
       return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
     }
 
-    if (!conversation.participantIds.includes(session.user.id)) {
+    const userIds = conversation.participants.map((p) => p.userId);
+    if (!userIds.includes(session.user.id)) {
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
 

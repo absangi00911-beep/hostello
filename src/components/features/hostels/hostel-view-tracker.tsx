@@ -19,7 +19,8 @@ interface HostelViewTrackerProps {
 
 /**
  * Client-side component that tracks hostel views.
- * Add this to the hostel detail page to automatically save to recently viewed.
+ * - Saves to recently viewed list (localStorage)
+ * - Increments viewCount via API (only on actual user views, not ISR revalidation)
  */
 export function HostelViewTracker({ hostel }: HostelViewTrackerProps) {
   const { addHostel } = useRecentlyViewed();
@@ -37,7 +38,12 @@ export function HostelViewTracker({ hostel }: HostelViewTrackerProps) {
       reviewCount: hostel.reviewCount,
       verified: hostel.verified,
     });
-  }, [hostel.id, addHostel]);
+
+    // Increment view count via API (only on real user views, not ISR revalidation)
+    fetch(`/api/hostels/${hostel.slug}/view`, { method: "POST" }).catch(
+      () => {}
+    );
+  }, [hostel.id, hostel.slug, addHostel]);
 
   // This component doesn't render anything
   return null;

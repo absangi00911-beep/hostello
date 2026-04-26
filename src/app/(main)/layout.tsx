@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { VerificationBanner } from "@/components/features/profile/verification-banner";
+import { CompareBar } from "@/components/features/hostels/compare-bar";
 
 export default async function MainLayout({
   children,
@@ -21,6 +22,7 @@ export default async function MainLayout({
         <VerificationBanner email={session.user.email} />
       )}
       <main>{children}</main>
+      <CompareBar />
       <Footer />
     </>
   );

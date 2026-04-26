@@ -13,6 +13,7 @@ import { NotificationBell } from "@/components/shared/notification-bell";
 const NAV_LINKS = [
   { href: "/hostels",      label: "Browse" },
   { href: "/how-it-works", label: "How it works" },
+  { href: "/about",        label: "About" },
   { href: "/pricing",      label: "Pricing" },
 ];
 

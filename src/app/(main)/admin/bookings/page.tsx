@@ -14,18 +14,30 @@ const STATUS_CLS: Record<string, string> = {
   COMPLETED: "text-[var(--color-muted)] bg-[var(--color-ground)] border-[var(--color-border)]",
 };
 
-export default async function AdminBookingsPage() {
+const PAGE_SIZE = 50;
+
+export default async function AdminBookingsPage(props: {
+  searchParams: Promise<{ cursor?: string }>;
+}) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
+  const { cursor } = await props.searchParams;
+
+  // Fetch PAGE_SIZE + 1 to know if there's a next page
   const bookings = await db.booking.findMany({
     orderBy: { createdAt: "desc" },
-    take:    100,
+    take: PAGE_SIZE + 1,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
     include: {
       hostel: { select: { name: true, city: true } },
       user:   { select: { name: true, email: true } },
     },
   });
+
+  const hasNextPage = bookings.length > PAGE_SIZE;
+  const displayedBookings = bookings.slice(0, PAGE_SIZE);
+  const nextCursor = hasNextPage ? displayedBookings[displayedBookings.length - 1]?.id : null;
 
   return (
     <div className="min-h-screen pt-20 pb-16 bg-[var(--color-ground)]">
@@ -33,13 +45,40 @@ export default async function AdminBookingsPage() {
         <div className="py-10">
           <Link href="/admin" className="text-xs font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)]">← Admin</Link>
           <h1 className="text-3xl font-extrabold text-[var(--color-ink)] mt-2" style={{ fontFamily: "var(--font-display)" }}>
-            Bookings ({bookings.length})
+            Bookings
           </h1>
+        </div>
+
+        {/* Info and pagination */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-[var(--color-muted)]">
+            Showing {displayedBookings.length} bookings (latest first)
+          </p>
+          {(cursor || hasNextPage) && (
+            <div className="flex gap-2">
+              {cursor && (
+                <Link
+                  href="/admin/bookings"
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  ← Previous
+                </Link>
+              )}
+              {hasNextPage && (
+                <Link
+                  href={`/admin/bookings?cursor=${nextCursor}`}
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <div className="divide-y divide-[var(--color-border)]">
-            {bookings.map((b) => (
+            {displayedBookings.map((b) => (
               <div key={b.id} className="flex items-center gap-4 px-5 py-3.5">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-[var(--color-ink)] truncate">{b.hostel.name}</p>

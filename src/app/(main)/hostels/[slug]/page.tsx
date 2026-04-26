@@ -62,9 +62,8 @@ async function getHostel(slug: string) {
 
   if (!hostel || hostel.status !== "ACTIVE") return null;
 
-  db.hostel
-    .update({ where: { id: hostel.id }, data: { viewCount: { increment: 1 } } })
-    .catch(() => {});
+  // IMPORTANT: viewCount increment moved to client-side tracking component
+  // (was causing ISR revalidation to inflate counts)
 
   return hostel;
 }
@@ -281,7 +280,6 @@ export default async function HostelDetailPage({ params }: PageProps) {
       {/* JSON-LD structured data for SEO */}
       <HostelJsonLd
         hostel={{
-          id: hostel.id,
           name: hostel.name,
           description: hostel.description,
           address: hostel.address,

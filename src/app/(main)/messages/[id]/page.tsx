@@ -20,6 +20,9 @@ export default async function ConversationPage({ params }: PageProps) {
   const conversation = await db.conversation.findUnique({
     where: { id },
     include: {
+      participants: {
+        select: { userId: true },
+      },
       messages: {
         orderBy: { createdAt: "asc" },
         include: {
@@ -31,8 +34,9 @@ export default async function ConversationPage({ params }: PageProps) {
 
   if (!conversation) notFound();
 
+  const userIds = conversation.participants.map((p) => p.userId);
   if (
-    !conversation.participantIds.includes(session.user.id) &&
+    !userIds.includes(session.user.id) &&
     session.user.role !== "ADMIN"
   ) {
     notFound();

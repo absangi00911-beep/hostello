@@ -1,5 +1,21 @@
 import type { NextConfig } from "next";
 
+// Environment-aware CSP configuration
+// In development: Allow unsafe-eval and unsafe-inline (required for Next.js HMR)
+// In production: Remove unsafe directives to strengthen XSS protection
+const getScriptSrc = (): string => {
+  const isDev = process.env.NODE_ENV === "development";
+  const base = ["'self'"];
+  
+  // Only allow unsafe-eval and unsafe-inline in development
+  if (isDev) {
+    base.push("'unsafe-eval'");
+    base.push("'unsafe-inline'");
+  }
+  
+  return base.join(" ");
+};
+
 const securityHeaders = [
   {
     key: "Strict-Transport-Security",
@@ -29,7 +45,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+      `script-src ${getScriptSrc()}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' blob: data: https://images.unsplash.com https://*.r2.dev https://*.cloudflare.com https://*.tile.openstreetmap.org",

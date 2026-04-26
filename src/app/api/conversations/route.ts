@@ -21,7 +21,11 @@ export async function GET(_req: NextRequest) {
 
     const conversations = await db.conversation.findMany({
       where: {
-        participantIds: { has: session.user.id },
+        participants: {
+          some: {
+            userId: session.user.id,
+          },
+        },
       },
       orderBy: { updatedAt: "desc" },
       include: {
@@ -105,11 +109,23 @@ export async function POST(req: NextRequest) {
     const existing = await db.conversation.findFirst({
       where: {
         hostelId,
-        participantIds: { hasEvery: participantIds },
+        participants: {
+          every: {
+            userId: { in: participantIds },
+          },
+        },
+      },
+      include: {
+        _count: {
+          select: {
+            participants: true,
+          },
+        },
       },
     });
 
-    if (existing) {
+    // Verify it has exactly 2 participants (no extra participants)
+    if (existing && existing._count.participants === 2) {
       // Add the new message to the existing conversation
       const message = await db.message.create({
         data: {
@@ -139,7 +155,9 @@ export async function POST(req: NextRequest) {
         data: {
           hostelId,
           hostelName: hostel.name,
-          participantIds,
+          participants: {
+            create: participantIds.map((userId) => ({ userId })),
+          },
         },
       });
 

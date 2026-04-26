@@ -65,14 +65,11 @@ export async function POST(request: Request) {
     // Delete notifications
     await db.notification.deleteMany({ where: { userId } });
 
-    // Delete messages (indirectly via conversations, but be explicit)
-    const conversations = await db.conversation.findMany({
-      where: { participantIds: { has: userId } },
-      select: { id: true },
-    });
-    for (const conv of conversations) {
-      await db.message.deleteMany({ where: { conversationId: conv.id } });
-    }
+    // Delete conversation participants
+    await db.conversationParticipant.deleteMany({ where: { userId } });
+
+    // Delete messages
+    await db.message.deleteMany({ where: { senderId: userId } });
 
     // Delete favorites
     await db.favorite.deleteMany({ where: { userId } });

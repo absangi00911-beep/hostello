@@ -4,7 +4,6 @@ import { SearchFilters } from "@/components/features/search/search-filters";
 import { HostelResults } from "@/components/features/search/hostel-results";
 import { SearchHeader } from "@/components/features/search/search-header";
 import { HostelCardSkeleton } from "@/components/features/hostels/hostel-card";
-import { CompareBar } from "@/components/features/hostels/compare-bar";
 
 export const metadata: Metadata = {
   title: "Browse Hostels",
@@ -48,8 +47,6 @@ export default async function HostelsPage({ searchParams }: PageProps) {
           </div>
         </div>
       </div>
-
-      <CompareBar />
     </div>
   );
 }

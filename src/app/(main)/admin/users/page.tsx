@@ -7,17 +7,30 @@ import Link from "next/link";
 
 export const metadata: Metadata = { title: "Admin — Users" };
 
-export default async function AdminUsersPage() {
+const PAGE_SIZE = 50;
+
+export default async function AdminUsersPage(props: {
+  searchParams: Promise<{ cursor?: string }>;
+}) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
+  const { cursor } = await props.searchParams;
+
+  // Fetch PAGE_SIZE + 1 to know if there's a next page
   const users = await db.user.findMany({
     orderBy: { createdAt: "desc" },
+    take: PAGE_SIZE + 1,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
     select: {
       id: true, name: true, email: true, role: true, createdAt: true,
       _count: { select: { bookings: true, hostels: true } },
     },
   });
+
+  const hasNextPage = users.length > PAGE_SIZE;
+  const displayedUsers = users.slice(0, PAGE_SIZE);
+  const nextCursor = hasNextPage ? displayedUsers[displayedUsers.length - 1]?.id : null;
 
   const ROLE_CLS: Record<string, string> = {
     STUDENT: "text-[var(--color-muted)] bg-[var(--color-ground)] border-[var(--color-border)]",
@@ -31,13 +44,40 @@ export default async function AdminUsersPage() {
         <div className="py-10">
           <Link href="/admin" className="text-xs font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)]">← Admin</Link>
           <h1 className="text-3xl font-extrabold text-[var(--color-ink)] mt-2" style={{ fontFamily: "var(--font-display)" }}>
-            Users ({users.length})
+            Users
           </h1>
+        </div>
+
+        {/* Info and pagination */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-[var(--color-muted)]">
+            Showing {displayedUsers.length} users (newest first)
+          </p>
+          {(cursor || hasNextPage) && (
+            <div className="flex gap-2">
+              {cursor && (
+                <Link
+                  href="/admin/users"
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  ← Previous
+                </Link>
+              )}
+              {hasNextPage && (
+                <Link
+                  href={`/admin/users?cursor=${nextCursor}`}
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <div className="divide-y divide-[var(--color-border)]">
-            {users.map((u) => (
+            {displayedUsers.map((u) => (
               <div key={u.id} className="flex items-center gap-4 px-5 py-3.5">
                 <div className="w-9 h-9 rounded-xl bg-[var(--color-ink)] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {u.name.charAt(0).toUpperCase()}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Users, ArrowRight, Loader2, Star, ChevronDown, Info, CalendarDays } from "lucide-react";
@@ -49,6 +49,33 @@ function submitPaymentForm(action: string, params: Record<string, string>) {
   form.submit();
 }
 
+/**
+ * Detects edge cases where pricing may surprise the user.
+ * Returns a warning message if detected, null otherwise.
+ */
+function getPricingWarning(duration: number | null, checkIn: string, checkOut: string): string | null {
+  if (duration === null || !checkIn || !checkOut) return null;
+
+  // Edge case: 1-month duration means check-out is first day of next month
+  // e.g., Jan 1 → Feb 1 is technically 31 days but charged as 1 full month
+  if (duration === 1) {
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // If check-out is first day of a different month, warn the user
+    if (
+      checkOutDate.getDate() === 1 &&
+      checkInDate.getMonth() !== checkOutDate.getMonth()
+    ) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const checkOutMonth = months[checkOutDate.getMonth()];
+      return `You'll be charged for the full month, even though you're only staying until ${checkOutMonth} 1st.`;
+    }
+  }
+
+  return null;
+}
+
 export function BookingCard({
   hostelId,
   hostelSlug,
@@ -68,6 +95,9 @@ export function BookingCard({
   const [payment,     setPayment]     = useState<string>(DEFAULT_PAYMENT_METHOD);
   const [loading,     setLoading]     = useState(false);
   const [showSteps,   setShowSteps]   = useState(false);
+
+  // Prevent double-submission during slow payment redirects
+  const requestInFlightRef = useRef(false);
 
   // ── Availability urgency ──────────────────────────────────────────────────
   const [availableNow, setAvailableNow] = useState<number | null>(null);
@@ -92,20 +122,27 @@ export function BookingCard({
   const checkOut  = moveInMonth ? addMonths(moveInMonth, duration) : "";
   const months    = moveInMonth ? duration : null;
   const rentTotal = months !== null ? months * pricePerMonth : null;
+  const pricingWarning = getPricingWarning(months, checkIn, checkOut);
 
   const hasRating =
     rating !== undefined && rating > 0 &&
     reviewCount !== undefined && reviewCount > 0;
 
   async function handleBook() {
-    if (!session) { toast.error("Sign in to book"); router.push("/login"); return; }
-    if (!moveInMonth) { toast.error("Choose a move-in month"); return; }
+    // Prevent double-submission synchronously (before state updates batches)
+    if (requestInFlightRef.current) return;
+    requestInFlightRef.current = true;
+    
+    if (!session) { toast.error("Sign in to book"); router.push("/login"); requestInFlightRef.current = false; return; }
+    if (!moveInMonth) { toast.error("Choose a move-in month"); requestInFlightRef.current = false; return; }
     if (months && months < minStay) {
       toast.error(`Minimum stay is ${minStay} month${minStay !== 1 ? "s" : ""}`);
+      requestInFlightRef.current = false;
       return;
     }
     if (maxStay && months && months > maxStay) {
       toast.error(`Maximum stay is ${maxStay} months`);
+      requestInFlightRef.current = false;
       return;
     }
 
@@ -158,6 +195,7 @@ export function BookingCard({
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+      requestInFlightRef.current = false;
     }
   }
 
@@ -316,6 +354,16 @@ export function BookingCard({
           </div>
         </div>
 
+        {/* Pricing warning for edge cases */}
+        {pricingWarning && (
+          <div className="rounded-xl bg-amber-50 border border-amber-300 p-3.5 flex gap-3">
+            <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-900 leading-relaxed font-medium">
+              {pricingWarning}
+            </p>
+          </div>
+        )}
+
         {/* Price breakdown */}
         {months !== null && rentTotal !== null && (
           <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5 space-y-2 text-sm">
@@ -339,7 +387,7 @@ export function BookingCard({
         {/* CTA */}
         <button
           onClick={handleBook}
-          disabled={loading}
+          disabled={loading || requestInFlightRef.current}
           className="w-full h-12 rounded-xl bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (

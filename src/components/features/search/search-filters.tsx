@@ -129,6 +129,17 @@ export function SearchFilters({ initialParams, onClose }: SearchFiltersProps) {
 
   const hasFilters = city || gender || minPrice || maxPrice || amenities.length || verified;
 
+  // Sync local state when initialParams change (e.g., from back button)
+  useEffect(() => {
+    setCity(getStr(initialParams, "city"));
+    setGender(getStr(initialParams, "gender"));
+    setMinPrice(getStr(initialParams, "minPrice"));
+    setMaxPrice(getStr(initialParams, "maxPrice"));
+    setAmenities(getArr(initialParams, "amenities"));
+    setSort(getStr(initialParams, "sort"));
+    setVerified(getStr(initialParams, "verified") === "true");
+  }, [initialParams]);
+
   // Cleanup timers on unmount
   useEffect(() => {
     return () => {

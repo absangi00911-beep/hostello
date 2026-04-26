@@ -76,6 +76,7 @@ model User {
   reviews   Review[]
   favorites      Favorite[]
   messages       Message[]
+  conversationParticipants ConversationParticipant[]
   passwordResets PasswordResetToken[]
   priceAlerts    PriceAlert[]
   notifications  Notification[]
@@ -327,14 +328,29 @@ model Conversation {
   hostelId   String
   hostelName String // Snapshot of hostel name at conversation time — intentionally stale
 
-  participantIds String[]
-  messages       Message[]
+  participants ConversationParticipant[]
+  messages     Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([hostelId])
   @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+
+  joinedAt DateTime @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
 }
 
 model Message {

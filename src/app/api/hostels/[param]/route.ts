@@ -2,7 +2,30 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
+import { sanitizeString } from "@/lib/validations";
 import { z } from "zod";
+
+/**
+ * Validates and sanitizes house rules.
+ * - Max 20 rules
+ * - Max 200 characters per rule
+ * - No HTML tags
+ * - Trimmed whitespace
+ */
+const rulesSchema = z
+  .array(
+    z
+      .string()
+      .min(1, "Rule cannot be empty")
+      .max(200, "Rule cannot exceed 200 characters")
+      .transform(sanitizeString)
+      .refine(
+        (rule) => !/<[^>]*>/.test(rule),
+        "HTML tags are not allowed"
+      )
+  )
+  .max(20, "Cannot have more than 20 rules")
+  .default([]);
 
 const updateSchema = z.object({
   name: z.string().min(3).max(100).optional(),
@@ -17,7 +40,7 @@ const updateSchema = z.object({
   minStay: z.number().int().min(1).optional(),
   maxStay: z.number().int().optional(),
   amenities: z.array(z.string()).optional(),
-  rules: z.array(z.string()).optional(),
+  rules: rulesSchema.optional(),
   images: z.array(z.string().url()).optional(),
   coverImage: z.string().url().optional(),
   status: z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),

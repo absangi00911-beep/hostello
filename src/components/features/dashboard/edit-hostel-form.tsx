@@ -7,11 +7,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2, Save, Trash2, Check } from "lucide-react";
 import { z } from "zod";
+import { sanitizeString } from "@/lib/validations";
 import { CITIES, AMENITIES } from "@/config/amenities";
 import { cn } from "@/lib/utils";
 import { ImageUploader } from "./image-uploader";
 
 // ─── Schema (mirrors API updateSchema — all optional) ─────────────────────────
+const rulesSchema = z
+  .array(
+    z
+      .string()
+      .min(1, "Rule cannot be empty")
+      .max(200, "Rule cannot exceed 200 characters")
+      .transform(sanitizeString)
+      .refine(
+        (rule) => !/<[^>]*>/.test(rule),
+        "HTML tags are not allowed"
+      )
+  )
+  .max(20, "Cannot have more than 20 rules")
+  .default([]);
+
 const editSchema = z.object({
   name:          z.string().min(3, "At least 3 characters").max(100),
   description:   z.string().min(50, "At least 50 characters").max(2000),
@@ -25,7 +41,7 @@ const editSchema = z.object({
   minStay:       z.number().int().min(1),
   maxStay:       z.number().int().optional().nullable(),
   amenities:     z.array(z.string()).optional(),
-  rules:         z.array(z.string()).optional(),
+  rules:         rulesSchema,
 });
 type EditInput = z.infer<typeof editSchema>;
 
@@ -227,15 +243,23 @@ export function EditHostelForm({ hostel }: { hostel: HostelData }) {
         <Field label="House rules">
           <textarea
             rows={3}
-            placeholder={"One rule per line:\nNo guests after 10pm\nNo smoking"}
+            placeholder={"One rule per line (max 200 chars each, max 20 rules):\nNo guests after 10pm\nNo smoking"}
             className={`${INPUT} h-auto py-3 resize-none`}
             {...register("rules", {
               setValueAs: (v: string) =>
                 typeof v === "string"
-                  ? v.split("\n").map((r) => r.trim()).filter(Boolean)
+                  ? v
+                      .split("\n")
+                      .map((r) => r.trim())
+                      .filter(Boolean)
+                      .slice(0, 20) // Enforce max 20 rules
+                      .map((r) => r.substring(0, 200)) // Enforce max 200 chars per rule
                   : v,
-            })}
+            })} 
           />
+          {errors.rules?.message && (
+            <p className="text-xs text-red-600 mt-1">{errors.rules.message}</p>
+          )}
         </Field>
       </div>
 

@@ -7,6 +7,7 @@ const LINKS = {
     { label: "Browse hostels",    href: "/hostels" },
     { label: "List your hostel",  href: "/signup?role=owner" },
     { label: "How it works",      href: "/how-it-works" },
+    { label: "About",             href: "/about" },
     { label: "Pricing",           href: "/pricing" },
   ],
   support: [
@@ -72,7 +73,7 @@ export function Footer() {
               {CITIES.map((city) => (
                 <li key={city}>
                   <Link
-                    href={`/hostels?city=${city}`}
+                    href={`/hostels/${city.toLowerCase()}`}
                     className="text-sm text-white/45 hover:text-white transition-colors"
                   >
                     {city}

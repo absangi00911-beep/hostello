@@ -4,10 +4,31 @@ import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, GitCompareArrows } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useCompareStore } from "@/stores/compare";
 
 export function CompareBar() {
   const { items, remove, clear } = useCompareStore();
+  const pathname = usePathname();
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  // Reset dismissed state when returning to search page
+  useEffect(() => {
+    if (pathname === "/hostels") {
+      setIsDismissed(false);
+    }
+  }, [pathname]);
+
+  const isDetailPage = pathname.startsWith("/hostels/") && pathname !== "/hostels";
+  const isComparePage = pathname.startsWith("/hostels/compare");
+  
+  // Don't show on compare page
+  if (isComparePage) return null;
+  // Don't show on detail page if dismissed
+  if (isDetailPage && isDismissed) return null;
+  // Don't show on detail page if items list changed (to avoid animation spam)
+  if (isDetailPage && items.length < 2) return null;
 
   return (
     <AnimatePresence>
@@ -16,8 +37,12 @@ export function CompareBar() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4"
+          transition={{ type: "spring", damping: 25, stiffness: 250 }}
+          className={`fixed z-40 w-full max-w-xl px-4 ${
+            isDetailPage
+              ? "bottom-4 left-1/2 -translate-x-1/2 sm:bottom-6"
+              : "bottom-6 left-1/2 -translate-x-1/2"
+          }`}
         >
           <div className="bg-[var(--color-ink)] text-white rounded-2xl shadow-2xl px-4 py-3 flex items-center gap-3">
             {/* Items */}
@@ -58,12 +83,22 @@ export function CompareBar() {
 
             {/* Actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={clear}
-                className="text-xs text-white/50 hover:text-white/80 transition-colors px-2 py-1"
-              >
-                Clear
-              </button>
+              {isDetailPage ? (
+                <button
+                  onClick={() => setIsDismissed(true)}
+                  className="text-xs text-white/50 hover:text-white/80 transition-colors p-1"
+                  aria-label="Dismiss compare bar"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={clear}
+                  className="text-xs text-white/50 hover:text-white/80 transition-colors px-2 py-1"
+                >
+                  Clear
+                </button>
+              )}
               <Link
                 href={`/hostels/compare?${items.map((i) => `slug=${i.slug}`).join("&")}`}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--color-accent-500)] text-white text-xs font-semibold hover:bg-[var(--color-accent-600)] transition-colors"

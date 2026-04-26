@@ -15,7 +15,11 @@ export default async function MessagesPage() {
 
   const conversations = await db.conversation.findMany({
     where: {
-      participantIds: { has: session.user.id },
+      participants: {
+        some: {
+          userId: session.user.id,
+        },
+      },
     },
     orderBy: { updatedAt: "desc" },
     include: {

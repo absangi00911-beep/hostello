@@ -1,5 +1,48 @@
 import { z } from "zod";
 
+// ─── Sanitization ─────────────────────────────────────────────────────────────
+
+/**
+ * Sanitizes a string by removing HTML tags and dangerous characters.
+ * Prevents XSS and injection attacks.
+ */
+export function sanitizeString(input: string): string {
+  // Remove HTML tags
+  let sanitized = input.replace(/<[^>]*>/g, "");
+  // Decode HTML entities
+  sanitized = sanitized
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&amp;/g, "&");
+  // Trim whitespace
+  sanitized = sanitized.trim();
+  return sanitized;
+}
+
+/**
+ * Validates and sanitizes house rules.
+ * - Max 20 rules
+ * - Max 200 characters per rule
+ * - No HTML tags
+ * - Trimmed whitespace
+ */
+const rulesSchema = z
+  .array(
+    z
+      .string()
+      .min(1, "Rule cannot be empty")
+      .max(200, "Rule cannot exceed 200 characters")
+      .transform(sanitizeString)
+      .refine(
+        (rule) => !/<[^>]*>/.test(rule),
+        "HTML tags are not allowed"
+      )
+  )
+  .max(20, "Cannot have more than 20 rules")
+  .default([]);
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const loginSchema = z.object({
@@ -52,7 +95,7 @@ export const hostelCreateSchema = z.object({
   minStay: z.number().int().min(1).default(1),
   maxStay: z.number().int().optional(),
   amenities: z.array(z.string()).min(1, "Select at least one amenity"),
-  rules: z.array(z.string()).optional(),
+  rules: rulesSchema,
 });
 
 // ─── Review ───────────────────────────────────────────────────────────────────

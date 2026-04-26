@@ -34,21 +34,26 @@ function parseStatus(raw: string | undefined): FilterStatus | undefined {
   return FILTER_STATUSES.find((s) => s === raw);
 }
 
+const PAGE_SIZE = 50;
+
 export default async function AdminHostelsPage(props: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; cursor?: string }>;
 }) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
-  const { status: filterStatus } = await props.searchParams;
+  const { status: filterStatus, cursor } = await props.searchParams;
 
   // parseStatus returns undefined if the value is absent or not a valid enum member.
   // Passing undefined to Prisma's where clause omits the filter entirely — no cast needed.
   const selectedStatus = parseStatus(filterStatus);
 
+  // Fetch PAGE_SIZE + 1 to know if there's a next page
   const hostels = await db.hostel.findMany({
     where: selectedStatus ? { status: selectedStatus } : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: PAGE_SIZE + 1,
+    ...(cursor && { skip: 1, cursor: { id: cursor } }),
     select: {
       id: true, slug: true, name: true, city: true, status: true, verified: true,
       pricePerMonth: true, createdAt: true,
@@ -57,6 +62,10 @@ export default async function AdminHostelsPage(props: {
     },
   });
 
+  const hasNextPage = hostels.length > PAGE_SIZE;
+  const displayedHostels = hostels.slice(0, PAGE_SIZE);
+  const nextCursor = hasNextPage ? displayedHostels[displayedHostels.length - 1]?.id : null;
+
   return (
     <div className="min-h-screen pt-20 pb-16 bg-[var(--color-ground)]">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -64,9 +73,36 @@ export default async function AdminHostelsPage(props: {
           <div>
             <Link href="/admin" className="text-xs font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)]">← Admin</Link>
             <h1 className="text-3xl font-extrabold text-[var(--color-ink)] mt-2" style={{ fontFamily: "var(--font-display)" }}>
-              Hostels ({hostels.length})
+              Hostels
             </h1>
           </div>
+        </div>
+
+        {/* Info and pagination */}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-[var(--color-muted)]">
+            Showing {displayedHostels.length} of {selectedStatus ? "filtered" : "all"} hostels
+          </p>
+          {(cursor || hasNextPage) && (
+            <div className="flex gap-2">
+              {cursor && (
+                <Link
+                  href={`/admin/hostels${selectedStatus ? `?status=${selectedStatus}` : ""}`}
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  ← Previous
+                </Link>
+              )}
+              {hasNextPage && (
+                <Link
+                  href={`/admin/hostels?cursor=${nextCursor}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
+                  className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  Next →
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Filter tabs */}
@@ -93,7 +129,7 @@ export default async function AdminHostelsPage(props: {
 
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
           <div className="divide-y divide-[var(--color-border)]">
-            {hostels.map((h) => (
+            {displayedHostels.map((h) => (
               <div key={h.id} className="flex items-start gap-4 px-5 py-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">

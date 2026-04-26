@@ -1,7 +1,7 @@
 import type { Hostel, Review, User } from "@prisma/client";
 
 interface HostelJsonLdProps {
-  hostel: Pick<Hostel, "id" | "name" | "description" | "address" | "city" | "latitude" | "longitude" | "pricePerMonth" | "rating" | "reviewCount" | "coverImage">;
+  hostel: Pick<Hostel, "name" | "description" | "address" | "city" | "latitude" | "longitude" | "pricePerMonth" | "rating" | "reviewCount" | "coverImage">;
   reviews?: (Review & { user: Pick<User, "name"> })[];
   url: string;
 }

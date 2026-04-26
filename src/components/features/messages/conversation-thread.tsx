@@ -34,7 +34,7 @@ const messageSchema = z.object({
 type MessageInput = z.infer<typeof messageSchema>;
 
 /** Initial poll interval when connection is healthy */
-const POLL_INTERVAL_MIN_MS = 8000;
+const POLL_INTERVAL_MIN_MS = 30000;
 
 /** Max backoff on repeated errors to avoid hammering during outages */
 const POLL_INTERVAL_MAX_MS = 60000;
