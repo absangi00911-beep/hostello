@@ -40,7 +40,7 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
     { value: String(hostelCount), label: hostelCount === 1 ? "Hostel listed" : "Hostels listed" },
     ...(showStudentsStat
       ? [{ value: formatStat(studentsHoused), label: "Students housed" }]
-      : [{ value: "100%", label: "Verified in person" }]
+      : [{ value: "100%", label: "Honest reviews only" }]
     ),
     { value: "8", label: "Cities covered" },
   ];
