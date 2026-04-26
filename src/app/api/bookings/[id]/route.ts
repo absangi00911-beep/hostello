@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
+import { createNotification } from "@/lib/notifications";
 
 export async function GET(
   _req: NextRequest,
@@ -117,6 +118,16 @@ export async function PATCH(
         return cancelled;
       });
 
+      // Notify owner that student cancelled
+      void createNotification({
+        userId: booking.hostel.ownerId,
+        type: "BOOKING_CANCELLED",
+        title: "Booking Cancelled",
+        message: `${booking.user.name} has cancelled their booking for ${booking.hostel.name}.`,
+        bookingId: id,
+        hostelId: booking.hostel.ownerId,
+      });
+
       return NextResponse.json({ data: updated, message: "Booking cancelled." });
     }
 
@@ -167,6 +178,22 @@ export async function PATCH(
       })
     ).catch(() => {
       // Silently ignore email failures
+    });
+
+    // Notify student in-app
+    const notificationType = newStatus === "CONFIRMED" ? "BOOKING_CONFIRMED" : "BOOKING_CANCELLED";
+    const notificationTitle = newStatus === "CONFIRMED" ? "Booking Confirmed ✅" : "Booking Declined ❌";
+    const notificationMessage = newStatus === "CONFIRMED"
+      ? `Your booking for ${booking.hostel.name} has been confirmed!`
+      : `Your booking for ${booking.hostel.name} has been declined.`;
+
+    void createNotification({
+      userId: booking.userId,
+      type: notificationType,
+      title: notificationTitle,
+      message: notificationMessage,
+      bookingId: booking.id,
+      hostelId: booking.hostel.ownerId,
     });
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { HeroSection } from "@/components/features/home/hero-section";
 import { CityCards } from "@/components/features/home/city-cards";
 import { FeaturedHostels } from "@/components/features/home/featured-hostels";
+import { RecentlyViewed } from "@/components/features/home/recently-viewed";
 import { HowItWorks } from "@/components/features/home/how-it-works";
 import { TrustBanner } from "@/components/features/home/trust-banner";
 import { CtaSection } from "@/components/features/home/cta-section";
@@ -87,6 +88,7 @@ export default async function HomePage() {
       <TrustBanner />
       <CityCards stats={cityStats} />
       <FeaturedHostels hostels={featured} />
+      <RecentlyViewed />
       <HowItWorks />
       <CtaSection />
     </>

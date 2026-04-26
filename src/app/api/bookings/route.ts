@@ -10,6 +10,7 @@ import {
   bookingConfirmationEmail,
 } from "@/lib/email-templates/booking";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { createNotification } from "@/lib/notifications";
 
 // Sentinel used to distinguish optimistic-lock conflicts from other errors
 // inside a Prisma transaction (transactions swallow the original error type).
@@ -185,6 +186,16 @@ export async function POST(req: NextRequest) {
         sendEmail(bookingNotificationEmail(emailData)),
         sendEmail(bookingConfirmationEmail(emailData)),
       ]);
+
+      // Create in-app notification for owner
+      void createNotification({
+        userId: hostel.owner.id,
+        type: "BOOKING_REQUEST",
+        title: "New Booking Request",
+        message: `${student.name} has requested a booking for ${hostel.name} (${months} month${months > 1 ? "s" : ""}).`,
+        bookingId: booking.id,
+        hostelId: hostel.id,
+      });
     }
 
     return NextResponse.json(

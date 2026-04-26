@@ -7,16 +7,13 @@ test("the default payment method matches the only currently supported checkout f
   assert.equal(DEFAULT_PAYMENT_METHOD, "safepay");
 });
 
-test("unimplemented payment methods stay visible but disabled", () => {
+test("only enabled payment methods are displayed to users", () => {
   const unavailable = PAYMENT_METHODS.filter((method) => !method.enabled);
   const available = PAYMENT_METHODS.filter((method) => method.enabled);
 
-  assert.deepEqual(
-    unavailable.map((method) => method.value),
-    ["jazzcash", "easypaisa"]
-  );
-  assert.deepEqual(
-    available.map((method) => method.value),
-    ["safepay"]
-  );
+  // No disabled methods in the array (all are production-ready)
+  assert.deepEqual(unavailable.map((method) => method.value), []);
+
+  // Only Safepay is currently available
+  assert.deepEqual(available.map((method) => method.value), ["safepay"]);
 });

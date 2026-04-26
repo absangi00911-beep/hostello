@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -220,6 +221,18 @@ export async function PATCH(
       },
     });
 
+    // Sync to Typesense if hostel is ACTIVE
+    // Fire-and-forget to not block response
+    const hostelFull = await db.hostel.findUnique({
+      where: { id: param },
+      select: { status: true },
+    });
+    if (hostelFull?.status === "ACTIVE") {
+      void indexSingleHostel(param).catch((err) =>
+        console.error(`[typesense] Failed to sync hostel ${param}:`, err)
+      );
+    }
+
     // Purge images removed from the listing.
     // Fire-and-forget — the DB is already consistent; R2 cleanup is best-effort.
     if (data.images) {
@@ -273,6 +286,11 @@ export async function DELETE(
         data: { status: "CANCELLED" },
       }),
     ]);
+
+    // Remove from Typesense index
+    void removeHostelIndex(param).catch((err) =>
+      console.error(`[typesense] Failed to remove hostel ${param}:`, err)
+    );
 
     return NextResponse.json({ message: "Hostel removed from listings." });
   } catch (err) {

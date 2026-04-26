@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Heart, BookOpen, Plus, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
+import { NotificationBell } from "@/components/shared/notification-bell";
 
 const NAV_LINKS = [
   { href: "/hostels",      label: "Browse" },
@@ -74,18 +75,21 @@ export function Navbar() {
             {session ? (
               <>
                 {session.user.role === "OWNER" && (
-                  <Link
-                    href="/dashboard/hostels/new"
-                    className={cn(
-                      "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
-                      solid
-                        ? "text-[var(--color-brand-700)] hover:bg-[var(--color-brand-50)]"
-                        : "text-[var(--color-brand-400)] hover:bg-white/8"
-                    )}
-                  >
-                    <Plus className="w-4 h-4" />
-                    List hostel
-                  </Link>
+                  <>
+                    <NotificationBell solid={solid} />
+                    <Link
+                      href="/dashboard/hostels/new"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
+                        solid
+                          ? "text-[var(--color-brand-700)] hover:bg-[var(--color-brand-50)]"
+                          : "text-[var(--color-brand-400)] hover:bg-white/8"
+                      )}
+                    >
+                      <Plus className="w-4 h-4" />
+                      List hostel
+                    </Link>
+                  </>
                 )}
 
                 {/* User dropdown */}

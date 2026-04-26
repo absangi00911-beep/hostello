@@ -1,19 +1,5 @@
 export const PAYMENT_METHODS = [
   {
-    value: "jazzcash",
-    label: "JazzCash",
-    emoji: "📱",
-    enabled: false,
-    hint: "Coming soon",
-  },
-  {
-    value: "easypaisa",
-    label: "EasyPaisa",
-    emoji: "💚",
-    enabled: false,
-    hint: "Coming soon",
-  },
-  {
     value: "safepay",
     label: "Card",
     emoji: "💳",

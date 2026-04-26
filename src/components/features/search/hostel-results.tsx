@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
 import { searchParamsSchema } from "@/lib/validations";
 import { HostelCard } from "@/components/features/hostels/hostel-card";
-import type { Prisma } from "@prisma/client";
 import { SearchPagination } from "./search-pagination";
 import { Frown } from "lucide-react";
 import Link from "next/link";
+import { searchHostels } from "@/lib/typesense";
 
 interface HostelResultsProps {
   params: Record<string, string | string[]>;
@@ -46,70 +46,54 @@ export async function HostelResults({ params }: HostelResultsProps) {
     limit,
   } = normalizeParams(params);
 
-  const where: Prisma.HostelWhereInput = {
-    status: "ACTIVE",
-    ...(city && { city: { equals: city, mode: "insensitive" } }),
-    ...(gender && { gender }),
-    ...(verified !== undefined && { verified }),
-    ...(minPrice !== undefined || maxPrice !== undefined
-      ? {
-          pricePerMonth: {
-            ...(minPrice !== undefined && { gte: minPrice }),
-            ...(maxPrice !== undefined && { lte: maxPrice }),
-          },
-        }
-      : {}),
-    ...(amenities?.length && { amenities: { hasSome: amenities } }),
-    ...(q && {
-      OR: [
-        { name: { contains: q, mode: "insensitive" } },
-        { description: { contains: q, mode: "insensitive" } },
-        { city: { contains: q, mode: "insensitive" } },
-        { area: { contains: q, mode: "insensitive" } },
-      ],
-    }),
-  };
+  // Search using Typesense
+  const searchResults = await searchHostels(q || "", {
+    city: city ? city : undefined,
+    gender: gender ? gender : undefined,
+    minPrice,
+    maxPrice,
+    amenities,
+    verified: verified !== undefined ? verified : undefined,
+    sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
+    page,
+    limit,
+  });
 
-  const orderBy: Prisma.HostelOrderByWithRelationInput =
-    sort === "price_asc"
-      ? { pricePerMonth: "asc" }
-      : sort === "price_desc"
-      ? { pricePerMonth: "desc" }
-      : sort === "rating"
-      ? { rating: "desc" }
-      : { createdAt: "desc" };
+  // Extract hostel IDs from search results
+  const hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
 
-  const skip = (page - 1) * limit;
+  // Fetch full hostel details from database
+  const hostels = await db.hostel.findMany({
+    where: { id: { in: hostelIds } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      city: true,
+      area: true,
+      pricePerMonth: true,
+      gender: true,
+      amenities: true,
+      coverImage: true,
+      images: true,
+      verified: true,
+      rating: true,
+      reviewCount: true,
+      capacity: true,
+      rooms: true,
+      owner: { select: { id: true, name: true, avatar: true } },
+    },
+  });
 
-  const [hostels, total] = await Promise.all([
-    db.hostel.findMany({
-      where,
-      orderBy,
-      skip,
-      take: limit,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        city: true,
-        area: true,
-        pricePerMonth: true,
-        gender: true,
-        amenities: true,
-        coverImage: true,
-        images: true,
-        verified: true,
-        rating: true,
-        reviewCount: true,
-        capacity: true,
-        rooms: true,
-        owner: { select: { id: true, name: true, avatar: true } },
-      },
-    }),
-    db.hostel.count({ where }),
-  ]);
+  // Maintain search result order from Typesense
+  const hostelMap = new Map(hostels.map((h) => [h.id, h]));
+  const orderedHostels = hostelIds
+    .map((id: string) => hostelMap.get(id))
+    .filter((h: any) => h !== undefined);
 
-  if (hostels.length === 0) {
+  const total = (searchResults as any).found || 0;
+
+  if (orderedHostels.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <Frown className="w-7 h-7 text-[var(--color-muted)]" />
@@ -139,7 +123,7 @@ export async function HostelResults({ params }: HostelResultsProps) {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {hostels.map((hostel) => (
+        {orderedHostels.map((hostel: any) => (
           <HostelCard key={hostel.id} hostel={hostel} />
         ))}
       </div>

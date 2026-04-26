@@ -15,6 +15,7 @@ import { SimilarHostels } from "@/components/features/hostels/similar-hostels";
 import { ContactOwnerButton } from "@/components/features/hostels/contact-owner-button";
 import { HostelJsonLd } from "@/components/features/hostels/hostel-json-ld";
 import { PriceAlertForm } from "@/components/features/hostels/price-alert-form";
+import { HostelViewTracker } from "@/components/features/hostels/hostel-view-tracker";
 
 // SECURITY: This page is not statically generated because it depends on user authentication state.
 // Showing cached HTML to all visitors could leak sensitive info.
@@ -166,6 +167,19 @@ export default async function HostelDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen pt-16">
+      <HostelViewTracker
+        hostel={{
+          id: hostel.id,
+          name: hostel.name,
+          slug: hostel.slug,
+          city: hostel.city,
+          pricePerMonth: hostel.pricePerMonth,
+          coverImage: hostel.coverImage,
+          rating: hostel.rating,
+          reviewCount: hostel.reviewCount,
+          verified: hostel.verified,
+        }}
+      />
       <HostelGallery images={hostel.images} name={hostel.name} />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">

@@ -42,6 +42,17 @@ enum HostelStatus {
   SUSPENDED
 }
 
+enum NotificationType {
+  BOOKING_REQUEST
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  MESSAGE_RECEIVED
+  REVIEW_RECEIVED
+  HOSTEL_APPROVED
+  HOSTEL_REJECTED
+}
+
 // ─── Models ─────────────────────────────────────────────────────────────────
 
 model User {
@@ -51,6 +62,7 @@ model User {
   password      String?
   name          String
   phone         String?
+  phoneVerified DateTime?
   avatar        String?
   role          Role      @default(STUDENT)
   bio           String?   @db.Text
@@ -66,6 +78,7 @@ model User {
   messages       Message[]
   passwordResets PasswordResetToken[]
   priceAlerts    PriceAlert[]
+  notifications  Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,6 +125,19 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model PhoneVerificationToken {
+  phone      String   // Phone number being verified
+  otp        String   // 6-digit OTP
+  userId     String?  // Optional: if verifying for existing user
+  attempts   Int      @default(0) // Track failed attempts
+  expires    DateTime
+
+  @@unique([phone, otp])
+  @@index([phone])
+  @@index([userId])
+  @@map("phone_verification_tokens")
 }
 
 model Hostel {
@@ -162,6 +188,7 @@ model Hostel {
   favorites Favorite[]
   conversations Conversation[]
   priceAlerts PriceAlert[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -221,6 +248,8 @@ model Booking {
   status BookingStatus @default(PENDING)
   notes  String?       @db.Text
 
+  notifications Notification[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -251,6 +280,8 @@ model Review {
   ownerReply  String?  @db.Text
   repliedAt   DateTime?
   verified    Boolean  @default(false)
+
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -348,4 +379,37 @@ model PriceAlert {
   @@index([hostelId])
   @@index([active])
   @@map("price_alerts")
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  type    NotificationType
+  title   String
+  message String @db.Text
+  
+  // Related booking (for booking notifications)
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId String?
+
+  // Related review (for review notifications)
+  review   Review? @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  reviewId String?
+
+  // Related hostel (for hostel notifications)
+  hostel   Hostel? @relation(fields: [hostelId], references: [id], onDelete: SetNull)
+  hostelId String?
+
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
 }

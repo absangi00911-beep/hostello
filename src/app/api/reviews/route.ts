@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { reviewSchema } from "@/lib/validations";
+import { indexSingleHostel } from "@/lib/typesense-sync";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,6 +80,28 @@ export async function POST(req: NextRequest) {
 
       return review;
     });
+
+    // Sync updated rating to Typesense
+    void indexSingleHostel(hostelId).catch((err) =>
+      console.error(`[typesense] Failed to sync hostel ${hostelId} after review:`, err)
+    );
+
+    // Notify hostel owner of new review
+    const hostel = await db.hostel.findUnique({
+      where: { id: hostelId },
+      select: { ownerId: true, name: true },
+    });
+
+    if (hostel) {
+      void createNotification({
+        userId: hostel.ownerId,
+        type: "REVIEW_RECEIVED",
+        title: `New Review: ${review.rating}⭐`,
+        message: `${review.user.name} left a review: "${review.title || review.comment.substring(0, 50)}..."`,
+        reviewId: review.id,
+        hostelId: hostelId,
+      });
+    }
 
     return NextResponse.json({ data: review, message: "Review submitted." }, { status: 201 });
   } catch (err) {

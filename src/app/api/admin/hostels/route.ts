@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { listingApprovedEmail, listingSuspendedEmail } from "@/lib/email-templates/listing-status";
+import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 import { z } from "zod";
 
 const schema = z.object({
@@ -46,6 +47,19 @@ export async function PATCH(req: NextRequest) {
         },
       },
     });
+
+    // Sync to Typesense based on action
+    if (action === "verify" || action === "activate") {
+      // Index the hostel when it becomes ACTIVE
+      await indexSingleHostel(hostel.id).catch((err) =>
+        console.error(`[typesense] Failed to index hostel ${hostel.id}:`, err)
+      );
+    } else if (action === "suspend") {
+      // Remove from index when suspended
+      await removeHostelIndex(hostel.id).catch((err) =>
+        console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err)
+      );
+    }
 
     // Send owner notification email based on action
     if (action === "verify" || action === "activate") {

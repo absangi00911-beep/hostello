@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { searchParamsSchema, hostelCreateSchema } from "@/lib/validations";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { createHostelRecord } from "@/lib/hostel-service";
-import type { Prisma } from "@prisma/client";
+import { searchHostels } from "@/lib/typesense";
 
 export async function GET(req: NextRequest) {
   // 60 search requests per IP per minute
@@ -48,81 +48,62 @@ export async function GET(req: NextRequest) {
       limit,
     } = parsed.data;
 
-    const where: Prisma.HostelWhereInput = {
-      status: "ACTIVE",
-      ...(city && { city: { equals: city, mode: "insensitive" } }),
-      ...(gender && { gender }),
-      ...(verified !== undefined && { verified }),
-      ...(minPrice !== undefined || maxPrice !== undefined
-        ? {
-            pricePerMonth: {
-              ...(minPrice !== undefined && { gte: minPrice }),
-              ...(maxPrice !== undefined && { lte: maxPrice }),
-            },
-          }
-        : {}),
-      ...(amenities?.length && {
-        amenities: { hasSome: amenities },
-      }),
-      ...(q && {
-        OR: [
-          { name: { contains: q, mode: "insensitive" } },
-          { description: { contains: q, mode: "insensitive" } },
-          { city: { contains: q, mode: "insensitive" } },
-          { area: { contains: q, mode: "insensitive" } },
-          { address: { contains: q, mode: "insensitive" } },
-        ],
-      }),
-    };
+    // Search using Typesense
+    const searchResults = await searchHostels(q || "", {
+      city: city ? city : undefined,
+      gender: gender ? gender : undefined,
+      minPrice,
+      maxPrice,
+      amenities,
+      verified: verified !== undefined ? verified : undefined,
+      sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
+      page,
+      limit,
+    });
 
-    const orderBy: Prisma.HostelOrderByWithRelationInput =
-      sort === "price_asc"
-        ? { pricePerMonth: "asc" }
-        : sort === "price_desc"
-        ? { pricePerMonth: "desc" }
-        : sort === "rating"
-        ? { rating: "desc" }
-        : { createdAt: "desc" };
+    // Extract hostel IDs from search results
+    const hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
 
-    const skip = (page - 1) * limit;
-
-    const [hostels, total] = await Promise.all([
-      db.hostel.findMany({
-        where,
-        orderBy,
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          city: true,
-          area: true,
-          pricePerMonth: true,
-          gender: true,
-          amenities: true,
-          coverImage: true,
-          images: true,
-          verified: true,
-          featured: true,
-          rating: true,
-          reviewCount: true,
-          capacity: true,
-          rooms: true,
-          owner: {
-            select: { id: true, name: true, avatar: true },
-          },
+    // Fetch full hostel details from database
+    const hostels = await db.hostel.findMany({
+      where: { id: { in: hostelIds } },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        city: true,
+        area: true,
+        pricePerMonth: true,
+        gender: true,
+        amenities: true,
+        coverImage: true,
+        images: true,
+        verified: true,
+        featured: true,
+        rating: true,
+        reviewCount: true,
+        capacity: true,
+        rooms: true,
+        owner: {
+          select: { id: true, name: true, avatar: true },
         },
-      }),
-      db.hostel.count({ where }),
-    ]);
+      },
+    });
+
+    // Maintain search result order from Typesense
+    const hostelMap = new Map(hostels.map((h) => [h.id, h]));
+    const orderedHostels = hostelIds
+      .map((id: string) => hostelMap.get(id))
+      .filter((h: any) => h !== undefined);
+
+    const total = (searchResults as any).found || 0;
 
     return NextResponse.json({
-      data: hostels,
+      data: orderedHostels,
       total,
       page,
       limit,
-      hasMore: skip + hostels.length < total,
+      hasMore: (page - 1) * limit + orderedHostels.length < total,
     });
   } catch (err) {
     console.error("[GET /api/hostels]", err);
