@@ -50,10 +50,10 @@ export async function generateMetadata({
       title: `Student Hostels in ${cityName} | HostelLo`,
       description: `Find verified student hostels in ${cityName}, Pakistan. Safe, affordable accommodation near universities.`,
       type: "website",
-      url: `https://hostello.pk/hostels/${city}`,
+      url: `https://hostello.pk/cities/${city}`,
     },
     alternates: {
-      canonical: `https://hostello.pk/hostels/${city}`,
+      canonical: `https://hostello.pk/cities/${city}`,
     },
   };
 }

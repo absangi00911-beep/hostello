@@ -16,9 +16,19 @@ const ADMIN_ONLY = ["/admin"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
 export default auth((req) => {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
   const isLoggedIn = !!req.auth;
   const role = req.auth?.user?.role;
+
+  // ── Redirect old city URLs ─────────────────────────────────────────────
+  // Redirect /hostels/[city] to /cities/[city] for backward compatibility
+  const hostelsMatch = pathname.match(/^\/hostels\/([a-z]+)$/);
+  if (hostelsMatch) {
+    const city = hostelsMatch[1];
+    const url = req.nextUrl.clone();
+    url.pathname = `/cities/${city}`;
+    return NextResponse.redirect(url, { status: 301 });
+  }
 
   // ── CSRF protection ────────────────────────────────────────────────────
   // Applied to every state-mutating API route that isn't exempt.

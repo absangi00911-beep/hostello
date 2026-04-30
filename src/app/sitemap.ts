@@ -92,7 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // City pages (for SEO)
   const cityRoutes: MetadataRoute.Sitemap = CITIES.map((city) => ({
-    url: `${BASE_URL}/hostels/${city.toLowerCase()}`,
+    url: `${BASE_URL}/cities/${city.toLowerCase()}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority: 0.85,

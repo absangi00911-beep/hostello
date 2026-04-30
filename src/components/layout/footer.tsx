@@ -73,7 +73,7 @@ export function Footer() {
               {CITIES.map((city) => (
                 <li key={city}>
                   <Link
-                    href={`/hostels/${city.toLowerCase()}`}
+                    href={`/cities/${city.toLowerCase()}`}
                     className="text-sm text-white/45 hover:text-white transition-colors"
                   >
                     {city}
