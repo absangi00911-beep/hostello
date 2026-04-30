@@ -1,23 +1,23 @@
-import { ShieldCheck, Star, Clock } from "lucide-react";
+import { ClipboardCheck, ShieldCheck, UserCheck } from "lucide-react";
 
 const ITEMS = [
   {
+    icon: ClipboardCheck,
+    stat: "Visited first",
+    title: "Physically verified",
+    body: "Our team visits every hostel before it's listed. Photos are taken on-site. Listings that don't match reality are removed.",
+  },
+  {
     icon: ShieldCheck,
-    stat: "Screened",
-    title: "Trusted listings",
-    body: "Every hostel is reviewed for safety and removed if residents report problems.",
+    stat: "Stays only",
+    title: "Reviews from residents",
+    body: "A student can only leave a review after their booking is marked complete. No review from someone who didn't stay.",
   },
   {
-    icon: Star,
-    stat: "Real only",
-    title: "Honest reviews",
-    body: "Only residents who booked through us can leave a review.",
-  },
-  {
-    icon: Clock,
-    stat: "< 5 min",
-    title: "Book fast",
-    body: "No agents, no calls. Message the owner and confirm directly.",
+    icon: UserCheck,
+    stat: "No middleman",
+    title: "Direct with the owner",
+    body: "Your message goes to the hostel owner, not an agent. You see the owner's name and their other listings before you book.",
   },
 ];
 
@@ -28,7 +28,7 @@ export function TrustBanner() {
         <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--color-border)]">
           {ITEMS.map(({ icon: Icon, stat, title, body }) => (
             <div key={title} className="flex items-start gap-5 py-8 sm:px-10 first:pl-0 last:pr-0">
-              <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-[var(--color-brand-500)] flex items-center justify-center">
+              <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] flex items-center justify-center">
                 <Icon className="w-5 h-5 text-[var(--color-ink)]" />
               </div>
               <div>

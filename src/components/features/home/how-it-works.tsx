@@ -1,23 +1,23 @@
 const STEPS = [
   {
     number: "01",
-    title: "Search & filter",
-    body: "Enter your university or city. Filter by price, gender, and amenities. Results update instantly.",
+    title: "Search near your university",
+    body: "Enter your university — NUST, LUMS, UET, QAU, and more are already mapped. Filter by price range, boys/girls/mixed, and amenities like meals or a study room.",
   },
   {
     number: "02",
-    title: "Compare options",
-    body: "Add up to three hostels side by side. See amenities, price, and ratings in one view.",
+    title: "Compare before you commit",
+    body: "Add up to three hostels to compare side by side. See verified photos, ratings from students who actually stayed, and the full price including what's included in rent.",
   },
   {
     number: "03",
-    title: "Contact the owner",
-    body: "Message the owner directly. Ask questions, arrange a visit, confirm availability.",
+    title: "Ask the owner directly",
+    body: "Message the hostel owner to ask about security deposit, gate timings, or meal quality. No agent passes your message along — the owner replies personally.",
   },
   {
     number: "04",
-    title: "Book and move in",
-    body: "Pay securely by card. JazzCash and EasyPaisa coming soon. Get a confirmation and receipt by email instantly.",
+    title: "Pay and confirm your spot",
+    body: "Pay by card through Safepay. Once the owner confirms, you get a booking reference and their contact number so you can arrange move-in details.",
   },
 ];
 
@@ -40,7 +40,7 @@ export function HowItWorks() {
               From search to move-in.
             </h2>
             <p className="mt-4 text-[var(--color-muted)] text-base leading-relaxed">
-              The whole process happens on HostelLo — no calls to agents, no WhatsApp back-and-forth.
+              The whole process happens on HostelLo — no calls to agents, no WhatsApp back-and-forth, no surprises on arrival.
             </p>
           </div>
 

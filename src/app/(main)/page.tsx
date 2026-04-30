@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "HostelLo — Find Student Hostels in Pakistan",
 };
 
-export const revalidate = 60; // drop to 1 min during early launch
+export const revalidate = 60;
 
 async function getFeaturedHostels() {
   return db.hostel.findMany({
@@ -52,7 +52,6 @@ async function getCityStats() {
     "Bahawalpur",
   ];
 
-  // Single query to get counts for all cities
   const rows = await db.hostel.groupBy({
     by: ["city"],
     where: { city: { in: cities }, status: "ACTIVE" },
@@ -63,7 +62,6 @@ async function getCityStats() {
   return cities.map((city) => ({ city, count: countMap[city] ?? 0 }));
 }
 
-/** Real counts fetched from the database at build/revalidation time */
 async function getPlatformStats() {
   const [hostelCount, bookingCount] = await Promise.all([
     db.hostel.count({ where: { status: "ACTIVE" } }),
@@ -82,6 +80,7 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Product first: hero → trust signals → browse */}
       <HeroSection
         hostelCount={stats.hostelCount}
         studentsHoused={stats.bookingCount}
@@ -90,8 +89,12 @@ export default async function HomePage() {
       <CityCards stats={cityStats} />
       <FeaturedHostels hostels={featured} />
       <RecentlyViewed />
-      <HowItWorks />
+
+      {/* Conversion actions before onboarding explanation */}
       <CtaSection />
+
+      {/* How it works goes last — for visitors still deciding whether to trust the product */}
+      <HowItWorks />
     </>
   );
 }

@@ -8,13 +8,6 @@ import { POPULAR_UNIVERSITIES } from "@/config/universities";
 import { buildSearchParams } from "@/lib/utils";
 import Link from "next/link";
 
-const MARQUEE_CITIES = [
-  "Lahore", "Islamabad", "Karachi", "Faisalabad",
-  "Multan", "Peshawar", "Rawalpindi", "Quetta",
-  "Lahore", "Islamabad", "Karachi", "Faisalabad",
-  "Multan", "Peshawar", "Rawalpindi", "Quetta",
-];
-
 interface HeroSectionProps {
   hostelCount: number;
   studentsHoused: number;
@@ -22,7 +15,6 @@ interface HeroSectionProps {
 
 function formatStat(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1).replace(".0", "")}k+`;
-  if (n === 0) return "—";
   return String(n);
 }
 
@@ -31,17 +23,19 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
   const [query, setQuery] = useState("");
   const [city,  setCity]  = useState("");
 
-  // Only surface the "students housed" stat once it's meaningful enough to
-  // build trust rather than undermine it.
+  // Only show counts that are high enough to function as proof, not warnings.
+  const HOSTEL_DISPLAY_THRESHOLD = 5;
   const STUDENTS_DISPLAY_THRESHOLD = 50;
+  const showHostelStat   = hostelCount   >= HOSTEL_DISPLAY_THRESHOLD;
   const showStudentsStat = studentsHoused >= STUDENTS_DISPLAY_THRESHOLD;
 
   const HERO_STATS = [
-    { value: String(hostelCount), label: hostelCount === 1 ? "Hostel listed" : "Hostels listed" },
-    ...(showStudentsStat
-      ? [{ value: formatStat(studentsHoused), label: "Students housed" }]
-      : [{ value: "100%", label: "Honest reviews only" }]
-    ),
+    showHostelStat
+      ? { value: String(hostelCount), label: hostelCount === 1 ? "Hostel listed" : "Hostels listed" }
+      : { value: "In-person", label: "Verified listings" },
+    showStudentsStat
+      ? { value: formatStat(studentsHoused), label: "Students housed" }
+      : { value: "100%", label: "Honest reviews only" },
     { value: "8", label: "Cities covered" },
   ];
 
@@ -57,108 +51,65 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[var(--color-ink)]">
-
-      {/* Grid overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Green blob */}
-      <div
-        className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-20 blur-[120px] pointer-events-none"
-        style={{ background: "radial-gradient(circle, #00DC62 0%, transparent 70%)" }}
-        aria-hidden="true"
-      />
-
-      {/* Main content */}
-      <div className="relative flex-1 flex flex-col justify-center mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-28 pb-16">
+    <section className="relative bg-[var(--color-ground)] border-b border-[var(--color-border)]">
+      <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-32 pb-20">
 
         {/* Badge */}
-        <div style={{ animation: "heroFadeUp 0.5s 0.05s ease both" }}>
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 text-xs font-medium text-white/70 mb-8 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-400)]" />
+        <div style={{ animation: "heroFadeUp 0.4s 0.05s ease both" }}>
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-muted)] mb-7">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-500)]" />
             Pakistan&apos;s first verified hostel marketplace
           </span>
         </div>
 
-        {/* Headline */}
+        {/* Headline — plain dark, no gradient, no stroke */}
         <h1
-          className="text-[clamp(2.8rem,8vw,6rem)] font-extrabold text-white leading-[0.95] tracking-tight max-w-4xl"
+          className="text-[clamp(2.4rem,6vw,5rem)] font-extrabold text-[var(--color-ink)] leading-[0.95] tracking-tight max-w-3xl mb-5"
           style={{
             fontFamily: "var(--font-display)",
-            animation: "heroFadeUp 0.6s 0.1s ease both",
+            animation: "heroFadeUp 0.5s 0.1s ease both",
           }}
         >
-          <span
-            style={{
-              display: "inline-block",
-              WebkitTextStroke: "0.5px #00DC62",
-            }}
-          >
-            Find your
-          </span>
-          <span
-            className="block"
-            style={{
-              background: "linear-gradient(135deg, #00DC62 0%, #00f570 50%, #70ffaa 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            perfect hostel.
-          </span>
+          The only hostel search
+          <span className="block">that checks listings in person.</span>
         </h1>
 
-        {/* Subheadline */}
+        {/* Subheadline — names the actual anxiety */}
         <p
-          className="mt-6 text-lg sm:text-xl text-white/50 max-w-xl leading-relaxed font-normal"
-          style={{ animation: "heroFadeUp 0.6s 0.2s ease both" }}
+          className="text-base sm:text-lg text-[var(--color-ink-muted)] max-w-xl leading-relaxed mb-10"
+          style={{ animation: "heroFadeUp 0.5s 0.18s ease both" }}
         >
-          Verified listings, real reviews, direct booking.
-          No agents. No surprises.
+          Every listing is visited by our team before it goes live.
+          No fake photos. No WhatsApp back-and-forth with unknown agents.
         </p>
 
-        {/* ── Unified search bar ── */}
-        {/*
-          Both fields live inside a single visual container so they read as one
-          action rather than two independent inputs. The button is intentionally
-          kept separate to stay visually distinct as the primary CTA.
-        */}
+        {/* ── Search bar — visually dominant on light background ── */}
         <form
           onSubmit={handleSearch}
-          style={{ animation: "heroFadeUp 0.6s 0.3s ease both" }}
-          className="mt-10 flex flex-col sm:flex-row gap-2 max-w-2xl"
+          style={{ animation: "heroFadeUp 0.5s 0.26s ease both" }}
+          className="max-w-2xl mb-5"
         >
-          {/* Container wrapping both inputs */}
-          <div className="flex flex-col sm:flex-row flex-1 overflow-hidden rounded-2xl border border-white/12 bg-white/8 backdrop-blur-sm focus-within:border-[var(--color-brand-500)] transition-all">
+          <div className="flex flex-col sm:flex-row rounded-2xl overflow-hidden bg-[var(--color-ink)] shadow-[0_4px_24px_rgba(0,0,0,0.18)]">
 
             {/* Text search */}
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
               <input
                 type="text"
                 placeholder="University, area, or hostel name…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-14 pl-11 pr-4 bg-transparent text-white placeholder:text-white/30 text-sm outline-none"
+                className="w-full h-14 pl-11 pr-4 bg-transparent text-white placeholder:text-white/35 text-sm outline-none"
               />
             </div>
 
-            {/* Divider — vertical on desktop, horizontal on mobile */}
-            <div className="hidden sm:block w-px bg-white/12 my-3 flex-shrink-0" aria-hidden="true" />
-            <div className="block sm:hidden h-px bg-white/12 mx-3 flex-shrink-0" aria-hidden="true" />
+            {/* Divider */}
+            <div className="hidden sm:block w-px bg-white/10 my-3 flex-shrink-0" aria-hidden="true" />
+            <div className="block sm:hidden h-px bg-white/10 mx-4 flex-shrink-0" aria-hidden="true" />
 
             {/* City select */}
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
@@ -170,28 +121,29 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
                 ))}
               </select>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            className="h-14 px-8 rounded-2xl bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] transition-colors whitespace-nowrap flex items-center gap-2"
-          >
-            Search
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            {/* Submit — brand green is the only accent in this hero */}
+            <button
+              type="submit"
+              className="h-14 px-7 bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] transition-colors whitespace-nowrap flex items-center justify-center gap-2 flex-shrink-0"
+            >
+              Search
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </form>
 
         {/* City quick links */}
         <div
-          className="mt-4 flex items-center gap-2 flex-wrap"
-          style={{ animation: "heroFadeUp 0.6s 0.36s ease both" }}
+          className="flex items-center gap-2 flex-wrap mb-2"
+          style={{ animation: "heroFadeUp 0.5s 0.32s ease both" }}
         >
-          <span className="text-xs text-white/30 mr-1">Cities:</span>
+          <span className="text-xs text-[var(--color-muted)] mr-1">Cities:</span>
           {["Lahore", "Islamabad", "Karachi"].map((c) => (
             <Link
               key={c}
               href={`/hostels?city=${c}`}
-              className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-400)] transition-colors"
+              className="text-xs px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition-colors"
             >
               {c}
             </Link>
@@ -200,10 +152,10 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
 
         {/* University quick links */}
         <div
-          className="mt-2 flex items-center gap-2 flex-wrap"
-          style={{ animation: "heroFadeUp 0.6s 0.42s ease both" }}
+          className="flex items-center gap-2 flex-wrap mb-12"
+          style={{ animation: "heroFadeUp 0.5s 0.36s ease both" }}
         >
-          <span className="text-xs text-white/30 mr-1 flex items-center gap-1">
+          <span className="text-xs text-[var(--color-muted)] mr-1 flex items-center gap-1">
             <GraduationCap className="w-3 h-3" /> Near:
           </span>
           {POPULAR_UNIVERSITIES.map((u) => (
@@ -211,70 +163,36 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
               key={u.shortName}
               type="button"
               onClick={() => handleUniversityClick(u.shortName, u.city)}
-              className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-400)] transition-colors cursor-pointer"
+              className="text-xs px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition-colors cursor-pointer"
             >
               {u.shortName}
             </button>
           ))}
         </div>
 
-        {/* ── Value proposition ── */}
-        <div
-          className="mt-8 flex items-start gap-3 max-w-lg"
-          style={{ animation: "heroFadeUp 0.6s 0.46s ease both" }}
-        >
-          <div className="w-8 h-8 rounded-lg bg-[var(--color-brand-700)] flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">
-            ✓
-          </div>
-          <div>
-            <p className="text-sm text-white/65 leading-relaxed">
-              Verified listings, real reviews, and direct booking with hostel owners. No middlemen, no hidden fees.
-            </p>
-            <p className="text-xs text-white/30 mt-1.5">Trusted by students across Pakistan</p>
-          </div>
-        </div>
-
         {/* Stats row */}
         <div
-          className="mt-10 flex items-center gap-10"
-          style={{ animation: "heroFadeUp 0.6s 0.52s ease both" }}
+          className="flex items-center gap-10 pt-8 border-t border-[var(--color-border)]"
+          style={{ animation: "heroFadeUp 0.5s 0.42s ease both" }}
         >
           {HERO_STATS.map((stat, i) => (
             <div key={stat.label} className="flex items-center gap-10">
               <div>
                 <p
-                  className="text-3xl font-extrabold text-white leading-none"
+                  className="text-2xl font-extrabold text-[var(--color-ink)] leading-none"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   {stat.value}
                 </p>
-                <p className="text-xs text-white/40 mt-1">{stat.label}</p>
+                <p className="text-xs text-[var(--color-muted)] mt-1">{stat.label}</p>
               </div>
               {i < HERO_STATS.length - 1 && (
-                <div className="w-px h-8 bg-white/10" />
+                <div className="w-px h-7 bg-[var(--color-border)]" />
               )}
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Marquee strip */}
-      <div
-        className="relative border-t border-white/8 py-4 overflow-hidden"
-        style={{ animation: "heroFadeUp 0.5s 0.58s ease both" }}
-        aria-hidden="true"
-      >
-        <div className="flex animate-marquee whitespace-nowrap gap-0">
-          {MARQUEE_CITIES.map((c, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center gap-3 px-6 text-xs font-semibold tracking-widest text-white/20 uppercase"
-            >
-              {c}
-              <span className="w-1 h-1 rounded-full bg-[var(--color-brand-500)] flex-shrink-0" />
-            </span>
-          ))}
-        </div>
       </div>
     </section>
   );

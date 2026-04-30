@@ -1,286 +1,182 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Heart, BookOpen, Plus, MessageSquare } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Menu, X, Home, Search, PlusSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/shared/logo";
-import { NotificationBell } from "@/components/shared/notification-bell";
 
 const NAV_LINKS = [
-  { href: "/hostels",      label: "Browse" },
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/about",        label: "About" },
-  { href: "/pricing",      label: "Pricing" },
+  { href: "/hostels",  label: "Browse hostels" },
+  { href: "/compare",  label: "Compare"         },
+  { href: "/about",    label: "About"            },
 ];
 
 export function Navbar() {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const [scrolled,     setScrolled]     = useState(false);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const pathname              = usePathname();
+  const { data: session }     = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const isHome = pathname === "/";
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  useEffect(() => {
-    setMobileOpen(false);
-    setUserMenuOpen(false);
-  }, [pathname]);
-
-  const solid = !isHome || scrolled || mobileOpen;
+  const isOwner = session?.user?.role === "OWNER";
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-200",
-        solid
-          ? "bg-white/95 backdrop-blur-md border-b border-[var(--color-border)]"
-          : "bg-transparent"
-      )}
-    >
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-6">
+    <header className="fixed top-0 inset-x-0 z-50 h-16 bg-[var(--color-surface)]/90 backdrop-blur-sm border-b border-[var(--color-border)]">
+      <nav className="mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
-          <Logo solid={solid} />
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 flex-shrink-0"
+          aria-label="HostelLo home"
+        >
+          <span
+            className="text-xl font-extrabold text-[var(--color-ink)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Hostel
+            <span className="text-[var(--color-brand-500)]">Lo</span>
+          </span>
+        </Link>
 
-          {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-1 flex-1">
-            {NAV_LINKS.map((link) => (
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-6">
+          {NAV_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "text-sm font-medium transition-colors",
+                pathname.startsWith(href)
+                  ? "text-[var(--color-ink)]"
+                  : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Desktop actions — two paths max, clear hierarchy */}
+        <div className="hidden md:flex items-center gap-3">
+          {session ? (
+            <>
+              {/* Authenticated: dashboard shortcut + profile */}
+              {isOwner ? (
+                <Link
+                  href="/owner/listings/new"
+                  className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+                >
+                  + Add listing
+                </Link>
+              ) : (
+                <Link
+                  href="/owner/onboarding"
+                  className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+                >
+                  List your hostel
+                </Link>
+              )}
               <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  solid
-                    ? "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
-                    : "text-white/60 hover:text-white hover:bg-white/8"
-                )}
+                href="/dashboard"
+                className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-border)] transition-colors"
               >
-                {link.label}
+                <User className="w-3.5 h-3.5" />
+                {session.user?.name?.split(" ")[0] ?? "Account"}
               </Link>
-            ))}
-          </div>
+            </>
+          ) : (
+            <>
+              {/*
+                Unauthenticated: two CTAs, one job each.
+                "List your hostel" = owner acquisition (secondary)
+                "Sign in"          = returning user authentication (tertiary)
+                No "Get started" — search bar in hero handles new student acquisition.
+              */}
+              <Link
+                href="/owner/onboarding"
+                className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+              >
+                List your hostel
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="h-9 px-4 rounded-xl bg-[var(--color-ink)] text-[var(--color-ground)] text-sm font-semibold hover:opacity-90 transition-opacity flex items-center"
+              >
+                Sign in
+              </Link>
+            </>
+          )}
+        </div>
 
-          {/* Desktop right */}
-          <div className="hidden md:flex items-center gap-2">
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </nav>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 space-y-1">
+          {NAV_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              className={cn(
+                "block py-2.5 px-3 rounded-lg text-sm font-medium transition-colors",
+                pathname.startsWith(href)
+                  ? "bg-[var(--color-ground)] text-[var(--color-ink)]"
+                  : "text-[var(--color-muted)] hover:bg-[var(--color-ground)] hover:text-[var(--color-ink)]"
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+
+          <div className="pt-2 border-t border-[var(--color-border)] space-y-1">
             {session ? (
               <>
-                {session.user.role === "OWNER" && (
-                  <>
-                    <NotificationBell solid={solid} />
-                    <Link
-                      href="/dashboard/hostels/new"
-                      className={cn(
-                        "flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
-                        solid
-                          ? "text-[var(--color-brand-700)] hover:bg-[var(--color-brand-50)]"
-                          : "text-[var(--color-brand-400)] hover:bg-white/8"
-                      )}
-                    >
-                      <Plus className="w-4 h-4" />
-                      List hostel
-                    </Link>
-                  </>
-                )}
-
-                {/* User dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                      solid
-                        ? "text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
-                        : "text-white hover:bg-white/8"
-                    )}
-                  >
-                    <div className="w-7 h-7 rounded-full bg-[var(--color-brand-500)] text-[var(--color-ink)] flex items-center justify-center text-xs font-bold">
-                      {session.user.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="max-w-[100px] truncate">{session.user.name?.split(" ")[0]}</span>
-                    <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", userMenuOpen && "rotate-180")} />
-                  </button>
-
-                  <AnimatePresence>
-                    {userMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                        transition={{ duration: 0.12 }}
-                        className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-[var(--color-border)] shadow-lg overflow-hidden"
-                      >
-                        <div className="px-4 py-3 border-b border-[var(--color-border)]">
-                          <p className="text-xs text-[var(--color-muted)]">Signed in as</p>
-                          <p className="text-sm font-semibold text-[var(--color-ink)] truncate">{session.user.email}</p>
-                        </div>
-                        <div className="py-1">
-                          <DropdownLink href="/dashboard"  icon={LayoutDashboard} label="Dashboard" />
-                          <DropdownLink href="/favorites"  icon={Heart}           label="Saved hostels" />
-                          <DropdownLink href="/bookings"   icon={BookOpen}        label="My bookings" />
-                          <DropdownLink href="/profile"    icon={User}            label="Profile" />
-                          <DropdownLink href="/messages"   icon={MessageSquare}   label="Messages" />
-                        </div>
-                        <div className="border-t border-[var(--color-border)] py-1">
-                          <button
-                            onClick={() => signOut({ callbackUrl: "/" })}
-                            className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            Sign out
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 px-3 rounded-lg text-sm font-medium text-[var(--color-muted)] hover:bg-[var(--color-ground)] hover:text-[var(--color-ink)] transition-colors"
+                >
+                  My account
+                </Link>
+                <Link
+                  href={isOwner ? "/owner/listings/new" : "/owner/onboarding"}
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 px-3 rounded-lg text-sm font-semibold text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] transition-colors"
+                >
+                  {isOwner ? "+ Add listing" : "List your hostel"}
+                </Link>
               </>
             ) : (
               <>
-                {/* Owner acquisition — visible to unauthenticated visitors */}
                 <Link
-                  href="/signup?role=owner"
-                  className={cn(
-                    "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                    solid
-                      ? "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
-                      : "text-white/60 hover:text-white hover:bg-white/8"
-                  )}
-                >
-                  List a hostel
-                </Link>
-                <Link
-                  href="/login"
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    solid
-                      ? "text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
-                      : "text-white/70 hover:text-white hover:bg-white/8"
-                  )}
+                  href="/auth/signin"
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 px-3 rounded-lg text-sm font-medium text-[var(--color-muted)] hover:bg-[var(--color-ground)] hover:text-[var(--color-ink)] transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
-                  href="/signup"
-                  className="px-4 py-2 rounded-xl text-sm font-bold bg-[var(--color-brand-500)] text-[var(--color-ink)] hover:bg-[var(--color-brand-400)] transition-colors"
+                  href="/owner/onboarding"
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-2.5 px-3 rounded-lg text-sm font-semibold text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] transition-colors"
                 >
-                  Get started
+                  List your hostel
                 </Link>
               </>
             )}
           </div>
-
-          {/* Mobile toggle */}
-          <button
-            onClick={() => setMobileOpen((v) => !v)}
-            className={cn(
-              "md:hidden p-2 rounded-lg transition-colors",
-              solid ? "text-[var(--color-ink)] hover:bg-[var(--color-ground)]" : "text-white hover:bg-white/8"
-            )}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
-      </nav>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.18 }}
-            className="md:hidden bg-white border-t border-[var(--color-border)] overflow-hidden"
-          >
-            <div className="px-4 pt-3 pb-2 space-y-0.5">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block px-3 py-3 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/messages"
-                className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
-              >
-                Messages
-              </Link>
-            </div>
-            <div className="px-4 pt-2 pb-4 border-t border-[var(--color-border)] mt-2 space-y-2">
-              {session ? (
-                <>
-                  <div className="px-3 py-2.5 rounded-xl bg-[var(--color-ground)]">
-                    <p className="text-xs text-[var(--color-muted)]">Signed in as</p>
-                    <p className="text-sm font-semibold text-[var(--color-ink)]">{session.user.name}</p>
-                  </div>
-                  <Link href="/dashboard" className="block px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-ground)]">
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <>
-                  {/* Owner acquisition in mobile menu */}
-                  <Link
-                    href="/signup?role=owner"
-                    className="block px-3 py-3 rounded-xl text-sm font-medium text-center border border-[var(--color-border)] text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
-                  >
-                    List a hostel
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="block px-3 py-3 rounded-xl text-sm font-medium text-center border border-[var(--color-border)] hover:bg-[var(--color-ground)] transition-colors"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="block px-3 py-3 rounded-xl text-sm font-bold text-center bg-[var(--color-brand-500)] text-[var(--color-ink)] hover:bg-[var(--color-brand-400)] transition-colors"
-                  >
-                    Get started
-                  </Link>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {userMenuOpen && (
-        <div className="fixed inset-0 z-[-1]" onClick={() => setUserMenuOpen(false)} />
       )}
     </header>
-  );
-}
-
-function DropdownLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
-    >
-      <Icon className="w-4 h-4 text-[var(--color-muted)]" />
-      {label}
-    </Link>
   );
 }

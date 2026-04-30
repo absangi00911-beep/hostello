@@ -28,7 +28,6 @@ interface HostelCardProps {
   className?: string;
 }
 
-// Helper: Check if hostel is "new" (created within last 7 days)
 function isNewListing(createdAt: Date | string): boolean {
   const created = new Date(createdAt);
   const now = new Date();
@@ -51,7 +50,15 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
 
   const image       = hostel.coverImage ?? hostel.images[0];
   const isComparing = has(hostel.slug);
-  const topAmenities = hostel.amenities.slice(0, 3).map((id) => AMENITY_MAP[id]).filter(Boolean);
+
+  // Build a plain-text amenity summary: "WiFi · Meals · Study Room"
+  // Labels only — no emojis, no chips. Card's job is to get clicks, not list specs.
+  const amenitySummary = hostel.amenities
+    .slice(0, 3)
+    .map((id) => AMENITY_MAP[id]?.label)
+    .filter(Boolean)
+    .join(" · ");
+  const extraCount = hostel.amenities.length > 3 ? hostel.amenities.length - 3 : 0;
 
   return (
     <article
@@ -71,7 +78,8 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
             alt={hostel.name}
             fill
             sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            // Scale removed — the card lift (globals.css card-hover) is sufficient
+            className="object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-[var(--color-faint)]">
@@ -91,11 +99,7 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
           </span>
         </div>
 
-        {/* Compare toggle — ALWAYS visible on mobile (not hover-only).
-          On desktop it stays hidden until hover, but on touch devices the
-          hover state is never triggered so we make it permanently visible
-          for screens ≤ md.
-        */}
+        {/* Compare toggle */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -106,8 +110,7 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
             "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all",
             isComparing
               ? "bg-[var(--color-brand-500)] text-[var(--color-ink)]"
-              : // Always show on mobile (sm:), hide until hover on larger screens
-                "bg-white/90 backdrop-blur-sm text-[var(--color-muted)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white"
+              : "bg-white/90 backdrop-blur-sm text-[var(--color-muted)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white"
           )}
           title={!isComparing && isFull() ? "Compare list is full" : isComparing ? "Remove from compare" : "Add to compare"}
           aria-label="Toggle compare"
@@ -137,7 +140,7 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
 
         {/* Rating or Social Proof */}
         {hostel.reviewCount > 0 ? (
-          <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 mb-2">
             <Star className="w-3.5 h-3.5 text-[var(--color-accent-500)] fill-current" />
             <span className="text-sm font-bold text-[var(--color-ink)]">
               {hostel.rating.toFixed(1)}
@@ -147,14 +150,14 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
             </span>
           </div>
         ) : isNewListing(hostel.createdAt) ? (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 w-fit">
+          <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-lg bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 w-fit">
             <Sparkles className="w-3.5 h-3.5 text-[var(--color-brand-500)]" />
             <span className="text-xs font-semibold text-[var(--color-brand-700)]">
               New listing
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1.5 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] w-fit">
+          <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] w-fit">
             <MessageSquare className="w-3.5 h-3.5 text-[var(--color-muted)]" />
             <span className="text-xs font-semibold text-[var(--color-muted)]">
               First to review
@@ -162,22 +165,12 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
           </div>
         )}
 
-        {/* Amenities */}
-        {topAmenities.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap mb-4">
-            {topAmenities.map((a) => (
-              <span
-                key={a.id}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] text-xs text-[var(--color-muted)]"
-              >
-                <span>{a.emoji}</span>
-                <span className="hidden sm:inline">{a.label}</span>
-              </span>
-            ))}
-            {hostel.amenities.length > 3 && (
-              <span className="text-xs text-[var(--color-muted)]">+{hostel.amenities.length - 3}</span>
-            )}
-          </div>
+        {/* Amenity summary — plain text, one line, no chips, no emojis */}
+        {amenitySummary && (
+          <p className="text-xs text-[var(--color-muted)] mb-4 truncate">
+            {amenitySummary}
+            {extraCount > 0 && ` · +${extraCount} more`}
+          </p>
         )}
 
         {/* Price row */}
@@ -208,9 +201,7 @@ export function HostelCardSkeleton() {
         <div className="h-3 w-24 skeleton rounded" />
         <div className="h-5 w-3/4 skeleton rounded" />
         <div className="h-3.5 w-16 skeleton rounded" />
-        <div className="flex gap-2">
-          {[1,2,3].map((i) => <div key={i} className="h-6 w-16 skeleton rounded-lg" />)}
-        </div>
+        <div className="h-3 w-48 skeleton rounded" />
         <div className="h-px w-full skeleton mt-3" />
         <div className="flex justify-between">
           <div className="h-6 w-28 skeleton rounded" />

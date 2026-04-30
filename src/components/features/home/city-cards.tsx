@@ -19,9 +19,14 @@ const CITY_IMAGES: Record<string, string> = {
 };
 
 export function CityCards({ stats }: { stats: CityStats[] }) {
-  if (stats.length === 0) return null;
+  // Only show cities that have active inventory.
+  // A city card with count:0 showing "Coming soon" signals the product
+  // isn't ready — worse than not showing the card at all.
+  const activeCities = stats.filter((s) => s.count > 0);
 
-  const [first, second, ...rest] = stats;
+  if (activeCities.length === 0) return null;
+
+  const [first, second, ...rest] = activeCities;
 
   return (
     <section className="py-24 bg-[var(--color-ground)]">
@@ -54,7 +59,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
           {/* Featured city — large */}
           {first && (
             <Link
-              href={first.count > 0 ? `/hostels?city=${first.city}` : "/hostels"}
+              href={`/hostels?city=${first.city}`}
               className="group col-span-2 row-span-2 relative overflow-hidden rounded-3xl bg-[var(--color-ink)]"
             >
               {CITY_IMAGES[first.city] && (
@@ -70,7 +75,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               <div className="absolute bottom-0 inset-x-0 p-8">
                 <span className="inline-block mb-3 text-xs font-bold tracking-widest text-[var(--color-brand-400)] uppercase">
-                  {first.count > 0 ? `${first.count} hostels` : "Coming soon"}
+                  {first.count} hostel{first.count !== 1 ? "s" : ""}
                 </span>
                 <p
                   className="text-4xl font-extrabold text-white"
@@ -88,7 +93,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
           {/* Second featured city */}
           {second && (
             <Link
-              href={second.count > 0 ? `/hostels?city=${second.city}` : "/hostels"}
+              href={`/hostels?city=${second.city}`}
               className="group col-span-2 row-span-1 relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
             >
               {CITY_IMAGES[second.city] && (
@@ -104,7 +109,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
               <div className="absolute inset-0 flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold tracking-widest text-[var(--color-brand-400)] uppercase block mb-1">
-                    {second.count > 0 ? `${second.count} hostels` : "Coming soon"}
+                    {second.count} hostel{second.count !== 1 ? "s" : ""}
                   </span>
                   <p
                     className="text-2xl font-extrabold text-white"
@@ -121,7 +126,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
           {rest.slice(0, 2).map(({ city, count }) => (
             <Link
               key={city}
-              href={count > 0 ? `/hostels?city=${city}` : "/hostels"}
+              href={`/hostels?city=${city}`}
               className="group relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
             >
               {CITY_IMAGES[city] && (
@@ -142,7 +147,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
                   {city}
                 </p>
                 <p className="text-xs text-white/50 mt-0.5">
-                  {count > 0 ? `${count} hostel${count !== 1 ? "s" : ""}` : "Soon"}
+                  {count} hostel{count !== 1 ? "s" : ""}
                 </p>
               </div>
             </Link>
