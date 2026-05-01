@@ -93,24 +93,24 @@ export async function POST(request: Request) {
     await db.session.deleteMany({ where: { userId } });
     await db.account.deleteMany({ where: { userId } });
 
-    // For owners: Delete hostels (rooms cascade via Prisma)
+    // For owners: Delete hostels with batch operations (avoid N+1 query)
+    // Performance fix: O(1) batch deletes instead of O(hostels × conversations × messages) loop
     const userHostels = await db.hostel.findMany({
       where: { ownerId: userId },
       select: { id: true },
     });
-    for (const hostel of userHostels) {
-      // Delete hostel conversations/messages first
-      const hostelConvs = await db.conversation.findMany({
-        where: { hostelId: hostel.id },
-        select: { id: true },
-      });
-      for (const conv of hostelConvs) {
-        await db.message.deleteMany({ where: { conversationId: conv.id } });
-      }
-      // Delete conversations
-      await db.conversation.deleteMany({ where: { hostelId: hostel.id } });
-      // Delete hostel (cascades delete rooms, bookings, reviews, etc.)
-      await db.hostel.delete({ where: { id: hostel.id } });
+
+    if (userHostels.length > 0) {
+      const hostelIds = userHostels.map(h => h.id);
+
+      // Batch delete related records (no cascade configured for these)
+      await db.booking.deleteMany({ where: { hostelId: { in: hostelIds } } });
+      await db.review.deleteMany({ where: { hostelId: { in: hostelIds } } });
+
+      // Delete hostels in bulk - cascades handle conversations, messages, rooms, favorites
+      // Cascade chain: Hostel → Room, Conversation, Favorite, PriceAlert
+      // Conversation → ConversationParticipant, Message
+      await db.hostel.deleteMany({ where: { ownerId: userId } });
     }
 
     // Finally: Delete the user account
