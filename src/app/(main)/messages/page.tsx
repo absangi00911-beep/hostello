@@ -23,6 +23,7 @@ export default async function MessagesPage() {
     },
     orderBy: { updatedAt: "desc" },
     include: {
+      hostel: { select: { name: true } }, // Get current hostel name instead of stale snapshot
       messages: {
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -91,6 +92,8 @@ export default async function MessagesPage() {
             {conversationsWithUnread.map((conv) => {
               const lastMessage = conv.messages[0];
               const isUnread = conv.unreadCount > 0;
+              // Use current hostel name from join, fallback to snapshot if needed
+              const displayHostelName = (conv.hostel as any)?.name ?? conv.hostelName;
 
               return (
                 <Link
@@ -119,7 +122,7 @@ export default async function MessagesPage() {
                       <p
                         className={`text-sm truncate ${isUnread ? "font-bold text-[var(--color-ink)]" : "font-semibold text-[var(--color-ink)]"}`}
                       >
-                        {conv.hostelName}
+                        {displayHostelName}
                       </p>
                       <p className="text-xs text-[var(--color-muted)] flex-shrink-0">
                         {lastMessage ? formatDate(lastMessage.createdAt) : formatDate(conv.updatedAt)}

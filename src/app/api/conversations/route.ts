@@ -29,6 +29,7 @@ export async function GET(_req: NextRequest) {
       },
       orderBy: { updatedAt: "desc" },
       include: {
+        hostel: { select: { name: true } }, // Get current hostel name
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1,
@@ -49,9 +50,11 @@ export async function GET(_req: NextRequest) {
       },
     });
 
-    // Transform response to include unreadCount
+    // Transform response to include unreadCount and use current hostel name
     const withUnread = conversations.map((conv) => ({
       ...conv,
+      hostelName: conv.hostel?.name ?? conv.hostelName, // Use current name, fallback to snapshot
+      hostel: undefined, // Remove hostel object from response
       unreadCount: conv._count.messages,
       _count: undefined, // remove internal _count field
     }));

@@ -20,6 +20,7 @@ export default async function ConversationPage({ params }: PageProps) {
   const conversation = await db.conversation.findUnique({
     where: { id },
     include: {
+      hostel: { select: { name: true } }, // Get current hostel name instead of stale snapshot
       participants: {
         select: { userId: true },
       },
@@ -70,7 +71,7 @@ export default async function ConversationPage({ params }: PageProps) {
           <ConversationThread
             conversationId={conversation.id}
             currentUserId={session.user.id}
-            hostelName={conversation.hostelName}
+            hostelName={(conversation.hostel as any)?.name ?? conversation.hostelName}
             initialMessages={conversation.messages.map((m) => ({
               ...m,
               createdAt: m.createdAt.toISOString(),
