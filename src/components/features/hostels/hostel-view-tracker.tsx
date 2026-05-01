@@ -43,7 +43,7 @@ export function HostelViewTracker({ hostel }: HostelViewTrackerProps) {
     fetch(`/api/hostels/${hostel.slug}/view`, { method: "POST" }).catch(
       () => {}
     );
-  }, [hostel.id, hostel.slug, addHostel]);
+  }, [hostel.slug, addHostel]);
 
   // This component doesn't render anything
   return null;
