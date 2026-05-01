@@ -27,6 +27,9 @@ const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites", "/messa
 const ADMIN_ONLY = ["/admin"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
+// Hostel sub-routes that should NOT be redirected by the /hostels/[city] → /cities/[city] rule
+const KNOWN_HOSTEL_SUBROUTES = new Set(["compare"]);
+
 export default auth((req) => {
   const { pathname, search } = req.nextUrl;
   const isLoggedIn = !!req.auth;
@@ -34,8 +37,9 @@ export default auth((req) => {
 
   // ── Redirect old city URLs ─────────────────────────────────────────────
   // Redirect /hostels/[city] to /cities/[city] for backward compatibility
+  // But exclude known sub-routes like /hostels/compare
   const hostelsMatch = pathname.match(/^\/hostels\/([a-z]+)$/);
-  if (hostelsMatch) {
+  if (hostelsMatch && !KNOWN_HOSTEL_SUBROUTES.has(hostelsMatch[1])) {
     const city = hostelsMatch[1];
     const url = req.nextUrl.clone();
     url.pathname = `/cities/${city}`;
