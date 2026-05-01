@@ -51,6 +51,7 @@ export function ConversationThread({
   const [pollInterval, setPollInterval] = useState(POLL_INTERVAL_MIN_MS);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const lastIdRef  = useRef<string | undefined>(messages.at(-1)?.id);
+  const timerRef   = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Fetch all messages (initial load) ────────────────────────────────────
   const fetchMessages = useCallback(async () => {
@@ -79,14 +80,15 @@ export function ConversationThread({
   }, [fetchMessages, initialMessages.length]);
 
   // ── Polling with exponential backoff ───────────────────────────────────────
+  // Uses useRef for interval to avoid race conditions when pollInterval changes.
+  // Without this, each pollInterval state update would clear and re-create the
+  // interval, creating a brief window where two intervals run simultaneously.
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
+    function poll() {
+      // Only poll when the tab is visible to avoid wasted requests
+      if (document.visibilityState !== "visible") return;
 
-    function startPolling() {
-      timer = setInterval(async () => {
-        // Only poll when the tab is visible to avoid wasted requests
-        if (document.visibilityState !== "visible") return;
-
+      (async () => {
         try {
           const res  = await fetch(`/api/conversations/${conversationId}`);
           const json = await res.json();
@@ -118,10 +120,15 @@ export function ConversationThread({
           );
           setPollingError(true);
         }
-      }, pollInterval);
+      })();
     }
 
-    startPolling();
+    // Update the interval when pollInterval changes without re-running the effect.
+    // This avoids the race condition from clearing and re-creating the interval.
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+    }
+    timerRef.current = setInterval(poll, pollInterval);
 
     // Pause/resume polling based on tab visibility
     function handleVisibilityChange() {
@@ -133,7 +140,10 @@ export function ConversationThread({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      clearInterval(timer);
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [conversationId, fetchMessages, pollInterval]);
