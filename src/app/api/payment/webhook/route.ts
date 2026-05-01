@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Amount verification — REQUIRED to prevent free booking confirmation
-    // Safepay sends amount in PKR integer. Field must always be present and match.
+    // Safepay sends amount in PKR. Allow ±1 PKR tolerance for rounding differences.
     const paidAmount = event?.data?.amount;
     if (typeof paidAmount !== "number") {
       console.error(
@@ -52,10 +52,11 @@ export async function POST(req: NextRequest) {
     }
 
     const expectedAmount = Math.round(booking.total);
-    if (paidAmount !== expectedAmount) {
+    const receivedAmount = Math.round(paidAmount);
+    if (Math.abs(expectedAmount - receivedAmount) > 1) {
       console.error(
         `[webhook] Amount mismatch on booking ${orderId}: ` +
-        `expected PKR ${expectedAmount}, received PKR ${paidAmount}`
+        `expected PKR ${expectedAmount}, received PKR ${receivedAmount}`
       );
       // Do NOT confirm the booking. Log for manual review.
       return NextResponse.json(
