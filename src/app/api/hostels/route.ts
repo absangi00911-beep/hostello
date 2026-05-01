@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
 
     let hostelIds: string[];
     let total: number;
+    let isSearchDegraded = false;
 
     // Try Typesense first, fall back to Prisma if unavailable
     try {
@@ -70,16 +71,34 @@ export async function GET(req: NextRequest) {
       total = (searchResults as any).found || 0;
     } catch (searchErr) {
       console.error("[search] Typesense failed, falling back to Prisma", searchErr);
+      isSearchDegraded = true;
 
-      // Basic Prisma fallback
+      // Full Prisma fallback with complete filter support
       const whereClause: any = { status: "ACTIVE" };
       if (city) whereClause.city = city;
       if (gender) whereClause.gender = gender;
       if (verified) whereClause.verified = true;
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        whereClause.pricePerMonth = {};
+        if (minPrice !== undefined) whereClause.pricePerMonth.gte = minPrice;
+        if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
+      }
+      if (amenities && amenities.length > 0) {
+        // Match hostels that have ALL specified amenities
+        whereClause.amenities = { hasSome: amenities };
+      }
+
+      // Determine sort order
+      const orderByClause: any = {};
+      if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
+      else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
+      else if (sort === "rating") orderByClause.rating = "desc";
+      else orderByClause.createdAt = "desc"; // newest
 
       const fallbackHostels = await db.hostel.findMany({
         where: whereClause,
         select: { id: true },
+        orderBy: Object.keys(orderByClause).length > 0 ? orderByClause : { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       });
@@ -128,6 +147,7 @@ export async function GET(req: NextRequest) {
       page,
       limit,
       hasMore: (page - 1) * limit + orderedHostels.length < total,
+      isSearchDegraded,
     });
   } catch (err) {
     console.error("[GET /api/hostels]", err);
