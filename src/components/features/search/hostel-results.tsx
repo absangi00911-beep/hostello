@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
 import { searchParamsSchema } from "@/lib/validations";
+import { searchHostelsWithFallback } from "@/lib/hostel-search";
 import { HostelCard } from "@/components/features/hostels/hostel-card";
 import { SearchPagination } from "./search-pagination";
 import { Frown } from "lucide-react";
 import Link from "next/link";
-import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
 
 interface HostelResultsProps {
   params: Record<string, string | string[]>;
@@ -51,62 +51,23 @@ export async function HostelResults({ params }: HostelResultsProps) {
     let total: number;
     let isSearchDegraded = false;
 
-    // Try Typesense first, fall back to Prisma if unavailable
-    try {
-      const searchResults = await searchHostels(q || "", {
-        city: city ? city : undefined,
-        gender: gender ? gender : undefined,
-        minPrice,
-        maxPrice,
-        amenities,
-        verified: verified !== undefined ? verified : undefined,
-        sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
-        page,
-        limit,
-      });
+    // Use shared search service with Typesense → Prisma fallback
+    const searchResult = await searchHostelsWithFallback({
+      q,
+      city: city ? city : undefined,
+      gender: gender ? gender : undefined,
+      minPrice,
+      maxPrice,
+      amenities,
+      verified: verified !== undefined ? verified : undefined,
+      sort: (sort as "price_asc" | "price_desc" | "rating" | "newest") || "newest",
+      page,
+      limit,
+    });
 
-      // Extract hostel IDs from search results — fully typed access
-      hostelIds = searchResults.hits.map((hit: TypesenseSearchHit<HostelDocument>) => hit.document.id);
-      total = searchResults.found;
-    } catch (searchErr) {
-      console.error("[search] Typesense failed, falling back to Prisma", searchErr);
-      isSearchDegraded = true;
-
-      // Full Prisma fallback with complete filter support
-      const whereClause: any = { status: "ACTIVE" };
-      if (city) whereClause.city = city;
-      if (gender) whereClause.gender = gender;
-      if (verified) whereClause.verified = true;
-      if (minPrice !== undefined || maxPrice !== undefined) {
-        whereClause.pricePerMonth = {};
-        if (minPrice !== undefined) whereClause.pricePerMonth.gte = minPrice;
-        if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
-      }
-      if (amenities && amenities.length > 0) {
-        // Match hostels that have ALL specified amenities
-        whereClause.amenities = { hasSome: amenities };
-      }
-
-      // Determine sort order
-      const orderByClause: any = {};
-      if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
-      else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
-      else if (sort === "rating") orderByClause.rating = "desc";
-      else orderByClause.createdAt = "desc"; // newest
-
-      const fallbackHostels = await db.hostel.findMany({
-        where: whereClause,
-        select: { id: true },
-        orderBy: Object.keys(orderByClause).length > 0 ? orderByClause : { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
-
-      hostelIds = fallbackHostels.map((h) => h.id);
-
-      // Get total count for pagination
-      total = await db.hostel.count({ where: whereClause });
-    }
+    hostelIds = searchResult.hostelIds;
+    total = searchResult.total;
+    isSearchDegraded = searchResult.isSearchDegraded;
 
     // Fetch full hostel details from database
     const hostels = await db.hostel.findMany({
