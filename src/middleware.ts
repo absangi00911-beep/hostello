@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
 import { verifyCsrfOrigin } from "@/lib/csrf";
+import { validateEnvironment } from "@/lib/env-validation";
+
+// Validate critical environment variables at startup
+validateEnvironment();
 
 // API route prefixes that are exempt from the CSRF origin check because they
 // use their own authentication mechanism (Bearer tokens, HMAC signatures).

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 import { sanitizeString } from "@/lib/validations";
+import { getRequiredEnv, getOptionalEnv } from "@/lib/env-validation";
 import { z } from "zod";
 
 /**
@@ -48,20 +49,41 @@ const updateSchema = z.object({
 
 function getAllowedImageOrigins(): string[] {
   const origins: string[] = [];
-  const r2PublicUrl = process.env.R2_PUBLIC_URL;
-  if (r2PublicUrl) origins.push(r2PublicUrl.replace(/\/+$/, ""));
-  if (process.env.NODE_ENV !== "production" || !r2PublicUrl) {
+
+  // In production, R2_PUBLIC_URL is required for the image allowlist to function.
+  // getRequiredEnv will throw with a clear error message if it's missing.
+  if (process.env.NODE_ENV === "production") {
+    const r2PublicUrl = getRequiredEnv(
+      "R2_PUBLIC_URL",
+      "image allowlist initialization"
+    );
+    origins.push(r2PublicUrl.replace(/\/+$/, ""));
+  } else {
+    // In development, R2_PUBLIC_URL is optional.
+    // If not set, we allow Unsplash for testing.
+    const r2PublicUrl = getOptionalEnv("R2_PUBLIC_URL");
+    if (r2PublicUrl) {
+      origins.push(r2PublicUrl.replace(/\/+$/, ""));
+    }
+    // Always allow Unsplash in development for testing
     origins.push("https://images.unsplash.com");
   }
+
   return origins;
 }
 
 function isImageUrlAllowed(url: string): boolean {
   const allowed = getAllowedImageOrigins();
+
+  // This should never happen because getAllowedImageOrigins throws in production
+  // if R2_PUBLIC_URL is missing. But keep the check as a defensive measure.
   if (allowed.length === 0) {
-    console.error("[security] Image allowlist is empty — blocking all URLs");
+    console.error(
+      "[security] Image allowlist is empty — check R2_PUBLIC_URL configuration"
+    );
     return false;
   }
+
   return allowed.some((o) => url.startsWith(o + "/") || url === o);
 }
 
