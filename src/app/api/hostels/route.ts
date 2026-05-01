@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { searchParamsSchema, hostelCreateSchema } from "@/lib/validations";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { createHostelRecord } from "@/lib/hostel-service";
-import { searchHostels } from "@/lib/typesense";
+import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
 
 export async function GET(req: NextRequest) {
   // 60 search requests per IP per minute
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     // Try Typesense first, fall back to Prisma if unavailable
     try {
-      const searchResults = await searchHostels(q || "", {
+      const searchResults: TypesenseSearchResult<HostelDocument> = await searchHostels(q || "", {
         city: city ? city : undefined,
         gender: gender ? gender : undefined,
         minPrice,
@@ -66,9 +66,9 @@ export async function GET(req: NextRequest) {
         limit,
       });
 
-      // Extract hostel IDs from search results
-      hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
-      total = (searchResults as any).found || 0;
+      // Extract hostel IDs from search results — fully typed access
+      hostelIds = searchResults.hits.map((hit: TypesenseSearchHit<HostelDocument>) => hit.document.id);
+      total = searchResults.found;
     } catch (searchErr) {
       console.error("[search] Typesense failed, falling back to Prisma", searchErr);
       isSearchDegraded = true;
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
     const hostelMap = new Map(hostels.map((h) => [h.id, h]));
     const orderedHostels = hostelIds
       .map((id: string) => hostelMap.get(id))
-      .filter((h: any) => h !== undefined);
+      .filter((h): h is Exclude<typeof h, undefined> => h !== undefined);
 
     return NextResponse.json({
       data: orderedHostels,

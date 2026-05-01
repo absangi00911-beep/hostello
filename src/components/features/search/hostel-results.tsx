@@ -4,7 +4,7 @@ import { HostelCard } from "@/components/features/hostels/hostel-card";
 import { SearchPagination } from "./search-pagination";
 import { Frown } from "lucide-react";
 import Link from "next/link";
-import { searchHostels } from "@/lib/typesense";
+import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
 
 interface HostelResultsProps {
   params: Record<string, string | string[]>;
@@ -65,9 +65,9 @@ export async function HostelResults({ params }: HostelResultsProps) {
         limit,
       });
 
-      // Extract hostel IDs from search results
-      hostelIds = (searchResults.hits || []).map((hit: any) => hit.document.id);
-      total = (searchResults as any).found || 0;
+      // Extract hostel IDs from search results — fully typed access
+      hostelIds = searchResults.hits.map((hit: TypesenseSearchHit<HostelDocument>) => hit.document.id);
+      total = searchResults.found;
     } catch (searchErr) {
       console.error("[search] Typesense failed, falling back to Prisma", searchErr);
       isSearchDegraded = true;
@@ -136,7 +136,7 @@ export async function HostelResults({ params }: HostelResultsProps) {
     const hostelMap = new Map(hostels.map((h) => [h.id, h]));
     const orderedHostels = hostelIds
       .map((id: string) => hostelMap.get(id))
-      .filter((h: any) => h !== undefined);
+      .filter((h): h is Exclude<typeof h, undefined> => h !== undefined);
 
     if (orderedHostels.length === 0) {
       return (

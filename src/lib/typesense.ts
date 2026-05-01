@@ -25,6 +25,12 @@ function getClient(): TypesenseClient {
 
 export const HOSTEL_COLLECTION_NAME = "hostels";
 
+// ── Type Definitions ───────────────────────────────────────────────────────────
+
+/**
+ * Typesense document for a hostel.
+ * Matches the Typesense collection schema defined in initializeHostelCollection.
+ */
 export interface HostelDocument {
   id: string;
   name: string;
@@ -54,6 +60,56 @@ export interface HostelDocument {
   createdAt: number; // Unix timestamp
   updatedAt: number; // Unix timestamp
   searchText: string; // Denormalized text field for better search
+}
+
+/**
+ * A single search hit from Typesense.
+ * Contains the document and metadata about the match.
+ */
+export interface TypesenseSearchHit<T = HostelDocument> {
+  document: T;
+  highlights?: Array<{
+    field: string;
+    snippet: string;
+  }>;
+  text_match: number;
+  text_match_info?: {
+    best_field_weight: number;
+    best_field_score: number;
+    fields_matched: number;
+  };
+}
+
+/**
+ * Facet count information for a field.
+ * Used for filtering UI (e.g., price ranges, amenities).
+ */
+export interface TypesenseFacetCount {
+  count: number;
+  highlighted: string;
+  value: string;
+}
+
+/**
+ * Facet information grouped by field.
+ */
+export interface TypesenseFacetInfo {
+  field_name: string;
+  counts: TypesenseFacetCount[];
+}
+
+/**
+ * Complete search response from Typesense.
+ * Provides type safety for accessing response properties.
+ */
+export interface TypesenseSearchResult<T = HostelDocument> {
+  hits: TypesenseSearchHit<T>[];
+  found: number;
+  out_of: number;
+  page: number;
+  search_time_ms: number;
+  facet_counts?: TypesenseFacetInfo[];
+  search_cutoff?: boolean;
 }
 
 /**
@@ -166,6 +222,9 @@ export async function removeHostelFromIndex(hostelId: string) {
 
 /**
  * Search hostels using Typesense
+ *
+ * @returns TypesenseSearchResult with properly typed hits and metadata
+ * @throws Error if search fails
  */
 export async function searchHostels(
   q: string,
@@ -180,7 +239,7 @@ export async function searchHostels(
     page?: number;
     limit?: number;
   }
-) {
+): Promise<TypesenseSearchResult<HostelDocument>> {
   const {
     city,
     gender,
@@ -246,7 +305,7 @@ export async function searchHostels(
 
   try {
     const results = await getClient().collections(HOSTEL_COLLECTION_NAME).documents().search(searchParams as any);
-    return results;
+    return results as TypesenseSearchResult<HostelDocument>;
   } catch (error) {
     console.error("✗ Search failed:", error);
     throw error;
