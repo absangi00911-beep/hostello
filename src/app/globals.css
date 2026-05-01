@@ -154,7 +154,7 @@ h3 { letter-spacing: -0.025em; }
 /* ─── Skeleton ───────────────────────────────────────────────────────────── */
 
 .skeleton {
-  background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+  background: linear-gradient(90deg, var(--color-ground) 25%, var(--color-border) 50%, var(--color-ground) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
