@@ -604,7 +604,30 @@ async function main() {
   for (const data of hostelData) {
     await db.hostel.upsert({
       where: { slug: data.slug },
-      update: {},
+      // Update with seed data so that manual corrections (price, description, etc.)
+      // take effect on re-run. Exclude rating/reviewCount since they're computed
+      // from actual reviews, not set by the seed.
+      update: {
+        name: data.name,
+        description: data.description,
+        city: data.city,
+        area: data.area,
+        address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        pricePerMonth: data.pricePerMonth,
+        rooms: data.rooms,
+        capacity: data.capacity,
+        gender: data.gender,
+        amenities: data.amenities,
+        rules: data.rules,
+        images: data.images,
+        coverImage: data.coverImage,
+        verified: data.verified,
+        featured: data.featured,
+        ownerId: data.ownerId,
+        status: data.status,
+      },
       create: data,
     });
   }
