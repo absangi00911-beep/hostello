@@ -28,10 +28,16 @@ const FILTER_STATUSES = [
 
 type FilterStatus = (typeof FILTER_STATUSES)[number];
 
-function parseStatus(raw: string | undefined): FilterStatus | undefined {
+// Explicit sentinel for "no filter applied" — makes intent clear and decouples
+// UI layer from Prisma's undefined behavior. Use Symbol to prevent accidental
+// usage of regular values.
+const NO_FILTER = Symbol("NO_FILTER");
+
+function parseStatus(raw: string | undefined): FilterStatus | typeof NO_FILTER {
   // Type-safe parse: only return a value if it is a member of the enum.
-  // This removes the need for `as any` in the Prisma query entirely.
-  return FILTER_STATUSES.find((s) => s === raw);
+  // Returns NO_FILTER sentinel if absent or invalid — clearer than returning undefined.
+  if (raw === undefined) return NO_FILTER;
+  return FILTER_STATUSES.find((s) => s === raw) ?? NO_FILTER;
 }
 
 const PAGE_SIZE = 50;
@@ -44,13 +50,14 @@ export default async function AdminHostelsPage(props: {
 
   const { status: filterStatus, cursor } = await props.searchParams;
 
-  // parseStatus returns undefined if the value is absent or not a valid enum member.
-  // Passing undefined to Prisma's where clause omits the filter entirely — no cast needed.
+  // parseStatus returns NO_FILTER if value is absent or invalid.
+  // Converts sentinel to Prisma query: NO_FILTER → undefined (omits filter).
   const selectedStatus = parseStatus(filterStatus);
+  const shouldFilterStatus = selectedStatus !== NO_FILTER;
 
   // Fetch PAGE_SIZE + 1 to know if there's a next page
   const hostels = await db.hostel.findMany({
-    where: selectedStatus ? { status: selectedStatus } : undefined,
+    where: shouldFilterStatus ? { status: selectedStatus as FilterStatus } : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take: PAGE_SIZE + 1,
     ...(cursor && { skip: 1, cursor: { id: cursor } }),
@@ -81,13 +88,13 @@ export default async function AdminHostelsPage(props: {
         {/* Info and pagination */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-[var(--color-muted)]">
-            Showing {displayedHostels.length} of {selectedStatus ? "filtered" : "all"} hostels
+            Showing {displayedHostels.length} of {shouldFilterStatus ? "filtered" : "all"} hostels
           </p>
           {(cursor || hasNextPage) && (
             <div className="flex gap-2">
               {cursor && (
                 <Link
-                  href={`/admin/hostels${selectedStatus ? `?status=${selectedStatus}` : ""}`}
+                  href={`/admin/hostels${shouldFilterStatus ? `?status=${selectedStatus as FilterStatus}` : ""}`}
                   className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
                 >
                   ← Previous
@@ -95,7 +102,7 @@ export default async function AdminHostelsPage(props: {
               )}
               {hasNextPage && (
                 <Link
-                  href={`/admin/hostels?cursor=${nextCursor}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
+                  href={`/admin/hostels?cursor=${nextCursor}${shouldFilterStatus ? `&status=${selectedStatus as FilterStatus}` : ""}`}
                   className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-ground)] transition-colors"
                 >
                   Next →
@@ -108,23 +115,26 @@ export default async function AdminHostelsPage(props: {
         {/* Filter tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {([
-            { value: undefined,                    label: "All" },
+            { value: NO_FILTER,                    label: "All" },
             { value: HostelStatus.PENDING_REVIEW,  label: "Needs review" },
             { value: HostelStatus.ACTIVE,          label: "Active" },
             { value: HostelStatus.SUSPENDED,       label: "Suspended" },
-          ] as const).map(({ value, label }) => (
-            <Link
-              key={value ?? "all"}
-              href={value ? `/admin/hostels?status=${value}` : "/admin/hostels"}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
-                selectedStatus === value
-                  ? "bg-[var(--color-ink)] text-white"
-                  : "bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
+          ] as const).map(({ value, label }) => {
+            const isNoFilter = value === NO_FILTER;
+            return (
+              <Link
+                key={isNoFilter ? "all" : value}
+                href={isNoFilter ? "/admin/hostels" : `/admin/hostels?status=${value}`}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
+                  selectedStatus === value
+                    ? "bg-[var(--color-ink)] text-white"
+                    : "bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+                }`}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
