@@ -2,15 +2,13 @@ import type { NextConfig } from "next";
 
 // Environment-aware CSP configuration
 // In development: Allow unsafe-eval and unsafe-inline (required for Next.js HMR)
-// In production: Remove unsafe directives to strengthen XSS protection
+// In production: Allow unsafe-inline for Next.js internal scripts (hydration, error boundaries)
 const getScriptSrc = (): string => {
-  const isDev = process.env.NODE_ENV === "development";
-  const base = ["'self'"];
+  const base = ["'self'", "'unsafe-inline'"];
   
-  // Only allow unsafe-eval and unsafe-inline in development
-  if (isDev) {
+  // Also allow unsafe-eval in development for HMR
+  if (process.env.NODE_ENV === "development") {
     base.push("'unsafe-eval'");
-    base.push("'unsafe-inline'");
   }
   
   return base.join(" ");
