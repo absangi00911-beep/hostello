@@ -3,19 +3,13 @@ import { z } from "zod";
 // ─── Sanitization ─────────────────────────────────────────────────────────────
 
 /**
- * Sanitizes a string by removing HTML tags and dangerous characters.
- * Prevents XSS and injection attacks.
+ * Sanitizes a string by removing HTML tags.
+ * Prevents XSS and injection attacks by stripping angle brackets and their content.
+ * Does NOT decode HTML entities — that would reintroduce stripped tags.
  */
 export function sanitizeString(input: string): string {
-  // Remove HTML tags
+  // Remove HTML tags (anything between < and >)
   let sanitized = input.replace(/<[^>]*>/g, "");
-  // Decode HTML entities
-  sanitized = sanitized
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&amp;/g, "&");
   // Trim whitespace
   sanitized = sanitized.trim();
   return sanitized;
