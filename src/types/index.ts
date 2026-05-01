@@ -1,6 +1,8 @@
-import type { Hostel, User, Review, Booking, Room } from "@prisma/client";
+import type { Hostel, User as PrismaUser, Review, Booking, Room } from "@prisma/client";
+import type { DefaultSession } from "next-auth";
 
-export type { Hostel, User, Review, Booking, Room };
+export type { Hostel, Review, Booking, Room };
+export type User = PrismaUser;
 
 export type HostelWithOwner = Hostel & {
   owner: Pick<User, "id" | "name" | "avatar" | "phone">;
@@ -65,17 +67,14 @@ export type UserRole = "STUDENT" | "OWNER" | "ADMIN";
 
 declare module "next-auth" {
   interface Session {
-    user: {
+    user: DefaultSession["user"] & {
       id: string;
-      name: string;
-      email: string;
-      image?: string | null;
       role: UserRole;
-      emailVerified: boolean;
     };
   }
   interface User {
     role: UserRole;
+    tokenVersion?: number;
     emailVerified?: boolean;
   }
 }
@@ -86,5 +85,12 @@ declare module "@auth/core/jwt" {
     role?: UserRole;
     emailVerified?: boolean;
     tokenVersion?: number; // mirrors User.tokenVersion; mismatch means password was reset
+  }
+}
+
+declare module "@auth/core/adapters" {
+  interface AdapterUser {
+    role?: UserRole;
+    tokenVersion?: number;
   }
 }

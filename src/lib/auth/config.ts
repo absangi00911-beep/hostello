@@ -90,11 +90,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             image: user.avatar,
             role: user.role,
             emailVerified: !!user.emailVerified,
-            // Pass tokenVersion to the JWT callback via the user object
-            // (non-standard field; picked up in jwt callback below)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // Pass tokenVersion to the JWT callback via the user object.
+            // NextAuth type augmentation in types/index.ts makes this field valid.
             tokenVersion: user.tokenVersion,
-          } as any;
+          };
         } catch (err) {
           // Distinguish between auth failures and infrastructure failures.
           // DB timeout / connection error should not look like "wrong password".
@@ -111,11 +110,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.emailVerified =
-          (user as { emailVerified?: boolean }).emailVerified ?? false;
-        // Embed tokenVersion so the session callback can detect revocation
-        token.tokenVersion =
-          (user as { tokenVersion?: number }).tokenVersion ?? 0;
+        // Convert emailVerified from Date | null (AdapterUser) to boolean
+        token.emailVerified = user.emailVerified ? true : false;
+        // tokenVersion is our custom field passed via the user object.
+        // Augmented in types/index.ts for type safety.
+        token.tokenVersion = user.tokenVersion ?? 0;
       }
       return token;
     },
@@ -135,8 +134,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       session.user.id = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
-      (session.user as unknown as { emailVerified: boolean }).emailVerified =
-        token.emailVerified as boolean;
       return session;
     },
   },
