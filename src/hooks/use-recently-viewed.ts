@@ -53,11 +53,13 @@ export function useRecentlyViewed() {
       // Add to front and trim to MAX_ITEMS
       const updated = [newEntry, ...filtered].slice(0, MAX_ITEMS);
 
-      // Persist to localStorage
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error("[useRecentlyViewed] Failed to save to localStorage:", err);
+      // Persist to localStorage (with guard against SSR)
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (err) {
+          console.error("[useRecentlyViewed] Failed to save to localStorage:", err);
+        }
       }
 
       return updated;
@@ -66,20 +68,24 @@ export function useRecentlyViewed() {
 
   const clearAll = useCallback(() => {
     setItems([]);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (err) {
-      console.error("[useRecentlyViewed] Failed to clear localStorage:", err);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (err) {
+        console.error("[useRecentlyViewed] Failed to clear localStorage:", err);
+      }
     }
   }, []);
 
   const removeHostel = useCallback((hostelId: string) => {
     setItems((prev) => {
       const updated = prev.filter((item) => item.id !== hostelId);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error("[useRecentlyViewed] Failed to save to localStorage:", err);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (err) {
+          console.error("[useRecentlyViewed] Failed to save to localStorage:", err);
+        }
       }
       return updated;
     });
