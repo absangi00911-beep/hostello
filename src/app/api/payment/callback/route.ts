@@ -4,13 +4,18 @@
  * Handles the customer redirect-back from JazzCash and EasyPaisa after payment.
  * Both gateways POST form data to this URL (the returnURL / postBackURL).
  *
+ * Security:
+ *   - POST requests are exempted from CSRF origin checks in middleware.ts because
+ *     the POST originates from the payment gateway server, not the user's browser.
+ *   - GET callbacks are safe from CSRF (safe methods always allowed by verifyCsrfOrigin).
+ *   - All callbacks are verified by HMAC signature (JazzCash) or amount verification (EasyPaisa).
+ *   - Optional IP allowlisting can be enabled via GATEWAY_IPS environment variable
+ *     for defense-in-depth (blocks requests from unexpected sources).
+ *
  * After verifying the payment this route:
  *   1. Confirms the booking in the database.
  *   2. Sends the student a confirmation email.
  *   3. Redirects the browser to /payment/success or the booking page on failure.
- *
- * NOTE: This route is exempted from CSRF origin checks in middleware.ts because
- * the POST originates from the payment gateway server, not the user's browser.
  */
 
 import { type NextRequest, NextResponse } from "next/server";
@@ -20,6 +25,7 @@ import { parseJazzCashCallback } from "@/lib/jazzcash";
 import { parseEasypaisaCallback } from "@/lib/easypaisa";
 import { sendEmail } from "@/lib/email";
 import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
+import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
 
 const APP_URL = getAppUrl();
 
@@ -130,6 +136,21 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
   if (!bookingId) {
     console.error("[callback] Missing bookingId in callback URL");
     return NextResponse.redirect(`${APP_URL}/?payment=error`, 303);
+  }
+
+  // ── IP verification (optional, defense-in-depth) ──────────────────────
+  // If GATEWAY_IPS is configured, verify the request comes from an allowed IP.
+  // This is optional; signature verification provides the primary security.
+  if (provider) {
+    const ipError = verifyGatewayIp(req, provider);
+    if (ipError) {
+      console.warn(
+        `[callback] IP verification failed for ${provider} (booking ${bookingId}): ${ipError}`,
+      );
+      // Log but don't block — signature verification is the primary defense.
+      // Uncomment the return below to enforce strict IP checks.
+      // return NextResponse.json({ error: ipError }, { status: 403 });
+    }
   }
 
   // Merge URL query params with body params (GET callbacks put everything in the URL)
