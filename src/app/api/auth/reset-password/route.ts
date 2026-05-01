@@ -4,6 +4,32 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 
+// ─── Session Invalidation Pattern ──────────────────────────────────────────
+// When a user's password changes (either via reset-password or change-password),
+// all existing sessions must be revoked immediately to prevent account takeover.
+//
+// MECHANISM:
+// 1. Increment user.tokenVersion in database
+// 2. Clear in-process cache via invalidateLocalSessionCache(userId)
+// 3. On next request, auth() calls validateTokenVersion() which fails if
+//    token's embedded tokenVersion no longer matches DB version
+// 4. Session callback throws, auth() returns null, user is signed out
+//
+// WHY TWO FLOWS?
+// - reset-password: Unauthenticated, user has forgotten password
+//   - Requires valid reset token (token is single-use for security)
+//   - Must mark token as usedAt to prevent replay attacks
+//   - See: /src/app/api/profile/change-password for authenticated flow
+//
+// - change-password: Authenticated, user actively changing password
+//   - Requires verification of current password
+//   - No token to mark (user already has session)
+//   - See: /src/app/api/auth/reset-password for unauthenticated flow
+//
+// BOTH achieve identical security: active sessions are revoked, forcing
+// re-authentication with new credentials.
+// ────────────────────────────────────────────────────────────────────────────
+
 const schema = z.object({
   token: z.string().min(1),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -53,10 +79,8 @@ export async function POST(req: NextRequest) {
         where: { id: record.userId },
         data: {
           password: hashed,
-          // Increment tokenVersion so every outstanding JWT issued with the
-          // previous version fails the session callback's version check.
-          // This is the primary mechanism for invalidating active sessions
-          // after a credential change.
+          // Increment tokenVersion to revoke all existing sessions.
+          // See comment block above for mechanism and why this is needed.
           tokenVersion: { increment: 1 },
         },
       }),
@@ -66,8 +90,8 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
-    // Clear in-process token-version cache for this instance so the revocation
-    // takes effect immediately without waiting for the 30-second TTL to drain.
+    // Clear in-process token-version cache for immediate effect on this instance.
+    // Other instances will detect revocation on their next session check.
     invalidateLocalSessionCache(record.userId);
 
     return NextResponse.json({

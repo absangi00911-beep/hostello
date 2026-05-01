@@ -5,6 +5,32 @@ import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 
+// ─── Session Invalidation Pattern ──────────────────────────────────────────
+// When a user's password changes (either via change-password or reset-password),
+// all existing sessions must be revoked immediately to prevent account takeover.
+//
+// MECHANISM:
+// 1. Increment user.tokenVersion in database
+// 2. Clear in-process cache via invalidateLocalSessionCache(userId)
+// 3. On next request, auth() calls validateTokenVersion() which fails if
+//    token's embedded tokenVersion no longer matches DB version
+// 4. Session callback throws, auth() returns null, user is signed out
+//
+// WHY TWO FLOWS?
+// - change-password: Authenticated, user actively changing password
+//   - Requires verification of current password
+//   - No token to mark (user already has session)
+//   - See: /src/app/api/auth/reset-password for unauthenticated flow
+//
+// - reset-password: Unauthenticated, user has forgotten password
+//   - Requires valid reset token (token is single-use for security)
+//   - Must mark token as usedAt to prevent replay attacks
+//   - See: /src/app/api/auth/reset-password for details
+//
+// BOTH achieve identical security: active sessions are revoked, forcing
+// re-authentication with new credentials.
+// ────────────────────────────────────────────────────────────────────────────
+
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
@@ -60,7 +86,8 @@ export async function POST(req: NextRequest) {
     // Hash new password
     const hashedPassword = await hash(newPassword, 12);
 
-    // Update password and increment tokenVersion to invalidate all sessions
+    // Update password and increment tokenVersion to revoke all sessions.
+    // See comment block at top of file for mechanism and why this is needed.
     await db.user.update({
       where: { id: user.id },
       data: {
@@ -69,7 +96,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Clear in-process token-version cache for immediate effect
+    // Clear in-process token-version cache for immediate effect on this instance.
+    // Other instances will detect revocation on their next session check.
     await invalidateLocalSessionCache(user.id);
 
     return NextResponse.json({
