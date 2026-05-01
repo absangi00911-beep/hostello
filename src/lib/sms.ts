@@ -2,7 +2,27 @@
  * SMS Service
  *
  * Sends SMS messages for OTP verification and notifications.
- * Supports Twilio as the provider, with fallback for development.
+ * Currently uses Twilio with manual HTTP integration (not the official SDK).
+ *
+ * IMPLEMENTATION NOTE:
+ * This uses raw fetch() calls to the Twilio REST API instead of the official
+ * `twilio` npm package. This was a deliberate choice:
+ *
+ * Tradeoffs of current manual implementation:
+ * ✓ Zero additional dependencies (smaller bundle)
+ * ✓ Direct control over HTTP layer
+ * ✗ No automatic retry logic (must be added manually if needed)
+ * ✗ No connection pooling or HTTP agent reuse
+ * ✗ No built-in rate limiting support
+ * ✗ Type safety relies on manual typing
+ *
+ * UPGRADE PATH:
+ * If SMS becomes mission-critical and needs automatic retries/pooling:
+ *   1. npm install twilio
+ *   2. Replace fetch calls with: const client = twilio(accountSid, authToken);
+ *                               await client.messages.create({ to, from, body });
+ *   3. Delete manual normalization (twilio package handles it)
+ *   See: https://www.twilio.com/docs/sms/quickstart/node
  *
  * To use:
  *   1. Sign up for Twilio: https://www.twilio.com/
@@ -50,10 +70,13 @@ export function generateOTP(): string {
 /**
  * Send SMS via Twilio or log in development.
  *
+ * Implementation: Raw fetch to Twilio API (manual integration, no SDK).
+ * See module docstring for upgrade path to official SDK if needed.
+ *
  * Error handling:
  * - Development (no Twilio key): Logs to console
  * - Production (Twilio error): Throws error, caller must handle
- * - Network errors: Retried once automatically
+ * - Network errors: Propagated to caller (no automatic retry)
  */
 export async function sendSms({ to, message }: SendSmsOptions): Promise<SendSmsResult> {
   // In development without Twilio credentials, just log
