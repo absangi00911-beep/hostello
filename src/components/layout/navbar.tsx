@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/hostels",  label: "Browse hostels" },
-  { href: "/compare",  label: "Compare"         },
+  { href: "/hostels/compare",  label: "Compare"         },
   { href: "/about",    label: "About"            },
 ];
 
@@ -64,7 +64,7 @@ export function Navbar() {
               {/* Authenticated: dashboard shortcut + profile */}
               {isOwner ? (
                 <Link
-                  href="/owner/listings/new"
+                  href="/dashboard/hostels/new"
                   className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
                 >
                   + Add listing
@@ -149,7 +149,7 @@ export function Navbar() {
                   My account
                 </Link>
                 <Link
-                  href={isOwner ? "/owner/listings/new" : "/owner/onboarding"}
+                  href={isOwner ? "/dashboard/hostels/new" : "/owner/onboarding"}
                   onClick={() => setMenuOpen(false)}
                   className="block py-2.5 px-3 rounded-lg text-sm font-semibold text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] transition-colors"
                 >
