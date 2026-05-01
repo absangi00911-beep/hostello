@@ -22,17 +22,16 @@ const limiters = new Map<string, Ratelimit>();
 
 let redisClient: Redis | null | undefined;
 
-const cleanupInterval =
-  typeof setInterval === "function"
-    ? setInterval(() => {
-        const now = Date.now();
-        store.forEach((value, key) => {
-          if (value.resetAt < now) store.delete(key);
-        });
-      }, 5 * 60 * 1000)
-    : undefined;
+// Cleanup stale entries every 5 minutes. Call .unref() so the timer doesn't
+// prevent Node.js from exiting (important for serverless cold starts).
+const cleanupInterval = setInterval(() => {
+  const now = Date.now();
+  store.forEach((value, key) => {
+    if (value.resetAt < now) store.delete(key);
+  });
+}, 5 * 60 * 1000);
 
-cleanupInterval?.unref?.();
+cleanupInterval.unref();
 
 function toWindowString(windowMs: number): Duration {
   if (windowMs % 3_600_000 === 0) return `${windowMs / 3_600_000} h`;
