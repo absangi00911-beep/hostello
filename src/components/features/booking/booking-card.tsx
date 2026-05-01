@@ -50,27 +50,42 @@ function submitPaymentForm(action: string, params: Record<string, string>) {
 }
 
 /**
- * Detects edge cases where pricing may surprise the user.
- * Returns a warning message if detected, null otherwise.
+ * Detects if pricing may surprise the user based on calendar month boundaries.
+ * 
+ * Pricing logic: We charge based on calendar month boundaries, not actual duration.
+ * Examples:
+ * - Jan 1 → Jan 30 = 0 month boundaries → charged as 1 month
+ * - Jan 31 → Feb 1 = 1 month boundary → charged as 1 month
+ * - Jan 15 → Feb 15 = 1 month boundary → charged as 1 month
+ * 
+ * This is intentional (Option A from billing.md) but users should understand it.
+ * Returns warning text if the calculation might surprise them, null otherwise.
  */
-function getPricingWarning(duration: number | null, checkIn: string, checkOut: string): string | null {
+function getPricingWarning(duration: number | null, checkIn: string, checkOut: string, pricePerMonth: number): string | null {
   if (duration === null || !checkIn || !checkOut) return null;
 
-  // Edge case: 1-month duration means check-out is first day of next month
-  // e.g., Jan 1 → Feb 1 is technically 31 days but charged as 1 full month
-  if (duration === 1) {
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+  const checkInDate = new Date(checkIn);
+  const checkOutDate = new Date(checkOut);
 
-    // If check-out is first day of a different month, warn the user
-    if (
-      checkOutDate.getDate() === 1 &&
-      checkInDate.getMonth() !== checkOutDate.getMonth()
-    ) {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const checkOutMonth = months[checkOutDate.getMonth()];
-      return `You'll be charged for the full month, even though you're only staying until ${checkOutMonth} 1st.`;
-    }
+  // Edge case: checkout is on the 1st of the month
+  // Jan 31 → Feb 1 looks like just 2 days but charges as 1 full month
+  if (
+    checkOutDate.getDate() === 1 &&
+    checkInDate.getMonth() !== checkOutDate.getMonth()
+  ) {
+    return `You'll be charged for the full month (₨${(duration * pricePerMonth).toLocaleString("en-PK")}), even though you're checking out on the 1st.`;
+  }
+
+  // Another edge case: same calendar month booking (e.g., Jan 1 → Jan 30)
+  // Still charged as 1 full month
+  if (
+    checkInDate.getMonth() === checkOutDate.getMonth() &&
+    checkInDate.getFullYear() === checkOutDate.getFullYear() &&
+    duration === 1
+  ) {
+    const monthName = checkInDate.toLocaleDateString("en-PK", { month: "long" });
+    const days = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    return `You're staying ${days} days in ${monthName}, but you'll be charged for the full month (₨${pricePerMonth.toLocaleString("en-PK")}).`;
   }
 
   return null;
@@ -122,7 +137,7 @@ export function BookingCard({
   const checkOut  = moveInMonth ? addMonths(moveInMonth, duration) : "";
   const months    = moveInMonth ? duration : null;
   const rentTotal = months !== null ? months * pricePerMonth : null;
-  const pricingWarning = getPricingWarning(months, checkIn, checkOut);
+  const pricingWarning = getPricingWarning(months, checkIn, checkOut, pricePerMonth);
 
   const hasRating =
     rating !== undefined && rating > 0 &&
@@ -380,22 +395,37 @@ export function BookingCard({
           </div>
         )}
 
-        {/* Price breakdown */}
+        {/* Price breakdown with billing disclosure */}
         {months !== null && rentTotal !== null && (
-          <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5 space-y-2 text-sm">
-            <div className="flex justify-between text-[var(--color-muted)]">
-              <span>{formatPrice(pricePerMonth)} × {months} month{months !== 1 ? "s" : ""}</span>
-              <span>{formatPrice(rentTotal)}</span>
+          <div className="space-y-3">
+            <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5 space-y-2 text-sm">
+              <div className="flex justify-between text-[var(--color-muted)]">
+                <span>{formatPrice(pricePerMonth)} × {months} calendar month{months !== 1 ? "s" : ""}</span>
+                <span>{formatPrice(rentTotal)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-[var(--color-ink)] pt-2 border-t border-[var(--color-border)]">
+                <span>Total due at booking</span>
+                <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(rentTotal)}</span>
+              </div>
+              <div className="flex items-start gap-1.5 pt-1">
+                <Info className="w-3.5 h-3.5 text-[var(--color-muted)] mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
+                  The owner may collect a refundable security deposit (typically 2 months' rent) directly on move-in day. This is separate from the amount charged here.
+                </p>
+              </div>
             </div>
-            <div className="flex justify-between font-bold text-[var(--color-ink)] pt-2 border-t border-[var(--color-border)]">
-              <span>Total due at booking</span>
-              <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(rentTotal)}</span>
-            </div>
-            <div className="flex items-start gap-1.5 pt-1">
-              <Info className="w-3.5 h-3.5 text-[var(--color-muted)] mt-0.5 flex-shrink-0" />
-              <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
-                The owner may collect a refundable security deposit (typically 2 months' rent) directly on move-in day. This is separate from the amount charged here.
-              </p>
+
+            {/* General billing disclosure about calendar months */}
+            <div className="rounded-xl bg-blue-50 border border-blue-200 p-3.5 flex gap-3">
+              <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-blue-900 leading-relaxed space-y-1">
+                <p className="font-medium">
+                  You&apos;re booking for <span className="font-bold">{months} calendar month{months !== 1 ? "s" : ""}</span>.
+                </p>
+                <p>
+                  Pricing is based on calendar month boundaries. For example, booking from Jan 15 to Feb 15 = 1 calendar month = {formatPrice(pricePerMonth)}.
+                </p>
+              </div>
             </div>
           </div>
         )}
