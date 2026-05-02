@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PAYMENT_METHODS } from "./payment-methods";
 
 // ─── Sanitization ─────────────────────────────────────────────────────────────
 
@@ -116,7 +117,10 @@ export const bookingSchema = z
     checkIn: z.coerce.date(),
     checkOut: z.coerce.date(),
     guests: z.number().int().min(1).max(4),
-    paymentMethod: z.enum(["safepay"]),
+    // Dynamically generate enum from PAYMENT_METHODS to keep validation in sync with payment-methods.ts
+    paymentMethod: z.enum(
+      PAYMENT_METHODS.map((m) => m.value) as [string, ...string[]]
+    ),
   })
   .refine((data) => data.checkIn >= new Date(new Date().setHours(0, 0, 0, 0)), {
     message: "Check-in must be today or later",

@@ -71,7 +71,7 @@ export function Navbar() {
                 </Link>
               ) : (
                 <Link
-                  href="/owner/onboarding"
+                  href="/auth/signup?role=owner"
                   className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
                 >
                   List your hostel
@@ -94,7 +94,7 @@ export function Navbar() {
                 No "Get started" — search bar in hero handles new student acquisition.
               */}
               <Link
-                href="/owner/onboarding"
+                href="/auth/signup?role=owner"
                 className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
               >
                 List your hostel
@@ -149,7 +149,7 @@ export function Navbar() {
                   My account
                 </Link>
                 <Link
-                  href={isOwner ? "/dashboard/hostels/new" : "/owner/onboarding"}
+                  href={isOwner ? "/dashboard/hostels/new" : "/auth/signup?role=owner"}
                   onClick={() => setMenuOpen(false)}
                   className="block py-2.5 px-3 rounded-lg text-sm font-semibold text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] transition-colors"
                 >
@@ -166,7 +166,7 @@ export function Navbar() {
                   Sign in
                 </Link>
                 <Link
-                  href="/owner/onboarding"
+                  href="/auth/signup?role=owner"
                   onClick={() => setMenuOpen(false)}
                   className="block py-2.5 px-3 rounded-lg text-sm font-semibold text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] transition-colors"
                 >
