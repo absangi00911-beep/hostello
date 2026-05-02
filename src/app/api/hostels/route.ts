@@ -143,8 +143,8 @@ export async function POST(req: NextRequest) {
 
     const hostel = await createHostelRecord(
       session.user.id,
-      session.user.name,
-      session.user.email,
+      session.user.name ?? "",
+      session.user.email ?? "",
       data,
       body
     );
