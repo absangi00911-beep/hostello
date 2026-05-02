@@ -19,7 +19,7 @@ export default async function MainLayout({
     <>
       <Navbar />
       {showVerificationBanner && session && (
-        <VerificationBanner email={session.user.email} />
+        <VerificationBanner email={session.user.email ?? ""} />
       )}
       <main>{children}</main>
       <CompareBar />
