@@ -72,7 +72,7 @@ export default async function DashboardPage() {
 
     return (
       <OwnerDashboard
-        user={session.user}
+        user={{ name: session.user.name ?? "", email: session.user.email ?? "" }}
         hostels={hostels}
         recentBookings={recentBookings}
         totalRevenue={revenue._sum.total ?? 0}
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
     db.favorite.count({ where: { userId: session.user.id } }),
   ]);
 
-  return <StudentDashboard user={session.user} bookings={bookings} favoritesCount={favorites} />;
+  return <StudentDashboard user={{ name: session.user.name ?? "", email: session.user.email ?? "" }} bookings={bookings} favoritesCount={favorites} />;
 }
 
 // ─── Student Dashboard ────────────────────────────────────────────────────────
