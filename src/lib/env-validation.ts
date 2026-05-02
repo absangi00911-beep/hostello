@@ -85,28 +85,28 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
   },
   {
     name: "JAZZCASH_MERCHANT_ID",
-    requiredInProduction: true,
-    description: "JazzCash merchant ID",
+    requiredInProduction: false,
+    description: "JazzCash merchant ID (required only when jazzcash payment method is enabled)",
   },
   {
     name: "JAZZCASH_PASSWORD",
-    requiredInProduction: true,
-    description: "JazzCash merchant password",
+    requiredInProduction: false,
+    description: "JazzCash merchant password (required only when jazzcash payment method is enabled)",
   },
   {
     name: "JAZZCASH_INTEGRITY_SALT",
-    requiredInProduction: true,
-    description: "JazzCash HMAC integrity salt",
+    requiredInProduction: false,
+    description: "JazzCash HMAC integrity salt (required only when jazzcash payment method is enabled)",
   },
   {
     name: "EASYPAISA_STORE_ID",
-    requiredInProduction: true,
-    description: "EasyPaisa store ID",
+    requiredInProduction: false,
+    description: "EasyPaisa store ID (required only when easypaisa payment method is enabled)",
   },
   {
     name: "EASYPAISA_HASH_KEY",
-    requiredInProduction: true,
-    description: "EasyPaisa AES-128 hash key (16 characters)",
+    requiredInProduction: false,
+    description: "EasyPaisa AES-128 hash key (required only when easypaisa payment method is enabled)",
   },
 
   // ── Upstash (rate limiting, caching, cron) ─────────────────────────────
