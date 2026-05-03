@@ -56,6 +56,9 @@ export default function ListingCard({
         <Link href={`/dashboard/listings/${hostel.id}`} className={styles.editLink}>
           Manage
         </Link>
+        <Link href={`/dashboard/listings/${hostel.id}/settings`} className={styles.settingsLink}>
+          Settings
+        </Link>
       </div>
     </div>
   );

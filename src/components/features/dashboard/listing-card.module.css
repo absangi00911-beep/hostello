@@ -114,7 +114,8 @@
 }
 
 .viewLink,
-.editLink {
+.editLink,
+.settingsLink {
   flex: 1;
   padding: 0.5rem;
   text-align: center;
@@ -142,4 +143,13 @@
 
 .editLink:hover {
   background-color: var(--color-primary-dark, #3d5ab3);
+}
+
+.settingsLink {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.settingsLink:hover {
+  background-color: #7c3aed;
 }
