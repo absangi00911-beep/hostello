@@ -1,6 +1,7 @@
 "use client";
 
 import { Booking } from "@prisma/client";
+import Link from "next/link";
 import styles from "./booking-table.module.css";
 import { useState } from "react";
 
@@ -50,25 +51,31 @@ export default function BookingTable({ bookings }: BookingTableProps) {
         </thead>
         <tbody>
           {sortedBookings.map((booking) => (
-            <tr key={booking.id}>
-              <td>
-                <div className={styles.guestInfo}>
-                  <p className={styles.name}>{booking.user.name}</p>
-                  <p className={styles.email}>{booking.user.email}</p>
-                </div>
-              </td>
-              <td>{booking.hostel.name}</td>
-              <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
-              <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
-              <td className={styles.amount}>
-                PKR {(booking.total / 100).toLocaleString()}
-              </td>
-              <td>
-                <span className={`${styles.status} ${styles[booking.status.toLowerCase()]}`}>
-                  {booking.status}
-                </span>
-              </td>
-            </tr>
+            <Link 
+              key={booking.id} 
+              href={`/dashboard/bookings/${booking.id}`}
+              className={styles.tableRow}
+            >
+              <tr>
+                <td>
+                  <div className={styles.guestInfo}>
+                    <p className={styles.name}>{booking.user.name}</p>
+                    <p className={styles.email}>{booking.user.email}</p>
+                  </div>
+                </td>
+                <td>{booking.hostel.name}</td>
+                <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
+                <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
+                <td className={styles.amount}>
+                  PKR {(booking.total / 100).toLocaleString()}
+                </td>
+                <td>
+                  <span className={`${styles.status} ${styles[booking.status.toLowerCase()]}`}>
+                    {booking.status}
+                  </span>
+                </td>
+              </tr>
+            </Link>
           ))}
         </tbody>
       </table>

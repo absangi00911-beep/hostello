@@ -66,6 +66,12 @@
   background-color: var(--color-ground);
 }
 
+.tableRow {
+  text-decoration: none;
+  color: inherit;
+  display: contents;
+}
+
 .table td {
   padding: 1rem 1.5rem;
   color: var(--color-text);
