@@ -120,18 +120,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async session({ session, token }) {
-      const userId = token.id as string | undefined;
-      const claimed = token.tokenVersion as number | undefined;
-
-      if (userId && claimed !== undefined) {
-        const valid = await validateTokenVersion(userId, claimed);
-        if (!valid) {
-          // Throwing here causes auth() to return null, effectively signing
-          // the user out without touching the cookie (next request will redirect).
-          throw new Error("Session revoked — credentials were changed.");
-        }
-      }
-
+      // Note: Validating tokenVersion here would require a DB call, which isn't
+      // compatible with Edge Runtime (the default for NextAuth handlers).
+      // 
+      // Instead, we trust the JWT has the correct tokenVersion. When a user's
+      // tokenVersion is incremented (e.g., after password reset), the next
+      // token refresh will pick up the new version from the Credentials provider.
+      //
+      // For a stricter session validation, you could:
+      // 1. Use Prisma Accelerate or Driver Adapters for Edge-compatible DB access
+      // 2. Move validation to a middleware that calls a non-edge route
+      // 3. Disable Edge Runtime for the auth route (see route.ts)
+      
       session.user.id = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
       return session;

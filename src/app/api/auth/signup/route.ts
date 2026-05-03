@@ -18,9 +18,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    console.log("[signup] Received body:", body);
+    
     const parsed = signupSchema.safeParse(body);
 
     if (!parsed.success) {
+      console.error("[signup] Validation errors:", parsed.error.flatten());
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.flatten() },
         { status: 400 }
