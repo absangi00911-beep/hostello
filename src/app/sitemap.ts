@@ -99,18 +99,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dynamic hostel pages
-  const hostels = await db.hostel.findMany({
-    where: { status: "ACTIVE" },
-    select: { slug: true, updatedAt: true },
-    orderBy: { updatedAt: "desc" },
-  });
+  let hostelRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const hostels = await db.hostel.findMany({
+      where: { status: "ACTIVE" },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    });
 
-  const hostelRoutes: MetadataRoute.Sitemap = hostels.map((h) => ({
-    url: `${BASE_URL}/hostels/${h.slug}`,
-    lastModified: h.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+    hostelRoutes = hostels.map((h) => ({
+      url: `${BASE_URL}/hostels/${h.slug}`,
+      lastModified: h.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+  } catch (error) {
+    // During build without database access, skip dynamic routes
+    // They will be generated on-demand instead
+    console.warn("Could not fetch hostels for sitemap:", error instanceof Error ? error.message : "Unknown error");
+  }
 
   return [...staticRoutes, ...cityRoutes, ...hostelRoutes];
 }

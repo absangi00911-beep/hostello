@@ -19,9 +19,6 @@ const CITY_IMAGES: Record<string, string> = {
 };
 
 export function CityCards({ stats }: { stats: CityStats[] }) {
-  // Only show cities that have active inventory.
-  // A city card with count:0 showing "Coming soon" signals the product
-  // isn't ready — worse than not showing the card at all.
   const activeCities = stats.filter((s) => s.count > 0);
 
   if (activeCities.length === 0) return null;
@@ -29,38 +26,39 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
   const [first, second, ...rest] = activeCities;
 
   return (
-    <section className="py-24 bg-[var(--color-ground)]">
+    <section className="py-24 sm:py-32 bg-[var(--color-surface)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
+        
         {/* Header */}
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-xs font-bold tracking-widest text-[var(--color-brand-700)] uppercase mb-3">
-              Browse by city
-            </p>
+        <div className="mb-14">
+          <p className="text-sm font-bold tracking-widest text-[var(--color-brand-600)] uppercase mb-3">
+            Browse by Location
+          </p>
+          <div className="flex items-end justify-between">
             <h2
               className="text-4xl sm:text-5xl font-extrabold text-[var(--color-ink)]"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Where do you study?
             </h2>
+            <Link
+              href="/hostels"
+              className="hidden sm:flex items-center gap-2 text-base font-semibold text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] transition-colors"
+            >
+              View all cities
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            href="/hostels"
-            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-[var(--color-ink)] hover:text-[var(--color-brand-700)] transition-colors"
-          >
-            All cities <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-3 h-auto lg:h-[520px]">
-
+        <div className="grid grid-cols-2 lg:grid-cols-4 grid-rows-2 gap-4 h-auto lg:h-[520px]">
+          
           {/* Featured city — large */}
           {first && (
             <Link
               href={`/hostels?city=${first.city}`}
-              className="group col-span-2 row-span-2 relative overflow-hidden rounded-3xl bg-[var(--color-ink)]"
+              className="group col-span-2 row-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-brand-600)] to-[var(--color-brand-800)]"
             >
               {CITY_IMAGES[first.city] && (
                 <Image
@@ -69,22 +67,23 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
                   fill
                   sizes="(max-width: 1024px) 50vw, 33vw"
                   priority
-                  className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-35 group-hover:scale-105 transition-all duration-300"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-              <div className="absolute bottom-0 inset-x-0 p-8">
-                <span className="inline-block mb-3 text-xs font-bold tracking-widest text-[var(--color-brand-400)] uppercase">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#000]/80 via-[#000]/20 to-transparent" />
+              <div className="absolute inset-0 flex flex-col items-start justify-end p-8">
+                <p className="text-sm font-bold text-[var(--color-brand-200)] tracking-wide uppercase mb-2">
                   {first.count} hostel{first.count !== 1 ? "s" : ""}
-                </span>
-                <p
-                  className="text-4xl font-extrabold text-white"
+                </p>
+                <h3
+                  className="text-5xl font-extrabold text-white leading-none mb-4"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   {first.city}
-                </p>
-                <div className="mt-4 flex items-center gap-2 text-white/60 text-sm font-medium group-hover:text-[var(--color-brand-400)] transition-colors">
-                  Browse hostels <ArrowRight className="w-4 h-4" />
+                </h3>
+                <div className="flex items-center gap-2 text-white/80 group-hover:text-[var(--color-brand-300)] transition-colors">
+                  <span className="text-sm font-medium">Browse hostels</span>
+                  <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
             </Link>
@@ -94,7 +93,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
           {second && (
             <Link
               href={`/hostels?city=${second.city}`}
-              className="group col-span-2 row-span-1 relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
+              className="group col-span-2 row-span-1 relative overflow-hidden rounded-2xl bg-gradient-to-r from-[var(--color-accent-600)] to-[var(--color-accent-500)]"
             >
               {CITY_IMAGES[second.city] && (
                 <Image
@@ -102,21 +101,21 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
                   alt={second.city}
                   fill
                   sizes="(max-width: 1024px) 50vw, 50vw"
-                  className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-25 group-hover:scale-105 transition-all duration-300"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#000]/70 via-[#000]/30 to-transparent" />
               <div className="absolute inset-0 flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold tracking-widest text-[var(--color-brand-400)] uppercase block mb-1">
+                  <p className="text-xs font-bold text-[var(--color-accent-200)] tracking-wide uppercase mb-2">
                     {second.count} hostel{second.count !== 1 ? "s" : ""}
-                  </span>
-                  <p
-                    className="text-2xl font-extrabold text-white"
+                  </p>
+                  <h3
+                    className="text-3xl font-extrabold text-white"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     {second.city}
-                  </p>
+                  </h3>
                 </div>
               </div>
             </Link>
@@ -127,7 +126,7 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
             <Link
               key={city}
               href={`/hostels?city=${city}`}
-              className="group relative overflow-hidden rounded-3xl bg-[var(--color-ink)] min-h-[160px]"
+              className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-ink)] to-[#0A0A0A]"
             >
               {CITY_IMAGES[city] && (
                 <Image
@@ -135,32 +134,35 @@ export function CityCards({ stats }: { stats: CityStats[] }) {
                   alt={city}
                   fill
                   sizes="(max-width: 1024px) 50vw, 25vw"
-                  className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-30 group-hover:scale-105 transition-all duration-500"
+                  className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-30 group-hover:scale-105 transition-all duration-300"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute bottom-0 inset-x-0 p-4">
-                <p
-                  className="text-lg font-extrabold text-white"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {city}
-                </p>
-                <p className="text-xs text-white/50 mt-0.5">
-                  {count} hostel{count !== 1 ? "s" : ""}
-                </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#000]/80 to-transparent" />
+              <div className="absolute inset-0 flex items-end p-6">
+                <div>
+                  <h3
+                    className="text-2xl font-extrabold text-white"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {city}
+                  </h3>
+                  <p className="text-xs text-white/60 mt-1">
+                    {count} hostel{count !== 1 ? "s" : ""}
+                  </p>
+                </div>
               </div>
             </Link>
           ))}
         </div>
 
         {/* Mobile view all */}
-        <div className="mt-5 sm:hidden">
+        <div className="mt-8 sm:hidden">
           <Link
             href="/hostels"
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-lg border border-[var(--color-border)] text-base font-semibold text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors btn-press"
           >
-            View all cities <ArrowRight className="w-4 h-4" />
+            View all cities
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>

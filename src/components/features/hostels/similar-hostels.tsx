@@ -41,7 +41,7 @@ export async function SimilarHostels({ currentSlug, city, gender }: SimilarHoste
   return (
     <section>
       <h2
-        className="text-2xl font-bold text-[var(--color-text)] mb-6"
+        className="text-2xl font-extrabold text-[var(--color-ink)] mb-7"
         style={{ fontFamily: "var(--font-display)" }}
       >
         More hostels in {city}

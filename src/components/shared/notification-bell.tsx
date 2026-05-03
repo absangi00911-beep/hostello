@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, X, Check, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ interface NotificationBellProps {
 export function NotificationBell({ solid = true }: NotificationBellProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, loading } = useNotifications();
   const [panelOpen, setPanelOpen] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   const getNotificationColor = (type: string) => {
     switch (type) {
@@ -53,11 +55,12 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
       <button
         onClick={() => setPanelOpen(!panelOpen)}
         className={cn(
-          "relative flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-medium transition-colors",
+          "relative flex items-center justify-center h-11 w-11 rounded-lg text-sm font-medium transition-colors",
           solid
             ? "text-[var(--color-ink)] hover:bg-[var(--color-ground)]"
             : "text-white hover:bg-white/8"
         )}
+        aria-label="Open notifications"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -82,10 +85,10 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
 
             {/* Panel */}
             <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.97 }}
-              transition={{ duration: 0.12 }}
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: -6, scale: 0.97 }}
+              animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+              exit={shouldReduceMotion ? undefined : { opacity: 0, y: -6, scale: 0.97 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.12 }}
               className="absolute right-0 top-full mt-2 w-96 bg-white rounded-2xl border border-[var(--color-border)] shadow-lg overflow-hidden z-50"
             >
               {/* Header */}
@@ -97,14 +100,14 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
                       onClick={() => {
                         markAllAsRead();
                       }}
-                      className="text-xs text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] font-medium"
+                      className="h-10 px-4 flex items-center text-xs text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] hover:bg-[var(--color-ground)] font-medium rounded-lg transition-colors"
                     >
                       Mark all as read
                     </button>
                   )}
                   <button
                     onClick={() => setPanelOpen(false)}
-                    className="text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                    className="h-10 w-10 flex items-center justify-center p-2.5 text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)] rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -127,9 +130,9 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
                       <motion.div
                         key={notif.id}
                         layout
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 10 }}
+                        initial={shouldReduceMotion ? undefined : { opacity: 0, x: -10 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+                        exit={shouldReduceMotion ? undefined : { opacity: 0, x: 10 }}
                         className={cn(
                           "px-4 py-3 hover:bg-[var(--color-ground)] transition-colors cursor-pointer",
                           !notif.read && "bg-[var(--color-brand-50)]"
@@ -165,6 +168,7 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
                                   markAsRead(notif.id);
                                 }}
                                 className="text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] p-1"
+                                aria-label="Mark as read"
                               >
                                 <Check className="w-4 h-4" />
                               </button>
@@ -175,6 +179,7 @@ export function NotificationBell({ solid = true }: NotificationBellProps) {
                                 deleteNotification(notif.id);
                               }}
                               className="text-[var(--color-muted)] hover:text-red-600 p-1"
+                              aria-label="Delete notification"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>

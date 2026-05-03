@@ -8,9 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations";
-
-const INPUT =
-  "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
+import { FORM_INPUT } from "@/lib/form-constants";
 
 function LoginContent() {
   const router       = useRouter();
@@ -60,14 +58,14 @@ function LoginContent() {
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-3xl font-extrabold text-(--color-ink)"
+          className="text-3xl font-extrabold text-[var(--color-ink)]"
           style={{ fontFamily: "var(--font-display)" }}
         >
           Sign in
         </h1>
-        <p className="mt-2 text-sm text-(--color-muted)">
+        <p className="mt-2 text-sm text-[var(--color-muted)]">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-semibold text-(--color-ink) underline underline-offset-2 hover:text-(--color-brand-700)">
+          <Link href="/signup" className="font-semibold text-[var(--color-ink)] underline underline-offset-2 hover:text-[var(--color-brand-700)]">
             Create one
           </Link>
         </p>
@@ -85,7 +83,7 @@ function LoginContent() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
             Email
           </label>
           <input
@@ -93,7 +91,7 @@ function LoginContent() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.email && (
             <p className="mt-1.5 text-xs text-red-600">{errors.email.message}</p>
@@ -102,12 +100,12 @@ function LoginContent() {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-sm font-semibold text-ink-soft">
+            <label className="text-sm font-semibold text-[var(--color-ink-soft)]">
               Password
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs font-medium text-(--color-muted) hover:text-(--color-ink) transition-colors"
+              className="text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
             >
               Forgot?
             </Link>
@@ -118,12 +116,12 @@ function LoginContent() {
               type={showPw ? "text" : "password"}
               autoComplete="current-password"
               placeholder="••••••••"
-              className={`${INPUT} pr-11`}
+              className={`${FORM_INPUT} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-ink) transition-colors"
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
               aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -137,7 +135,7 @@ function LoginContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 rounded-xl bg-(--color-ink) text-white text-sm font-bold hover:bg-ink-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
+          className="w-full h-11 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />

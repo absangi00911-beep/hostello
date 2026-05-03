@@ -12,9 +12,9 @@ const GENDER_LABELS: Record<string, string> = {
 };
 
 const GENDER_STYLES: Record<string, string> = {
-  MALE:   "bg-blue-50   text-blue-700   border-blue-100",
-  FEMALE: "bg-pink-50   text-pink-700   border-pink-100",
-  MIXED:  "bg-purple-50 text-purple-700 border-purple-100",
+  MALE:   "bg-[var(--color-gender-male-bg)]   text-[var(--color-gender-male-text)]   border-[var(--color-gender-male-border)]",
+  FEMALE: "bg-[var(--color-gender-female-bg)]   text-[var(--color-gender-female-text)]   border-[var(--color-gender-female-border)]",
+  MIXED:  "bg-[var(--color-gender-mixed-bg)] text-[var(--color-gender-mixed-text)] border-[var(--color-gender-mixed-border)]",
 };
 
 interface HostelInfoProps {
@@ -60,30 +60,30 @@ export function HostelInfo({ hostel, favoritesCount, initialIsSaved = false }: H
   return (
     <div>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] mb-5">
+      <nav className="flex items-center gap-1.5 text-xs text-[var(--color-ink-muted)] mb-6 font-medium">
         <span>Hostels</span>
-        <span>›</span>
+        <span className="text-[var(--color-border)]">›</span>
         <span>{hostel.city}</span>
-        {hostel.area && <><span>›</span><span>{hostel.area}</span></>}
+        {hostel.area && <><span className="text-[var(--color-border)]">›</span><span>{hostel.area}</span></>}
       </nav>
 
       {/* Title row */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div className="flex-1 min-w-0">
           {/* Badges */}
-          <div className="flex items-center gap-2 flex-wrap mb-3">
+          <div className="flex items-center gap-2 flex-wrap mb-4">
             {hostel.verified && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-700)] bg-[var(--color-brand-50)] border border-[var(--color-brand-100)] px-2.5 py-1 rounded-full">
-                <BadgeCheck className="w-3.5 h-3.5" /> Verified
+              <span className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-[var(--color-brand-700)] bg-[var(--color-brand-100)] border border-[var(--color-brand-200)] rounded-lg">
+                <BadgeCheck className="w-4 h-4" /> Verified
               </span>
             )}
-            <span className={cn("text-xs font-bold px-2.5 py-1 rounded-full border", GENDER_STYLES[hostel.gender])}>
+            <span className={cn("px-3 py-1.5 text-sm font-bold rounded-lg border", GENDER_STYLES[hostel.gender])}>
               {GENDER_LABELS[hostel.gender]}
             </span>
           </div>
 
           <h1
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--color-ink)] leading-tight"
+            className="text-4xl sm:text-5xl font-extrabold text-[var(--color-ink)] leading-tight mb-3"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {hostel.name}
@@ -94,75 +94,77 @@ export function HostelInfo({ hostel, favoritesCount, initialIsSaved = false }: H
         <div className="flex items-center gap-2 flex-shrink-0 pt-1">
           <button
             onClick={handleShare}
-            className="w-10 h-10 rounded-xl border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition-colors"
+            className="w-11 h-11 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-ink-muted)] hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] transition-colors"
             aria-label="Share"
           >
-            <Share2 className="w-4 h-4" />
+            <Share2 className="w-5 h-5" />
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className={cn(
-              "w-10 h-10 rounded-xl border flex items-center justify-center transition-colors",
+              "w-11 h-11 rounded-lg border flex items-center justify-center transition-colors",
               isSaved
-                ? "bg-red-50 border-red-200 text-red-500"
-                : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-red-200 hover:text-red-500"
+                ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100"
+                : "border-[var(--color-border)] text-[var(--color-ink-muted)] hover:border-red-200 hover:text-red-500 hover:bg-red-50"
             )}
             aria-label={isSaved ? "Remove from saved" : "Save"}
           >
-            <Heart className={cn("w-4 h-4", isSaved && "fill-current")} />
+            <Heart className={cn("w-5 h-5", isSaved && "fill-current")} />
           </button>
         </div>
       </div>
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-sm">
-        <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
-          <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span>{hostel.area ? `${hostel.area}, ` : ""}{hostel.city}</span>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-6 border-y border-[var(--color-border)]">
+        <div className="flex items-center gap-2 text-base text-[var(--color-ink)]">
+          <MapPin className="w-5 h-5 flex-shrink-0 text-[var(--color-brand-600)]" />
+          <span className="font-medium">{hostel.area ? `${hostel.area}, ` : ""}{hostel.city}</span>
         </div>
 
         {hostel.reviewCount > 0 && (
-          <div className="flex items-center gap-1.5">
-            <Star className="w-4 h-4 text-[var(--color-accent-500)] fill-current" />
+          <div className="flex items-center gap-2 bg-[var(--color-brand-50)] px-3 py-1.5 rounded-lg border border-[var(--color-brand-100)]">
+            <Star className="w-5 h-5 text-[var(--color-accent-500)] fill-current" />
             <span className="font-bold text-[var(--color-ink)]">{hostel.rating.toFixed(1)}</span>
-            <span className="text-[var(--color-muted)]">({hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""})</span>
+            <span className="text-sm text-[var(--color-ink-muted)]">{hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
-          <Users className="w-4 h-4" />
-          <span>{hostel.capacity} beds total</span>
+        <div className="flex items-center gap-2 text-base text-[var(--color-ink)]">
+          <Users className="w-5 h-5 flex-shrink-0 text-[var(--color-brand-600)]" />
+          <span className="font-medium">{hostel.capacity} beds</span>
         </div>
 
         {favoritesCount > 0 && (
-          <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
-            <Heart className="w-4 h-4" />
-            <span>{savedCount} saved</span>
+          <div className="flex items-center gap-2 text-base text-[var(--color-ink)]">
+            <Heart className="w-5 h-5 flex-shrink-0 text-red-500" />
+            <span className="font-medium">{savedCount} saved</span>
           </div>
         )}
       </div>
 
-      {/* Price pill */}
-      <div className="mt-6 inline-flex items-baseline gap-1 px-5 py-3 rounded-2xl bg-[var(--color-ink)] text-white">
-        <span
-          className="text-2xl font-extrabold"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {formatPrice(hostel.pricePerMonth)}
-        </span>
-        <span className="text-sm text-white/60">/ month</span>
-        {hostel.minStay > 1 && (
-          <span className="ml-2 text-xs text-white/50">
-            · min {hostel.minStay} month{hostel.minStay !== 1 ? "s" : ""}
+      {/* Price and info section */}
+      <div className="mt-6 space-y-4">
+        <div className="inline-flex items-baseline gap-2 px-5 py-3 rounded-xl bg-[var(--color-brand-600)] text-white font-bold">
+          <span
+            className="text-3xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {formatPrice(hostel.pricePerMonth)}
           </span>
-        )}
+          <span className="text-base text-white/70">/ month</span>
+          {hostel.minStay > 1 && (
+            <span className="ml-2 text-sm text-white/60">
+              (min {hostel.minStay} month{hostel.minStay !== 1 ? "s" : ""})
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Description */}
-      <div className="mt-7 space-y-3">
+      <div className="mt-8 space-y-4">
         {hostel.description.split("\n").map((para, i) => (
-          <p key={i} className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
+          <p key={i} className="text-base text-[var(--color-ink-soft)] leading-relaxed">
             {para}
           </p>
         ))}

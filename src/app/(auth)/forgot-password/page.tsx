@@ -10,7 +10,7 @@ import { CheckCircle2, ArrowRight, Loader2 } from "lucide-react";
 const schema = z.object({ email: z.string().email("Enter a valid email") });
 type Input   = z.infer<typeof schema>;
 
-const INPUT = "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
+import { FORM_INPUT } from "@/lib/form-constants";
 
 export default function ForgotPasswordPage() {
   const [sent, setSent]   = useState(false);
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div>
           <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">Email</label>
-          <input {...register("email")} type="email" autoComplete="email" placeholder="you@example.com" className={INPUT} />
+          <input {...register("email")} type="email" autoComplete="email" placeholder="you@example.com" className={FORM_INPUT} />
           {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email.message}</p>}
         </div>
         <button

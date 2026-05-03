@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Search, BookOpen, Building2, CreditCard, ShieldCheck, MessageCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { PageSection } from "@/components/ui/page-section";
 
 const FAQ_SECTIONS = [
   {
@@ -189,16 +190,18 @@ export default function HelpPage() {
         </div>
 
         <div className="space-y-12">
-          {FAQ_SECTIONS.map(({ icon: Icon, title, faqs }) => (
-            <div key={title}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-100)] flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-[var(--color-accent-600)]" />
+          {FAQ_SECTIONS.map(({ icon: Icon, title, faqs }, index) => (
+            <PageSection key={title} delay={index}>
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-100)] flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-[var(--color-accent-600)]" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-[var(--color-text)]">{title}</h2>
                 </div>
-                <h2 className="text-xl font-semibold text-[var(--color-text)]">{title}</h2>
+                <FAQAccordion faqs={faqs} />
               </div>
-              <FAQAccordion faqs={faqs} />
-            </div>
+            </PageSection>
           ))}
         </div>
 

@@ -17,46 +17,46 @@ interface OwnerCardProps {
 
 export function OwnerCard({ owner, hasConfirmedBooking = false }: OwnerCardProps) {
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-5">
+    <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-6 shadow-card">
 
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-[var(--color-ink)] text-white flex items-center justify-center text-base font-bold overflow-hidden flex-shrink-0">
+      <div className="flex items-center gap-4 mb-5">
+        <div className="w-14 h-14 rounded-lg bg-[var(--color-brand-600)] text-white flex items-center justify-center text-lg font-bold overflow-hidden flex-shrink-0">
           {owner.avatar ? (
-            <Image src={owner.avatar} alt={owner.name} width={48} height={48} className="object-cover" />
+            <Image src={owner.avatar} alt={owner.name} width={56} height={56} className="object-cover" />
           ) : (
             getInitials(owner.name)
           )}
         </div>
-        <div>
-          <p className="font-bold text-[var(--color-ink)] text-sm">{owner.name}</p>
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] mt-0.5">
-            <Building2 className="w-3 h-3" />
-            <span>{owner._count.hostels} listing{owner._count.hostels !== 1 ? "s" : ""}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-[var(--color-ink)] text-base">{owner.name}</p>
+          <div className="flex items-center gap-1.5 text-sm text-[var(--color-ink-muted)] mt-1">
+            <Building2 className="w-4 h-4" />
+            <span className="font-medium">{owner._count.hostels} listing{owner._count.hostels !== 1 ? "s" : ""}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] pb-4 border-b border-[var(--color-border)]">
-        <CalendarDays className="w-3.5 h-3.5" />
+      <div className="flex items-center gap-2 text-sm text-[var(--color-ink-muted)] pb-5 border-b border-[var(--color-border)]">
+        <CalendarDays className="w-4 h-4 flex-shrink-0" />
         <span>On HostelLo since {formatDate(owner.createdAt)}</span>
       </div>
 
-      <div className="pt-4">
+      <div className="pt-5">
         {/* SECURITY: Only show phone link if explicitly authorized AND phone exists */}
         {hasConfirmedBooking && owner.phone ? (
           /* Show phone only post-confirmation — legitimate contact for move-in coordination */
           <a
             href={`tel:${owner.phone}`}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-[var(--color-brand-600)] hover:bg-[var(--color-brand-700)] text-white text-base font-bold transition-colors"
           >
-            <Phone className="w-4 h-4" />
+            <Phone className="w-5 h-5" />
             Call owner
           </a>
         ) : !hasConfirmedBooking && hasConfirmedBooking !== undefined ? (
           /* Pre-confirmation: prompt to use messaging system instead — prevents platform bypass */
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)]">
-            <Lock className="w-3.5 h-3.5 text-[var(--color-muted)] flex-shrink-0" />
-            <p className="text-xs text-[var(--color-muted)]">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)]">
+            <Lock className="w-4 h-4 text-[var(--color-ink-muted)] flex-shrink-0" />
+            <p className="text-sm text-[var(--color-ink-muted)] font-medium">
               Contact details shared after booking is confirmed.
             </p>
           </div>

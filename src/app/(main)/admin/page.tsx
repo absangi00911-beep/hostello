@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { Users, Building2, BookOpen, TrendingUp, ChevronRight, Clock } from "lucide-react";
+import { PageSection } from "@/components/ui/page-section";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -62,8 +63,9 @@ export default async function AdminPage() {
           </h1>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <PageSection>
+          {/* Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <Stat icon={Users}     label="Users"           value={totalUsers} />
           <Stat icon={Building2} label="Active listings" value={totalHostels}
             badge={pendingHostels > 0 ? `${pendingHostels} pending` : undefined} accent={pendingHostels > 0} />
@@ -72,8 +74,11 @@ export default async function AdminPage() {
           <Stat icon={TrendingUp} label="Revenue"        value={formatPrice(totalRevenue)} small />
         </div>
 
-        {/* Nav cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+        </PageSection>
+
+        <PageSection delay={1}>
+          {/* Nav cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
           {[
             { href: "/admin/hostels", label: "Manage hostels",  sub: "Verify or suspend listings", icon: Building2 },
             { href: "/admin/users",   label: "Manage users",    sub: "View and manage accounts",   icon: Users     },
@@ -94,7 +99,9 @@ export default async function AdminPage() {
             </Link>
           ))}
         </div>
+        </PageSection>
 
+        <PageSection delay={2}>
         {/* Pending hostels */}
         {recentHostels.length > 0 && (
           <Section title="Needs review" link="/admin/hostels?status=PENDING_REVIEW">
@@ -107,7 +114,9 @@ export default async function AdminPage() {
             ))}
           </Section>
         )}
+        </PageSection>
 
+        <PageSection delay={3}>
         {/* Pending bookings */}
         {recentBookings.length > 0 && (
           <Section title="Pending bookings" link="/admin/bookings">
@@ -120,6 +129,7 @@ export default async function AdminPage() {
             ))}
           </Section>
         )}
+        </PageSection>
       </div>
     </div>
   );

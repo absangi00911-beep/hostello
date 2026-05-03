@@ -90,41 +90,41 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <h2
-          className="text-xl font-bold text-[var(--color-text)]"
+          className="text-2xl font-bold text-[var(--color-ink)]"
           style={{ fontFamily: "var(--font-display)" }}
         >
           Reviews
           {reviewCount > 0 && (
-            <span className="ml-2 text-base font-normal text-[var(--color-muted)]">
-              ({reviewCount})
+            <span className="ml-3 text-lg font-normal text-[var(--color-ink-muted)]">
+              {reviewCount}
             </span>
           )}
         </h2>
       </div>
 
       {reviewCount === 0 ? (
-        <div className="py-10 text-center rounded-xl border border-[var(--color-border)] bg-[var(--color-sand-50)]">
-          <p className="text-sm text-[var(--color-muted)]">No reviews yet. Be the first to leave one.</p>
+        <div className="py-12 text-center rounded-xl border border-[var(--color-border)] bg-[var(--color-ground)]">
+          <p className="text-base text-[var(--color-ink-muted)]">No reviews yet. Be the first to leave one.</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {/* Summary */}
-          <div className="flex flex-col sm:flex-row gap-8 p-5 rounded-xl bg-[var(--color-sand-50)] border border-[var(--color-border)]">
+          <div className="flex flex-col sm:flex-row gap-8 p-6 rounded-xl bg-[var(--color-brand-50)] border border-[var(--color-brand-100)]">
             <div className="text-center sm:text-left">
               <p
-                className="text-5xl font-bold text-[var(--color-text)]"
+                className="text-6xl font-bold text-[var(--color-brand-700)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {rating.toFixed(1)}
               </p>
               <StarRow value={rating} />
-              <p className="text-xs text-[var(--color-muted)] mt-1">
+              <p className="text-sm text-[var(--color-ink-muted)] mt-2">
                 {reviewCount} review{reviewCount !== 1 ? "s" : ""}
               </p>
             </div>
-            <div className="flex-1 space-y-2.5">
+            <div className="flex-1 space-y-3">
               <RatingBar label="Cleanliness" value={Math.round(avgCleanliness)} />
               <RatingBar label="Location" value={Math.round(avgLocation)} />
               <RatingBar label="Value" value={Math.round(avgValue)} />
@@ -133,20 +133,20 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
           </div>
 
           {/* Review cards */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             {displayed.map((review) => {
               const isAuthor = session?.user?.id === review.userId;
               return (
-              <div key={review.id} className="border-b border-[var(--color-border)] pb-5 last:border-0">
-                <div className="flex items-start gap-3">
+              <div key={review.id} className="border-b border-[var(--color-border)] pb-6 last:border-0">
+                <div className="flex items-start gap-4">
                   {/* Avatar */}
-                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[var(--color-primary-900)] text-white flex items-center justify-center text-sm font-semibold overflow-hidden">
+                  <div className="flex-shrink-0 w-11 h-11 rounded-full bg-[var(--color-brand-600)] text-white flex items-center justify-center text-sm font-semibold overflow-hidden">
                     {review.user.avatar ? (
                       <Image
                         src={review.user.avatar}
                         alt={review.user.name}
-                        width={36}
-                        height={36}
+                        width={44}
+                        height={44}
                         className="object-cover"
                       />
                     ) : (
@@ -157,10 +157,10 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 flex-wrap">
                       <div>
-                        <p className="text-sm font-semibold text-[var(--color-text)]">
+                        <p className="text-base font-semibold text-[var(--color-ink)]">
                           {review.user.name}
                         </p>
-                        <p className="text-xs text-[var(--color-muted)]">
+                        <p className="text-sm text-[var(--color-ink-muted)]">
                           {formatDate(review.createdAt)}
                         </p>
                       </div>
@@ -170,21 +170,21 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                           <div className="flex gap-1 ml-2">
                             <button
                               onClick={() => router.push(`/bookings/${review.id}/edit-review`)}
-                              title="Edit review"
-                              className="p-1.5 text-[var(--color-muted)] hover:text-[var(--color-primary-700)] hover:bg-[var(--color-sand-50)] rounded transition-colors"
+                              aria-label="Edit review"
+                              className="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] rounded transition-colors"
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteReview(review.id)}
                               disabled={deletingId === review.id}
-                              title="Delete review"
-                              className="p-1.5 text-[var(--color-muted)] hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                              aria-label="Delete review"
+                              className="p-2 text-[var(--color-ink-muted)] hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                             >
                               {deletingId === review.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               )}
                             </button>
                           </div>
@@ -193,21 +193,21 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
                     </div>
 
                     {review.title && (
-                      <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                      <p className="mt-3 text-base font-semibold text-[var(--color-ink)]">
                         {review.title}
                       </p>
                     )}
-                    <p className="mt-1.5 text-sm text-[var(--color-text)] leading-relaxed">
+                    <p className="mt-2 text-base text-[var(--color-ink-soft)] leading-relaxed">
                       {review.comment}
                     </p>
 
                     {/* Owner reply */}
                     {review.ownerReply && (
-                      <div className="mt-3 ml-4 p-3 rounded-lg bg-[var(--color-sand-50)] border border-[var(--color-border)]">
-                        <p className="text-xs font-semibold text-[var(--color-primary-700)] mb-1">
+                      <div className="mt-4 ml-4 p-4 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)]">
+                        <p className="text-sm font-semibold text-[var(--color-brand-700)] mb-1.5">
                           Owner replied:
                         </p>
-                        <p className="text-xs text-[var(--color-text)] leading-relaxed">
+                        <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
                           {review.ownerReply}
                         </p>
                       </div>
@@ -222,9 +222,9 @@ export function ReviewList({ reviews, rating, reviewCount, hostelId: _hostelId }
           {reviews.length > 4 && (
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="text-sm font-medium text-[var(--color-primary-700)] hover:underline"
+              className="text-base font-semibold text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] transition-colors"
             >
-              {showAll ? "Show fewer reviews" : `Show all ${reviews.length} reviews`}
+              {showAll ? "← Show fewer reviews" : `View all ${reviews.length} reviews →`}
             </button>
           )}
         </div>

@@ -79,7 +79,7 @@ export function Navbar() {
               )}
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-border)] transition-colors"
+                className="flex items-center gap-2 h-11 px-4 rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-border)] transition-colors btn-press"
               >
                 <User className="w-3.5 h-3.5" />
                 {session.user?.name?.split(" ")[0] ?? "Account"}
@@ -95,13 +95,13 @@ export function Navbar() {
               */}
               <Link
                 href="/auth/signup?role=owner"
-                className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+                className="h-11 px-4 flex items-center rounded-xl text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
               >
                 List your hostel
               </Link>
               <Link
                 href="/auth/signin"
-                className="h-9 px-4 rounded-xl bg-[var(--color-ink)] text-[var(--color-ground)] text-sm font-semibold hover:opacity-90 transition-opacity flex items-center"
+                className="h-11 px-4 rounded-xl bg-[var(--color-ink)] text-[var(--color-ground)] text-sm font-semibold hover:opacity-90 transition-opacity flex items-center btn-press"
               >
                 Sign in
               </Link>
@@ -111,7 +111,7 @@ export function Navbar() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+          className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
           onClick={() => setMenuOpen((o) => !o)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
         >

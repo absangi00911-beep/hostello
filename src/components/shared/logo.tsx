@@ -12,7 +12,7 @@ export function Logo({ solid = true, size = "md" }: LogoProps) {
       {/* Mark — green square */}
       <div
         className={cn(
-          "rounded-xl flex items-center justify-center font-extrabold flex-shrink-0 transition-transform group-hover:scale-95",
+          "rounded-xl flex items-center justify-center font-extrabold flex-shrink-0 transition-transform group-hover:scale-95 logo-box",
           size === "sm" && "w-7 h-7 text-sm",
           size === "md" && "w-8 h-8 text-base",
           size === "lg" && "w-10 h-10 text-xl",
@@ -28,7 +28,7 @@ export function Logo({ solid = true, size = "md" }: LogoProps) {
       {/* Wordmark */}
       <span
         className={cn(
-          "font-extrabold tracking-tight transition-colors",
+          "font-extrabold tracking-tight transition-colors logo-text",
           size === "sm" && "text-base",
           size === "md" && "text-lg",
           size === "lg" && "text-2xl",

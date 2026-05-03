@@ -17,7 +17,7 @@ const schema = z.object({
 });
 type Input = z.infer<typeof schema>;
 
-const INPUT = "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
+import { FORM_INPUT } from "@/lib/form-constants";
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -119,12 +119,12 @@ function ResetPasswordContent() {
               type={showPw ? "text" : "password"}
               autoComplete="new-password"
               placeholder="At least 8 characters"
-              className={`${INPUT} pr-11`}
+              className={`${FORM_INPUT} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowPw(v => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
             >
               {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -141,7 +141,7 @@ function ResetPasswordContent() {
             type={showPw ? "text" : "password"}
             autoComplete="new-password"
             placeholder="Same as above"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.confirm && <p className="mt-1.5 text-xs text-red-600">{errors.confirm.message}</p>}
         </div>

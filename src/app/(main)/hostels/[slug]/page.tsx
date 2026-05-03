@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { PageSection } from "@/components/ui/page-section";
 import { HostelGallery } from "@/components/features/hostels/hostel-gallery";
 import { HostelInfo } from "@/components/features/hostels/hostel-info";
 import { HostelAmenities } from "@/components/features/hostels/hostel-amenities";
@@ -23,13 +24,20 @@ import { HostelViewTracker } from "@/components/features/hostels/hostel-view-tra
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  const hostels = await db.hostel.findMany({
-    where: { status: "ACTIVE" },
-    orderBy: { viewCount: "desc" },
-    take: 50,
-    select: { slug: true },
-  });
-  return hostels.map((h) => ({ slug: h.slug }));
+  try {
+    const hostels = await db.hostel.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { viewCount: "desc" },
+      take: 50,
+      select: { slug: true },
+    });
+    return hostels.map((h) => ({ slug: h.slug }));
+  } catch (error) {
+    // During build without database access, return empty array
+    // Pages will be generated on-demand instead of at build time
+    console.warn("Could not generate static params for hostels:", error instanceof Error ? error.message : "Unknown error");
+    return [];
+  }
 }
 
 interface PageProps {
@@ -165,8 +173,9 @@ export default async function HostelDetailPage({ params }: PageProps) {
       : null;
 
   return (
-    <div className="min-h-screen pt-16">
-      <HostelViewTracker
+    <div className="min-h-screen pt-16 space-y-8">
+      <PageSection>
+        <HostelViewTracker
         hostel={{
           id: hostel.id,
           name: hostel.name,
@@ -179,101 +188,129 @@ export default async function HostelDetailPage({ params }: PageProps) {
           verified: hostel.verified,
         }}
       />
-      <HostelGallery images={hostel.images} name={hostel.name} />
+      </PageSection>
+
+      <PageSection delay={1}>
+        <HostelGallery images={hostel.images} name={hostel.name} />
+      </PageSection>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="flex-1 min-w-0 space-y-12">
-            <HostelInfo
-              hostel={hostel}
-              favoritesCount={hostel._count.favorites}
-              initialIsSaved={initialIsSaved}
-            />
-            <HostelAmenities
-              amenities={hostel.amenities}
-              rules={hostel.rules}
-            />
+            <PageSection delay={2}>
+              <HostelInfo
+                hostel={hostel}
+                favoritesCount={hostel._count.favorites}
+                initialIsSaved={initialIsSaved}
+              />
+            </PageSection>
+            <PageSection delay={3}>
+              <HostelAmenities
+                amenities={hostel.amenities}
+                rules={hostel.rules}
+              />
+            </PageSection>
 
-            <HostelMap
-              name={hostel.name}
-              address={hostel.address}
-              latitude={hostel.latitude}
-              longitude={hostel.longitude}
-            />
+            <PageSection delay={4}>
+              <HostelMap
+                name={hostel.name}
+                address={hostel.address}
+                latitude={hostel.latitude}
+                longitude={hostel.longitude}
+              />
+            </PageSection>
 
-            <AvailabilityCalendar hostelSlug={hostel.slug} />
-            <ReviewList
-              reviews={hostel.reviews}
-              rating={hostel.rating}
-              reviewCount={hostel.reviewCount}
-              hostelId={hostel.id}
-            />
+            <PageSection delay={5}>
+              <AvailabilityCalendar hostelSlug={hostel.slug} />
+            </PageSection>
+            <PageSection delay={6}>
+              <ReviewList
+                reviews={hostel.reviews}
+                rating={hostel.rating}
+                reviewCount={hostel.reviewCount}
+                hostelId={hostel.id}
+              />
+            </PageSection>
             {hasCompletedStay && !existingReview && (
-              <ReviewForm hostelId={hostel.id} hostelSlug={hostel.slug} />
+              <PageSection delay={7}>
+                <ReviewForm hostelId={hostel.id} hostelSlug={hostel.slug} />
+              </PageSection>
             )}
           </div>
 
           {/* ── Sidebar ── */}
           <div className="w-full lg:w-80 flex-shrink-0">
             <div className="lg:sticky lg:top-24 space-y-4">
-              <BookingCard
-                hostelId={hostel.id}
-                hostelSlug={hostel.slug}
-                hostelName={hostel.name}
-                pricePerMonth={hostel.pricePerMonth}
-                minStay={hostel.minStay}
-                maxStay={hostel.maxStay ?? undefined}
-                rating={hostel.rating}
-                reviewCount={hostel.reviewCount}
-              />
+              <PageSection delay={8}>
+                <BookingCard
+                  hostelId={hostel.id}
+                  hostelSlug={hostel.slug}
+                  hostelName={hostel.name}
+                  pricePerMonth={hostel.pricePerMonth}
+                  minStay={hostel.minStay}
+                  maxStay={hostel.maxStay ?? undefined}
+                  rating={hostel.rating}
+                  reviewCount={hostel.reviewCount}
+                />
+              </PageSection>
 
               {/* Contact owner button — visible to logged-in non-owners */}
               {isLoggedIn && !isOwner && (
-                <ContactOwnerButton
-                  hostelId={hostel.id}
-                  hostelName={hostel.name}
-                />
+                <PageSection delay={9}>
+                  <ContactOwnerButton
+                    hostelId={hostel.id}
+                    hostelName={hostel.name}
+                  />
+                </PageSection>
               )}
 
               {/* Prompt unauthenticated visitors to sign in to contact */}
               {!isLoggedIn && (
-                <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 text-center">
-                  <p className="text-sm text-[var(--color-muted)] mb-3">
-                    Have questions before booking?
-                  </p>
-                  <a
-                    href="/login"
-                    className="block w-full py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
-                  >
-                    Sign in to message owner
-                  </a>
-                </div>
+                <PageSection delay={9}>
+                  <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 text-center">
+                    <p className="text-sm text-[var(--color-muted)] mb-3">
+                      Have questions before booking?
+                    </p>
+                    <a
+                      href="/login"
+                      className="block w-full py-2.5 rounded-xl border border-[var(--color-border)] text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
+                    >
+                      Sign in to message owner
+                    </a>
+                  </div>
+                </PageSection>
               )}
 
               {/* Price alert form — visible to logged-in users */}
               {isLoggedIn && !isOwner && (
-                <PriceAlertForm
-                  hostelId={hostel.id}
-                  hostelName={hostel.name}
-                  currentPrice={hostel.pricePerMonth}
-                  existingAlert={priceAlert ?? undefined}
-                />
+                <PageSection delay={10}>
+                  <PriceAlertForm
+                    hostelId={hostel.id}
+                    hostelName={hostel.name}
+                    currentPrice={hostel.pricePerMonth}
+                    existingAlert={priceAlert ?? undefined}
+                  />
+                </PageSection>
               )}
 
-              <OwnerCard
-                owner={{ ...hostel.owner, phone: ownerPhone }}
-                hasConfirmedBooking={hasConfirmedBooking && !isOwner}
-              />
+              <PageSection delay={11}>
+                <OwnerCard
+                  owner={{ ...hostel.owner, phone: ownerPhone }}
+                  hasConfirmedBooking={hasConfirmedBooking && !isOwner}
+                />
+              </PageSection>
             </div>
           </div>
         </div>
 
         <div className="mt-16">
-          <SimilarHostels
-            currentSlug={hostel.slug}
-            city={hostel.city}
-            gender={hostel.gender}
-          />
+          <PageSection delay={12}>
+            <SimilarHostels
+              currentSlug={hostel.slug}
+              city={hostel.city}
+              gender={hostel.gender}
+            />
+          </PageSection>
         </div>
       </div>
 

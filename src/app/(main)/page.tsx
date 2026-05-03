@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageSection } from "@/components/ui/page-section";
 import { HeroSection } from "@/components/features/home/hero-section";
 import { CityCards } from "@/components/features/home/city-cards";
 import { FeaturedHostels } from "@/components/features/home/featured-hostels";
@@ -81,20 +82,34 @@ export default async function HomePage() {
   return (
     <>
       {/* Product first: hero → trust signals → browse */}
-      <HeroSection
-        hostelCount={stats.hostelCount}
-        studentsHoused={stats.bookingCount}
-      />
-      <TrustBanner />
-      <CityCards stats={cityStats} />
-      <FeaturedHostels hostels={featured} />
-      <RecentlyViewed />
+      <PageSection>
+        <HeroSection
+          hostelCount={stats.hostelCount}
+          studentsHoused={stats.bookingCount}
+        />
+      </PageSection>
+      <PageSection delay={1}>
+        <TrustBanner />
+      </PageSection>
+      <PageSection delay={2}>
+        <CityCards stats={cityStats} />
+      </PageSection>
+      <PageSection delay={3}>
+        <FeaturedHostels hostels={featured} />
+      </PageSection>
+      <PageSection delay={4}>
+        <RecentlyViewed />
+      </PageSection>
 
       {/* Conversion actions before onboarding explanation */}
-      <CtaSection />
+      <PageSection delay={5}>
+        <CtaSection />
+      </PageSection>
 
       {/* How it works goes last — for visitors still deciding whether to trust the product */}
-      <HowItWorks />
+      <PageSection delay={6}>
+        <HowItWorks />
+      </PageSection>
     </>
   );
 }

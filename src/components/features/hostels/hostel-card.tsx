@@ -40,9 +40,9 @@ const GENDER_LABELS: Record<string, string> = {
 };
 
 const GENDER_STYLES: Record<string, string> = {
-  MALE:   "bg-blue-50   text-blue-700   border-blue-100",
-  FEMALE: "bg-pink-50   text-pink-700   border-pink-100",
-  MIXED:  "bg-purple-50 text-purple-700 border-purple-100",
+  MALE:   "bg-[var(--color-gender-male-bg)]   text-[var(--color-gender-male-text)]   border-[var(--color-gender-male-border)]",
+  FEMALE: "bg-[var(--color-gender-female-bg)]   text-[var(--color-gender-female-text)]   border-[var(--color-gender-female-border)]",
+  MIXED:  "bg-[var(--color-gender-mixed-bg)] text-[var(--color-gender-mixed-text)] border-[var(--color-gender-mixed-border)]",
 };
 
 export function HostelCard({ hostel, className }: HostelCardProps) {
@@ -88,13 +88,13 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
         )}
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
+        <div className="absolute top-4 left-4 flex gap-2">
           {hostel.verified && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/95 backdrop-blur-sm text-xs font-bold text-[var(--color-brand-700)]">
-              <BadgeCheck className="w-3 h-3" /> Verified
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white shadow-sm text-sm font-bold text-[var(--color-brand-700)]">
+              <BadgeCheck className="w-4 h-4" /> Verified
             </span>
           )}
-          <span className={cn("px-2 py-1 rounded-lg text-xs font-bold border", GENDER_STYLES[hostel.gender])}>
+          <span className={cn("px-3 py-1.5 rounded-lg text-sm font-bold border", GENDER_STYLES[hostel.gender])}>
             {GENDER_LABELS[hostel.gender]}
           </span>
         </div>
@@ -112,27 +112,26 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
               ? "bg-[var(--color-brand-500)] text-[var(--color-ink)]"
               : "bg-white/90 backdrop-blur-sm text-[var(--color-muted)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white"
           )}
-          title={!isComparing && isFull() ? "Compare list is full" : isComparing ? "Remove from compare" : "Add to compare"}
-          aria-label="Toggle compare"
+          aria-label={!isComparing && isFull() ? "Compare list is full" : isComparing ? "Remove from compare" : "Add to compare"}
         >
           <GitCompareArrows className="w-4 h-4" />
         </button>
       </Link>
 
       {/* ── Body ── */}
-      <Link href={`/hostels/${hostel.slug}`} className="block p-4">
+      <Link href={`/hostels/${hostel.slug}`} className="block p-5 space-y-3">
 
         {/* Location */}
-        <div className="flex items-center gap-1 text-xs text-[var(--color-muted)] mb-1.5">
-          <MapPin className="w-3 h-3 flex-shrink-0" />
-          <span className="truncate">
+        <div className="flex items-center gap-2 text-sm text-[var(--color-ink-muted)]">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate font-medium">
             {hostel.area ? `${hostel.area}, ` : ""}{hostel.city}
           </span>
         </div>
 
         {/* Name */}
         <h3
-          className="font-bold text-[var(--color-ink)] line-clamp-2 leading-snug text-[15px] mb-2"
+          className="font-bold text-[var(--color-ink)] line-clamp-2 leading-tight text-lg"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {hostel.name}
@@ -140,34 +139,36 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
 
         {/* Rating or Social Proof */}
         {hostel.reviewCount > 0 ? (
-          <div className="flex items-center gap-1.5 mb-2">
-            <Star className="w-3.5 h-3.5 text-[var(--color-accent-500)] fill-current" />
-            <span className="text-sm font-bold text-[var(--color-ink)]">
-              {hostel.rating.toFixed(1)}
-            </span>
-            <span className="text-xs text-[var(--color-muted)]">
-              ({hostel.reviewCount})
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <Star className="w-4 h-4 text-[var(--color-accent-500)] fill-current" />
+              <span className="text-base font-bold text-[var(--color-ink)]">
+                {hostel.rating.toFixed(1)}
+              </span>
+            </div>
+            <span className="text-sm text-[var(--color-ink-muted)]">
+              • {hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""}
             </span>
           </div>
         ) : isNewListing(hostel.createdAt) ? (
-          <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-lg bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 w-fit">
-            <Sparkles className="w-3.5 h-3.5 text-[var(--color-brand-500)]" />
-            <span className="text-xs font-semibold text-[var(--color-brand-700)]">
+          <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-brand-100)] border border-[var(--color-brand-200)] w-fit">
+            <Sparkles className="w-4 h-4 text-[var(--color-brand-600)]" />
+            <span className="text-sm font-semibold text-[var(--color-brand-700)]">
               New listing
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] w-fit">
-            <MessageSquare className="w-3.5 h-3.5 text-[var(--color-muted)]" />
-            <span className="text-xs font-semibold text-[var(--color-muted)]">
-              First to review
+          <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] w-fit">
+            <MessageSquare className="w-4 h-4 text-[var(--color-ink-muted)]" />
+            <span className="text-sm font-semibold text-[var(--color-ink-muted)]">
+              Be the first to review
             </span>
           </div>
         )}
 
-        {/* Amenity summary — plain text, one line, no chips, no emojis */}
+        {/* Amenity summary */}
         {amenitySummary && (
-          <p className="text-xs text-[var(--color-muted)] mb-4 truncate">
+          <p className="text-sm text-[var(--color-ink-muted)] truncate">
             {amenitySummary}
             {extraCount > 0 && ` · +${extraCount} more`}
           </p>
@@ -175,17 +176,17 @@ export function HostelCard({ hostel, className }: HostelCardProps) {
 
         {/* Price row */}
         <div className="flex items-end justify-between pt-3 border-t border-[var(--color-border)]">
-          <div>
+          <div className="flex items-baseline gap-1">
             <span
-              className="text-xl font-extrabold text-[var(--color-ink)]"
+              className="text-2xl font-extrabold text-[var(--color-brand-600)]"
               style={{ fontFamily: "var(--font-display)" }}
             >
               {formatPrice(hostel.pricePerMonth)}
             </span>
-            <span className="text-xs text-[var(--color-muted)] ml-1">/ month</span>
+            <span className="text-sm text-[var(--color-ink-muted)]">/ month</span>
           </div>
-          <span className="text-xs font-semibold text-[var(--color-brand-700)] group-hover:underline">
-            View →
+          <span className="text-sm font-semibold text-[var(--color-brand-600)] group-hover:text-[var(--color-brand-700)] transition-colors">
+            Explore →
           </span>
         </div>
       </Link>

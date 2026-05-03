@@ -137,7 +137,7 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="w-9 h-9 rounded-xl bg-white/8 border border-white/8 flex items-center justify-center text-white/50 hover:bg-white/15 hover:text-white transition-all"
+      className="w-11 h-11 rounded-xl bg-white/8 border border-white/8 flex items-center justify-center text-white/50 hover:bg-white/15 hover:text-white transition-all btn-press"
     >
       {children}
     </a>

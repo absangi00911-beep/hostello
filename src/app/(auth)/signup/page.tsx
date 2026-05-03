@@ -9,9 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { signupSchema, type SignupInput } from "@/lib/validations";
 import { cn } from "@/lib/utils";
-
-const INPUT =
-  "w-full h-11 px-4 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all";
+import { FORM_INPUT } from "@/lib/form-constants";
 
 function SignupContent() {
   const router       = useRouter();
@@ -65,14 +63,14 @@ function SignupContent() {
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-3xl font-extrabold text-(--color-ink)"
+          className="text-3xl font-extrabold text-[var(--color-ink)]"
           style={{ fontFamily: "var(--font-display)" }}
         >
           Create account
         </h1>
-        <p className="mt-2 text-sm text-(--color-muted)">
+        <p className="mt-2 text-sm text-[var(--color-muted)]">
           Already have one?{" "}
-          <Link href="/login" className="font-semibold text-(--color-ink) underline underline-offset-2 hover:text-(--color-brand-700)">
+          <Link href="/login" className="font-semibold text-[var(--color-ink)] underline underline-offset-2 hover:text-[var(--color-brand-700)]">
             Sign in
           </Link>
         </p>
@@ -88,8 +86,8 @@ function SignupContent() {
             className={cn(
               "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
               role === r
-                ? "bg-(--color-ink) text-white shadow-sm"
-                : "text-(--color-muted) hover:text-(--color-ink)"
+                ? "bg-[var(--color-ink)] text-white shadow-sm"
+                : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             )}
           >
             {r === "STUDENT" ? "I'm a student" : "I own a hostel"}
@@ -109,14 +107,14 @@ function SignupContent() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
         <div className="col-span-2">
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
             Full name
           </label>
           <input
             {...register("name")}
             autoComplete="name"
             placeholder="Ali Raza"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.name && (
             <p className="mt-1.5 text-xs text-red-600">{errors.name.message}</p>
@@ -124,7 +122,7 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
             Email
           </label>
           <input
@@ -132,7 +130,7 @@ function SignupContent() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.email && (
             <p className="mt-1.5 text-xs text-red-600">{errors.email.message}</p>
@@ -140,15 +138,15 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
-            Phone <span className="text-(--color-muted) font-normal">(optional)</span>
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
+            Phone <span className="text-[var(--color-muted)] font-normal">(optional)</span>
           </label>
           <input
             {...register("phone")}
             type="tel"
             autoComplete="tel"
             placeholder="0300-1234567"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.phone && (
             <p className="mt-1.5 text-xs text-red-600">{errors.phone.message}</p>
@@ -156,7 +154,7 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
             Password
           </label>
           <div className="relative">
@@ -165,12 +163,12 @@ function SignupContent() {
               type={showPw ? "text" : "password"}
               autoComplete="new-password"
               placeholder="At least 8 characters"
-              className={`${INPUT} pr-11`}
+              className={`${FORM_INPUT} pr-11`}
             />
             <button
               type="button"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-ink) transition-colors"
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
               aria-label={showPw ? "Hide" : "Show"}
             >
               {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -182,7 +180,7 @@ function SignupContent() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-ink-soft mb-1.5">
+          <label className="block text-sm font-semibold text-[var(--color-ink-soft)] mb-1.5">
             Confirm password
           </label>
           <input
@@ -190,7 +188,7 @@ function SignupContent() {
             type={showPw ? "text" : "password"}
             autoComplete="new-password"
             placeholder="Repeat your password"
-            className={INPUT}
+            className={FORM_INPUT}
           />
           {errors.confirmPassword && (
             <p className="mt-1.5 text-xs text-red-600">{errors.confirmPassword.message}</p>
@@ -200,7 +198,7 @@ function SignupContent() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 rounded-xl bg-(--color-ink) text-white text-sm font-bold hover:bg-ink-soft disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
+          className="w-full h-11 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-2"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -209,11 +207,11 @@ function SignupContent() {
           )}
         </button>
 
-        <p className="text-xs text-center text-(--color-muted)">
+        <p className="text-xs text-center text-[var(--color-muted)]">
           By creating an account you agree to our{" "}
-          <Link href="/terms" className="underline hover:text-(--color-ink)">Terms</Link>
+          <Link href="/terms" className="underline hover:text-[var(--color-ink)]">Terms</Link>
           {" "}and{" "}
-          <Link href="/privacy" className="underline hover:text-(--color-ink)">Privacy Policy</Link>.
+          <Link href="/privacy" className="underline hover:text-[var(--color-ink)]">Privacy Policy</Link>.
         </p>
       </form>
     </div>

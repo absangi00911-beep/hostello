@@ -57,17 +57,17 @@ export default async function ConversationPage({ params }: PageProps) {
     <div className="min-h-screen pt-20 pb-0 bg-[var(--color-ground)] flex flex-col">
       <div className="mx-auto max-w-2xl w-full px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
         {/* Back link */}
-        <div className="py-4">
+        <div className="py-6">
           <Link
             href="/messages"
-            className="text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors"
+            className="text-base font-semibold text-[var(--color-brand-600)] hover:text-[var(--color-brand-700)] transition-colors"
           >
             ← Messages
           </Link>
         </div>
 
         {/* Thread */}
-        <div className="flex-1 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden flex flex-col mb-6">
+        <div className="flex-1 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] overflow-hidden flex flex-col mb-6 shadow-card">
           <ConversationThread
             conversationId={conversation.id}
             currentUserId={session.user.id}

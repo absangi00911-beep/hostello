@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MapPin, ArrowRight, GraduationCap } from "lucide-react";
+import { Search, MapPin, ArrowRight, CheckCircle2 } from "lucide-react";
 import { CITIES } from "@/config/amenities";
-import { POPULAR_UNIVERSITIES } from "@/config/universities";
 import { buildSearchParams } from "@/lib/utils";
 import Link from "next/link";
 
@@ -21,21 +20,20 @@ function formatStat(n: number): string {
 export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [city,  setCity]  = useState("");
+  const [city, setCity] = useState("");
 
-  // Only show counts that are high enough to function as proof, not warnings.
   const HOSTEL_DISPLAY_THRESHOLD = 5;
   const STUDENTS_DISPLAY_THRESHOLD = 50;
-  const showHostelStat   = hostelCount   >= HOSTEL_DISPLAY_THRESHOLD;
+  const showHostelStat = hostelCount >= HOSTEL_DISPLAY_THRESHOLD;
   const showStudentsStat = studentsHoused >= STUDENTS_DISPLAY_THRESHOLD;
 
   const HERO_STATS = [
     showHostelStat
       ? { value: String(hostelCount), label: hostelCount === 1 ? "Hostel listed" : "Hostels listed" }
-      : { value: "In-person", label: "Verified listings" },
+      : { value: "100%", label: "In-person verified" },
     showStudentsStat
       ? { value: formatStat(studentsHoused), label: "Students housed" }
-      : { value: "100%", label: "Honest reviews only" },
+      : { value: "100%", label: "Real reviews only" },
     { value: "8", label: "Cities covered" },
   ];
 
@@ -45,87 +43,73 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
     router.push(`/hostels${params ? `?${params}` : ""}`);
   }
 
-  function handleUniversityClick(shortName: string, uniCity: string) {
-    const params = buildSearchParams({ q: shortName, city: uniCity });
-    router.push(`/hostels?${params}`);
-  }
-
   return (
     <section className="relative bg-[var(--color-ground)] border-b border-[var(--color-border)]">
-      <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-
-        {/* Badge */}
-        <div style={{ animation: "heroFadeUp 0.4s 0.05s ease both" }}>
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-muted)] mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-500)]" />
-            Pakistan&apos;s first verified hostel marketplace
-          </span>
+      <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-32 pb-24">
+        
+        {/* Trust Badge */}
+        <div className="mb-8 flex items-center gap-2">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-brand-50)] border border-[var(--color-brand-200)]">
+            <CheckCircle2 className="w-4 h-4 text-[var(--color-brand-600)]" />
+            <span className="text-sm font-semibold text-[var(--color-brand-700)]">
+              Every listing verified in-person
+            </span>
+          </div>
         </div>
 
-        {/* Headline — plain dark, no gradient, no stroke */}
+        {/* Headline */}
         <h1
-          className="text-[clamp(2.4rem,6vw,5rem)] font-extrabold text-[var(--color-ink)] leading-[0.95] tracking-tight max-w-3xl mb-5"
-          style={{
-            fontFamily: "var(--font-display)",
-            animation: "heroFadeUp 0.5s 0.1s ease both",
-          }}
+          className="text-[clamp(2.5rem,7vw,5rem)] font-extrabold text-[var(--color-ink)] leading-[1.05] tracking-tight max-w-3xl mb-6"
+          style={{ fontFamily: "var(--font-display)" }}
         >
-          The only hostel search
-          <span className="block">that checks listings in person.</span>
+          Find your perfect
+          <span className="block text-[var(--color-brand-600)]">student hostel</span>
         </h1>
 
-        {/* Subheadline — names the actual anxiety */}
-        <p
-          className="text-base sm:text-lg text-[var(--color-ink-muted)] max-w-xl leading-relaxed mb-10"
-          style={{ animation: "heroFadeUp 0.5s 0.18s ease both" }}
-        >
-          Every listing is visited by our team before it goes live.
-          No fake photos. No WhatsApp back-and-forth with unknown agents.
+        {/* Subheadline */}
+        <p className="text-lg text-[var(--color-ink-muted)] max-w-xl leading-relaxed mb-12">
+          No fake photos. No scams. No WhatsApp chaos. Just verified listings across Pakistan's top cities.
         </p>
 
-        {/* ── Search bar — visually dominant on light background ── */}
-        <form
-          onSubmit={handleSearch}
-          style={{ animation: "heroFadeUp 0.5s 0.26s ease both" }}
-          className="max-w-2xl mb-5"
-        >
-          <div className="flex flex-col sm:flex-row rounded-2xl overflow-hidden bg-[var(--color-ink)] shadow-[0_4px_24px_rgba(0,0,0,0.18)]">
-
+        {/* Search bar — clean, focused, functional */}
+        <form onSubmit={handleSearch} className="max-w-2xl mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 rounded-xl overflow-hidden bg-white border border-[var(--color-border)] shadow-sm hover:shadow-[var(--shadow-card-hover)] transition-shadow">
             {/* Text search */}
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-ink-muted)]" />
               <input
                 type="text"
-                placeholder="University, area, or hostel name…"
+                placeholder="University, area, or hostel name"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full h-14 pl-11 pr-4 bg-transparent text-white placeholder:text-white/35 text-sm outline-none"
+                className="w-full h-12 pl-12 pr-4 bg-transparent text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] text-base outline-none"
               />
             </div>
 
             {/* Divider */}
-            <div className="hidden sm:block w-px bg-white/10 my-3 flex-shrink-0" aria-hidden="true" />
-            <div className="block sm:hidden h-px bg-white/10 mx-4 flex-shrink-0" aria-hidden="true" />
+            <div className="hidden sm:block w-px bg-[var(--color-border)]" />
 
             {/* City select */}
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            <div className="relative sm:flex-shrink-0">
+              <MapPin className="absolute left-4 sm:left-3 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-4 sm:h-4 text-[var(--color-ink-muted)] pointer-events-none" />
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full sm:w-auto h-14 pl-9 pr-8 bg-transparent text-white text-sm appearance-none outline-none cursor-pointer sm:min-w-36"
+                className="w-full sm:w-48 h-12 pl-12 sm:pl-9 pr-4 bg-transparent text-[var(--color-ink)] text-base appearance-none outline-none cursor-pointer font-medium"
               >
-                <option value="" className="bg-[#0A0A0A]">All cities</option>
+                <option value="">All cities</option>
                 {CITIES.map((c) => (
-                  <option key={c} value={c} className="bg-[#0A0A0A]">{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
 
-            {/* Submit — brand green is the only accent in this hero */}
+            {/* Submit button */}
             <button
               type="submit"
-              className="h-14 px-7 bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] transition-colors whitespace-nowrap flex items-center justify-center gap-2 flex-shrink-0"
+              className="h-12 px-6 sm:px-8 bg-[var(--color-brand-500)] text-[var(--color-ink)] text-base font-bold hover:bg-[var(--color-brand-600)] active:scale-95 transition-all flex items-center justify-center gap-2 flex-shrink-0"
             >
               Search
               <ArrowRight className="w-4 h-4" />
@@ -133,62 +117,35 @@ export function HeroSection({ hostelCount, studentsHoused }: HeroSectionProps) {
           </div>
         </form>
 
-        {/* City quick links */}
-        <div
-          className="flex items-center gap-2 flex-wrap mb-2"
-          style={{ animation: "heroFadeUp 0.5s 0.32s ease both" }}
-        >
-          <span className="text-xs text-[var(--color-muted)] mr-1">Cities:</span>
-          {["Lahore", "Islamabad", "Karachi"].map((c) => (
-            <Link
-              key={c}
-              href={`/hostels?city=${c}`}
-              className="text-xs px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition-colors"
-            >
-              {c}
-            </Link>
-          ))}
+        {/* Quick city links */}
+        <div className="mb-12">
+          <p className="text-sm font-semibold text-[var(--color-ink-muted)] mb-3">Popular cities:</p>
+          <div className="flex gap-2 flex-wrap">
+            {["Lahore", "Islamabad", "Karachi"].map((c) => (
+              <Link
+                key={c}
+                href={`/hostels?city=${c}`}
+                className="px-4 py-2 rounded-lg border border-[var(--color-border)] bg-white text-[var(--color-ink)] text-sm font-medium hover:bg-[var(--color-ground)] hover:border-[var(--color-brand-300)] transition-colors btn-press"
+              >
+                {c}
+              </Link>
+            ))}
+          </div>
         </div>
 
-        {/* University quick links */}
-        <div
-          className="flex items-center gap-2 flex-wrap mb-12"
-          style={{ animation: "heroFadeUp 0.5s 0.36s ease both" }}
-        >
-          <span className="text-xs text-[var(--color-muted)] mr-1 flex items-center gap-1">
-            <GraduationCap className="w-3 h-3" /> Near:
-          </span>
-          {POPULAR_UNIVERSITIES.map((u) => (
-            <button
-              key={u.shortName}
-              type="button"
-              onClick={() => handleUniversityClick(u.shortName, u.city)}
-              className="text-xs px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition-colors cursor-pointer"
-            >
-              {u.shortName}
-            </button>
-          ))}
-        </div>
-
-        {/* Stats row */}
-        <div
-          className="flex items-center gap-10 pt-8 border-t border-[var(--color-border)]"
-          style={{ animation: "heroFadeUp 0.5s 0.42s ease both" }}
-        >
-          {HERO_STATS.map((stat, i) => (
-            <div key={stat.label} className="flex items-center gap-10">
-              <div>
-                <p
-                  className="text-2xl font-extrabold text-[var(--color-ink)] leading-none"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {stat.value}
-                </p>
-                <p className="text-xs text-[var(--color-muted)] mt-1">{stat.label}</p>
-              </div>
-              {i < HERO_STATS.length - 1 && (
-                <div className="w-px h-7 bg-[var(--color-border)]" />
-              )}
+        {/* Trust stats */}
+        <div className="grid grid-cols-3 gap-6 sm:gap-10 pt-12 border-t border-[var(--color-border)]">
+          {HERO_STATS.map((stat) => (
+            <div key={stat.label}>
+              <p
+                className="text-3xl sm:text-4xl font-extrabold text-[var(--color-brand-600)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {stat.value}
+              </p>
+              <p className="text-xs sm:text-sm text-[var(--color-ink-muted)] mt-2 leading-snug">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>

@@ -59,36 +59,36 @@ export default async function MessagesPage() {
   return (
     <div className="min-h-screen pt-20 pb-16 bg-[var(--color-ground)]">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        <div className="py-10">
+        <div className="py-12">
           <h1
-            className="text-3xl sm:text-4xl font-extrabold text-[var(--color-ink)]"
+            className="text-4xl sm:text-5xl font-extrabold text-[var(--color-ink)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Messages
           </h1>
-          <p className="text-sm text-[var(--color-muted)] mt-1">
+          <p className="text-base text-[var(--color-ink-muted)] mt-2 font-medium">
             {conversations.length} conversation{conversations.length !== 1 ? "s" : ""}
           </p>
         </div>
 
         {conversations.length === 0 ? (
-          <div className="py-20 text-center rounded-2xl border border-dashed border-[var(--color-border)]">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center mx-auto mb-5">
-              <MessageSquare className="w-6 h-6 text-[var(--color-muted)]" />
+          <div className="py-24 text-center rounded-lg border border-dashed border-[var(--color-border)]">
+            <div className="w-14 h-14 rounded-lg bg-[var(--color-brand-50)] border border-[var(--color-brand-100)] flex items-center justify-center mx-auto mb-6">
+              <MessageSquare className="w-6 h-6 text-[var(--color-brand-600)]" />
             </div>
-            <p className="text-base font-bold text-[var(--color-ink)] mb-1">No messages yet</p>
-            <p className="text-sm text-[var(--color-muted)] mb-6">
+            <p className="text-lg font-bold text-[var(--color-ink)] mb-2">No messages yet</p>
+            <p className="text-base text-[var(--color-ink-muted)] mb-8">
               Contact hostel owners to start a conversation.
             </p>
             <Link
               href="/hostels"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--color-ink)] text-white text-sm font-bold hover:bg-[var(--color-ink-soft)] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--color-brand-600)] hover:bg-[var(--color-brand-700)] text-white text-base font-bold transition-colors"
             >
               Browse hostels
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {conversationsWithUnread.map((conv) => {
               const lastMessage = conv.messages[0];
               const isUnread = conv.unreadCount > 0;
@@ -99,16 +99,16 @@ export default async function MessagesPage() {
                 <Link
                   key={conv.id}
                   href={`/messages/${conv.id}`}
-                  className="flex items-center gap-4 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 hover:border-[var(--color-ink)] transition-colors"
+                  className="flex items-center gap-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-5 hover:border-[var(--color-brand-500)] hover:shadow-card transition-all"
                 >
                   {/* Avatar */}
-                  <div className="w-11 h-11 rounded-xl bg-[var(--color-ink)] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 overflow-hidden">
+                  <div className="w-12 h-12 rounded-lg bg-[var(--color-brand-600)] text-white flex items-center justify-center text-base font-bold flex-shrink-0 overflow-hidden">
                     {lastMessage?.sender.avatar ? (
                       <Image
                         src={lastMessage.sender.avatar}
                         alt={lastMessage.sender.name}
-                        width={44}
-                        height={44}
+                        width={48}
+                        height={48}
                         className="object-cover"
                       />
                     ) : (
@@ -118,17 +118,17 @@ export default async function MessagesPage() {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 mb-1">
                       <p
-                        className={`text-sm truncate ${isUnread ? "font-bold text-[var(--color-ink)]" : "font-semibold text-[var(--color-ink)]"}`}
+                        className={`text-base truncate ${isUnread ? "font-bold text-[var(--color-ink)]" : "font-semibold text-[var(--color-ink)]"}`}
                       >
                         {displayHostelName}
                       </p>
-                      <p className="text-xs text-[var(--color-muted)] flex-shrink-0">
+                      <p className="text-sm text-[var(--color-ink-muted)] flex-shrink-0 font-medium">
                         {lastMessage ? formatDate(lastMessage.createdAt) : formatDate(conv.updatedAt)}
                       </p>
                     </div>
-                    <p className={`text-xs mt-0.5 truncate ${isUnread ? "text-[var(--color-ink)] font-medium" : "text-[var(--color-muted)]"}`}>
+                    <p className={`text-sm truncate ${isUnread ? "text-[var(--color-ink)] font-semibold" : "text-[var(--color-ink-muted)]"}`}>
                       {lastMessage
                         ? lastMessage.sender.id === session.user.id
                           ? `You: ${lastMessage.content}`
@@ -139,7 +139,7 @@ export default async function MessagesPage() {
 
                   {/* Unread badge */}
                   {isUnread && (
-                    <div className="w-5 h-5 rounded-full bg-[var(--color-brand-500)] text-[var(--color-ink)] text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-brand-600)] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
                       {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
                     </div>
                   )}

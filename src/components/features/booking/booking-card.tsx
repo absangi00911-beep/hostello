@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Users, ArrowRight, Loader2, Star, ChevronDown, Info, CalendarDays } from "lucide-react";
+import { Users, ArrowRight, Star, ChevronDown, Info, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/loading";
 import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from "@/lib/payment-methods";
 import { MoveInPicker, DurationPicker, addMonths, monthToDateStr } from "./month-picker";
 
@@ -264,38 +265,38 @@ export function BookingCard({
   }
 
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+    <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-card">
 
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[var(--color-border)] bg-[var(--color-ground)]">
+      <div className="px-6 py-5 border-b border-[var(--color-border)] bg-[var(--color-brand-50)]">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-2">
               <span
-                className="text-2xl font-extrabold text-[var(--color-ink)]"
+                className="text-3xl font-extrabold text-[var(--color-brand-700)]"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {formatPrice(pricePerMonth)}
               </span>
-              <span className="text-sm text-[var(--color-muted)]">/ month</span>
+              <span className="text-base text-[var(--color-ink-muted)]">/ month</span>
             </div>
             {minStay > 1 && (
-              <p className="text-xs text-[var(--color-muted)] mt-0.5">
+              <p className="text-sm text-[var(--color-ink-muted)] mt-1">
                 Min. {minStay} month stay
               </p>
             )}
           </div>
           {hasRating && (
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--color-accent-500)]/10 border border-[var(--color-accent-500)]/20 flex-shrink-0">
-              <Star className="w-3.5 h-3.5 text-[var(--color-accent-500)] fill-current" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[var(--color-accent-200)] flex-shrink-0">
+              <Star className="w-4 h-4 text-[var(--color-accent-500)] fill-current" />
               <span className="text-sm font-bold text-[var(--color-ink)]">{rating!.toFixed(1)}</span>
-              <span className="text-xs text-[var(--color-muted)]">({reviewCount})</span>
+              <span className="text-xs text-[var(--color-ink-muted)]">({reviewCount})</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-6 space-y-5">
 
         {/* Move-in month */}
         <MoveInPicker value={moveInMonth} onChange={setMoveInMonth} />
@@ -312,13 +313,13 @@ export function BookingCard({
         />
 
         {/* Check-out date display */}
-        <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5">
-          <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-2">
+        <div className="rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] p-4">
+          <label className="block text-xs font-bold text-[var(--color-ink-muted)] mb-2.5 uppercase tracking-wide">
             Check-out date
           </label>
           <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-[var(--color-brand-500)]" />
-            <p className="text-sm font-semibold text-[var(--color-ink)]">
+            <CalendarDays className="w-5 h-5 text-[var(--color-brand-600)]" />
+            <p className="text-base font-semibold text-[var(--color-ink)]">
               {moveInMonth ? (
                 new Date(checkOut).toLocaleDateString("en-PK", {
                   month: "long",
@@ -326,14 +327,14 @@ export function BookingCard({
                   year: "numeric",
                 })
               ) : (
-                <span className="text-[var(--color-muted)]">Select check-in date & duration</span>
+                <span className="text-[var(--color-ink-muted)]">Select check-in date & duration</span>
               )}
             </p>
           </div>
           {moveInMonth && (
-            <p className="text-xs text-[var(--color-muted)] mt-2">
+            <p className="text-sm text-[var(--color-ink-muted)] mt-2">
               {months} month{months !== 1 ? "s" : ""} from{" "}
-              <span className="font-semibold text-[var(--color-ink)]">
+              <span className="font-semibold text-[var(--color-brand-600)]">
                 {new Date(checkIn).toLocaleDateString("en-PK", { month: "short", day: "numeric" })}
               </span>
             </p>
@@ -342,13 +343,13 @@ export function BookingCard({
 
         {/* Guests */}
         <div>
-          <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-1.5">Guests</label>
+          <label className="block text-xs font-bold text-[var(--color-ink-muted)] mb-2 uppercase tracking-wide">Guests</label>
           <div className="relative">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-muted)] pointer-events-none" />
+            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-brand-600)] pointer-events-none" />
             <select
               value={guests}
               onChange={(e) => setGuests(Number(e.target.value))}
-              className="w-full h-10 pl-9 pr-3 rounded-xl border border-[var(--color-border)] text-sm bg-[var(--color-surface)] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all appearance-none cursor-pointer"
+              className="w-full h-11 pl-10 pr-3 rounded-lg border border-[var(--color-border)] text-base font-medium bg-[var(--color-surface)] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-500)]/20 transition-all appearance-none cursor-pointer"
             >
               {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>
@@ -359,7 +360,7 @@ export function BookingCard({
 
         {/* Payment method */}
         <div>
-          <label className="block text-xs font-semibold text-[var(--color-ink-soft)] mb-2">Pay via</label>
+          <label className="block text-xs font-bold text-[var(--color-ink-muted)] mb-2.5 uppercase tracking-wide">Pay via</label>
           <div className="grid grid-cols-3 gap-2">
             {PAYMENT_METHODS.map((pm) => (
               <button
@@ -369,17 +370,17 @@ export function BookingCard({
                 disabled={!pm.enabled}
                 title={pm.hint}
                 className={cn(
-                  "py-2.5 rounded-xl border text-xs font-semibold transition-all flex flex-col items-center gap-1",
+                  "py-3 rounded-lg border text-xs font-semibold transition-all flex flex-col items-center gap-1.5",
                   payment === pm.value
-                    ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+                    ? "bg-[var(--color-brand-600)] text-white border-[var(--color-brand-600)]"
                     : pm.enabled
-                      ? "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-ink-soft)]"
-                      : "border-[var(--color-border)] text-[var(--color-muted)] opacity-55 cursor-not-allowed"
+                      ? "border-[var(--color-border)] text-[var(--color-ink)] hover:border-[var(--color-brand-500)] hover:bg-[var(--color-brand-50)]"
+                      : "border-[var(--color-border)] text-[var(--color-ink-muted)] opacity-50 cursor-not-allowed"
                 )}
               >
-                <span className="text-base">{pm.emoji}</span>
+                <span className="text-lg">{pm.emoji}</span>
                 {pm.label}
-                <span className="text-[10px] font-medium">{pm.hint}</span>
+                <span className="text-[10px] font-medium opacity-75">{pm.hint}</span>
               </button>
             ))}
           </div>
@@ -387,9 +388,9 @@ export function BookingCard({
 
         {/* Pricing warning for edge cases */}
         {pricingWarning && (
-          <div className="rounded-xl bg-amber-50 border border-amber-300 p-3.5 flex gap-3">
-            <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-900 leading-relaxed font-medium">
+          <div className="rounded-lg bg-amber-50 border border-amber-300 p-4 flex gap-3">
+            <Info className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-900 leading-relaxed font-medium">
               {pricingWarning}
             </p>
           </div>
@@ -398,28 +399,28 @@ export function BookingCard({
         {/* Price breakdown with billing disclosure */}
         {months !== null && rentTotal !== null && (
           <div className="space-y-3">
-            <div className="rounded-xl bg-[var(--color-ground)] border border-[var(--color-border)] p-3.5 space-y-2 text-sm">
-              <div className="flex justify-between text-[var(--color-muted)]">
+            <div className="rounded-lg bg-[var(--color-ground)] border border-[var(--color-border)] p-4 space-y-2 text-base">
+              <div className="flex justify-between text-[var(--color-ink-muted)]">
                 <span>{formatPrice(pricePerMonth)} × {months} calendar month{months !== 1 ? "s" : ""}</span>
-                <span>{formatPrice(rentTotal)}</span>
+                <span className="font-semibold">{formatPrice(rentTotal)}</span>
               </div>
-              <div className="flex justify-between font-bold text-[var(--color-ink)] pt-2 border-t border-[var(--color-border)]">
+              <div className="flex justify-between font-bold text-[var(--color-ink)] pt-3 border-t border-[var(--color-border)]">
                 <span>Total due at booking</span>
-                <span style={{ fontFamily: "var(--font-display)" }}>{formatPrice(rentTotal)}</span>
+                <span style={{ fontFamily: "var(--font-display)" }} className="text-lg">{formatPrice(rentTotal)}</span>
               </div>
-              <div className="flex items-start gap-1.5 pt-1">
-                <Info className="w-3.5 h-3.5 text-[var(--color-muted)] mt-0.5 flex-shrink-0" />
-                <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
+              <div className="flex items-start gap-2 pt-2">
+                <Info className="w-4 h-4 text-[var(--color-ink-muted)] mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-[var(--color-ink-muted)] leading-relaxed">
                   The owner may collect a refundable security deposit (typically 2 months' rent) directly on move-in day. This is separate from the amount charged here.
                 </p>
               </div>
             </div>
 
             {/* General billing disclosure about calendar months */}
-            <div className="rounded-xl bg-blue-50 border border-blue-200 p-3.5 flex gap-3">
-              <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-900 leading-relaxed space-y-1">
-                <p className="font-medium">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 flex gap-3">
+              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-900 leading-relaxed space-y-1">
+                <p className="font-semibold">
                   You&apos;re booking for <span className="font-bold">{months} calendar month{months !== 1 ? "s" : ""}</span>.
                 </p>
                 <p>
@@ -434,36 +435,36 @@ export function BookingCard({
         <button
           onClick={handleBook}
           disabled={loading || requestInFlightRef.current}
-          className="w-full h-12 rounded-xl bg-[var(--color-brand-500)] text-[var(--color-ink)] text-sm font-bold hover:bg-[var(--color-brand-400)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="w-full h-13 rounded-lg bg-[var(--color-brand-600)] hover:bg-[var(--color-brand-700)] text-white text-base font-bold disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-card hover:shadow-card-hover"
         >
           {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Spinner size="md" />
           ) : (
-            <>Request to book <ArrowRight className="w-4 h-4" /></>
+            <>Request to book <ArrowRight className="w-5 h-5" /></>
           )}
         </button>
 
         {/* What happens next */}
-        <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
+        <div className="rounded-lg border border-[var(--color-border)] overflow-hidden">
           <button
             type="button"
             onClick={() => setShowSteps((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-xs font-semibold text-[var(--color-ink-soft)] hover:bg-[var(--color-ground)] transition-colors"
+            className="w-full flex items-center justify-between px-4 py-4 text-sm font-semibold text-[var(--color-ink)] hover:bg-[var(--color-ground)] transition-colors"
           >
             <span>What happens after I request?</span>
-            <ChevronDown className={cn("w-3.5 h-3.5 text-[var(--color-muted)] transition-transform", showSteps && "rotate-180")} />
+            <ChevronDown className={cn("w-4 h-4 text-[var(--color-ink-muted)] transition-transform", showSteps && "rotate-180")} />
           </button>
           {showSteps && (
-            <div className="px-4 pb-4 border-t border-[var(--color-border)] pt-3 space-y-2.5">
+            <div className="px-4 pb-4 border-t border-[var(--color-border)] pt-4 space-y-3">
               {STEPS.map((s) => (
                 <div key={s.n} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[var(--color-brand-500)] text-[var(--color-ink)] text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-[var(--color-brand-600)] text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                     {s.n}
                   </div>
-                  <p className="text-xs text-[var(--color-muted)] leading-relaxed">{s.text}</p>
+                  <p className="text-sm text-[var(--color-ink-muted)] leading-relaxed">{s.text}</p>
                 </div>
               ))}
-              <p className="text-[10px] text-[var(--color-muted)] pt-1">
+              <p className="text-xs text-[var(--color-ink-muted)] pt-2 border-t border-[var(--color-border)]">
                 You won&apos;t be charged until the owner confirms.
               </p>
             </div>

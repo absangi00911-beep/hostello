@@ -1,19 +1,21 @@
+import { Skeleton, SkeletonText, SkeletonGrid } from "@/components/ui/skeleton";
+
 export default function HomeLoading() {
   return (
     <div className="min-h-screen">
       {/* Hero skeleton */}
-      <div className="h-screen bg-[var(--color-primary-950)]">
+      <div className="h-screen bg-[var(--color-ground)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-48 space-y-6">
-          <div className="h-4 w-48 skeleton rounded-full opacity-30" />
+          <Skeleton variant="circle" width="w-48" height="h-4" />
           <div className="space-y-3">
-            <div className="h-14 w-2/3 skeleton rounded-xl opacity-20" />
-            <div className="h-14 w-1/2 skeleton rounded-xl opacity-20" />
+            <Skeleton variant="text" height="h-14" width="w-2/3" />
+            <Skeleton variant="text" height="h-14" width="w-1/2" />
           </div>
-          <div className="h-5 w-96 max-w-full skeleton rounded opacity-20" />
+          <Skeleton variant="text" height="h-5" width="w-96 max-w-full" />
           <div className="flex gap-3 mt-6">
-            <div className="h-12 flex-1 max-w-md skeleton rounded-xl opacity-20" />
-            <div className="h-12 w-36 skeleton rounded-xl opacity-20" />
-            <div className="h-12 w-28 skeleton rounded-xl opacity-20" />
+            <Skeleton variant="rect" height="h-12" width="flex-1 max-w-md" />
+            <Skeleton variant="rect" height="h-12" width="w-36" />
+            <Skeleton variant="rect" height="h-12" width="w-28" />
           </div>
         </div>
       </div>
@@ -23,11 +25,11 @@ export default function HomeLoading() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-3 gap-8">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-start gap-4">
-              <div className="w-10 h-10 skeleton rounded-xl flex-shrink-0" />
+              <Skeleton variant="circle" width="w-10" height="h-10" />
               <div className="space-y-1.5 flex-1">
-                <div className="h-4 w-28 skeleton rounded" />
-                <div className="h-3 w-full skeleton rounded" />
-                <div className="h-3 w-3/4 skeleton rounded" />
+                <Skeleton variant="text" height="h-4" width="w-28" />
+                <Skeleton variant="text" height="h-3" width="w-full" />
+                <Skeleton variant="text" height="h-3" width="w-3/4" />
               </div>
             </div>
           ))}

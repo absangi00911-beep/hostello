@@ -26,9 +26,9 @@ function StarPicker({
   const [hovered, setHovered] = useState(0);
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm text-[var(--color-muted)] w-24 flex-shrink-0">{label}</span>
-      <div className="flex gap-1">
+    <div className="flex items-center gap-4">
+      <span className="text-base text-[var(--color-ink-muted)] w-24 flex-shrink-0 font-medium">{label}</span>
+      <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
@@ -41,10 +41,10 @@ function StarPicker({
           >
             <Star
               className={cn(
-                "w-5 h-5 transition-colors",
+                "w-6 h-6 transition-colors",
                 star <= (hovered || value)
                   ? "text-[var(--color-accent-500)] fill-current"
-                  : "text-[var(--color-sand-200)]"
+                  : "text-[var(--color-border)]"
               )}
             />
           </button>
@@ -105,12 +105,12 @@ export function ReviewForm({ hostelId, hostelSlug }: ReviewFormProps) {
         Write a review
       </h2>
 
-      <div className="bg-white rounded-2xl border border-[var(--color-border)] p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6 shadow-card">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
 
           {/* Overall rating */}
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label className="block text-base font-bold text-[var(--color-ink)] mb-3">
               Overall rating
             </label>
             <StarPicker
@@ -119,13 +119,13 @@ export function ReviewForm({ hostelId, hostelSlug }: ReviewFormProps) {
               label=""
             />
             {errors.rating && (
-              <p className="mt-1.5 text-xs text-red-600">{errors.rating.message}</p>
+              <p className="mt-2 text-sm text-red-600 font-medium">{errors.rating.message}</p>
             )}
           </div>
 
           {/* Sub-ratings */}
-          <div className="space-y-2.5 py-4 border-t border-b border-[var(--color-border)]">
-            <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider mb-3">
+          <div className="space-y-3 py-5 border-t border-b border-[var(--color-border)]">
+            <p className="text-sm font-bold text-[var(--color-ink-muted)] uppercase tracking-wider mb-4">
               Rate specific aspects
             </p>
             <StarPicker
