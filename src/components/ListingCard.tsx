@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import styles from './ListingCard.module.css'
 import Button from './Button'
 
@@ -54,9 +55,11 @@ export default function ListingCard({ hostel }: ListingCardProps) {
             <span className={styles.amount}>PKR {hostel.price}</span>
             <span className={styles.period}>/night</span>
           </div>
-          <Button onClick={() => console.log(`View ${hostel.name}`)}>
-            View & Book
-          </Button>
+          <Link href={`/hostels/${hostel.id}`} style={{ flex: 1 }}>
+            <Button style={{ width: '100%' }}>
+              View & Book
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
