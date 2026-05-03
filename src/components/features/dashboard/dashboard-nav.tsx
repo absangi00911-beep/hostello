@@ -10,6 +10,7 @@ const navItems = [
   { label: "Listings", href: "/dashboard/listings", icon: "🏢" },
   { label: "Bookings", href: "/dashboard/bookings", icon: "📅" },
   { label: "Messages", href: "/dashboard/messages", icon: "💬" },
+  { label: "Analytics", href: "/dashboard/analytics", icon: "📈" },
 ];
 
 export default function DashboardNav() {
