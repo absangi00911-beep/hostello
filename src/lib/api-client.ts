@@ -63,6 +63,51 @@ export async function fetchHostels(params: Record<string, string>): Promise<Pagi
   return json as PaginatedHostels;
 }
 
+export interface HostelDetail extends HostelSummary {
+  description: string;
+  address: string;
+  minStay: number;
+  maxStay: number | null;
+  capacity: number;
+  rooms: number;
+  rules: string[];
+  status: "ACTIVE" | "DRAFT" | "PENDING_REVIEW" | "SUSPENDED";
+  featured: boolean;
+  viewCount: number;
+  owner: {
+    id: string;
+    name: string;
+    avatar: string | null;
+    createdAt: string;
+    _count: { hostels: number };
+  };
+  reviews: Array<{
+    id: string;
+    rating: number;
+    title: string;
+    comment: string;
+    createdAt: string;
+    user: { id: string; name: string; avatar: string | null };
+  }>;
+  rooms_rel: Array<{
+    id: string;
+    name: string;
+    description: string;
+    pricePerMonth: number;
+    capacity: number;
+  }>;
+  _count: { favorites: number };
+}
+
+export async function fetchHostelBySlug(slug: string): Promise<HostelDetail> {
+  const res = await fetch(`/api/hostels/${slug}`, {
+    next: { revalidate: 30 },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? "Failed to fetch hostel");
+  return json.data as HostelDetail;
+}
+
 // ─── Favorites ────────────────────────────────────────────────────────────────
 
 export async function toggleFavorite(slug: string, isSaved: boolean): Promise<boolean> {
