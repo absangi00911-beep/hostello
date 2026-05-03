@@ -131,8 +131,18 @@ export default function HostelDetailPage() {
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Booking:', { checkIn: selectedDates.checkIn, checkOut: selectedDates.checkOut, guests: guestCount })
-    alert('Booking feature coming soon!')
+    if (!selectedDates.checkIn || !selectedDates.checkOut) {
+      alert('Please select both check-in and check-out dates')
+      return
+    }
+    // Navigate to checkout with booking parameters
+    const params = new URLSearchParams({
+      hostelId: hostel.id.toString(),
+      checkIn: selectedDates.checkIn,
+      checkOut: selectedDates.checkOut,
+      guests: guestCount.toString(),
+    })
+    window.location.href = `/checkout?${params.toString()}`
   }
 
   const averageRating = (hostel.reviewsList.reduce((sum: number, r: any) => sum + r.rating, 0) / hostel.reviewsList.length).toFixed(1)
