@@ -1,0 +1,149 @@
+.tableContainer {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.controls {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  gap: 1rem;
+}
+
+.sortControl {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sortControl label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.sortControl select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: white;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table thead {
+  background-color: var(--color-ground);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 150ms ease;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-ground);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  color: var(--color-text);
+}
+
+.guestInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.name {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.email {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.amount {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.status {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status.confirmed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status.completed {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status.cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem;
+  }
+
+  .guestInfo {
+    gap: 0;
+  }
+
+  .name {
+    font-size: 0.9rem;
+  }
+
+  .email {
+    font-size: 0.75rem;
+  }
+}
