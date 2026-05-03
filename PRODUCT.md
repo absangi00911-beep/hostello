@@ -1,41 +1,46 @@
-# HostelLo — Product Strategy
+# Hostel Discovery Platform — Product Strategy
+
+## Register
+Product (design serves the platform, not the reverse)
 
 ## Who
 
-**Primary**: Pakistani students (18–25) seeking affordable, safe, verified hostel accommodation
-**Secondary**: Hostel owners/managers listing and managing properties
+**Primary User**: Students, young professionals (18–30) seeking temporary affordable accommodation in Pakistani cities
+
+**Secondary User**: Hostel owners, managers needing centralized listing & booking infrastructure
 
 ## What
 
-A modern hostel booking platform that simplifies finding, comparing, and booking student accommodation across major Pakistani cities (Lahore, Islamabad, Karachi, etc.).
+A direct-to-owner hostel discovery and booking platform. Students browse verified listings with real reviews, filter by essentials (price, location, safety, amenities), and book immediately. Owners manage availability, communicate with guests, track bookings.
 
-**Core features**:
-- Browse verified hostels with real ratings and reviews
-- Filter by price, gender, location, amenities
-- Book directly (no middlemen)
-- Messaging between students and hostel owners
-- Payment via local methods (EasyPaisa, JazzCash, Sadapay)
-- Admin dashboard for hostel owners
+**Core flows**:
+- Student: Browse → Filter → Inspect → Message → Book → Track → Review
+- Owner: List property → Manage availability → Respond to inquiries → Confirm bookings
 
 ## Why
 
-Students waste time contacting hostels individually via WhatsApp or outdated websites. Hostel owners lack centralized booking infrastructure. HostelLo bridges this with a trusted, transparent platform.
+Students currently contact hostels individually via WhatsApp, email, or fragmented websites—wasting time, uncertain of authenticity, prone to miscommunication. Hostel owners handle ad-hoc inquiries without booking infrastructure, losing revenue to friction.
 
-## Voice & Tone
-
-- **Trustworthy**: Verified listings, real reviews, transparent pricing
-- **Modern & youthful**: Speaking directly to students' needs without condescension
-- **Direct & clear**: No jargon, no fluff—get to booking fast
-- **Encouraging**: "Find your perfect stay" not "Upload documents to apply"
-- **Local-first**: Acknowledges Pakistan context (payment methods, cities, languages)
+This platform consolidates discovery, eliminates middlemen, builds trust through verified reviews, and streamlines transactions with direct payments.
 
 ## Success Metrics
 
-- Hostels listed: Growing (currently ~50+)
-- Booking conversion: Direct bookings > WhatsApp inquiries
-- User retention: Return visitors browsing multiple cities
-- Hostel owner trust: Repeat listers, high responsiveness
+- **Student**: Time to book < 5 minutes
+- **Owner**: Response time < 2 hours; bookings routed to single dashboard
+- **Platform**: Active listings growing; booking conversion rate; repeat visitors
 
-## Positioning
+## Voice & Tone
 
-"Pakistan's trusted student hostel platform — verified listings, real reviews, direct bookings."
+- **Transparent**: Real reviews, clear pricing, no hidden fees
+- **Efficient**: No jargon; students can book in 3 taps
+- **Respectful**: Acknowledges both student and owner constraints
+- **Contemporary**: Modern, not sterile; energetic, not chaotic
+- **Local-aware**: Uses familiar Pakistani payment methods, cities, cultural context
+
+## Key Principles
+
+- Default to student UX first (they're the initiator)
+- Hostel owners need operational clarity, not marketing flourish
+- Trust is earned through data: reviews, response times, completeness of listings
+- Mobile-first; desktop-optimized
+- Performance matters (slow load = abandoned search)

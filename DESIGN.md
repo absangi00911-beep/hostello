@@ -1,150 +1,208 @@
-# HostelLo — Design System
+# Hostel Discovery Platform — Design System
+
+## Theme & Scene
+
+Student (18–24) browsing on phone, evening, quiet room or campus café, looking for housing. Needs reassurance + speed. Ambient: calm but alert. Design should feel contemporary & approachable, not institutional or playful-to-the-point-of-distraction.
+
+**Register**: Product (utilitarian marketplace; clarity > delight, though delight is welcome)
+
+## Color Strategy: Committed Minimalism
+
+One strong accent (committed ≤30% of surface), tinted neutrals, semantic colors.
+
+### Core Palette
+
+**Primary Accent: Deep Indigo**
+Trust, clarity, modernity—non-threatening authority. Used for CTAs, focus states, links.
+- 50: `#f0f4ff`
+- 100: `#e0e9ff`
+- 200: `#c2d5ff`
+- 300: `#a3c1ff`
+- **400: `#6b8fff`** (interactive, hover)
+- **500: `#4f74e6`** (primary brand, buttons, links)
+- 600: `#3959cc`
+- 700: `#2e46a3`
+- 800: `#1f2f75`
+
+**Neutrals: Warm Grays**
+Approachable, not cold. Hint of warmth toward tan.
+- **Text (ink)**: `#0d0d0d`
+- **Text soft**: `#505050`
+- **Text muted**: `#8a8a8a`
+- **Surface**: `#ffffff`
+- **Ground (bg)**: `#fafaf9`
+- **Border**: `#e5e5e4`
+- **Border dark**: `#0d0d0d` (sparingly)
+
+**Semantic Colors**
+- **Success**: `#22c55e` (emerald-500; booking confirmation)
+- **Warning**: `#f59e0b` (amber-500; availability, time-sensitive)
+- **Error**: `#ef4444` (red-500; validation, issues)
+- **Info**: Primary-500
 
 ## Typography
 
-**Display font**: Bricolage Grotesque
-- Variable font, all weights
-- Used for: h1, h2, h3, hero headlines
-- Character: Bold, geometric, modern, slightly playful
-- Tracking: -0.04em (h1), -0.032em (h2), -0.025em (h3)
+**Display**: Inter Variable (neutral, contemporary, high legibility)
+- Used for: h1, page titles, hero headlines
+- Weights: 700–800
+- Tracking: -0.02em (h1), -0.015em (h2)
+- Size scale: 2.5rem (h1) → 2rem (h2) → 1.5rem (h3)
 
-**Body font**: Figtree
-- Weights: 300, 400, 500, 600, 700, 800
-- Used for: body text, UI labels, form inputs, buttons
-- Character: Geometric sans, clean, friendly
-- Line-height: 1.65
-- Size: 15px base
+**Body**: Figtree Variable (geometric, friendly, warm)
+- Weights: 400, 500, 600, 700
+- Used for: body text, labels, form inputs, buttons
+- Base size: 16px
+- Line-height: 1.6 (body), 1.4 (compact labels)
+- Line length cap: 65–70ch (comfortable reading)
 
-**Scale**:
-- h1: Display-class, major page titles
-- h2: Section headers, feature names
-- h3: Subsection headers, card titles
-- Body: 15px (base)
-- Caption: 13px, tracking +0.01em
-
-## Color Palette
-
-### Brand: Electric Green
-Primary identity, action-oriented, energetic
-- 50: #edfff5
-- 100: #d5ffea
-- 200: #aeffcf
-- 300: #70ffaa
-- 400: #00f570
-- **500: #00DC62** (primary, most used)
-- 600: #00b84f
-- 700: #009040
-- 800: #007134
-- 900: #005C2B
-- 950: #002E16
-
-### Neutrals: Light & Warm
-Approachable, non-cold grays
-- **Text (ink)**: #0A0A0A
-- **Text soft (ink-soft)**: #3D3D3D
-- **Text muted (ink-muted)**: #6E6E6E
-- **Text faint (ink-faint)**: #ADADAD
-- **Surface**: #FFFFFF
-- **Ground (background)**: #F5F5F5
-- **Border**: #E8E8E8
-- **Border dark**: #1A1A1A
-
-### Accent: Warm Yellow
-Highlights, secondary actions, feedback
-- 400: #FFD84D
-- **500: #FFC107** (warning, secondary)
-- 600: #E5AC00
-
-### Semantic
-- **Success**: brand-600 (#00b84f)
-- **Warning**: accent-500 (#FFC107)
-- **Error**: #EF4444 (or red-500)
-- **Info**: brand-500
+**Size Hierarchy**
+- Display: 2.5rem (700 weight)
+- h1: 2rem (700)
+- h2: 1.5rem (600)
+- h3: 1.25rem (600)
+- Body: 16px (400)
+- Label: 14px (500)
+- Caption: 12px (400)
 
 ## Spacing & Layout
 
-**Spatial scale** (8px base):
-- xs: 4px (micro spacing)
-- sm: 8px (default)
-- md: 16px (small sections)
-- lg: 24px (section separators)
-- xl: 32px (major sections)
-- 2xl: 48px (hero, full-width gaps)
+**Scale** (4px base):
+- xs: 4px
+- sm: 8px
+- md: 16px
+- lg: 24px
+- xl: 32px
+- 2xl: 48px
 
-**Grid**: 12-column responsive grid
-- Mobile (< 640px): 1 column, 16px padding
-- Tablet (640–1024px): 2 columns
-- Desktop (1024px+): 3–4 columns or full layout
-- Max-width: 1280px
+**Grid**
+- Mobile (< 640px): 1 column, 16px horizontal padding
+- Tablet (640–1024px): 2–3 columns
+- Desktop (1024px+): 4 columns, max-width 1280px
+- Gutter: 16px
 
-## Components & Interaction
+**Layouts to favor**
+- Single column on mobile (fast scanning)
+- Cards for hostel listings (natural grouping)
+- Sticky filters on desktop (discoverability)
+- Full-width search bar (prominent)
+- No nested containers (clarity)
 
-### Cards
-- Background: surface (#fff)
-- Border: 1px solid border (#E8E8E8)
-- Radius: 8–12px
-- Shadow: card (0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04))
-- Shadow on hover: card-hover (0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06))
-- Transition: all 200ms ease-smooth
-- Padding: 16–20px
+## Components
+
+### Search Bar
+- Height: 48px (mobile-friendly tap)
+- Background: surface
+- Border: 1px solid border
+- Icon: muted text, 20px
+- Focus ring: 2px primary-500, inset
+- Radius: 12px
+- Placeholder: text-muted, no italic
+
+### Listing Card
+- Background: surface
+- Border: 1px solid border
+- Radius: 12px
+- Shadow: 0 1px 2px rgba(0,0,0,0.05) (subtle depth)
+- Shadow hover: 0 12px 24px rgba(0,0,0,0.12)
+- Padding: 12px
+- Transition: all 200ms ease
+- Image: 160px height, object-fit cover, rounded-t
+- Content: 12px padding, gap sm
+- Title: h3 (1.25rem, 600 weight)
+- Metadata: label-size, text-muted, row with 4px gap
+- Price: primary-500, 600 weight, 1.25rem
+- Rating: icon + text, 14px, text-soft
+- CTA: secondary button, full-width
+
+### Filter Panel
+- Mobile: modal, overlay
+- Desktop: sticky sidebar, 280px, scrollable
+- Background: ground
+- Border: 1px solid border
+- Padding: 16px
+- Section gap: 20px
+- Labels: 500 weight, 14px, text-soft, margin-bottom 8px
+- Options: checkbox/radio, 40px height each, text-muted
+- Apply button: primary, full-width
 
 ### Buttons
-- Primary: brand-500 (#00DC62), text ink (#0A0A0A), 600 weight
-- Secondary: ink-muted text on ground bg
-- Danger: error red, text white
-- Disabled: opacity 50%, cursor not-allowed
-- Height: 40–44px (touch-friendly)
+- Primary: bg primary-500, text surface, 600 weight
+- Secondary: bg ground, text ink, border 1px border
+- Tertiary: bg transparent, text primary-500, no border
+- Height: 44px (mobile touch target)
 - Padding: 12px 20px
-- Radius: 8px
-- Transition: all 150ms ease-smooth
+- Radius: 10px
+- Transition: all 150ms ease
+- Hover: primary → primary-600, scale 1.02
+- Active: scale 0.98
+- Disabled: opacity 50%, cursor not-allowed
 
-### Forms
-- Input height: 40px
-- Border: 1px solid border (#E8E8E8)
-- Focus ring: 2px brand-500 (brand-500 / 0.1 background)
-- Label: ink-muted, 13px, 600 weight, margin-bottom 6px
-- Error message: error red, 13px
+### Form Input
+- Height: 44px
+- Border: 1px solid border
+- Padding: 12px 16px
+- Radius: 10px
+- Focus: border primary-500, ring 2px primary-500/10%
+- Label: 14px, 500 weight, text-soft, margin-bottom 6px
+- Error message: 12px, error-500, margin-top 4px
 
-### Modals & Overlays
-- Backdrop: rgba(0, 0, 0, 0.4)
-- Content: surface bg, shadow-strong
-- Close button: icon, ink-muted → ink on hover
-- Padding: 24–32px
+### Badge
+- Background: primary-50
+- Text: primary-700
+- Padding: 4px 12px
+- Radius: 20px
+- Font: 12px, 500 weight
+- Use for: amenities, availability, ratings
 
 ## Motion & Animation
 
-**Easing**:
-- **smooth**: cubic-bezier(0.4, 0, 0.2, 1) — general purpose
-- **spring**: cubic-bezier(0.34, 1.56, 0.64, 1) — playful, delightful
+**Easing**
+- Standard: `cubic-bezier(0.4, 0, 0.2, 1)` (ease-in-out)
+- Swift: `cubic-bezier(0.25, 0.46, 0.45, 0.94)` (snappy)
 
-**Duration**:
-- Micro: 150ms (button hover, icon change)
+**Duration**
+- Fast: 150ms (button hover, icon state)
 - Standard: 200ms (page transition, modal open)
-- Slow: 300–400ms (hero animations, large reveals)
+- Slow: 300ms (hero animation, expand)
 
-**Patterns**:
-- Page enters: fade-in + subtle up motion (200ms)
-- Buttons: scale 0.98 on press, fade on hover
-- Cards: lift on hover (shadow + slight translateY)
-- Modals: scale from center + fade (300ms spring)
-- Notifications: slide from bottom-right, fade out (200ms)
+**Patterns**
+- Link hover: underline fade-in (150ms)
+- Button press: scale 0.98 → 1 (150ms)
+- Card hover: translateY -4px, shadow increase (200ms)
+- Modal open: scale 0.95→1 + fade (300ms)
+- Filter apply: slide-in from left (200ms)
+- Loading: subtle pulse on text (infinite, 2s)
+- Success toast: slide-in bottom-right (200ms), auto-fade after 4s
 
 ## Accessibility
 
-- **Contrast**: All text >= 4.5:1 against bg (WCAG AA)
-- **Focus**: Visible 2px focus ring on all interactive elements
-- **Motion**: Respect prefers-reduced-motion
-- **Touch**: Minimum 44px hit target for buttons/links
-- **Icons**: All icons paired with text or aria-label
-- **Forms**: All inputs have associated labels, error messages linked
+- **Contrast**: All text ≥ 4.5:1 (WCAG AA) against backgrounds
+- **Focus**: Visible 2px ring on all interactive elements (no color removal)
+- **Motion**: Respect `prefers-reduced-motion` (remove animations, keep states instant)
+- **Touch**: 44px minimum height for buttons/links
+- **Forms**: All inputs labeled, errors linked, helper text optional but welcome
+- **Icons**: Paired with text or `aria-label`
+- **Skip link**: Present on desktop (skip to main content)
+
+## Responsive Breakpoints
+
+```
+Mobile: 320px–639px
+Tablet: 640px–1023px
+Desktop: 1024px+
+```
+
+Mobile-first: design for 375px viewport first, scale up.
 
 ## Anti-Patterns to Avoid
 
-❌ Overuse of neon green (causes fatigue)
-❌ Serif fonts (wrong for student demographic)
-❌ Outdated courier/monospace body text
-❌ Animations on page load for every element
-❌ Insufficient contrast on muted text
-❌ Buttons smaller than 44px height (mobile unfriendly)
-❌ Missing form labels (accessibility)
-❌ Infinite animations (use sparingly)
+❌ Overusing primary accent (limit to 15–20% of surface)
+❌ Text < 14px on mobile (legibility suffers)
+❌ Animations that loop infinitely on page load
+❌ Cards nested inside cards
+❌ Buttons < 44px (mobile unfriendly)
+❌ Images without alt text
+❌ Form labels hidden in placeholders
+❌ Modals without close button (mobile friction)
+❌ Infinite scroll without clear pagination hint
+❌ Hero images that push content off-screen on mobile
