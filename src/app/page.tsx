@@ -59,12 +59,9 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState(false)
 
   const handleSearch = (query: string) => {
-    console.log('Search:', query)
-    const results = MOCK_HOSTELS.filter(h =>
-      h.name.toLowerCase().includes(query.toLowerCase()) ||
-      h.location.toLowerCase().includes(query.toLowerCase())
-    )
-    setFilteredHostels(results)
+    if (!query.trim()) return
+    // Navigate to search results page with query parameter
+    window.location.href = `/search?q=${encodeURIComponent(query)}`
   }
 
   const handleFilter = (filters: any) => {
