@@ -32,6 +32,8 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #4f74e6;
+  --color-purple: #9333ea;
+  --color-cyan: #0891b2;
 
   /* Typography */
   --font-display: 'Inter', sans-serif;
@@ -149,6 +151,19 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Accessibility - Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* Forms */
 input,
 textarea,
@@ -246,4 +261,146 @@ input::placeholder {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ADMIN DASHBOARD SEMANTIC COLOR CLASSES */
+
+/* Icon background colors */
+.iconBgPrimary {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-primary-500);
+}
+
+.iconBgSuccess {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.iconBgError {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.iconBgWarning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.iconBgInfo {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-info);
+}
+
+.iconBgPurple {
+  background-color: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+}
+
+.iconBgCyan {
+  background-color: rgba(8, 145, 178, 0.1);
+  color: #0891b2;
+}
+
+/* Badge variants */
+.badgeSuccess {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.badgeWarning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.badgeError {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.badgeInfo {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-info);
+}
+
+.badgePrimary {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.badgeSTUDENT {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-primary-700);
+}
+
+.badgeOWNER {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.badgeADMIN {
+  background-color: rgba(147, 51, 234, 0.1);
+  color: #9333ea;
+}
+
+/* Status badges */
+.statusActive {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.statusPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.statusConfirmed {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-info);
+}
+
+.statusCompleted {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.statusCancelled {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.statusSuspended {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.statusDraft {
+  background-color: rgba(140, 140, 140, 0.1);
+  color: var(--color-text-muted);
+}
+
+.statusPendingReview {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+/* Payment badges */
+.paymentPaid {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.paymentPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+/* Verification badges */
+.verificationVerified {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.verificationUnverified {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
 }

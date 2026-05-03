@@ -1,0 +1,319 @@
+.container {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statusCard {
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.statusLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.statusCount {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-primary-500);
+  margin: 8px 0 0;
+}
+
+.section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 900px;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 200px 150px 120px 120px 120px 120px 100px;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-ground);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 200px 150px 120px 120px 120px 120px 100px;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background-color: var(--color-ground);
+}
+
+.colName,
+.colOwner,
+.colCity,
+.colStatus,
+.colRating,
+.colCreated,
+.colAction {
+  font-size: 14px;
+  color: var(--color-text-soft);
+}
+
+.hostelName {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badgeSuccess {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.badgeWarning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.badgeDanger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.noRating {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.actionLink {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--color-primary-500);
+  color: var(--color-surface);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.actionLink:hover {
+  background-color: var(--color-primary-600);
+}
+
+.actionLink:focus-visible {
+  outline: 2px solid var(--color-surface);
+  outline-offset: 2px;
+}
+
+.emptyState {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyState h3 {
+  font-size: 16px;
+  color: var(--color-text-soft);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.emptyState p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 24px;
+    padding: 0 16px;
+  }
+
+  .header {
+    margin: 0 16px 20px;
+  }
+
+  .subtitle {
+    padding: 0;
+  }
+
+  .statusGrid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .statusCard {
+    padding: 12px;
+    min-height: 70px;
+  }
+
+  .statusLabel {
+    font-size: 11px;
+  }
+
+  .statusCount {
+    font-size: 20px;
+    margin-top: 6px;
+  }
+
+  .section {
+    margin: 0 16px;
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tableContainer {
+    overflow-x: visible;
+    margin: 0;
+  }
+
+  .table {
+    min-width: 100%;
+  }
+
+  .tableHeader {
+    composes: sr-only from global;
+  }
+
+  .tableRow {
+    display: block;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+  }
+
+  .tableRow:hover {
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .colName,
+  .colOwner,
+  .colCity,
+  .colStatus,
+  .colRating,
+  .colCreated,
+  .colAction {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .colName::before,
+  .colOwner::before,
+  .colCity::before,
+  .colStatus::before,
+  .colRating::before,
+  .colCreated::before,
+  .colAction::before {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--color-text-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    margin-right: 8px;
+    min-width: 70px;
+  }
+
+  .colName::before {
+    content: "Hostel:";
+  }
+  .colOwner::before {
+    content: "Owner:";
+  }
+  .colCity::before {
+    content: "City:";
+  }
+  .colStatus::before {
+    content: "Status:";
+  }
+  .colRating::before {
+    content: "Rating:";
+  }
+  .colCreated::before {
+    content: "Created:";
+  }
+  .colAction::before {
+    content: "Action:";
+  }
+
+  .actionLink {
+    display: inline-block;
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .emptyState {
+    padding: 40px 16px;
+    margin: 0 16px;
+  }
+}

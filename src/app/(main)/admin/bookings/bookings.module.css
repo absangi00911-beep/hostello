@@ -1,0 +1,389 @@
+.container {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-500);
+  margin: 8px 0 0;
+}
+
+.section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 1100px;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 120px 150px 160px 120px 120px 120px 180px 100px;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--color-ground);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 120px 150px 160px 120px 120px 120px 180px 100px;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background-color: var(--color-ground);
+}
+
+.colBooking,
+.colGuest,
+.colHostel,
+.colStatus,
+.colPayment,
+.colTotal,
+.colDates {
+  font-size: 14px;
+  color: var(--color-text-soft);
+}
+
+.bookingId {
+  font-family: monospace;
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.guestInfo {
+  margin: 0;
+}
+
+.guestName {
+  font-weight: 500;
+  color: var(--color-text);
+  font-size: 13px;
+  margin: 0;
+}
+
+.guestEmail {
+  font-size: 11px;
+  color: var(--color-text-soft);
+  margin: 2px 0 0;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.statusPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.statusConfirmed {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.statusCompleted {
+  background-color: rgba(79, 116, 230, 0.1);
+  color: var(--color-info);
+}
+
+.statusCancelled {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.paymentBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.paymentPaid {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.paymentPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.amount {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.dates {
+  font-size: 13px;
+  color: var(--color-text-soft);
+}
+.colAction {
+  composes: sr-only from global;
+}
+
+@media (min-width: 0px) {
+  .colAction {
+    all: unset;
+  }
+}
+
+.actionLink {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-primary-500);
+  text-decoration: none;
+  border: 1px solid var(--color-primary-500);
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.actionLink:hover {
+  background-color: var(--color-primary-500);
+  color: var(--color-surface);
+}
+
+.actionLink:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+.emptyState {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyState h3 {
+  font-size: 16px;
+  color: var(--color-text-soft);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.emptyState p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.statValueWarning {
+  color: var(--color-warning);
+}
+
+.statValueSuccess {
+  color: var(--color-success);
+}
+
+.statValuePrimary {
+  color: var(--color-primary-500);
+}
+
+.statValueError {
+  color: var(--color-error);
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 12px;
+  }
+
+  .statValue {
+    font-size: 24px;
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tableContainer {
+    overflow-x: visible;
+    margin: 0;
+  }
+
+  .table {
+    min-width: 100%;
+  }
+
+  .tableHeader {
+    composes: sr-only from global;
+  }
+
+  .tableRow {
+    display: block;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+  }
+
+  .tableRow:hover {
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .colBooking,
+  .colGuest,
+  .colHostel,
+  .colStatus,
+  .colPayment,
+  .colTotal,
+  .colDates {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .colBooking::before,
+  .colGuest::before,
+  .colHostel::before,
+  .colStatus::before,
+  .colPayment::before,
+  .colTotal::before,
+  .colDates::before {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--color-text-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    margin-right: 8px;
+    min-width: 80px;
+  }
+
+  .colBooking::before {
+    content: "Booking ID:";
+  }
+  .colGuest::before {
+    content: "Guest:";
+  }
+  .colHostel::before {
+    content: "Hostel:";
+  }
+  .colStatus::before {
+    content: "Status:";
+  }
+  .colPayment::before {
+    content: "Payment:";
+  }
+  .colTotal::before {
+    content: "Amount:";
+  }
+  .colDates::before {
+    content: "Dates:";
+  }
+
+  .guestInfo {
+    margin-top: -2px;
+  }
+
+  .guestName {
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .guestEmail {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin: 2px 0 0;
+  }
+
+  .bookingId {
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .emptyState {
+    padding: 40px 16px;
+    margin: 0 16px;
+  }
+}
