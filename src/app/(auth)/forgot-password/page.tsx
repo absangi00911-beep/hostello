@@ -25,11 +25,18 @@ export default function ForgotPasswordPage() {
         throw new Error('Please enter a valid email')
       }
 
-      // TODO: Implement actual password reset request
-      console.log('Password reset request for:', email)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Call forgot-password API
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.')
+      }
       
       setSuccess(true)
     } catch (err) {

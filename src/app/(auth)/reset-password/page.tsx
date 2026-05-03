@@ -49,11 +49,21 @@ function ResetPasswordContent() {
         throw new Error('Passwords do not match')
       }
 
-      // TODO: Implement actual password reset with token
-      console.log('Reset password with token:', token, formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Call reset-password API
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          password: formData.password,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Password reset failed. Please try again.')
+      }
       
       setSuccess(true)
     } catch (err) {

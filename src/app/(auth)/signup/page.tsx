@@ -10,6 +10,7 @@ export default function SignupPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,19 +52,50 @@ export default function SignupPage() {
         throw new Error('Please enter a valid phone number')
       }
 
-      // TODO: Implement actual signup
-      console.log('Signup attempt:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Redirect to email verification or dashboard
-      router.push('/login?verified=true')
+      // Call signup API
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          role: 'STUDENT',
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Signup failed. Please try again.')
+      }
+
+      setSuccess(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.successCard}>
+          <div className={styles.successIcon}>✓</div>
+          <h2 className={styles.successTitle}>Account Created!</h2>
+          <p className={styles.successText}>
+            A verification email has been sent to <strong>{formData.email}</strong>. Please check your inbox to verify your account.
+          </p>
+          <Link href="/login">
+            <Button fullWidth>
+              Go to Sign In
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (

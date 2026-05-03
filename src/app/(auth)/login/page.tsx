@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Button from '@/components/Button'
 import styles from './login.module.css'
 
@@ -36,18 +37,18 @@ export default function LoginPage() {
         throw new Error('Please enter a valid email')
       }
 
-      if (formData.password.length < 8) {
-        throw new Error('Password must be at least 8 characters')
+      // Call NextAuth signIn
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (!result?.ok) {
+        throw new Error(result?.error || 'Login failed. Please check your credentials.')
       }
 
-      // TODO: Implement actual authentication
-      // For now, just show success and redirect
-      console.log('Login attempt:', formData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Redirect to dashboard
+      // Redirect to dashboard on success
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
