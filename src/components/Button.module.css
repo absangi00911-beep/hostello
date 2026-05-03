@@ -72,6 +72,11 @@
   cursor: not-allowed;
 }
 
+/* Full width variant */
+.fullWidth {
+  width: 100%;
+}
+
 /* Touch targets */
 @media (pointer: coarse) {
   .button {
