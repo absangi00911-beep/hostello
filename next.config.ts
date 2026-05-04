@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+// Dev-only allowance so impeccable live mode can load. Guarded by NODE_ENV.
+const __impeccableLiveDev =
+  process.env.NODE_ENV === "development" ? " http://localhost:8400" : "";
+
 // Environment-aware CSP configuration
 // In development: Allow unsafe-eval and unsafe-inline (required for Next.js HMR)
 // In production: Allow unsafe-inline for Next.js internal scripts (hydration, error boundaries)
@@ -43,7 +47,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src ${getScriptSrc()}`,
+      `script-src ${getScriptSrc()}${__impeccableLiveDev}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' blob: data: https://images.unsplash.com https://*.r2.dev https://*.cloudflare.com https://*.tile.openstreetmap.org",
@@ -59,7 +63,7 @@ const securityHeaders = [
         "https://payments.jazzcash.com.pk",
         "https://easypaisasandbox.pk",
         "https://easypaisa.com.pk",
-      ].join(" "),
+      ].join(" ") + `${__impeccableLiveDev}`,
       // Allow POSTing to payment gateway checkout pages from this origin
       [
         "form-action 'self'",

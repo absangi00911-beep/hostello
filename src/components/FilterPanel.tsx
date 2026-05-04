@@ -78,6 +78,7 @@ export default function FilterPanel({ onFilter }: FilterPanelProps) {
           value={priceRange[1]}
           onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
           className={styles.slider}
+          aria-label="Price range maximum"
         />
       </div>
 

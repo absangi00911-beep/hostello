@@ -35,7 +35,7 @@ export default function ListingCard({ hostel }: ListingCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.image}>
-        <img src={image} alt={hostel.name} />
+        <img src={image} alt={hostel.name} loading="lazy" />
         {hostel.availability && hostel.availability <= 5 && (
           <div className={styles.badge}>Only {hostel.availability} left</div>
         )}

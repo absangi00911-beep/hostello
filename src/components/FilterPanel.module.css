@@ -56,7 +56,7 @@
 .select:focus {
   border-color: var(--color-primary-500);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(79, 116, 230, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-10);
 }
 
 .priceDisplay {
@@ -91,7 +91,7 @@
 
 .slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 0 0 4px rgba(79, 116, 230, 0.1);
+  box-shadow: 0 0 0 4px var(--color-primary-10);
 }
 
 .slider::-moz-range-thumb {
@@ -106,7 +106,7 @@
 
 .slider::-moz-range-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 0 0 4px rgba(79, 116, 230, 0.1);
+  box-shadow: 0 0 0 4px var(--color-primary-10);
 }
 
 .checkboxGroup {

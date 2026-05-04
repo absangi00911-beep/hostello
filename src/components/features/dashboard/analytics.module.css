@@ -67,11 +67,11 @@
 }
 
 .fillStar {
-  color: #fbbf24;
+  color: var(--color-rating);
 }
 
 .emptyStar {
-  color: #e5e7eb;
+  color: var(--color-rating-empty);
 }
 
 .chartsGrid {
@@ -126,7 +126,7 @@
 }
 
 .colorBookings {
-  background-color: #10b981;
+  background-color: var(--color-bookings);
 }
 
 .bars {
@@ -171,7 +171,7 @@
 }
 
 .barBookings {
-  background-color: #10b981;
+  background-color: var(--color-bookings);
   opacity: 0.7;
 }
 
@@ -222,7 +222,8 @@
 .progress {
   height: 100%;
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .percentage {
@@ -258,9 +259,10 @@
 
 .reviewFill {
   height: 100%;
-  background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+  background: var(--gradient-warning);
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .reviewCount {

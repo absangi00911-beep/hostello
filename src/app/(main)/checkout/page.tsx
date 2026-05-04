@@ -72,6 +72,7 @@ function CheckoutContent() {
     phone: '',
     specialRequests: '',
   })
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [selectedPayment, setSelectedPayment] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -96,13 +97,39 @@ function CheckoutContent() {
   const handleGuestDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setGuestDetails((prev) => ({ ...prev, [name]: value }))
+    // Clear error for this field when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const validateGuestDetails = (): boolean => {
+    const errors: Record<string, string> = {}
+    
+    if (!guestDetails.firstName.trim()) {
+      errors.firstName = 'First name is required'
+    }
+    
+    if (!guestDetails.email.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestDetails.email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    if (!guestDetails.phone.trim()) {
+      errors.phone = 'Phone number is required'
+    } else if (!/^\+?[0-9]{10,}$/.test(guestDetails.phone.replace(/\s/g, ''))) {
+      errors.phone = 'Please enter a valid phone number'
+    }
+    
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   const handleNextStep = () => {
     if (currentStep === 2) {
-      // Validate guest details
-      if (!guestDetails.firstName.trim() || !guestDetails.email.trim() || !guestDetails.phone.trim()) {
-        alert('Please fill in all required fields')
+      // Validate guest details with detailed error messages
+      if (!validateGuestDetails()) {
         return
       }
     }
@@ -209,10 +236,13 @@ function CheckoutContent() {
                         name="firstName"
                         value={guestDetails.firstName}
                         onChange={handleGuestDetailsChange}
-                        className={styles.input}
+                        className={`${styles.input} ${fieldErrors.firstName ? styles.error : ''}`}
                         placeholder="John"
                         required
                       />
+                      {fieldErrors.firstName && (
+                        <div className={styles.errorMessage}>{fieldErrors.firstName}</div>
+                      )}
                     </div>
                     <div className={styles.formGroup}>
                       <label htmlFor="lastName">Last Name</label>
@@ -236,10 +266,13 @@ function CheckoutContent() {
                       name="email"
                       value={guestDetails.email}
                       onChange={handleGuestDetailsChange}
-                      className={styles.input}
+                      className={`${styles.input} ${fieldErrors.email ? styles.error : ''}`}
                       placeholder="john@example.com"
                       required
                     />
+                    {fieldErrors.email && (
+                      <div className={styles.errorMessage}>{fieldErrors.email}</div>
+                    )}
                   </div>
 
                   <div className={styles.formGroup}>
@@ -250,10 +283,13 @@ function CheckoutContent() {
                       name="phone"
                       value={guestDetails.phone}
                       onChange={handleGuestDetailsChange}
-                      className={styles.input}
+                      className={`${styles.input} ${fieldErrors.phone ? styles.error : ''}`}
                       placeholder="+923001234567"
                       required
                     />
+                    {fieldErrors.phone && (
+                      <div className={styles.errorMessage}>{fieldErrors.phone}</div>
+                    )}
                   </div>
 
                   <div className={styles.formGroup}>
