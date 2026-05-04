@@ -2,15 +2,57 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import Button from '@/components/Button'
 import styles from './signup.module.css'
 
+type SignupRole = 'STUDENT' | 'OWNER'
+
+const roleOptions = [
+  {
+    mark: '👨‍🎓',
+    label: 'Student',
+    description: 'Book hostels, write reviews, manage bookings',
+  },
+  {
+    mark: '🏠',
+    label: 'Owner',
+    description: 'List hostels, manage bookings, respond to reviews',
+  },
+]
+
+const roleCopy: Record<SignupRole, {
+  subtitle: string
+  cta: string
+  successBody: string
+  nextSteps: string[]
+}> = {
+  STUDENT: {
+    subtitle: 'Find and book your perfect hostel in seconds.',
+    cta: 'Create Student Account',
+    successBody: 'Your student account is ready. Start exploring verified hostels now.',
+    nextSteps: [
+      'Browse verified hostel listings',
+      'Compare prices and read reviews',
+      'Book your stay directly',
+    ],
+  },
+  OWNER: {
+    subtitle: 'List your hostel and start accepting bookings.',
+    cta: 'Create Owner Account',
+    successBody: 'Your owner account is ready. Set up your hostel listing next.',
+    nextSteps: [
+      'Verify your hostel details',
+      'Add photos and set your pricing',
+      'Start accepting bookings',
+    ],
+  },
+}
+
 export default function SignupPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<SignupRole>('STUDENT')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -49,7 +91,7 @@ export default function SignupPage() {
       }
 
       if (!/^[\d\s\-\+\(\)]{10,}$/.test(formData.phone.replace(/\s/g, ''))) {
-        throw new Error('Please enter a valid phone number')
+        throw new Error('Enter a valid Pakistani phone number.')
       }
 
       // Call signup API
@@ -61,7 +103,7 @@ export default function SignupPage() {
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
-          role: 'STUDENT',
+          role: selectedRole,
         }),
       })
 
@@ -86,8 +128,19 @@ export default function SignupPage() {
           <div className={styles.successIcon}>✓</div>
           <h2 className={styles.successTitle}>Account Created!</h2>
           <p className={styles.successText}>
-            A verification email has been sent to <strong>{formData.email}</strong>. Please check your inbox to verify your account.
+            {roleCopy[selectedRole].successBody}
           </p>
+          <div className={styles.nextStepsPanel}>
+            <h3 className={styles.nextStepsTitle}>What happens next</h3>
+            <ol className={styles.nextSteps}>
+              {roleCopy[selectedRole].nextSteps.map((step, i) => (
+                <li key={i} className={styles.nextStep}>
+                  <span className={styles.nextStepNumber}>{i + 1}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
           <Link href="/login">
             <Button fullWidth>
               Go to Sign In
@@ -102,7 +155,31 @@ export default function SignupPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Create Account</h1>
-        <p className={styles.subtitle}>Join HostelLo and find your perfect hostel</p>
+        <p className={styles.subtitle}>{roleCopy[selectedRole].subtitle}</p>
+      </div>
+
+      <div className={styles.roleSection}>
+        <div className={styles.roleHeader}>
+          <span className={styles.roleTitle}>I am a...</span>
+          <span className={styles.roleHint}>Select to get started</span>
+        </div>
+        <div className={styles.roleGrid}>
+          {roleOptions.map(role => (
+            <button
+              key={role.label}
+              type="button"
+              className={`${styles.roleOption} ${selectedRole === (role.label === 'Student' ? 'STUDENT' : 'OWNER') ? styles.roleOptionSelected : ''}`}
+              onClick={() => setSelectedRole(role.label === 'Student' ? 'STUDENT' : 'OWNER')}
+              disabled={isLoading}
+            >
+              <span className={styles.roleMark}>{role.mark}</span>
+              <div className={styles.roleText}>
+                <span className={styles.roleLabel}>{role.label}</span>
+                <span className={styles.roleDescription}>{role.description}</span>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -188,6 +265,18 @@ export default function SignupPage() {
           />
         </div>
 
+        <div className={styles.nextStepsPanel}>
+          <h3 className={styles.nextStepsTitle}>What happens next</h3>
+          <ol className={styles.nextSteps}>
+            {roleCopy[selectedRole].nextSteps.map((step, i) => (
+              <li key={i} className={styles.nextStep}>
+                <span className={styles.nextStepNumber}>{i + 1}</span>
+                {step}
+              </li>
+            ))}
+          </ol>
+        </div>
+
         <div className={styles.terms}>
           <p>
             By signing up, you agree to our{' '}
@@ -206,7 +295,7 @@ export default function SignupPage() {
           disabled={isLoading}
           className={styles.submitButton}
         >
-          {isLoading ? 'Creating Account...' : 'Create Account'}
+          {isLoading ? 'Creating Account...' : roleCopy[selectedRole].cta}
         </Button>
       </form>
 
