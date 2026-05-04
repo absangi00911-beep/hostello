@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import SearchBar from '@/components/SearchBar'
 import Hero from '@/components/Hero'
