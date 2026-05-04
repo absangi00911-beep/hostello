@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { format } from "date-fns";
 import styles from "./message-list.module.css";
 
@@ -55,10 +56,12 @@ export default function MessageList({
                   }`}
                 >
                   {msg.userId !== currentUserId && (
-                    <img
+                    <Image
                       src={msg.user.avatar || "/avatar-placeholder.png"}
                       alt={msg.user.name}
                       className={styles.avatar}
+                      width={32}
+                      height={32}
                     />
                   )}
 

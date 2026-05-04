@@ -80,6 +80,12 @@
   background-color: var(--color-primary-50);
 }
 
+.navLink:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  background-color: var(--color-primary-50);
+}
+
 .navLink.active {
   color: var(--color-primary);
   background-color: var(--color-primary-50);
@@ -126,6 +132,12 @@
   background-color: var(--color-primary-50);
 }
 
+.iconButton:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  background-color: var(--color-primary-50);
+}
+
 .badge {
   position: absolute;
   top: 4px;
@@ -163,6 +175,12 @@
   transform: scale(1.05);
 }
 
+.userButton:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
 .avatar {
   width: 36px;
   height: 36px;
@@ -192,6 +210,10 @@
 }
 
 .userMenu:hover .dropdown {
+  display: block;
+}
+
+.dropdown[role="menu"] {
   display: block;
 }
 
@@ -226,6 +248,14 @@
 
 .dropdownItem:hover,
 .dropdownItemLogout:hover {
+  background-color: var(--color-ground);
+  color: var(--color-text);
+}
+
+.dropdownItem:focus,
+.dropdownItemLogout:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
   background-color: var(--color-ground);
   color: var(--color-text);
 }
@@ -270,6 +300,11 @@
   background-color: var(--color-border);
 }
 
+.loginBtn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .signupBtn {
   background-color: var(--color-primary);
   color: var(--color-surface);
@@ -279,6 +314,11 @@
 
 .signupBtn:hover {
   background-color: #3959cc;
+}
+
+.signupBtn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Mobile Menu Button */
@@ -293,6 +333,17 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0;
+  transition: background-color 150ms ease;
+  border-radius: 8px;
+}
+
+.menuButton:hover {
+  background-color: var(--color-primary-50);
+}
+
+.menuButton:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 @media (min-width: 1024px) {
@@ -336,6 +387,12 @@
   background-color: var(--color-primary-50);
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.mobileNavLink:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  background-color: var(--color-primary-50);
 }
 
 .mobileDivider {
@@ -389,6 +446,13 @@
   color: var(--color-text);
 }
 
+.mobileMenuAction:focus,
+.mobileMenuActionLogout:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  background-color: var(--color-ground);
+}
+
 .mobileMenuActionLogout {
   color: var(--color-error);
 }
@@ -425,6 +489,11 @@
   background-color: var(--color-border);
 }
 
+.mobileLoginBtn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .mobileSignupBtn {
   background-color: var(--color-primary);
   color: var(--color-surface);
@@ -433,6 +502,11 @@
 
 .mobileSignupBtn:active {
   background-color: #3959cc;
+}
+
+.mobileSignupBtn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Skeleton Loading */

@@ -31,22 +31,41 @@
 .error {
   padding: 1rem;
   border-radius: 0.5rem;
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--color-error-50, #fee2e2);
+  color: var(--color-error-900, #7f1d1d);
   margin-bottom: 1.5rem;
-  border-left: 4px solid #dc2626;
+  border: 1px solid var(--color-error-200, #fca5a5);
   font-size: 0.9rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.error::before {
+  content: '⚠';
+  flex-shrink: 0;
+  font-size: 1rem;
 }
 
 .success {
   padding: 1rem;
   border-radius: 0.5rem;
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--color-success-50, #dcfce7);
+  color: var(--color-success-900, #165e4d);
   margin-bottom: 1.5rem;
-  border-left: 4px solid #16a34a;
+  border: 1px solid var(--color-success-200, #86efac);
   font-size: 0.9rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   animation: slideIn 0.3s ease-out;
+}
+
+.success::before {
+  content: '✓';
+  flex-shrink: 0;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 @keyframes slideIn {
@@ -96,7 +115,7 @@
 }
 
 .required {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .hint {
@@ -120,7 +139,7 @@
   &:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(79, 116, 230, 0.1);
+    box-shadow: 0 0 0 3px rgba(79, 116, 230, var(--shadow-opacity-focus, 0.1));
   }
 
   &:disabled {
@@ -236,8 +255,8 @@
   color: white;
 
   &:hover:not(:disabled) {
-    background-color: #3d5ace;
-    box-shadow: 0 4px 12px rgba(79, 116, 230, 0.3);
+    background-color: var(--color-primary-600, #3959cc);
+    box-shadow: 0 4px 12px rgba(79, 116, 230, var(--shadow-opacity-hover, 0.3));
   }
 
   &:disabled {

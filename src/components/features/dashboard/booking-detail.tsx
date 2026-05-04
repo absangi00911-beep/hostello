@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Booking, BookingStatus } from "@prisma/client";
 import { format } from "date-fns";
@@ -171,10 +172,12 @@ export default function BookingDetail({ booking }: BookingDetailProps) {
 
           <div className={styles.guestCard}>
             {booking.user.avatar && (
-              <img
+              <Image
                 src={booking.user.avatar}
                 alt={booking.user.name}
                 className={styles.guestAvatar}
+                width={48}
+                height={48}
               />
             )}
             <div>

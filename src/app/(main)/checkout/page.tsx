@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import Button from '@/components/Button'
 import styles from './checkout.module.css'
@@ -409,7 +410,13 @@ function CheckoutContent() {
               <h3>Order Summary</h3>
 
               <div className={styles.hostelCard}>
-                <img src={hostel.image} alt={hostel.name} className={styles.hostelImage} />
+                <Image 
+                  src={hostel.image} 
+                  alt={hostel.name} 
+                  className={styles.hostelImage}
+                  width={200}
+                  height={150}
+                />
                 <div className={styles.hostelCardContent}>
                   <h4>{hostel.name}</h4>
                   <p>{hostel.location}</p>

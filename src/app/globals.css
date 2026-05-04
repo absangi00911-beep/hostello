@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap');
+/* Fonts now imported via next/font/google in layout.tsx */
 
 * {
   margin: 0;

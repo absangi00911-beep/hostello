@@ -11,7 +11,7 @@
 
 .card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(79, 116, 230, 0.08);
+  box-shadow: 0 4px 12px rgba(79, 116, 230, var(--shadow-opacity-md, 0.08));
 }
 
 .header {
@@ -146,10 +146,10 @@
 }
 
 .settingsLink {
-  background-color: #8b5cf6;
+  background-color: var(--color-accent-purple, #8b5cf6);
   color: white;
 }
 
 .settingsLink:hover {
-  background-color: #7c3aed;
+  background-color: var(--color-accent-purple-dark, #7c3aed);
 }

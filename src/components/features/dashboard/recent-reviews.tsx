@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./recent-reviews.module.css";
 import { Review, User, Hostel } from "@prisma/client";
 
@@ -21,10 +22,12 @@ export default function RecentReviews({ reviews }: RecentReviewsProps) {
           <div className={styles.reviewHeader}>
             <div className={styles.authorInfo}>
               {review.user.avatar ? (
-                <img
+                <Image
                   src={review.user.avatar}
                   alt={review.user.name}
                   className={styles.avatar}
+                  width={40}
+                  height={40}
                 />
               ) : (
                 <div className={styles.avatarPlaceholder}>

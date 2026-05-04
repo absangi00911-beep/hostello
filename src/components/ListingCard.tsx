@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './ListingCard.module.css'
 import Button from './Button'
 
@@ -35,7 +36,14 @@ export default function ListingCard({ hostel }: ListingCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.image}>
-        <img src={image} alt={hostel.name} loading="lazy" />
+        <Image 
+          src={image || '/placeholder-hostel.jpg'} 
+          alt={hostel.name}
+          width={300}
+          height={200}
+          className={styles.hostImage}
+          priority={false}
+        />
         {hostel.availability && hostel.availability <= 5 && (
           <div className={styles.badge}>Only {hostel.availability} left</div>
         )}

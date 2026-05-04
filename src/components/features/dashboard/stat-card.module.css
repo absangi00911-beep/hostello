@@ -6,7 +6,7 @@
 
 .cardLink:hover .card {
   border-color: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(79, 116, 230, 0.1);
+  box-shadow: 0 2px 8px rgba(79, 116, 230, var(--shadow-opacity-md, 0.1));
   transform: translateY(-2px);
 }
 

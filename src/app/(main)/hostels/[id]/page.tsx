@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { fetchHostelBySlug, type HostelDetail } from '@/lib/api-client'
 import Button from '@/components/Button'
@@ -94,7 +95,14 @@ export default function HostelDetailPage() {
       {/* Photo Gallery */}
       <div className={styles.gallery}>
         <div className={styles.mainImage}>
-          <img src={hostel.images[currentImageIndex] || ''} alt={`${hostel.name} - Image ${currentImageIndex + 1}`} />
+          <Image 
+            src={hostel.images[currentImageIndex] || 'https://via.placeholder.com/800x600?text=Hostel'} 
+            alt={`${hostel.name} - Image ${currentImageIndex + 1}`}
+            width={800}
+            height={600}
+            className={styles.mainImg}
+            priority={true}
+          />
           {hostel.images.length > 1 && (
             <>
               <button className={styles.navButton} onClick={prevImage} aria-label="Previous image">
@@ -118,7 +126,13 @@ export default function HostelDetailPage() {
                 onClick={() => setCurrentImageIndex(idx)}
                 aria-label={`View image ${idx + 1}`}
               >
-                <img src={hostel.images[idx]} alt={`Thumbnail ${idx + 1}`} />
+                <Image 
+                  src={hostel.images[idx]} 
+                  alt={`Thumbnail ${idx + 1}`}
+                  width={80}
+                  height={60}
+                  className={styles.thumbImg}
+                />
               </button>
             ))}
           </div>
@@ -190,7 +204,13 @@ export default function HostelDetailPage() {
                   <section className={styles.section}>
                     <h2>Hosted by</h2>
                     <div className={styles.ownerCard}>
-                      <img src={hostel.owner.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'} alt={hostel.owner.name} className={styles.ownerAvatar} />
+                      <Image 
+                        src={hostel.owner.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'} 
+                        alt={hostel.owner.name} 
+                        className={styles.ownerAvatar}
+                        width={56}
+                        height={56}
+                      />
                       <div className={styles.ownerInfo}>
                         <p className={styles.ownerName}>
                           {hostel.owner.name}

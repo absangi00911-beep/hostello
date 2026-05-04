@@ -8,7 +8,14 @@
   padding: 1rem;
   background-color: var(--color-ground);
   border-radius: 6px;
-  border-left: 4px solid var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
+  transition: all 150ms ease;
+}
+
+.reviewItem:hover {
+  border-color: var(--color-primary-200);
+  box-shadow: 0 1px 3px rgba(79, 116, 230, var(--shadow-opacity-sm, 0.08));
 }
 
 .reviewHeader {
@@ -59,7 +66,7 @@
 
 .rating {
   font-size: 1rem;
-  color: #fbbf24;
+  color: var(--color-warning-400, #fbbf24);
   white-space: nowrap;
   margin-left: 1rem;
 }
@@ -81,9 +88,9 @@
 .reply {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background-color: white;
+  background-color: var(--color-primary-50);
   border-radius: 4px;
-  border-left: 2px solid var(--color-primary);
+  border: 1px solid var(--color-primary-200);
 }
 
 .replyLabel {

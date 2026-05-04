@@ -38,25 +38,24 @@ export default function BookingTable({ bookings }: BookingTableProps) {
         </div>
       </div>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Guest</th>
-            <th>Hostel</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedBookings.map((booking) => (
-            <Link 
-              key={booking.id} 
-              href={`/dashboard/bookings/${booking.id}`}
-              className={styles.tableRow}
-            >
-              <tr>
+      <div className={styles.tableWrapper} role="region" aria-label="Bookings table">
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th scope="col">Guest</th>
+              <th scope="col">Hostel</th>
+              <th scope="col">Check-in</th>
+              <th scope="col">Check-out</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">
+                <span className={styles.srOnly}>Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedBookings.map((booking) => (
+              <tr key={booking.id} className={styles.tableRow}>
                 <td>
                   <div className={styles.guestInfo}>
                     <p className={styles.name}>{booking.user.name}</p>
@@ -74,11 +73,20 @@ export default function BookingTable({ bookings }: BookingTableProps) {
                     {booking.status}
                   </span>
                 </td>
+                <td className={styles.actionCell}>
+                  <Link 
+                    href={`/dashboard/bookings/${booking.id}`}
+                    className={styles.viewLink}
+                    aria-label={`View booking details for ${booking.user.name}`}
+                  >
+                    View Details
+                  </Link>
+                </td>
               </tr>
-            </Link>
-          ))}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

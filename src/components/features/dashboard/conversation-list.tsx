@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Conversation, ConversationParticipant, Message } from "@prisma/client";
 import styles from "./conversation-list.module.css";
 
@@ -34,9 +35,12 @@ export default function ConversationList({
           >
             <div className={styles.avatar}>
               {otherParticipant?.avatar ? (
-                <img
+                <Image
                   src={otherParticipant.avatar}
                   alt={otherParticipant.name}
+                  width={48}
+                  height={48}
+                  className={styles.avatarImg}
                 />
               ) : (
                 <div className={styles.avatarPlaceholder}>
