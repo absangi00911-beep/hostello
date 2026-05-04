@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import SearchBar from '@/components/SearchBar'
 import Hero from '@/components/Hero'
 import ListingCard from '@/components/ListingCard'
 import FilterPanel from '@/components/FilterPanel'
 import Button from '@/components/Button'
+import styles from './client-page.module.css'
 
 const MOCK_HOSTELS = [
   {
@@ -57,6 +58,13 @@ const MOCK_HOSTELS = [
 export function ClientPage() {
   const [filteredHostels, setFilteredHostels] = useState(MOCK_HOSTELS)
   const [showFilters, setShowFilters] = useState(false)
+  const liveRegionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (liveRegionRef.current) {
+      liveRegionRef.current.textContent = `${filteredHostels.length} hostels found`
+    }
+  }, [filteredHostels.length])
 
   const handleSearch = (query: string) => {
     if (!query.trim()) return
@@ -75,16 +83,25 @@ export function ClientPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-ground)' }}>
+    <div className={styles.wrapper}>
       <Hero onSearch={handleSearch} />
-      <div style={{ paddingTop: 'var(--space-xl)' }} className="container">
-        <div className="mainGrid">
-          <div className="filtersDesktop">
+      <div className={`${styles.container} container`}>
+        <div
+          ref={liveRegionRef}
+          className={styles.liveRegion}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {filteredHostels.length} hostels found
+        </div>
+        <div className={styles.mainGrid}>
+          <div className={styles.filtersDesktop}>
             <FilterPanel onFilter={handleFilter} />
           </div>
           <div>
-            <div className="filterToggle">
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            <div className={styles.filterToggle}>
+              <p className={styles.resultsCount}>
                 {filteredHostels.length} hostels found
               </p>
               <Button onClick={() => setShowFilters(!showFilters)} variant="secondary">
@@ -92,21 +109,21 @@ export function ClientPage() {
               </Button>
             </div>
             {showFilters && (
-              <div className="filtersMobile">
+              <div className={styles.filtersMobile}>
                 <FilterPanel onFilter={handleFilter} />
               </div>
             )}
-            <div className="listingsGrid">
+            <div className={styles.listingsGrid}>
               {filteredHostels.map(hostel => (
                 <ListingCard key={hostel.id} hostel={hostel} />
               ))}
             </div>
             {filteredHostels.length === 0 && (
-              <div style={{ textAlign: 'center', paddingTop: 'var(--space-2xl)', paddingBottom: 'var(--space-2xl)' }}>
-                <p style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: 'var(--space-md)' }}>
+              <div className={styles.emptyState}>
+                <p className={styles.emptyStateTitle}>
                   No hostels found
                 </p>
-                <p style={{ color: 'var(--color-text-muted)' }}>
+                <p className={styles.emptyStateDescription}>
                   Try adjusting your filters or search criteria
                 </p>
               </div>
@@ -114,51 +131,6 @@ export function ClientPage() {
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .mainGrid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: var(--space-lg);
-        }
-        @media (min-width: 1024px) {
-          .mainGrid {
-            grid-template-columns: 280px 1fr;
-          }
-        }
-        .filtersDesktop {
-          display: none;
-        }
-        @media (min-width: 1024px) {
-          .filtersDesktop {
-            display: block;
-          }
-        }
-        .filterToggle {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-lg);
-        }
-        @media (min-width: 1024px) {
-          .filterToggle {
-            display: none;
-          }
-        }
-        .filtersMobile {
-          display: block;
-          margin-bottom: var(--space-lg);
-        }
-        @media (min-width: 1024px) {
-          .filtersMobile {
-            display: none;
-          }
-        }
-        .listingsGrid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: var(--space-lg);
-        }
-      `}</style>
     </div>
   )
 }
