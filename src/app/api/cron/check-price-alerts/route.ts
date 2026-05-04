@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { checkPriceAlerts } from "@/lib/price-alerts";
+import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 /**
  * Cron endpoint for checking price alerts
@@ -7,11 +8,14 @@ import { checkPriceAlerts } from "@/lib/price-alerts";
  */
 export async function POST(req: NextRequest) {
   try {
-    // Verify cron secret
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    // Verify request is from Upstash or authorized source
+    try {
+      await verifyUpstashRequest(req, { acceptBearerToken: true });
+    } catch (error) {
+      console.warn(
+        "[cron] Unauthorized check-price-alerts request:",
+        error instanceof Error ? error.message : String(error)
+      );
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

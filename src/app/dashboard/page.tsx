@@ -104,7 +104,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           title="Total Revenue"
-          value={`PKR ${(totalRevenue / 100).toLocaleString()}`}
+          value={`PKR ${totalRevenue.toLocaleString()}`}
           subtitle="From confirmed bookings"
           icon="💰"
         />

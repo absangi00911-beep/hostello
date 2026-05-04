@@ -18,8 +18,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    console.log("[signup] Received body:", body);
-    
     const parsed = signupSchema.safeParse(body);
 
     if (!parsed.success) {

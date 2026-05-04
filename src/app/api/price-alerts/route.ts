@@ -8,11 +8,6 @@ const createSchema = z.object({
   targetPrice: z.number().positive("Target price must be positive"),
 });
 
-const updateSchema = z.object({
-  targetPrice: z.number().positive("Target price must be positive"),
-  active: z.boolean().optional(),
-});
-
 // GET /api/price-alerts — List user's price alerts
 export async function GET(req: NextRequest) {
   try {
@@ -72,6 +67,14 @@ export async function POST(req: NextRequest) {
 
     if (!hostel) {
       return NextResponse.json({ error: "Hostel not found" }, { status: 404 });
+    }
+
+    // Warn if alert would trigger immediately
+    if (targetPrice >= hostel.pricePerMonth) {
+      return NextResponse.json(
+        { error: "Target price must be lower than current price of PKR " + hostel.pricePerMonth },
+        { status: 400 }
+      );
     }
 
     // Check if alert already exists for this hostel

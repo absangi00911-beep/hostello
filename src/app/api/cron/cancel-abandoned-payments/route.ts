@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 /**
  * Cron job to cancel bookings stuck in PENDING payment status.
@@ -18,11 +19,14 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      console.warn("[cron] Unauthorized cancel-abandoned-payments request");
+    // Verify request is from Upstash or authorized source
+    try {
+      await verifyUpstashRequest(req, { acceptBearerToken: true });
+    } catch (error) {
+      console.warn(
+        "[cron] Unauthorized cancel-abandoned-payments request:",
+        error instanceof Error ? error.message : String(error)
+      );
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

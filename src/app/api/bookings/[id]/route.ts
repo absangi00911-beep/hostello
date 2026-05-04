@@ -82,7 +82,7 @@ export async function PATCH(
     // Log admin actions for audit trail
     if (isAdmin && !isStudent && !isHostelOwner) {
       console.log(
-        `[audit] Admin ${session.user.id} (${session.user.email}) performed "${action}" on booking ${id} ` +
+        `[audit] Admin ${session.user.id} performed "${action}" on booking ${id} ` +
         `(hostel: ${booking.hostel.name}, student: ${booking.user.email})`
       );
     }

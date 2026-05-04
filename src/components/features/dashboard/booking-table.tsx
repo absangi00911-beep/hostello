@@ -66,7 +66,7 @@ export default function BookingTable({ bookings }: BookingTableProps) {
                 <td>{new Date(booking.checkIn).toLocaleDateString()}</td>
                 <td>{new Date(booking.checkOut).toLocaleDateString()}</td>
                 <td className={styles.amount}>
-                  PKR {(booking.total / 100).toLocaleString()}
+                  PKR {booking.total.toLocaleString()}
                 </td>
                 <td>
                   <span className={`${styles.status} ${styles[booking.status.toLowerCase()]}`}>

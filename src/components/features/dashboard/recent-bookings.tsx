@@ -31,7 +31,7 @@ export default function RecentBookings({ bookings }: RecentBookingsProps) {
               {booking.status}
             </span>
             <p className={styles.amount}>
-              PKR {(booking.total / 100).toLocaleString()}
+              PKR {booking.total.toLocaleString()}
             </p>
           </div>
         </div>

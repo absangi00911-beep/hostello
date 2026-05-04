@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { MAX_IMAGE_SIZE_MB, ACCEPTED_IMAGE_TYPES, MAX_IMAGES_PER_HOSTEL } from "@/config/constants";
@@ -46,7 +47,7 @@ async function uploadToR2(
     credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
   });
 
-  const key = `hostels/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const key = `hostels/${Date.now()}-${randomBytes(8).toString("hex")}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
   await client.send(
     new PutObjectCommand({

@@ -37,7 +37,7 @@ export default async function AnalyticsPage() {
 
       return {
         month: monthStart.toLocaleDateString("en-US", { month: "short" }),
-        revenue: Math.round(revenue / 100), // Convert from paise to PKR
+        revenue: revenue, // Already in PKR
         bookings: bookings.length,
       };
     })
@@ -88,7 +88,7 @@ export default async function AnalyticsPage() {
         statusBreakdown={statusBreakdown}
         reviewDistribution={reviewDistribution}
         avgRating={parseFloat(avgRating as string)}
-        totalRevenue={Math.round(totalRevenue / 100)}
+        totalRevenue={totalRevenue}
         totalBookings={allBookings.length}
       />
     </main>

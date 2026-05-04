@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { getUnreadCount, getRecentNotifications, markAllNotificationsAsRead } from "@/lib/notifications";
+import { getUnreadCount, markAllNotificationsAsRead } from "@/lib/notifications";
 
 export async function GET(req: NextRequest) {
   try {

@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest) {
 
     // Send owner notification email based on action
     if (action === "verify" || action === "activate") {
-      await sendEmail(
+      void sendEmail(
         listingApprovedEmail({
           ownerEmail: hostel.owner.email,
           ownerName: hostel.owner.name,
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest) {
         console.error(`[email] Failed to send listing approved email to ${hostel.owner.email} for hostel ${hostel.id}`);
       });
     } else if (action === "suspend") {
-      await sendEmail(
+      void sendEmail(
         listingSuspendedEmail({
           ownerEmail: hostel.owner.email,
           ownerName: hostel.owner.name,
@@ -97,7 +97,8 @@ export async function PATCH(req: NextRequest) {
         verified: hostel.verified,
       }
     });
-  } catch {
-    return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
+  } catch (err) {
+    console.error("[PATCH /api/admin/hostels]", err);
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
