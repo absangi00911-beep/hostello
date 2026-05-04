@@ -40,3 +40,7 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# Local agent workspaces and brainstorming artifacts
+.worktrees/
+.superpowers/
