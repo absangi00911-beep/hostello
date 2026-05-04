@@ -61,7 +61,9 @@ export default function LoginPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Welcome Back</h1>
-        <p className={styles.subtitle}>Sign in to your HostelLo account</p>
+        <p className={styles.subtitle}>
+          Access bookings, messages, saved hostels, and listing tools from one account.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
