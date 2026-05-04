@@ -1,3 +1,12 @@
 {
-  "buildCommand": "prisma generate && rm -rf .next && next build"
+  "buildCommand": "npm ci && prisma generate && rm -rf .next && next build",
+  "env": {
+    "SKIP_ENV_VALIDATION": "true"
+  },
+  "functions": {
+    "api/**": {
+      "memory": 3008,
+      "timeout": 30
+    }
+  }
 }
