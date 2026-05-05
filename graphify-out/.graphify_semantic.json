@@ -1,0 +1,294 @@
+{
+  "nodes": [
+    {
+      "id": "auth-onboarding-role-split-plan",
+      "label": "Auth Onboarding Role Split Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-04-auth-onboarding-role-split.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "auth-onboarding-role-split-design",
+      "label": "Auth Onboarding Role Split Design Specification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "STUDENT",
+      "label": "Student Account Role",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "OWNER",
+      "label": "Owner Account Role",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "User",
+      "label": "User Entity",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Hostel",
+      "label": "Hostel Entity",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Booking",
+      "label": "Booking Entity",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Review",
+      "label": "Review Entity",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "NextJS",
+      "label": "Next.js 15 App Router",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Prisma",
+      "label": "Prisma ORM",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Typesense",
+      "label": "Typesense Search Engine",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "PostgreSQL",
+      "label": "Neon PostgreSQL Database",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "Vercel",
+      "label": "Vercel Deployment Platform",
+      "file_type": "rationale",
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "role-first-approach",
+      "label": "Role-First Signup Pattern",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "single-page-signup",
+      "label": "Single-Page Signup Pattern (No Multi-Step)",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "auth-onboarding-role-split-plan",
+      "target": "auth-onboarding-role-split-design",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-05-04-auth-onboarding-role-split.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "auth-onboarding-role-split-design",
+      "target": "role-first-approach",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "auth-onboarding-role-split-design",
+      "target": "single-page-signup",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-05-04-auth-onboarding-role-split-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "User",
+      "target": "Prisma",
+      "relation": "modeled_by",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Booking",
+      "target": "Prisma",
+      "relation": "modeled_by",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Hostel",
+      "target": "Prisma",
+      "relation": "modeled_by",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Review",
+      "target": "Prisma",
+      "relation": "modeled_by",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Prisma",
+      "target": "PostgreSQL",
+      "relation": "reads_writes",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Booking",
+      "target": "Hostel",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Booking",
+      "target": "User",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Review",
+      "target": "Hostel",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Review",
+      "target": "User",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "SYSTEM.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

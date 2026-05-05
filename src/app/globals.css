@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-plus-jakarta-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-be-vietnam-pro: 'Be Vietnam Pro', sans-serif;
+}
+
+@layer base {
+  * {
+    @apply antialiased;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface text-on-surface;
+  }
+}
+
+@layer components {
+  /* Remove scrollbar for specific elements */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Safe area padding for mobile */
+  @supports (padding: max(0px)) {
+    body {
+      padding-left: max(0px, env(safe-area-inset-left));
+      padding-right: max(0px, env(safe-area-inset-right));
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+
+    .pb-safe {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Smooth transitions */
+@layer utilities {
+  .transition-all {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .active\:scale-95:active {
+    @apply scale-95;
+  }
+}

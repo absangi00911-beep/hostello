@@ -1,0 +1,585 @@
+{
+  "communities": {
+    "0": [
+      "bookings_route_get",
+      "bookings_route_post",
+      "email_templates_account_deleted_accountdeletedemail",
+      "email_templates_booking_bookingconfirmationemail",
+      "email_templates_booking_bookingnotificationemail",
+      "email_templates_booking_formatdate",
+      "email_templates_booking_formatprice",
+      "email_templates_booking_status_bookingstatusemail",
+      "email_templates_layout_emailbutton",
+      "email_templates_layout_emaillayout",
+      "email_templates_layout_emailrow",
+      "email_templates_listing_status_listingapprovedemail",
+      "email_templates_listing_status_listingsuspendedemail",
+      "email_templates_new_listing_formatprice",
+      "email_templates_new_listing_newlistingadminemail",
+      "email_templates_price_alert_formatprice",
+      "email_templates_price_alert_pricealertemail",
+      "email_templates_verification_verificationemail",
+      "email_templates_welcome_welcomeemail",
+      "hostels_route_patch",
+      "lib_app_url_getappurl",
+      "lib_email_escapehtml",
+      "lib_support_formatmultiline",
+      "lib_support_rendercontactemail",
+      "lib_support_renderissuereportemail",
+      "lib_utils_calculatemonths",
+      "src_app_api_admin_hostels_route_ts",
+      "src_app_api_auth_verify_email_route_ts",
+      "src_app_api_bookings_route_ts",
+      "src_lib_email_templates_account_deleted_ts",
+      "src_lib_email_templates_booking_status_ts",
+      "src_lib_email_templates_booking_ts",
+      "src_lib_email_templates_layout_ts",
+      "src_lib_email_templates_listing_status_ts",
+      "src_lib_email_templates_new_listing_ts",
+      "src_lib_email_templates_price_alert_ts",
+      "src_lib_email_templates_verification_ts",
+      "src_lib_email_templates_welcome_ts",
+      "src_lib_support_ts",
+      "verify_email_route_get"
+    ],
+    "1": [
+      "contact_route_post",
+      "forgot_password_route_post",
+      "hostels_route_get",
+      "hostels_route_post",
+      "id_route_post",
+      "initiate_route_post",
+      "lib_app_url_getrequestorigin",
+      "lib_app_url_isabsolutehttpurl",
+      "lib_app_url_normalizeurl",
+      "lib_rate_limit_getip",
+      "lib_rate_limit_getredis",
+      "lib_rate_limit_getupstashlimiter",
+      "lib_rate_limit_ratelimit",
+      "lib_rate_limit_ratelimitinmemory",
+      "lib_rate_limit_towindowstring",
+      "lib_support_sendcontactmessage",
+      "lib_support_sendissuereport",
+      "report_route_post",
+      "resend_verification_route_post",
+      "signup_route_post",
+      "src_app_api_auth_forgot_password_route_ts",
+      "src_app_api_auth_resend_verification_route_ts",
+      "src_app_api_auth_signup_route_ts",
+      "src_app_api_contact_route_ts",
+      "src_app_api_conversations_id_route_ts",
+      "src_app_api_hostels_param_view_route_ts",
+      "src_app_api_hostels_route_ts",
+      "src_app_api_payment_initiate_route_ts",
+      "src_app_api_report_route_ts",
+      "src_app_api_upload_route_ts",
+      "src_lib_app_url_ts",
+      "src_lib_rate_limit_ts",
+      "upload_route_post",
+      "upload_route_uploadtor2",
+      "view_route_post"
+    ],
+    "2": [
+      "Typesense",
+      "id_route_delete",
+      "id_route_put",
+      "lib_hostel_search_searchhostelswithfallback",
+      "lib_notifications_marknotificationasread",
+      "lib_typesense_deletehostelcollection",
+      "lib_typesense_getclient",
+      "lib_typesense_getcollectionstats",
+      "lib_typesense_indexhostel",
+      "lib_typesense_indexhostelsbatch",
+      "lib_typesense_initializehostelcollection",
+      "lib_typesense_removehostelfromindex",
+      "lib_typesense_searchhostels",
+      "lib_typesense_sync_hosteltotypesensedocument",
+      "lib_typesense_sync_indexsinglehostel",
+      "lib_typesense_sync_removehostelindex",
+      "lib_typesense_sync_syncallhostelstotypesense",
+      "param_route_delete",
+      "scripts_setup_typesense_main",
+      "scripts_setup_typesense_ts",
+      "scripts_verify_typesense_fallback_ts",
+      "scripts_verify_typesense_fallback_verifyfallbackfiltering",
+      "src_app_api_admin_search_sync_route_ts",
+      "src_app_api_notifications_id_route_ts",
+      "src_app_api_reviews_id_route_ts",
+      "src_lib_hostel_search_ts",
+      "src_lib_typesense_sync_ts",
+      "src_lib_typesense_ts",
+      "sync_route_post"
+    ],
+    "3": [
+      "callback_route_confirmbooking",
+      "callback_route_get",
+      "callback_route_handlecallback",
+      "callback_route_parseformbody",
+      "callback_route_post",
+      "lib_easypaisa_aes128encrypt",
+      "lib_easypaisa_createeasypaisasession",
+      "lib_easypaisa_formattimestamp",
+      "lib_easypaisa_getcheckouturl",
+      "lib_easypaisa_getconfig",
+      "lib_easypaisa_parseeasypaisacallback",
+      "lib_gateway_ip_allowlist_getclientip",
+      "lib_gateway_ip_allowlist_getgatewayallowedips",
+      "lib_gateway_ip_allowlist_isgatewayipallowlistingenabled",
+      "lib_gateway_ip_allowlist_parsegatewayips",
+      "lib_gateway_ip_allowlist_verifygatewayip",
+      "lib_jazzcash_computesecurehash",
+      "lib_jazzcash_createjazzcashsession",
+      "lib_jazzcash_formatdatetime",
+      "lib_jazzcash_getcheckouturl",
+      "lib_jazzcash_getconfig",
+      "lib_jazzcash_parsejazzcashcallback",
+      "src_app_api_payment_callback_route_ts",
+      "src_lib_easypaisa_ts",
+      "src_lib_gateway_ip_allowlist_ts",
+      "src_lib_jazzcash_ts"
+    ],
+    "4": [
+      "lib_csrf_verifycsrforigin",
+      "lib_env_validation_getoptionalenv",
+      "lib_env_validation_getrequiredenv",
+      "lib_env_validation_validateenvironment",
+      "lib_env_validation_validateenvironmentonce",
+      "lib_validations_sanitizestring",
+      "param_route_get",
+      "param_route_getallowedimageorigins",
+      "param_route_isimageurlallowed",
+      "param_route_patch",
+      "param_route_purgeorphanedimages",
+      "src_app_api_hostels_param_route_ts",
+      "src_lib_csrf_ts",
+      "src_lib_env_validation_ts",
+      "src_lib_validations_test_ts",
+      "src_lib_validations_ts",
+      "src_middleware_ts"
+    ],
+    "5": [
+      "delete_account_route_post",
+      "lib_email_getresendclient",
+      "lib_email_sendemail",
+      "lib_hostel_service_createhostelrecord",
+      "lib_safepay_createcheckoutsession",
+      "lib_safepay_getsafepaybaseurl",
+      "lib_safepay_getsafepaysecret",
+      "lib_safepay_verifywebhooksignature",
+      "lib_utils_slugify",
+      "src_app_api_auth_delete_account_route_ts",
+      "src_app_api_payment_webhook_route_ts",
+      "src_lib_email_ts",
+      "src_lib_hostel_service_ts",
+      "src_lib_safepay_ts",
+      "webhook_route_post"
+    ],
+    "6": [
+      "lib_api_client_createbooking",
+      "lib_api_client_fetchhostelbyslug",
+      "lib_api_client_fetchhostels",
+      "lib_api_client_request",
+      "lib_api_client_submitreview",
+      "lib_api_client_togglefavorite",
+      "lib_utils_buildsearchparams",
+      "lib_utils_cn",
+      "lib_utils_formatdate",
+      "lib_utils_formatprice",
+      "lib_utils_getinitials",
+      "lib_utils_pluralize",
+      "lib_utils_truncate",
+      "src_lib_api_client_ts",
+      "src_lib_utils_ts"
+    ],
+    "7": [
+      "id_route_get",
+      "id_route_patch",
+      "lib_notifications_createnotification",
+      "lib_notifications_getrecentnotifications",
+      "lib_notifications_getunreadcount",
+      "lib_notifications_markallnotificationsasread",
+      "notifications_route_get",
+      "notifications_route_put",
+      "reviews_route_get",
+      "reviews_route_post",
+      "src_app_api_bookings_id_route_ts",
+      "src_app_api_notifications_route_ts",
+      "src_app_api_price_alerts_id_route_ts",
+      "src_app_api_reviews_route_ts",
+      "src_lib_notifications_ts"
+    ],
+    "8": [
+      "hostel_booking_panel_bookingpanel",
+      "hostel_hero_gallery_herogallery",
+      "hostel_rooms_table_roomstable",
+      "layout_bottom_nav_bottomnav",
+      "layout_footer_footer",
+      "layout_top_nav_topnav",
+      "src_app_hostels_slug_page_tsx",
+      "src_components_hostel_booking_panel_tsx",
+      "src_components_hostel_hero_gallery_tsx",
+      "src_components_hostel_rooms_table_tsx",
+      "src_components_layout_bottom_nav_tsx",
+      "src_components_layout_footer_tsx",
+      "src_components_layout_top_nav_tsx"
+    ],
+    "9": [
+      "cancel_abandoned_payments_route_post",
+      "check_price_alerts_route_post",
+      "lib_price_alerts_checkpricealerts",
+      "lib_verify_upstash_getupstashmetadata",
+      "lib_verify_upstash_verifyupstashrequest",
+      "mark_completed_stays_route_post",
+      "scripts_check_price_alerts_ts",
+      "src_app_api_cron_cancel_abandoned_payments_route_ts",
+      "src_app_api_cron_check_price_alerts_route_ts",
+      "src_app_api_cron_mark_completed_stays_route_ts",
+      "src_lib_price_alerts_ts",
+      "src_lib_verify_upstash_ts"
+    ],
+    "10": [
+      "lib_sms_generateotp",
+      "lib_sms_normalizephonenumber",
+      "lib_sms_sendotpsms",
+      "lib_sms_sendphonechangenotification",
+      "lib_sms_sendsms",
+      "request_otp_route_post",
+      "src_app_api_auth_phone_request_otp_route_ts",
+      "src_app_api_auth_phone_verify_otp_route_ts",
+      "src_lib_sms_ts",
+      "verify_otp_route_post"
+    ],
+    "11": [
+      "auth_config_invalidatelocalsessioncache",
+      "auth_config_validatetokenversion",
+      "change_password_route_post",
+      "reset_password_route_post",
+      "src_app_api_auth_reset_password_route_ts",
+      "src_app_api_profile_change_password_route_ts",
+      "src_lib_auth_config_ts"
+    ],
+    "12": [
+      "Booking",
+      "Hostel",
+      "PostgreSQL",
+      "Prisma",
+      "Review",
+      "User"
+    ],
+    "13": [
+      "favorite_route_delete",
+      "favorite_route_gethostelid",
+      "favorite_route_post",
+      "src_app_api_hostels_param_favorite_route_ts"
+    ],
+    "14": [
+      "auth-onboarding-role-split-design",
+      "auth-onboarding-role-split-plan",
+      "role-first-approach",
+      "single-page-signup"
+    ],
+    "15": [
+      "conversations_route_get",
+      "conversations_route_post",
+      "src_app_api_conversations_route_ts"
+    ],
+    "16": [
+      "price_alerts_route_get",
+      "price_alerts_route_post",
+      "src_app_api_price_alerts_route_ts"
+    ],
+    "17": [
+      "reply_route_delete",
+      "reply_route_patch",
+      "src_app_api_reviews_id_reply_route_ts"
+    ],
+    "18": [
+      "hostello_next_config_getscriptsrc",
+      "next_config_ts"
+    ],
+    "19": [
+      "prisma_seed_main",
+      "prisma_seed_ts"
+    ],
+    "20": [
+      "scripts_fix_phantom_reviews_fixphantomreviews",
+      "scripts_fix_phantom_reviews_ts"
+    ],
+    "21": [
+      "scripts_reset_review_stats_main",
+      "scripts_reset_review_stats_ts"
+    ],
+    "22": [
+      "scripts_schedule_cron_jobs_schedulejobs",
+      "scripts_schedule_cron_jobs_ts"
+    ],
+    "23": [
+      "app_layout_rootlayout",
+      "src_app_layout_tsx"
+    ],
+    "24": [
+      "availability_route_get",
+      "src_app_api_hostels_param_availability_route_ts"
+    ],
+    "25": [
+      "profile_route_patch",
+      "src_app_api_profile_route_ts"
+    ],
+    "26": [
+      "hooks_use_debounce_usedebounce",
+      "src_hooks_use_debounce_ts"
+    ],
+    "27": [
+      "lib_routes_manifest_ensureroutesmanifestshape",
+      "src_lib_routes_manifest_ts"
+    ],
+    "28": [
+      "analyze_graph_py"
+    ],
+    "29": [
+      "eslint_config_mjs"
+    ],
+    "30": [
+      "next_env_d_ts"
+    ],
+    "31": [
+      "postcss_config_mjs"
+    ],
+    "32": [
+      "prisma_config_ts"
+    ],
+    "33": [
+      "tailwind_config_ts"
+    ],
+    "34": [
+      "scripts_patch_routes_manifest_mjs"
+    ],
+    "35": [
+      "src_app_api_auth_nextauth_route_ts"
+    ],
+    "36": [
+      "src_config_amenities_ts"
+    ],
+    "37": [
+      "src_config_constants_ts"
+    ],
+    "38": [
+      "src_config_universities_ts"
+    ],
+    "39": [
+      "src_lib_db_ts"
+    ],
+    "40": [
+      "src_lib_payment_methods_ts"
+    ],
+    "41": [
+      "src_types_index_ts"
+    ],
+    "42": [
+      "STUDENT"
+    ],
+    "43": [
+      "OWNER"
+    ],
+    "44": [
+      "NextJS"
+    ],
+    "45": [
+      "Vercel"
+    ]
+  },
+  "cohesion": {
+    "0": 0.16,
+    "1": 0.13,
+    "2": 0.14,
+    "3": 0.14,
+    "4": 0.17,
+    "5": 0.22,
+    "6": 0.16,
+    "7": 0.18,
+    "8": 0.15,
+    "9": 0.23,
+    "10": 0.4,
+    "11": 0.38,
+    "12": 0.6,
+    "13": 0.83,
+    "14": 0.5,
+    "15": 0.67,
+    "16": 0.67,
+    "17": 0.67,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0
+  },
+  "gods": [
+    {
+      "id": "lib_rate_limit_ratelimit",
+      "label": "rateLimit()",
+      "degree": 27
+    },
+    {
+      "id": "lib_email_sendemail",
+      "label": "sendEmail()",
+      "degree": 25
+    },
+    {
+      "id": "lib_email_escapehtml",
+      "label": "escapeHtml()",
+      "degree": 23
+    },
+    {
+      "id": "email_templates_layout_emaillayout",
+      "label": "emailLayout()",
+      "degree": 22
+    },
+    {
+      "id": "lib_app_url_getappurl",
+      "label": "getAppUrl()",
+      "degree": 20
+    },
+    {
+      "id": "lib_rate_limit_getip",
+      "label": "getIp()",
+      "degree": 20
+    },
+    {
+      "id": "email_templates_layout_emailbutton",
+      "label": "emailButton()",
+      "degree": 18
+    },
+    {
+      "id": "lib_typesense_sync_indexsinglehostel",
+      "label": "indexSingleHostel()",
+      "degree": 14
+    },
+    {
+      "id": "lib_app_url_getrequestorigin",
+      "label": "getRequestOrigin()",
+      "degree": 10
+    },
+    {
+      "id": "email_templates_booking_status_bookingstatusemail",
+      "label": "bookingStatusEmail()",
+      "degree": 10
+    }
+  ],
+  "surprises": [
+    {
+      "source": "verifyFallbackFiltering()",
+      "target": "searchHostelsWithFallback()",
+      "source_files": [
+        "scripts/verify-typesense-fallback.ts",
+        "src/lib/hostel-search.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `verifyFallbackFiltering()` unexpectedly reaches hub `searchHostelsWithFallback()`"
+    },
+    {
+      "source": "main()",
+      "target": "initializeHostelCollection()",
+      "source_files": [
+        "scripts/setup-typesense.ts",
+        "src/lib/typesense.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "main()",
+      "target": "syncAllHostelsToTypesense()",
+      "source_files": [
+        "scripts/setup-typesense.ts",
+        "src/lib/typesense-sync.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "POST()",
+      "target": "createHostelRecord()",
+      "source_files": [
+        "src/app/api/hostels/route.ts",
+        "src/lib/hostel-service.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities; peripheral node `POST()` unexpectedly reaches hub `createHostelRecord()`"
+    },
+    {
+      "source": "PATCH()",
+      "target": "indexSingleHostel()",
+      "source_files": [
+        "src/app/api/admin/hostels/route.ts",
+        "src/lib/typesense-sync.ts"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `sendEmail()` connect `Community 5` to `Community 0`, `Community 1`, `Community 3`, `Community 7`, `Community 9`?",
+      "why": "High betweenness centrality (0.180) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `rateLimit()` connect `Community 1` to `Community 0`, `Community 10`?",
+      "why": "High betweenness centrality (0.103) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `indexSingleHostel()` connect `Community 2` to `Community 0`, `Community 4`, `Community 7`?",
+      "why": "High betweenness centrality (0.086) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 12 inferred relationships involving `rateLimit()` (e.g. with `POST()` and `POST()`) actually correct?",
+      "why": "`rateLimit()` has 12 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 11 inferred relationships involving `sendEmail()` (e.g. with `PATCH()` and `POST()`) actually correct?",
+      "why": "`sendEmail()` has 11 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 13 inferred relationships involving `escapeHtml()` (e.g. with `formatMultiline()` and `renderContactEmail()`) actually correct?",
+      "why": "`escapeHtml()` has 13 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 12 inferred relationships involving `emailLayout()` (e.g. with `renderContactEmail()` and `renderIssueReportEmail()`) actually correct?",
+      "why": "`emailLayout()` has 12 INFERRED edges - model-reasoned connections that need verification."
+    }
+  ]
+}
