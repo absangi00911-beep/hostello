@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { sendEmail } from "./email";
+import { sendEmail, escapeHtml } from "./email";
 import { emailLayout, emailRow } from "./email-templates/layout";
 
 export const contactSchema = z.object({
@@ -38,15 +38,6 @@ const REPORT_LABELS: Record<ReportInput["type"], string> = {
   safety: "Safety concern",
   other: "Other issue",
 };
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 function formatMultiline(value: string) {
   return escapeHtml(value).replaceAll("\n", "<br />");

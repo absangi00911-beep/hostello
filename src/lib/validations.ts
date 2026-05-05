@@ -119,10 +119,16 @@ export const bookingSchema = z
     guests: z.number().int().min(1).max(4),
     // Dynamically generate enum from PAYMENT_METHODS to keep validation in sync with payment-methods.ts
     paymentMethod: z.enum(
-      PAYMENT_METHODS.map((m) => m.value) as [string, ...string[]]
+      PAYMENT_METHODS.filter((m) => m.enabled).map((m) => m.value) as [string, ...string[]]
     ),
   })
-  .refine((data) => data.checkIn >= new Date(new Date().setHours(0, 0, 0, 0)), {
+  .refine((data) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkInDate = new Date(data.checkIn);
+    checkInDate.setHours(0, 0, 0, 0);
+    return checkInDate >= today;
+  }, {
     message: "Check-in must be today or later",
     path: ["checkIn"],
   })

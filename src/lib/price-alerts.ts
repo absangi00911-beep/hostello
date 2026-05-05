@@ -93,11 +93,17 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
 
     // Update lastKnownPrice for all active alerts (whether they triggered or not)
     // This ensures we always have the latest price for comparison
-    const priceUpdates = alerts.map((alert) => 
-      db.priceAlert.update({
-        where: { id: alert.id },
-        data: { lastKnownPrice: alert.hostel.pricePerMonth },
-      })
+    // Skip alerts that were just deactivated to avoid unnecessary DB operations
+    const deactivatedIds = new Set(
+      alertsToUpdate.map((a) => a.id)
+    );
+    const priceUpdates = alerts
+      .filter((alert) => !deactivatedIds.has(alert.id))
+      .map((alert) => 
+        db.priceAlert.update({
+          where: { id: alert.id },
+          data: { lastKnownPrice: alert.hostel.pricePerMonth },
+        })
     );
     if (priceUpdates.length > 0) {
       await Promise.all(priceUpdates);

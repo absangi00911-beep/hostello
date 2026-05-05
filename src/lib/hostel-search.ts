@@ -66,8 +66,8 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
       if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
     }
     if (amenities && amenities.length > 0) {
-      // Match hostels that have ALL specified amenities
-      whereClause.amenities = { hasSome: amenities };
+      // Match hostels that have ALL specified amenities (consistent with Typesense)
+      whereClause.amenities = { hasEvery: amenities };
     }
 
     // Determine sort order

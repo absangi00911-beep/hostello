@@ -2,31 +2,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
-import { sanitizeString } from "@/lib/validations";
+import { sanitizeString, rulesSchema } from "@/lib/validations";
 import { getRequiredEnv, getOptionalEnv } from "@/lib/env-validation";
 import { z } from "zod";
-
-/**
- * Validates and sanitizes house rules.
- * - Max 20 rules
- * - Max 200 characters per rule
- * - No HTML tags
- * - Trimmed whitespace
- */
-const rulesSchema = z
-  .array(
-    z
-      .string()
-      .min(1, "Rule cannot be empty")
-      .max(200, "Rule cannot exceed 200 characters")
-      .transform(sanitizeString)
-      .refine(
-        (rule) => !/<[^>]*>/.test(rule),
-        "HTML tags are not allowed"
-      )
-  )
-  .max(20, "Cannot have more than 20 rules")
-  .default([]);
 
 const updateSchema = z.object({
   name: z.string().min(3).max(100).optional(),
@@ -268,11 +246,7 @@ export async function PATCH(
 
     // Sync to Typesense if hostel is ACTIVE
     // Fire-and-forget to not block response
-    const hostelFull = await db.hostel.findUnique({
-      where: { id: param },
-      select: { status: true },
-    });
-    if (hostelFull?.status === "ACTIVE") {
+    if (updated.status === "ACTIVE") {
       void indexSingleHostel(param).catch((err) =>
         console.error(`[typesense] Failed to sync hostel ${param}:`, err)
       );

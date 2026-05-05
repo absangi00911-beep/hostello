@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/lib/db";
 import { NotificationType } from "@prisma/client";
 
@@ -35,8 +33,9 @@ export async function createNotification({
       },
     });
   } catch (err) {
+    // Fire-and-forget callers — log but never throw
     console.error("[createNotification]", err);
-    throw err;
+    return null;
   }
 }
 

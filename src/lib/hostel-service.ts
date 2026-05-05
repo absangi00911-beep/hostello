@@ -23,10 +23,19 @@ export async function createHostelRecord(
   const baseSlug = slugify(data.name);
   let slug = baseSlug;
   let attempt = 0;
+  const MAX_SLUG_ATTEMPTS = 10;
 
-  while (await db.hostel.findUnique({ where: { slug }, select: { id: true } })) {
+  while (
+    attempt < MAX_SLUG_ATTEMPTS &&
+    (await db.hostel.findUnique({ where: { slug }, select: { id: true } }))
+  ) {
     attempt++;
     slug = `${baseSlug}-${attempt}`;
+  }
+
+  // If max attempts reached, use timestamp as fallback
+  if (attempt === MAX_SLUG_ATTEMPTS) {
+    slug = `${baseSlug}-${Date.now()}`;
   }
 
   const hostel = await db.hostel.create({

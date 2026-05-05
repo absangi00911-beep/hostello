@@ -125,14 +125,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id && token.tokenVersion !== undefined) {
         const isValid = await validateTokenVersion(
           token.id as string,
-          token.tokenVersion as number
+          token.tokenVersion as number,
         );
         if (!isValid) {
-          // Force sign out by throwing — NextAuth treats thrown errors as invalid sessions
-          throw new Error("Session invalidated");
+          // Returning empty user forces NextAuth to treat session as invalid
+          return { ...session, user: { ...session.user, id: "" } };
         }
       }
-      
       session.user.id = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
       return session;

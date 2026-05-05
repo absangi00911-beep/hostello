@@ -116,8 +116,8 @@ export function createJazzCashSession({
   const expiry = new Date(now.getTime() + 60 * 60 * 1000); // 1-hour window
 
   const txnDateTime = formatDateTime(now);
-  // Reference format: T<datetime><4 random hex chars> — must be unique per txn
-  const txnRef = `T${txnDateTime}${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
+  // Reference format: T<datetime><8 random hex chars> — must be unique per txn
+  const txnRef = `T${txnDateTime}${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
   const origin    = appUrl.replace(/\/+$/, "");
   const returnUrl = `${origin}/api/payment/callback?provider=jazzcash&bookingId=${bookingId}`;

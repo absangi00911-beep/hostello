@@ -6,6 +6,7 @@ import { createJazzCashSession } from "@/lib/jazzcash";
 import { createEasypaisaSession } from "@/lib/easypaisa";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { getRequestOrigin } from "@/lib/app-url";
+import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
 export async function POST(req: NextRequest) {
   // 20 payment initiations per IP per hour
@@ -51,6 +52,15 @@ export async function POST(req: NextRequest) {
 
     const appUrl        = getRequestOrigin(req);
     const paymentMethod = booking.paymentMethod ?? "safepay";
+
+    // Guard 3: reject disabled payment methods
+    const method = PAYMENT_METHODS.find((m) => m.value === paymentMethod);
+    if (!method?.enabled) {
+      return NextResponse.json(
+        { error: "Payment method not available." },
+        { status: 400 }
+      );
+    }
 
     // ── JazzCash ────────────────────────────────────────────────────────────
     if (paymentMethod === "jazzcash") {

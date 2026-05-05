@@ -101,54 +101,15 @@ export async function syncAllHostelsToTypesense() {
     console.log(`Found ${hostels.length} active hostels to sync`);
 
     // Convert to Typesense documents
-    const documents = hostels.map((hostel) => {
-      const searchText = [
-        hostel.name,
-        hostel.description,
-        hostel.city,
-        hostel.area,
-        hostel.address,
-        hostel.amenities.join(" "),
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      return {
-        id: hostel.id,
-        name: hostel.name,
-        description: hostel.description,
-        city: hostel.city,
-        area: hostel.area || undefined,
-        address: hostel.address,
-        pricePerMonth: hostel.pricePerMonth,
-        rooms: hostel.rooms,
-        capacity: hostel.capacity,
-        gender: hostel.gender,
-        amenities: hostel.amenities,
-        rules: hostel.rules,
-        verified: hostel.verified,
-        featured: hostel.featured,
-        rating: hostel.rating,
-        reviewCount: hostel.reviewCount,
-        viewCount: hostel.viewCount,
-        images: hostel.images,
-        coverImage: hostel.coverImage || undefined,
-        latitude: hostel.latitude || undefined,
-        longitude: hostel.longitude || undefined,
-        ownerId: hostel.ownerId,
-        ownerName: hostel.owner.name,
-        ownerAvatar: hostel.owner.avatar || undefined,
-        status: hostel.status,
-        createdAt: Math.floor(hostel.createdAt.getTime() / 1000),
-        updatedAt: Math.floor(hostel.updatedAt.getTime() / 1000),
-        searchText,
-      } as HostelDocument;
-    });
+    const documents = await Promise.all(
+      hostels.map((hostel) => hostelToTypesenseDocument(hostel.id))
+    );
+    const validDocuments = documents.filter((d): d is HostelDocument => d !== null);
 
     // Index in batches of 100
     const batchSize = 100;
-    for (let i = 0; i < documents.length; i += batchSize) {
-      const batch = documents.slice(i, i + batchSize);
+    for (let i = 0; i < validDocuments.length; i += batchSize) {
+      const batch = validDocuments.slice(i, i + batchSize);
       await indexHostelsBatch(batch);
     }
 

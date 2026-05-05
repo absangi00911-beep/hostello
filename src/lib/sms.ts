@@ -32,6 +32,8 @@
  * In development without Twilio credentials, SMS messages are logged to console only.
  */
 
+import { randomInt } from "crypto";
+
 interface SendSmsOptions {
   to: string; // Phone number in E.164 format: +92XXXXXXXXXX or formatted
   message: string;
@@ -61,10 +63,10 @@ export function normalizePhoneNumber(phone: string): string | null {
 }
 
 /**
- * Generate a random 6-digit OTP.
+ * Generate a random 6-digit OTP using cryptographically secure randomness.
  */
 export function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
 /**

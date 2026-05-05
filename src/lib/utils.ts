@@ -22,11 +22,14 @@ export function formatDate(date: Date | string): string {
 }
 
 export function slugify(text: string): string {
-  return text
+  const slug = text
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
+  
+  // Fallback for non-latin names that produce empty slugs
+  return slug || `listing-${Date.now()}`;
 }
 
 export function truncate(text: string, length: number): string {

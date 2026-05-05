@@ -299,8 +299,6 @@ export async function searchHostels(
     page,
     per_page: limit,
     facet_by: "city,gender,amenities,verified",
-    group_by: "id", // Ensure no duplicates
-    group_limit: 1,
   };
 
   try {

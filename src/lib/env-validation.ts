@@ -120,6 +120,11 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     requiredInProduction: true,
     description: "Upstash Redis authentication token",
   },
+  {
+    name: "CRON_SECRET",
+    requiredInProduction: true,
+    description: "Secret token for authenticating cron job requests from Upstash",
+  },
 
   // ── Email ──────────────────────────────────────────────────────────────
   {
@@ -219,3 +224,13 @@ export function getRequiredEnv(name: string, context?: string): string {
 export function getOptionalEnv(name: string): string | null {
   return process.env[name] ?? null;
 }
+
+let validated = false;
+export function validateEnvironmentOnce(): void {
+  if (validated) return;
+  validated = true;
+  validateEnvironment();
+}
+
+// Run validation once when this module is imported
+validateEnvironmentOnce();

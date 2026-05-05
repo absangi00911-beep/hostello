@@ -16,11 +16,12 @@ export function escapeHtml(value: string): string {
 }
 
 function getResendClient() {
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+  const key = process.env.RESEND_API_KEY?.trim();
+  if (!key || key === "re_placeholder" || !key.startsWith("re_")) {
     return null;
   }
 
-  return new Resend(process.env.RESEND_API_KEY);
+  return new Resend(key);
 }
 
 interface SendEmailOptions {
@@ -38,7 +39,8 @@ interface SendEmailOptions {
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   // In development without a real API key, just log instead of sending.
   // Set RESEND_API_KEY in .env.local to send real emails.
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === "re_placeholder") {
+  const key = process.env.RESEND_API_KEY?.trim();
+  if (!key || key === "re_placeholder" || !key.startsWith("re_")) {
     console.warn(`[email] Would send to ${to}: "${subject}"`);
     return { success: true, dev: true };
   }

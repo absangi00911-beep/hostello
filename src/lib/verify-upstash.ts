@@ -33,8 +33,13 @@ export async function verifyUpstashRequest(
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-      return true;
+    if (cronSecret && authHeader) {
+      const { timingSafeEqual } = await import("crypto");
+      const a = Buffer.from(authHeader);
+      const b = Buffer.from(`Bearer ${cronSecret}`);
+      if (a.length === b.length && timingSafeEqual(a, b)) {
+        return true;
+      }
     }
   }
 
@@ -62,7 +67,10 @@ export async function verifyUpstashRequest(
       .update(body)
       .digest("base64");
 
-    if (hash !== signature) {
+    const { timingSafeEqual } = await import("crypto");
+    const hashBuf = Buffer.from(hash, "base64");
+    const sigBuf = Buffer.from(signature, "base64");
+    if (hashBuf.length !== sigBuf.length || !timingSafeEqual(hashBuf, sigBuf)) {
       throw new Error("Invalid Upstash signature");
     }
 

@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
 import { verifyCsrfOrigin } from "@/lib/csrf";
-import { validateEnvironment } from "@/lib/env-validation";
+import { validateEnvironmentOnce } from "@/lib/env-validation";
 
-// Validate critical environment variables at startup
-validateEnvironment();
+// Validate critical environment variables at startup (module level, once only)
+validateEnvironmentOnce();
 
 // API route prefixes that are exempt from the CSRF origin check because they
 // use their own authentication mechanism (Bearer tokens, HMAC signatures).
@@ -23,28 +23,8 @@ const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
   { path: "/api/payment/callback", methods: ["POST"] },
 ];
 
-const PROTECTED  = ["/dashboard", "/profile", "/bookings", "/favorites", "/messages"];
-const ADMIN_ONLY = ["/admin"];
-const AUTH_ONLY  = ["/login", "/signup"];
-
-// Hostel sub-routes that should NOT be redirected by the /hostels/[city] → /cities/[city] rule
-const KNOWN_HOSTEL_SUBROUTES = new Set(["compare"]);
-
 export default auth((req) => {
-  const { pathname, search } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
-  const role = req.auth?.user?.role;
-
-  // ── Redirect old city URLs ─────────────────────────────────────────────
-  // Redirect /hostels/[city] to /cities/[city] for backward compatibility
-  // But exclude known sub-routes like /hostels/compare
-  const hostelsMatch = pathname.match(/^\/hostels\/([a-z]+)$/);
-  if (hostelsMatch && !KNOWN_HOSTEL_SUBROUTES.has(hostelsMatch[1])) {
-    const city = hostelsMatch[1];
-    const url = req.nextUrl.clone();
-    url.pathname = `/cities/${city}`;
-    return NextResponse.redirect(url, { status: 301 });
-  }
+  const { pathname } = req.nextUrl;
 
   // ── CSRF protection ────────────────────────────────────────────────────
   // Applied to every state-mutating API route that isn't exempt.
@@ -62,24 +42,6 @@ export default auth((req) => {
   ) {
     const csrfError = verifyCsrfOrigin(req);
     if (csrfError) return csrfError;
-  }
-
-  // ── Route-level auth guards ────────────────────────────────────────────
-  if (PROTECTED.some((p) => pathname.startsWith(p)) && !isLoggedIn) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (ADMIN_ONLY.some((p) => pathname.startsWith(p))) {
-    if (!isLoggedIn || role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", req.nextUrl));
-    }
-  }
-
-  if (AUTH_ONLY.some((p) => pathname.startsWith(p)) && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
   return NextResponse.next();

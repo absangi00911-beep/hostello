@@ -120,10 +120,12 @@ export async function rateLimit(
     console.error("[rate-limit] Upstash request failed:", error);
 
     if (process.env.NODE_ENV === "production") {
-      // Fail-safe: deny the request rather than allow an unverified pass-through.
-      // Per-instance in-memory fallback across a distributed deployment is
-      // ineffective and creates a false sense of protection.
-      return { ok: false, remaining: 0, resetAt: Date.now() + windowMs };
+      // Fail open with a warning: better to allow traffic than lock out all users
+      // during a Redis outage. Per-instance in-memory fallback is unreliable
+      // across distributed deployments, so we accept the degraded behavior
+      // as preferable to a complete service outage.
+      console.error("[rate-limit] Redis unavailable — failing open");
+      return { ok: true, remaining: 1, resetAt: Date.now() + windowMs };
     }
 
     // Development: fall back gracefully so local work isn't interrupted

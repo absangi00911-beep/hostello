@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 /**
  * POST /api/hostels/[slug]/view
@@ -16,6 +17,15 @@ export async function POST(
 ) {
   try {
     const { param: slug } = await params;
+
+    // Rate limit: 30 views per IP per minute
+    const rl = await rateLimit(`view:${getIp(request)}`, {
+      limit: 30,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json({ success: false }, { status: 429 });
+    }
 
     // Increment viewCount for the hostel
     // Using fire-and-forget pattern since this is a non-critical stat
