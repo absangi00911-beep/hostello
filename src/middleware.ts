@@ -7,11 +7,20 @@ import { validateEnvironmentOnce } from "@/lib/env-validation";
 validateEnvironmentOnce();
 
 // API route prefixes that are exempt from the CSRF origin check because they
-// use their own authentication mechanism (Bearer tokens, HMAC signatures).
+// use their own authentication mechanism (Bearer tokens, HMAC signatures) or are safe.
+// Note: be specific about /api/auth/* routes; only exempt NextAuth internals and safe routes.
+// Routes like /api/auth/forgot-password, /api/auth/delete-account, /api/auth/reset-password
+// must NOT be exempt—they handle sensitive user actions and need CSRF protection.
 const CSRF_EXEMPT: string[] = [
-  "/api/auth/",           // NextAuth routes
-  "/api/cron/",           // Upstash QStash — Bearer token auth
-  "/api/payment/webhook", // Safepay — HMAC signature auth
+  "/api/auth/callback",     // NextAuth OAuth callbacks
+  "/api/auth/signin",       // NextAuth sign-in
+  "/api/auth/signout",      // NextAuth sign-out
+  "/api/auth/session",      // NextAuth session reads
+  "/api/auth/csrf",         // NextAuth CSRF token
+  "/api/auth/providers",    // NextAuth providers list
+  "/api/auth/verify-email", // GET only, safe
+  "/api/cron/",             // Upstash QStash — Bearer token auth
+  "/api/payment/webhook",   // Safepay — HMAC signature auth
 ];
 
 // Routes where CSRF exemption depends on the HTTP method.

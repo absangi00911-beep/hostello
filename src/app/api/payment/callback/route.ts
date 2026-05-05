@@ -182,7 +182,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
     }
 
     if (provider === "easypaisa") {
-      const result = parseEasypaisaCallback(data);
+      const result = parseEasypaisaCallback(data, bookingId);
 
       if (!result.success) {
         console.warn(

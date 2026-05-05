@@ -12,7 +12,7 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "schedule-cron": "dotenv -e .env.local -- tsx scripts/schedule-cron-jobs.ts"
+    "schedule-cron": "tsx scripts/schedule-cron-jobs.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
@@ -33,14 +33,13 @@
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.3",
     "@tanstack/react-query": "^5.62.7",
-    "@upstash/qstash": "^0.0.18",
+    "@upstash/qstash": "^0.3.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.4.2",
     "framer-motion": "^11.13.1",
     "lucide-react": "^0.468.0",
     "next": "^15.5.15",
@@ -52,7 +51,6 @@
     "resend": "^4.0.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
-    "typesense": "^3.0.6",
     "zod": "^3.23.8",
     "zustand": "^5.0.2"
   },
@@ -63,7 +61,6 @@
     "@types/node": "^22.10.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
-    "dotenv-cli": "^11.0.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.4",
     "prisma": "^5.22.0",

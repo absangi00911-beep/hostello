@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
 
 export interface SearchParams {
@@ -56,7 +57,7 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
     isSearchDegraded = true;
 
     // Full Prisma fallback with complete filter support
-    const whereClause: any = { status: "ACTIVE" };
+    const whereClause: Prisma.HostelWhereInput = { status: "ACTIVE" };
     if (city) whereClause.city = city;
     if (gender) whereClause.gender = gender;
     if (verified) whereClause.verified = true;
@@ -71,7 +72,7 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
     }
 
     // Determine sort order
-    const orderByClause: any = {};
+    const orderByClause: Prisma.HostelOrderByWithRelationInput = {};
     if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
     else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
     else if (sort === "rating") orderByClause.rating = "desc";

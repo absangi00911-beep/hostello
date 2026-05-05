@@ -57,9 +57,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find the OTP token
+    // Find the OTP token, scoped to the current user
+    // This prevents token confusion if multiple users request OTPs for the same phone
     const token = await db.phoneVerificationToken.findFirst({
-      where: { phone: normalized },
+      where: { phone: normalized, userId: session.user.id },
     });
 
     if (!token) {
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     // Clean up the OTP token
     await db.phoneVerificationToken.deleteMany({
-      where: { phone: normalized, otp },
+      where: { phone: normalized, otp, userId: session.user.id },
     });
 
     return NextResponse.json(

@@ -1,3 +1,1 @@
-{
-  "buildCommand": "npm ci --include=dev && prisma generate && rm -rf .next && next build"
-}
+{}

@@ -120,12 +120,11 @@ export async function rateLimit(
     console.error("[rate-limit] Upstash request failed:", error);
 
     if (process.env.NODE_ENV === "production") {
-      // Fail open with a warning: better to allow traffic than lock out all users
-      // during a Redis outage. Per-instance in-memory fallback is unreliable
-      // across distributed deployments, so we accept the degraded behavior
-      // as preferable to a complete service outage.
-      console.error("[rate-limit] Redis unavailable — failing open");
-      return { ok: true, remaining: 1, resetAt: Date.now() + windowMs };
+      // Redis is unavailable. Fall back to per-instance in-memory rate limiting
+      // rather than completely bypassing rate limits. This provides defense against
+      // abuse on individual server instances during Redis outages.
+      console.error("[rate-limit] Redis unavailable — falling back to in-memory rate limiting");
+      return rateLimitInMemory(key, limit, windowMs);
     }
 
     // Development: fall back gracefully so local work isn't interrupted

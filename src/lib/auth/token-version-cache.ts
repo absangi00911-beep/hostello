@@ -7,9 +7,13 @@ import { Redis } from "@upstash/redis";
  * When a user resets their password, the token version is invalidated on Redis,
  * causing all active sessions across all Lambda instances to be revoked on their
  * next request. TTL keeps the keys bounded.
+ * 
+ * TTL: 5 minutes. Password resets are rare events, and a slightly delayed revocation
+ * window is an acceptable tradeoff for significantly reduced database load. With active
+ * users, a 30-second TTL causes constant cache misses and steady DB hit rate.
  */
 
-const TTL_SECONDS = 30;
+const TTL_SECONDS = 5 * 60; // 5 minutes
 const KEY_PREFIX = "tv:"; // token version
 
 let redis: Redis | null | undefined;

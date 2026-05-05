@@ -35,17 +35,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Invalidate any previous tokens for this user
-    await db.passwordResetToken.updateMany({
-      where: { userId: user.id, usedAt: null },
-      data:  { usedAt: new Date() },
-    });
-
     const token     = randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min
 
-    await db.passwordResetToken.create({
-      data: { token, userId: user.id, expiresAt },
-    });
+    // Use a transaction to ensure atomicity: invalidate old tokens and create new one
+    // in a single atomic operation. This prevents race conditions where two simultaneous
+    // requests could both pass the invalidation check and both create valid tokens.
+    await db.$transaction([
+      db.passwordResetToken.updateMany({
+        where: { userId: user.id, usedAt: null },
+        data:  { usedAt: new Date() },
+      }),
+      db.passwordResetToken.create({
+        data: { token, userId: user.id, expiresAt },
+      }),
+    ]);
 
     const resetUrl = `${getRequestOrigin(req)}/reset-password?token=${token}`;
     const template = passwordResetEmail({ name: user.name, resetUrl });

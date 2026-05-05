@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { generateOTP, sendOtpSms, normalizePhoneNumber } from "@/lib/sms";
@@ -29,6 +30,8 @@ const requestOtpSchema = z.object({
  */
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    
     const body = await req.json();
     const parsed = requestOtpSchema.safeParse(body);
 
@@ -62,21 +65,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Delete any existing OTP for this phone
+    // Delete any existing OTP for this phone and user
     await db.phoneVerificationToken.deleteMany({
-      where: { phone: normalized },
+      where: { phone: normalized, userId: session?.user?.id ?? null },
     });
 
     // Generate new OTP
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Save OTP to database
+    // Save OTP to database, associated with the current user if authenticated
     await db.phoneVerificationToken.create({
       data: {
         phone: normalized,
         otp,
         expires: expiresAt,
+        userId: session?.user?.id ?? null,
       },
     });
 

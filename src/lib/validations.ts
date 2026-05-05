@@ -23,7 +23,7 @@ export function sanitizeString(input: string): string {
  * - No HTML tags
  * - Trimmed whitespace
  */
-const rulesSchema = z
+export const rulesSchema = z
   .array(
     z
       .string()
