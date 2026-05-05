@@ -50,3 +50,5 @@ next-env.d.ts
 # Local agent workspaces and brainstorming artifacts
 .worktrees/
 .superpowers/
+# Added by code-review-graph
+.code-review-graph/
