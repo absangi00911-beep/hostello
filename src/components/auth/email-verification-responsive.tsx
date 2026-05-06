@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
 
 interface EmailVerificationResponsiveProps {
   email?: string;
@@ -59,21 +60,21 @@ export function EmailVerificationResponsive({
 
           {/* Buttons */}
           <div className="w-full space-y-space-4">
-            <button
-              className="w-full bg-action hover:bg-action-pressed md:hover:scale-[0.98] text-on-primary font-label text-label py-3 px-6 rounded-DEFAULT transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2 focus:ring-offset-bg-card disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+            <PrimaryButton
+              className="w-full"
               disabled={resendLoading}
               onClick={handleResend}
               type="button"
             >
               {resendLoading ? 'Sending...' : 'Resend email'}
-            </button>
-            <button
-              className="w-full bg-transparent border border-border-strong text-text-heading font-label text-label py-3 px-6 rounded-DEFAULT hover:bg-bg-raised transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-2 focus:ring-offset-bg-card"
+            </PrimaryButton>
+            <SecondaryButton
+              className="w-full"
               onClick={onChangeEmail}
               type="button"
             >
               Change email address
-            </button>
+            </SecondaryButton>
           </div>
 
           {/* Footer - Desktop Only */}

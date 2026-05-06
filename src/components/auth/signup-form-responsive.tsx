@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { Mail } from 'lucide-react';
+import { TextInput, PrimaryButton } from '@/components/ui';
 
 interface SignUpFormResponsiveProps {
   onSubmit?: (data: { fullName: string; email: string; password: string }) => void;
@@ -78,79 +79,63 @@ export function SignUpFormResponsive({ onSubmit }: SignUpFormResponsiveProps) {
         <form className="space-y-space-5" onSubmit={handleSubmit}>
           {/* Full Name Field */}
           <div>
-            <label className="block font-label text-label text-on-surface mb-space-1" htmlFor="fullName">
-              Full Name
-            </label>
-            <input
-              className={`w-full h-[42px] px-3 py-2 bg-surface-container-lowest border rounded-DEFAULT font-body-default text-body-default text-on-surface placeholder:text-text-placeholder transition-colors focus:outline-none focus:ring-1 ${
-                errors.fullName ? 'border-error focus:ring-error' : 'border-border-strong focus:ring-primary-container focus:border-primary-container'
-              }`}
+            <TextInput
               id="fullName"
               name="fullName"
+              label="Full Name"
               placeholder="Jane Doe"
-              type="text"
               value={formData.fullName}
+              error={errors.fullName}
               onChange={(e) => {
                 setFormData({ ...formData, fullName: e.target.value });
                 if (errors.fullName) setErrors({ ...errors, fullName: '' });
               }}
             />
-            {errors.fullName && <p className="mt-1 font-label text-[11px] text-error">{errors.fullName}</p>}
           </div>
 
           {/* Email Field */}
           <div>
-            <label className="block font-label text-label text-on-surface mb-space-1" htmlFor="email">
-              Email Address
-            </label>
-            <input
-              className={`w-full h-[42px] px-3 py-2 bg-surface-container-lowest border rounded-DEFAULT font-body-default text-body-default text-on-surface placeholder:text-text-placeholder transition-colors focus:outline-none focus:ring-1 ${
-                errors.email ? 'border-error focus:ring-error' : 'border-border-strong focus:ring-primary-container focus:border-primary-container'
-              }`}
+            <TextInput
               id="email"
               name="email"
+              label="Email Address"
               placeholder="jane@example.com"
               type="email"
               value={formData.email}
+              error={errors.email}
               onChange={(e) => {
                 setFormData({ ...formData, email: e.target.value });
                 if (errors.email) setErrors({ ...errors, email: '' });
               }}
             />
-            {errors.email && <p className="mt-1 font-label text-[11px] text-error">{errors.email}</p>}
           </div>
 
           {/* Password Field */}
           <div>
-            <label className="block font-label text-label text-on-surface mb-space-1" htmlFor="password">
-              Password
-            </label>
-            <input
-              className={`w-full h-[42px] px-3 py-2 bg-surface-container-lowest border rounded-DEFAULT font-body-default text-body-default text-on-surface placeholder:text-text-placeholder transition-colors focus:outline-none focus:ring-1 ${
-                errors.password ? 'border-error focus:ring-error' : 'border-border-strong focus:ring-primary-container focus:border-primary-container'
-              }`}
+            <TextInput
               id="password"
               name="password"
+              label="Password"
               placeholder="••••••••"
               type="password"
               value={formData.password}
+              helperText="Must be at least 8 characters."
+              error={errors.password}
               onChange={(e) => {
                 setFormData({ ...formData, password: e.target.value });
                 if (errors.password) setErrors({ ...errors, password: '' });
               }}
             />
-            <p className="mt-1 font-label text-[11px] text-text-muted">Must be at least 8 characters.</p>
-            {errors.password && <p className="font-label text-[11px] text-error">{errors.password}</p>}
           </div>
 
           {/* Submit Button */}
-          <button
-            className="w-full h-[42px] mt-space-2 bg-action hover:bg-action-dark text-on-primary font-label text-label rounded-DEFAULT transition-all duration-150 active:scale-97 shadow-sm focus:outline-none focus:ring-2 focus:ring-action focus:ring-offset-2 focus:ring-offset-bg-card disabled:opacity-50 disabled:cursor-not-allowed"
+          <PrimaryButton
+            className="w-full mt-space-2"
             disabled={loading}
             type="submit"
           >
             {loading ? 'Creating account...' : 'Create account'}
-          </button>
+          </PrimaryButton>
         </form>
 
         {/* Divider */}

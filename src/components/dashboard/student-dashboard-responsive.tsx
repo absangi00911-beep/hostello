@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Mail, Bell, Search, NotificationsActive, ChevronRight, MapPin, Star, Calendar, Phone, MessageSquare, RotateCcw, CheckCircle, Clock, History } from 'lucide-react';
+import { Heart, Mail, Bell, Search, AlertCircle, ChevronRight, MapPin, Star, Calendar, Phone, MessageSquare, RotateCcw, CheckCircle, Clock, History } from 'lucide-react';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
+import { MemoizedListItem } from '@/lib/performance-utils';
 
 interface Booking {
   id: string;
@@ -187,22 +189,22 @@ const BookingCard = ({
             </>
           )}
           {booking.status === 'pending' && (
-            <button className="bg-transparent border border-border-strong text-text-heading font-label text-label px-space-4 py-2 rounded-md hover:bg-surface-container hover:border-outline transition-colors">
+            <SecondaryButton>
               Cancel Request
-            </button>
+            </SecondaryButton>
           )}
           {booking.status === 'completed' && (
             <>
-              <button
+              <SecondaryButton
                 onClick={() => onLeaveReview?.(booking.id)}
-                className="bg-transparent border border-primary-container text-primary-deep font-label text-label px-space-4 py-2 rounded-md hover:bg-primary-faint transition-colors flex items-center gap-2"
+                className="flex items-center gap-2"
               >
                 <Star size={18} />
                 Leave Review
-              </button>
-              <button className="bg-transparent text-text-muted hover:text-text-heading font-label text-label px-space-3 py-2 rounded-md transition-colors underline underline-offset-2">
+              </SecondaryButton>
+              <SecondaryButton className="underline underline-offset-2">
                 View Receipt
-              </button>
+              </SecondaryButton>
             </>
           )}
         </div>
@@ -271,8 +273,11 @@ export const StudentDashboardResponsive = ({
 
           {/* Trailing Actions */}
           <div className="flex items-center gap-space-4">
-            <button className="text-primary-container hover:bg-stone-100 transition-colors p-2 rounded-full relative hover:scale-95 duration-75">
-              <Bell size={20} />
+            <button 
+              aria-label="Notifications"
+              className="text-primary-container hover:bg-stone-100 transition-colors p-2 rounded-full relative hover:scale-95 duration-75"
+            >
+              <Bell size={20} aria-hidden="true" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-bg-page"></span>
             </button>
             <div className="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-border-default cursor-pointer">
@@ -340,7 +345,7 @@ export const StudentDashboardResponsive = ({
                   href="#"
                   className="flex items-center gap-space-3 px-space-3 py-2.5 rounded-lg text-text-muted hover:bg-surface-container-low hover:text-text-heading font-label text-label transition-colors"
                 >
-                  <div size={20}>👤</div>
+                  <div className="flex items-center justify-center">👤</div>
                   Profile & Settings
                 </a>
               </nav>
@@ -445,7 +450,7 @@ export const StudentDashboardResponsive = ({
             href="#"
             className="flex flex-col items-center justify-center text-primary-container bg-amber-50 rounded-xl px-3 py-1 font-h2 text-[11px] font-semibold transition-transform hover:scale-95"
           >
-            <div size={24} className="mb-1">👤</div>
+            <div className="mb-1 text-2xl">👤</div>
             Profile
           </a>
         </div>

@@ -10,6 +10,8 @@ import {
   Receipt,
   MessageCircle,
 } from 'lucide-react';
+import { BUTTON_STYLES } from '@/lib/styling-constants';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
 
 interface BookingConfirmedProps {
   checkInDate?: string;
@@ -124,7 +126,7 @@ export default function BookingConfirmedResponsive({
         {/* Success Message */}
         <div className="text-center mb-8">
           {/* Success Icon */}
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-action-light text-action mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-action-light text-action mb-4" aria-hidden="true">
             <CheckCircle className="w-12 h-12" strokeWidth={1.5} />
           </div>
 
@@ -175,25 +177,25 @@ export default function BookingConfirmedResponsive({
 
         {/* Action Buttons */}
         <div className="w-full flex flex-col sm:flex-row gap-4">
-          <button
+          <SecondaryButton
             onClick={onViewBooking}
-            className="flex-1 py-3 px-4 rounded border-2 border-border-default text-text-body font-label text-label hover:bg-surface-variant active:bg-surface-container transition-colors duration-200 text-center flex justify-center items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-light/50"
+            className="flex-1 flex items-center justify-center gap-2"
           >
             <Receipt className="w-5 h-5" />
             View Booking
-          </button>
-          <button
+          </SecondaryButton>
+          <PrimaryButton
             onClick={onMessageOwner}
-            className="flex-1 py-3 px-4 rounded bg-primary-container text-on-primary font-label text-label hover:bg-primary-dark active:scale-[0.97] transition-all duration-200 shadow-md text-center flex justify-center items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-light/50"
+            className="flex-1 flex items-center justify-center gap-2"
           >
             <MessageCircle className="w-5 h-5" />
             Message Owner
-          </button>
+          </PrimaryButton>
         </div>
       </main>
 
       {/* ===== BOTTOM NAVIGATION (Mobile Only) ===== */}
-      <nav className="md:hidden fixed bottom-0 w-full z-50 border-t border-border-default rounded-t-lg bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(194,139,26,0.08)] flex justify-around items-center px-4 py-3 pb-safe">
+      <nav className="md:hidden fixed bottom-0 w-full z-50 border-t border-border-default rounded-t-lg bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(194,139,26,0.08)] flex justify-around items-center px-4 py-3 pb-safe" role="tablist">
         {mobileNavItems.map((item) => (
           <button
             key={item.id}
@@ -201,13 +203,16 @@ export default function BookingConfirmedResponsive({
               setActiveMobileNav(item.id);
               onNavigation(item.id);
             }}
-            className={`flex flex-col items-center justify-center text-[10px] font-bold uppercase tracking-widest transition-colors duration-200 focus:outline-none ${
+            aria-label={item.label}
+            aria-selected={activeMobileNav === item.id}
+            role="tab"
+            className={`flex flex-col items-center justify-center text-[10px] font-bold uppercase tracking-widest transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
               activeMobileNav === item.id
                 ? 'text-primary-container scale-110'
                 : 'text-on-surface-variant hover:text-primary-container'
             }`}
           >
-            {item.icon}
+            <span aria-hidden="true">{item.icon}</span>
             <span className="mt-1">{item.label}</span>
           </button>
         ))}

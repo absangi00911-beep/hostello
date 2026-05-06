@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useState, useRef } from 'react';
-import { Upload, Trash2, Star, ArrowBack, ArrowForward } from 'lucide-react';
+import { Upload, Trash2, Star, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface UploadedPhoto {
   id: string;
@@ -314,7 +314,7 @@ export function AddListingPhotosResponsive({
                 onClick={onBack}
                 className="px-space-6 py-space-3 rounded-DEFAULT border border-border-default text-text-heading font-label text-label hover:bg-surface-container-lowest transition-colors flex items-center gap-space-2 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2"
               >
-                <ArrowBack className="w-4.5 h-4.5" />
+                <ArrowLeft className="w-4.5 h-4.5" />
                 Back
               </button>
               <button
@@ -323,7 +323,7 @@ export function AddListingPhotosResponsive({
                 className="px-space-8 py-space-3 rounded-DEFAULT bg-action text-on-primary font-label text-label hover:bg-action-pressed transition-colors flex items-center gap-space-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Step
-                <ArrowForward className="w-4.5 h-4.5" />
+                <ArrowRight className="w-4.5 h-4.5" />
               </button>
             </div>
           </form>

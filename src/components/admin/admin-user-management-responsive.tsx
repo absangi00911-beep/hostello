@@ -13,7 +13,7 @@ import {
   Download,
   Plus,
   Edit,
-  Block,
+  Ban,
   RotateCcw,
   CheckCircle,
   ChevronLeft,
@@ -21,6 +21,8 @@ import {
   Bell,
   UserCircle,
 } from 'lucide-react';
+import { PrimaryButton, SecondaryButton, IconButton, TextInput } from '@/components/ui';
+import { useDebounce } from '@/lib/performance-utils';
 
 interface AdminUserManagementProps {
   onExport?: () => void;
@@ -56,6 +58,9 @@ export default function AdminUserManagementResponsive({
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+
+  // Debounce search term for performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const users: User[] = [
     {
@@ -100,15 +105,15 @@ export default function AdminUserManagementResponsive({
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesSearch =
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.id.toLowerCase().includes(searchTerm.toLowerCase());
+        user.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        user.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
       const matchesRole = roleFilter === 'all' || user.role.toLowerCase() === roleFilter;
       const matchesStatus =
         statusFilter === 'all' || user.status.toLowerCase() === statusFilter;
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [searchTerm, roleFilter, statusFilter]);
+  }, [debouncedSearchTerm, roleFilter, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -268,20 +273,20 @@ export default function AdminUserManagementResponsive({
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <SecondaryButton
                 onClick={onExport}
-                className="h-10 px-4 bg-primary-faint border border-primary-container text-primary-deep rounded-lg font-label text-label flex items-center gap-2 hover:bg-bg-raised transition-colors focus:ring-2 focus:ring-primary-container/50 focus:ring-offset-2 focus:ring-offset-bg-page outline-none active:scale-[0.97]"
+                className="flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Export CSV
-              </button>
-              <button
+              </SecondaryButton>
+              <PrimaryButton
                 onClick={onAddUser}
-                className="h-10 px-4 bg-success text-on-primary rounded-lg font-label text-label flex items-center gap-2 hover:bg-action-dark transition-colors shadow-sm hover:-translate-y-[1px] hover:shadow-md focus:ring-2 focus:ring-success/50 focus:ring-offset-2 focus:ring-offset-bg-page outline-none active:scale-[0.97]"
+                className="flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 Add User
-              </button>
+              </PrimaryButton>
             </div>
           </div>
 
@@ -442,7 +447,7 @@ export default function AdminUserManagementResponsive({
                               title="Suspend"
                               className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded transition-colors"
                             >
-                              <Block className="w-4 h-4" />
+                              <Ban className="w-4 h-4" />
                             </button>
                           )}
                         </div>

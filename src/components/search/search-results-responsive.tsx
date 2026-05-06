@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Bell,
@@ -12,6 +12,8 @@ import {
   Minus,
   CheckCircle,
 } from 'lucide-react';
+import { PrimaryButton, SecondaryButton, IconButton, Select, Checkbox } from '@/components/ui';
+import { LazyImage, useDebounce } from '@/lib/performance-utils';
 
 interface Hostel {
   id: number;
@@ -49,6 +51,9 @@ export default function SearchResultsResponsive({
   const [sortBy, setSortBy] = useState('recommended');
   const [activeMapMarker, setActiveMapMarker] = useState(2);
   const [savedHostels, setSavedHostels] = useState<number[]>([2]);
+
+  // Debounce search query for performance
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const hostels: Hostel[] = [
     {
@@ -144,12 +149,12 @@ export default function SearchResultsResponsive({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button
+              <PrimaryButton
                 onClick={() => onSearchSubmit(searchQuery)}
-                className="bg-primary-container hover:bg-primary-dark text-on-primary font-label text-label px-6 h-full rounded-full transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-primary-container/50"
+                className="rounded-full"
               >
                 Search
-              </button>
+              </PrimaryButton>
             </div>
           </div>
 
@@ -174,26 +179,26 @@ export default function SearchResultsResponsive({
             {/* Filter Header */}
             <div className="flex items-center justify-between pb-2 border-b border-border-default">
               <h2 className="font-h3 text-h3 text-text-heading">Filters</h2>
-              <button className="text-primary-container hover:text-primary-dark font-label text-label underline transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container/50">
+              <SecondaryButton 
+                onClick={() => {/* clear filters */}} 
+                className="text-sm"
+              >
                 Clear all
-              </button>
+              </SecondaryButton>
             </div>
 
             {/* City */}
             <div className="flex flex-col gap-2">
               <label className="font-label text-label text-text-heading">City</label>
-              <div className="relative">
-                <select
-                  className="w-full h-[42px] appearance-none bg-surface border border-border-default rounded px-3 py-2 text-text-body font-body-default focus:border-primary-container focus:ring-2 focus:ring-primary-light/50 outline-none transition-colors"
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                >
-                  <option>Barcelona, Spain</option>
-                  <option>Madrid, Spain</option>
-                  <option>Seville, Spain</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted pointer-events-none" />
-              </div>
+              <Select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                options={[
+                  { value: 'Barcelona, Spain', label: 'Barcelona, Spain' },
+                  { value: 'Madrid, Spain', label: 'Madrid, Spain' },
+                  { value: 'Seville, Spain', label: 'Seville, Spain' },
+                ]}
+              />
             </div>
 
             {/* Price Range */}
@@ -322,7 +327,12 @@ export default function SearchResultsResponsive({
                 >
                   {/* Image */}
                   <div className="w-40 h-full relative flex-shrink-0 bg-surface-variant">
-                    <div className="w-full h-full bg-gradient-to-br from-surface-dim to-surface-container" />
+                    <LazyImage
+                      src={hostel.image}
+                      alt={hostel.name}
+                      placeholder="https://via.placeholder.com/160x160?text=Loading"
+                      className="w-full h-full object-cover"
+                    />
                     {hostel.verified && (
                       <div className="absolute top-2 left-2 bg-bg-card/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 shadow-sm">
                         <CheckCircle className="w-3.5 h-3.5 text-success" />
@@ -346,9 +356,11 @@ export default function SearchResultsResponsive({
                             e.stopPropagation();
                             handleSaveToggle(hostel.id);
                           }}
+                          aria-label={savedHostels.includes(hostel.id) ? `Remove ${hostel.name} from saved` : `Save ${hostel.name}`}
                           className="text-text-muted hover:text-error transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-error/50 rounded"
                         >
                           <Heart
+                            aria-hidden="true"
                             className={`w-5 h-5 ${
                               savedHostels.includes(hostel.id)
                                 ? 'fill-error text-error'

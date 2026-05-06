@@ -4,11 +4,11 @@ import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/layout/top-nav';
 import { Footer } from '@/components/layout/footer';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { HeroSectionWithGallery } from './hero-gallery-section';
-import { VerifiedHostelsGrid } from './verified-hostels-grid';
-import { HowItWorksLarge } from './how-it-works-large';
+import { HeroSectionWithGallery } from '@/components/explore/hero-gallery-section';
+import { VerifiedHostelsGrid } from '@/components/explore/verified-hostels-grid';
+import { HowItWorksLarge } from '@/components/explore/how-it-works-large';
 
-export function ExplorePage() {
+export default function ExplorePage() {
   const router = useRouter();
 
   const handleSearch = (city: string, gender: string) => {

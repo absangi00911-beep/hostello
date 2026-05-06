@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, Star, MapPin } from 'lucide-react';
+import { PrimaryButton, SecondaryButton, TextArea } from '@/components/ui';
 
 interface SubmitReviewProps {
   hostelName?: string;
@@ -242,12 +243,9 @@ export default function SubmitReviewResponsive({
 
             {/* Review Body */}
             <div className="flex flex-col gap-1">
-              <label className="font-label text-label text-text-heading" htmlFor="review-body">
-                Your Review
-              </label>
-              <textarea
-                className="p-3 border border-border-default rounded bg-surface-container-lowest text-text-body font-body-default focus:border-warning focus:ring-1 focus:ring-warning/50 outline-none transition-shadow w-full resize-y"
+              <TextArea
                 id="review-body"
+                label="Your Review"
                 placeholder="What did you like? What could be improved? Be honest and helpful to other students."
                 rows={4}
                 value={body}
@@ -259,18 +257,17 @@ export default function SubmitReviewResponsive({
 
         {/* ===== FOOTER / ACTION ===== */}
         <div className="p-4 md:p-6 bg-surface-container-lowest border-t border-border-default flex justify-end gap-3">
-          <button
+          <SecondaryButton
             onClick={onCancel}
-            className="px-4 py-2 font-label text-label text-text-heading border border-border-default rounded bg-surface-container-lowest hover:bg-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-warning/50"
           >
             Cancel
-          </button>
-          <button
+          </SecondaryButton>
+          <PrimaryButton
             onClick={handleSubmit}
-            className="px-6 py-2 font-label text-label text-on-primary bg-action hover:bg-action-pressed active:scale-[0.97] transition-all duration-200 rounded focus:outline-none focus:ring-2 focus:ring-action/50 shadow-sm hover:-translate-y-[1px] hover:shadow-md flex items-center justify-center"
+            className="flex items-center justify-center"
           >
             Submit Review
-          </button>
+          </PrimaryButton>
         </div>
       </div>
     </div>

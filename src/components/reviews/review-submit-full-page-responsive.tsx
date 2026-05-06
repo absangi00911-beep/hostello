@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowBack, Star, Calendar, MapPin, Check } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, MapPin, Check } from 'lucide-react';
 
 interface ReviewSubmitFullPageProps {
   hostelName?: string;
@@ -96,7 +96,7 @@ export default function ReviewSubmitFullPageResponsive({
           onClick={onCancel}
           className="text-text-muted hover:bg-bg-raised transition-colors p-2 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-container/50"
         >
-          <ArrowBack className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <span className="text-primary-container font-black">Settings</span>
         <button

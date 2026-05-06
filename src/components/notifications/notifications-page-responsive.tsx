@@ -12,6 +12,8 @@ import {
   MessageCircle,
   Info,
 } from 'lucide-react';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
+import { MemoizedListItem } from '@/lib/performance-utils';
 
 interface Notification {
   id: string;
@@ -180,12 +182,12 @@ export default function NotificationsPageResponsive({
               Stay updated with your bookings and alerts.
             </p>
           </div>
-          <button
+          <SecondaryButton
             onClick={handleMarkAllRead}
-            className="font-label text-label text-primary font-medium hover:text-primary-dark transition-colors px-4 py-2 rounded-lg hover:bg-primary-faint/50 self-start sm:self-auto border border-transparent focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-bg-page focus:outline-none"
+            className="self-start sm:self-auto"
           >
             Mark all as read
-          </button>
+          </SecondaryButton>
         </div>
 
         {/* Notification List */}
@@ -238,7 +240,7 @@ export default function NotificationsPageResponsive({
       </main>
 
       {/* ===== MOBILE BOTTOM NAVIGATION ===== */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-white/90 backdrop-blur-md rounded-t-2xl border-t border-border-default shadow-[0_-4px_12px_rgba(194,139,26,0.08)]">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-white/90 backdrop-blur-md rounded-t-2xl border-t border-border-default shadow-[0_-4px_12px_rgba(194,139,26,0.08)]" role="tablist">
         {mobileNavItems.map((item) => (
           <button
             key={item.id}
@@ -246,13 +248,16 @@ export default function NotificationsPageResponsive({
               setActiveMobileNav(item.id);
               onNavigation(item.id);
             }}
-            className={`flex flex-col items-center justify-center font-h2 text-[10px] font-bold scale-90 transition-transform rounded-xl px-4 py-1 ${
+            aria-label={item.label}
+            aria-selected={activeMobileNav === item.id}
+            role="tab"
+            className={`flex flex-col items-center justify-center font-h2 text-[10px] font-bold scale-90 transition-transform rounded-xl px-4 py-1 focus:outline-none focus:ring-2 focus:ring-primary ${
               activeMobileNav === item.id
                 ? 'bg-primary-faint text-primary-deep'
                 : 'text-text-muted active:bg-surface-container'
             }`}
           >
-            {item.icon}
+            <span aria-hidden="true">{item.icon}</span>
             <span className="mt-1">{item.label}</span>
           </button>
         ))}

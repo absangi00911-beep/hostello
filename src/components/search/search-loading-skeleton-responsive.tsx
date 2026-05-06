@@ -107,7 +107,6 @@ export default function SearchLoadingSkeletonResponsive({
                 <div key={i} className="flex items-center gap-3">
                   <div style={shimmerStyle} className="h-4 w-4 rounded" />
                   <div
-                    style={shimmerStyle}
                     className="h-4 rounded flex-grow"
                     style={{
                       ...shimmerStyle,
@@ -133,7 +132,6 @@ export default function SearchLoadingSkeletonResponsive({
                 <div key={i} className="flex items-center gap-3">
                   <div style={shimmerStyle} className="h-4 w-4 rounded" />
                   <div
-                    style={shimmerStyle}
                     className="h-4 rounded flex-grow"
                     style={{
                       ...shimmerStyle,
@@ -170,7 +168,6 @@ export default function SearchLoadingSkeletonResponsive({
                 {/* Content Skeleton */}
                 <div className="p-4 space-y-3 flex-1 flex flex-col">
                   <div
-                    style={shimmerStyle}
                     className="h-6 rounded"
                     style={{
                       ...shimmerStyle,
@@ -178,7 +175,6 @@ export default function SearchLoadingSkeletonResponsive({
                     }}
                   />
                   <div
-                    style={shimmerStyle}
                     className="h-4 rounded"
                     style={{
                       ...shimmerStyle,
@@ -187,7 +183,6 @@ export default function SearchLoadingSkeletonResponsive({
                   />
                   <div className="mt-auto pt-4 flex justify-between items-end">
                     <div
-                      style={shimmerStyle}
                       className="h-6 rounded"
                       style={{
                         ...shimmerStyle,

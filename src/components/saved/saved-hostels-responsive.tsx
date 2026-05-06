@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bell, HelpCircle, Bookmark, Home, List, Heart, User } from 'lucide-react';
+import { PrimaryButton } from '@/components/ui';
 
 interface SavedHostelsProps {
   onExplore?: () => void;
@@ -96,12 +97,9 @@ export default function SavedHostelsResponsive({
           </p>
 
           {/* Explore Button */}
-          <button
-            onClick={onExplore}
-            className="bg-action text-on-primary font-label text-label px-6 py-3 rounded shadow-sm hover:-translate-y-[1px] hover:shadow-md active:scale-[0.97] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-page focus:ring-action"
-          >
+          <PrimaryButton onClick={onExplore}>
             Explore Hostels
-          </button>
+          </PrimaryButton>
         </div>
       </main>
 

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { TopNav } from '@/components/layout/top-nav';
 import { Footer } from '@/components/layout/footer';
-import { SearchFilters } from './search-filters';
-import { SearchResultsGrid } from './search-results-grid';
+import { SearchFilters } from '@/components/search/search-filters';
+import { SearchResultsGrid } from '@/components/search/search-results-grid';
 
 interface FilterState {
   city: string;
@@ -76,7 +76,7 @@ const MOCK_HOSTELS = [
   },
 ];
 
-export function SearchPage() {
+export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterState>({
     city: 'lahore',

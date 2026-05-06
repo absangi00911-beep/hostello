@@ -5,15 +5,16 @@ import {
   Bell,
   HelpCircle,
   Search,
-  ReceiptLong,
+  Receipt,
   Heart,
   Settings,
-  ContactSupport,
+  Phone,
   LogOut,
   Home,
   List,
   Camera,
 } from 'lucide-react';
+import { TextInput, TextArea, PrimaryButton } from '@/components/ui';
 
 interface ProfileSettingsFormData {
   fullName: string;
@@ -61,13 +62,13 @@ export default function ProfileSettingsResponsive({
 
   const sidebarItems = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-5 h-5" /> },
-    { id: 'bookings', label: 'My Bookings', icon: <ReceiptLong className="w-5 h-5" /> },
+    { id: 'bookings', label: 'My Bookings', icon: <Receipt className="w-5 h-5" /> },
     { id: 'favorites', label: 'Favorites', icon: <Heart className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 
   const footerItems = [
-    { id: 'help', label: 'Help Center', icon: <ContactSupport className="w-5 h-5" /> },
+    { id: 'help', label: 'Help Center', icon: <Phone className="w-5 h-5" /> },
     { id: 'logout', label: 'Logout', icon: <LogOut className="w-5 h-5" /> },
   ];
 
@@ -84,11 +85,17 @@ export default function ProfileSettingsResponsive({
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-white/80 backdrop-blur-md shadow-sm bg-bg-page border-b border-border-default">
         <div className="text-xl font-bold tracking-tight text-text-heading">HostelHub</div>
         <div className="flex items-center gap-4">
-          <button className="text-text-muted hover:text-text-heading hover:bg-surface-container transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light/50">
-            <Bell className="w-5 h-5" />
+          <button 
+            aria-label="Notifications"
+            className="text-text-muted hover:text-text-heading hover:bg-surface-container transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light/50"
+          >
+            <Bell aria-hidden="true" className="w-5 h-5" />
           </button>
-          <button className="text-text-muted hover:text-text-heading hover:bg-surface-container transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light/50">
-            <HelpCircle className="w-5 h-5" />
+          <button 
+            aria-label="Help"
+            className="text-text-muted hover:text-text-heading hover:bg-surface-container transition-colors p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-light/50"
+          >
+            <HelpCircle aria-hidden="true" className="w-5 h-5" />
           </button>
           <div className="w-8 h-8 rounded-full border border-border-default bg-primary-faint flex-shrink-0" />
         </div>
@@ -142,7 +149,7 @@ export default function ProfileSettingsResponsive({
       </aside>
 
       {/* ===== MOBILE BOTTOM NAVIGATION ===== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-white/95 backdrop-blur-sm border-t border-border-default shadow-[0_-4px_12px_rgba(194,139,26,0.08)] rounded-t-xl">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-white/95 backdrop-blur-sm border-t border-border-default shadow-[0_-4px_12px_rgba(194,139,26,0.08)] rounded-t-xl" role="tablist">
         {[
           { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
           { id: 'bookings', label: 'Bookings', icon: <List className="w-5 h-5" /> },
@@ -155,13 +162,16 @@ export default function ProfileSettingsResponsive({
               setActiveMobileNav(item.id);
               onNavigation(item.id);
             }}
-            className={`flex flex-col items-center justify-center text-[10px] uppercase tracking-wider font-bold scale-90 active:scale-100 transition-transform p-2 rounded-lg ${
+            aria-label={item.label}
+            aria-selected={activeMobileNav === item.id}
+            role="tab"
+            className={`flex flex-col items-center justify-center text-[10px] uppercase tracking-wider font-bold scale-90 active:scale-100 transition-transform p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
               activeMobileNav === item.id
                 ? 'text-primary-container bg-primary-faint'
                 : 'text-text-muted hover:text-text-heading'
             }`}
           >
-            {item.icon}
+            <span aria-hidden="true">{item.icon}</span>
             <span className="mt-1">{item.label}</span>
           </button>
         ))}
@@ -232,30 +242,20 @@ export default function ProfileSettingsResponsive({
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
-                  <div className="space-y-1">
-                    <label className="block font-label text-label text-text-heading">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className="w-full h-[42px] px-3 bg-bg-page border border-border-default rounded focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-shadow text-text-body"
-                    />
-                  </div>
+                  <TextInput
+                    label="Full Name"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                  />
 
                   {/* City */}
-                  <div className="space-y-1">
-                    <label className="block font-label text-label text-text-heading">City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full h-[42px] px-3 bg-bg-page border border-border-default rounded focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-shadow text-text-body"
-                    />
-                  </div>
+                  <TextInput
+                    label="City"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  />
 
                   {/* Email (Disabled) */}
                   <div className="space-y-1 md:col-span-2">
@@ -271,19 +271,21 @@ export default function ProfileSettingsResponsive({
                   </div>
 
                   {/* Phone Number */}
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="block font-label text-label text-text-heading flex justify-between">
-                      Phone Number
+                  <div className="md:col-span-2">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="font-label text-label text-text-heading">
+                        Phone Number
+                      </label>
                       <a
                         href="#"
-                        className="text-primary-container hover:underline font-semibold"
+                        className="text-primary-container hover:underline font-semibold text-sm"
                         onClick={(e) => {
                           e.preventDefault();
                         }}
                       >
                         Verify
                       </a>
-                    </label>
+                    </div>
                     <input
                       type="tel"
                       name="phone"
@@ -294,26 +296,22 @@ export default function ProfileSettingsResponsive({
                   </div>
 
                   {/* Bio */}
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="block font-label text-label text-text-heading">Bio</label>
-                    <textarea
+                  <div className="md:col-span-2">
+                    <TextArea
+                      label="Bio"
                       name="bio"
                       value={formData.bio}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-3 py-2 bg-bg-page border border-border-default rounded focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-shadow resize-none text-text-body"
                     />
                   </div>
                 </div>
 
                 {/* Save Button */}
                 <div className="flex justify-end pt-2">
-                  <button
-                    onClick={handleSaveChanges}
-                    className="bg-action text-on-primary px-6 h-[42px] rounded font-label text-label hover:bg-action-dark active:scale-[0.97] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-action/50"
-                  >
+                  <PrimaryButton onClick={handleSaveChanges}>
                     Save Changes
-                  </button>
+                  </PrimaryButton>
                 </div>
               </section>
             )}

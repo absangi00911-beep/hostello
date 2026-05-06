@@ -2,21 +2,22 @@
 
 import { useState } from 'react';
 import {
-  Dashboard,
-  House,
+  LayoutDashboard,
+  Home,
   Calendar,
-  RateReview,
+  Star,
   Settings,
-  HelpOutline,
-  Logout,
+  HelpCircle,
+  LogOut,
   Search,
   Filter,
-  Notifications,
-  AccountCircle,
+  Bell,
+  User,
   ChevronLeft,
   ChevronRight,
-  Image,
+  ImageIcon,
 } from 'lucide-react';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
 
 interface ListingRow {
   id: string;
@@ -105,7 +106,7 @@ export function AdminListingModerationResponsive({
       <aside className="hidden md:flex fixed left-0 top-0 h-screen w-[240px] border-r border-stone-200 bg-bg-page shadow-[4px_0_24px_-12px_rgba(194,139,26,0.15)] flex-col py-space-6 z-50">
         {/* Header */}
         <div className="px-space-6 mb-space-8 flex items-center gap-space-3">
-          <House className="w-8 h-8 text-primary-container" />
+          <Home className="w-8 h-8 text-primary-container" />
           <div>
             <h1 className="text-lg font-black text-stone-900 tracking-tight text-primary-container">HostelHub Admin</h1>
             <p className="font-overline text-overline text-text-muted">Marketplace Manager</p>
@@ -115,10 +116,10 @@ export function AdminListingModerationResponsive({
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-1 px-space-2">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: Dashboard },
-            { id: 'listings', label: 'Listings', icon: House },
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'listings', label: 'Listings', icon: Home },
             { id: 'bookings', label: 'All Bookings', icon: Calendar },
-            { id: 'reviews', label: 'Reviews', icon: RateReview },
+            { id: 'reviews', label: 'Reviews', icon: Star },
             { id: 'settings', label: 'System Settings', icon: Settings },
           ].map(({ id, label, icon: Icon }) => (
             <a
@@ -139,8 +140,8 @@ export function AdminListingModerationResponsive({
         {/* Footer Links */}
         <div className="mt-auto px-space-2 pt-space-4 border-t border-stone-200">
           {[
-            { id: 'support', label: 'Support', icon: HelpOutline },
-            { id: 'logout', label: 'Logout', icon: Logout },
+            { id: 'support', label: 'Support', icon: HelpCircle },
+            { id: 'logout', label: 'Logout', icon: LogOut },
           ].map(({ id, label, icon: Icon }) => (
             <a
               key={id}
@@ -172,10 +173,10 @@ export function AdminListingModerationResponsive({
               />
             </div>
             <button className="p-space-2 text-stone-500 hover:text-stone-900 focus:ring-2 focus:ring-amber-500/50 outline-none rounded-full transition-colors">
-              <Notifications className="w-5 h-5" />
+              <Bell className="w-5 h-5" />
             </button>
             <button className="p-space-2 text-stone-500 hover:text-stone-900 focus:ring-2 focus:ring-amber-500/50 outline-none rounded-full transition-colors">
-              <AccountCircle className="w-5 h-5" />
+              <User className="w-5 h-5" />
             </button>
           </div>
         </header>
@@ -261,7 +262,7 @@ export function AdminListingModerationResponsive({
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-DEFAULT bg-surface-dim flex items-center justify-center border border-border-default text-text-placeholder">
-                            <Image className="w-5 h-5" />
+                            <ImageIcon className="w-5 h-5" />
                           </div>
                         )}
                         <span className="truncate">{listing.hostelName}</span>
@@ -279,12 +280,12 @@ export function AdminListingModerationResponsive({
                           >
                             Suspend
                           </button>
-                          <button
+                          <PrimaryButton
                             onClick={() => onApprove?.(listing.id)}
-                            className="px-space-3 py-1.5 font-label text-label text-action hover:bg-action-light/50 rounded-DEFAULT transition-colors outline-none focus:ring-2 focus:ring-action/50 font-semibold"
+                            className="text-sm px-space-3 py-1.5"
                           >
                             Approve
-                          </button>
+                          </PrimaryButton>
                         </div>
                       </td>
                     </tr>
@@ -315,8 +316,8 @@ export function AdminListingModerationResponsive({
       {/* Bottom Nav - Mobile Only */}
       <nav className="md:hidden fixed bottom-0 w-full z-50 border-t border-stone-200 bg-white shadow-[0_-4px_12px_rgba(194,139,26,0.08)] flex justify-around items-center h-16 px-space-4 pb-safe text-[#C28B1A] text-[11px] font-bold">
         {[
-          { id: 'dash', label: 'Dash', icon: Dashboard },
-          { id: 'listings', label: 'Listings', icon: House },
+          { id: 'dash', label: 'Dash', icon: LayoutDashboard },
+          { id: 'listings', label: 'Listings', icon: Home },
           { id: 'bookings', label: 'Bookings', icon: Calendar },
           { id: 'settings', label: 'Settings', icon: Settings },
         ].map(({ id, label, icon: Icon }) => (

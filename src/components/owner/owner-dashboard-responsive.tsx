@@ -2,23 +2,24 @@
 
 import { useState } from 'react';
 import {
-  Dashboard,
+  LayoutDashboard,
   Home,
-  Event,
-  Chat,
-  HelpOutline,
-  Logout,
-  Help,
-  Insights,
-  Verified,
-  HomeWork,
-  EventAvailable,
-  PendingActions,
+  Calendar,
+  MessageCircle,
+  HelpCircle,
+  LogOut,
+  AlertCircle,
   TrendingUp,
-  AddCircle,
-  ArrowForward,
-  MoreVert,
+  CheckCircle,
+  Building,
+  Clock,
+  AlertCircle as PendingIcon,
+  TrendingUp as InsightsIcon,
+  Plus,
+  ArrowRight,
+  MoreVertical,
 } from 'lucide-react';
+import { PrimaryButton, SecondaryButton, IconButton } from '@/components/ui';
 
 interface BookingRequest {
   id: string;
@@ -111,7 +112,7 @@ export function OwnerDashboardResponsive({
             <p className="font-label text-label text-text-heading">{ownerName}</p>
             {isVerified && (
               <p className="font-overline text-overline text-success flex items-center gap-1">
-                <Verified className="w-3 h-3" />
+                <CheckCircle className="w-3 h-3" />
                 Verified Owner
               </p>
             )}
@@ -125,11 +126,11 @@ export function OwnerDashboardResponsive({
         {/* Navigation Links */}
         <nav className="flex-1 flex flex-col gap-1">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: Dashboard },
-            { id: 'listings', label: 'Listings', icon: HomeWork },
-            { id: 'bookings', label: 'Bookings', icon: Event },
-            { id: 'messages', label: 'Messages', icon: Chat },
-            { id: 'analytics', label: 'Analytics', icon: Insights },
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'listings', label: 'Listings', icon: Building },
+            { id: 'bookings', label: 'Bookings', icon: Calendar },
+            { id: 'messages', label: 'Messages', icon: MessageCircle },
+            { id: 'analytics', label: 'Analytics', icon: TrendingUp },
           ].map(({ id, label, icon: Icon }) => (
             <a
               key={id}
@@ -149,16 +150,16 @@ export function OwnerDashboardResponsive({
 
         {/* CTA */}
         <div className="mt-auto mb-space-4 px-space-2">
-          <button className="w-full py-space-2 bg-primary text-on-primary rounded-DEFAULT font-label text-label hover:bg-primary-dark transition-colors shadow-sm active:scale-95">
+          <PrimaryButton className="w-full">
             Add New Hostel
-          </button>
+          </PrimaryButton>
         </div>
 
         {/* Footer Links */}
         <div className="flex flex-col gap-1 border-t border-border-default pt-space-4">
           {[
-            { id: 'help', label: 'Help Center', icon: Help },
-            { id: 'logout', label: 'Sign Out', icon: Logout },
+            { id: 'help', label: 'Help Center', icon: HelpCircle },
+            { id: 'logout', label: 'Sign Out', icon: LogOut },
           ].map(({ id, label, icon: Icon }) => (
             <a
               key={id}
@@ -175,10 +176,10 @@ export function OwnerDashboardResponsive({
       {/* Bottom Nav - Mobile Only */}
       <nav className="fixed bottom-0 w-full z-50 md:hidden rounded-t-2xl border-t border-amber-200/50 shadow-[0_-4px_12px_rgba(194,139,26,0.1)] bg-bg-card flex justify-around items-center h-20 pb-safe px-space-4">
         {[
-          { id: 'home', label: 'Home', icon: Dashboard },
+          { id: 'home', label: 'Home', icon: LayoutDashboard },
           { id: 'listings', label: 'Listings', icon: Home },
-          { id: 'bookings', label: 'Bookings', icon: Event },
-          { id: 'messages', label: 'Messages', icon: Chat },
+          { id: 'bookings', label: 'Bookings', icon: Calendar },
+          { id: 'messages', label: 'Messages', icon: MessageCircle },
         ].map(({ id, label, icon: Icon }) => (
           <a
             key={id}
@@ -207,20 +208,20 @@ export function OwnerDashboardResponsive({
                 Welcome back. Here is an overview of your properties.
               </p>
             </div>
-            <button
+            <PrimaryButton
               onClick={onAddListing}
-              className="bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary px-space-5 py-space-2 rounded-DEFAULT font-label text-label transition-colors shadow-sm flex items-center gap-space-2 active:scale-95 duration-150"
+              className="flex items-center gap-space-2"
             >
-              <AddCircle className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
               Add New Listing
-            </button>
+            </PrimaryButton>
           </header>
 
           {/* Stat Tiles */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-4 mb-space-8">
             <div className="bg-bg-card p-space-5 rounded-lg border border-border-default shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex items-center gap-space-4">
               <div className="w-12 h-12 rounded-full bg-primary-faint flex items-center justify-center text-primary-deep">
-                <HomeWork className="w-6 h-6" />
+                <Building className="w-6 h-6" />
               </div>
               <div>
                 <p className="font-label text-label text-text-muted">Total Listings</p>
@@ -232,7 +233,7 @@ export function OwnerDashboardResponsive({
 
             <div className="bg-bg-card p-space-5 rounded-lg border border-border-default shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex items-center gap-space-4">
               <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-success">
-                <EventAvailable className="w-6 h-6" />
+                <Clock className="w-6 h-6" />
               </div>
               <div>
                 <p className="font-label text-label text-text-muted">Active Bookings</p>
@@ -245,7 +246,7 @@ export function OwnerDashboardResponsive({
             <div className="bg-bg-card p-space-5 rounded-lg border border-warning/30 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex items-center gap-space-4 relative overflow-hidden">
               <div className="absolute right-0 top-0 w-2 h-full bg-warning" />
               <div className="w-12 h-12 rounded-full bg-[#FEF4E1] flex items-center justify-center text-warning">
-                <PendingActions className="w-6 h-6" />
+                <Clock className="w-6 h-6" />
               </div>
               <div>
                 <p className="font-label text-label text-text-muted">Pending Requests</p>
@@ -274,7 +275,7 @@ export function OwnerDashboardResponsive({
               <h3 className="font-h3 text-h3 text-text-heading">Recent Booking Requests</h3>
               <button className="text-primary hover:text-primary-dark font-label text-label flex items-center gap-1 transition-colors">
                 View All
-                <ArrowForward className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 

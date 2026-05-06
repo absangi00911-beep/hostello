@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
+import { TextInput, PrimaryButton } from '@/components/ui';
 
 interface LoginFormResponsiveProps {
   onSubmit?: (data: { email: string; password: string }) => void;
@@ -63,28 +64,19 @@ export function LoginFormResponsive({ onSubmit }: LoginFormResponsiveProps) {
         {/* Form */}
         <form className="flex flex-col gap-space-5" onSubmit={handleSubmit}>
           {/* Email Field */}
-          <div className="flex flex-col gap-space-2">
-            <label className="font-label text-label text-text-heading" htmlFor="email">
-              Email Address
-            </label>
-            <input
-              className={`h-[42px] px-space-3 rounded bg-surface-container-lowest border transition-shadow focus:outline-none ${
-                errors.email
-                  ? 'border-error focus:ring-[1.5px] focus:ring-error/30'
-                  : 'border-border-default focus:border-primary-container focus:ring-[1.5px] focus:ring-primary-container/30'
-              }`}
-              id="email"
-              name="email"
-              placeholder="you@example.com"
-              type="email"
-              value={formData.email}
-              onChange={(e) => {
-                setFormData({ ...formData, email: e.target.value });
-                if (errors.email) setErrors({ ...errors, email: '' });
-              }}
-            />
-            {errors.email && <p className="font-label text-[11px] text-error">{errors.email}</p>}
-          </div>
+          <TextInput
+            id="email"
+            name="email"
+            label="Email Address"
+            placeholder="you@example.com"
+            type="email"
+            value={formData.email}
+            error={errors.email}
+            onChange={(e) => {
+              setFormData({ ...formData, email: e.target.value });
+              if (errors.email) setErrors({ ...errors, email: '' });
+            }}
+          />
 
           {/* Password Field */}
           <div className="flex flex-col gap-space-2">
@@ -99,33 +91,28 @@ export function LoginFormResponsive({ onSubmit }: LoginFormResponsiveProps) {
                 Forgot password?
               </Link>
             </div>
-            <input
-              className={`h-[42px] px-space-3 rounded bg-surface-container-lowest border transition-shadow focus:outline-none ${
-                errors.password
-                  ? 'border-error focus:ring-[1.5px] focus:ring-error/30'
-                  : 'border-border-default focus:border-primary-container focus:ring-[1.5px] focus:ring-primary-container/30'
-              }`}
+            <TextInput
               id="password"
               name="password"
               placeholder="••••••••"
               type="password"
               value={formData.password}
+              error={errors.password}
               onChange={(e) => {
                 setFormData({ ...formData, password: e.target.value });
                 if (errors.password) setErrors({ ...errors, password: '' });
               }}
             />
-            {errors.password && <p className="font-label text-[11px] text-error">{errors.password}</p>}
           </div>
 
           {/* Sign In Button */}
-          <button
-            className="mt-space-2 w-full h-[42px] bg-action text-on-primary font-label text-label rounded flex items-center justify-center gap-space-2 hover:bg-action-pressed md:hover:-translate-y-[1px] md:hover:shadow-sm active:scale-[0.97] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-action focus:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed"
+          <PrimaryButton
+            className="mt-space-2 w-full"
             disabled={loading}
             type="submit"
           >
             {loading ? 'Signing in...' : 'Sign in'}
-          </button>
+          </PrimaryButton>
         </form>
 
         {/* Footer */}

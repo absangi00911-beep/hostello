@@ -19,6 +19,7 @@ import {
   ChevronDown,
   LayoutGrid,
 } from 'lucide-react';
+import { PrimaryButton } from '@/components/ui';
 
 interface AdminDashboardOverviewProps {
   onLogout?: () => void;

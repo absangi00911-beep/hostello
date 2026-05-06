@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { ArrowBack, Wifi, AcUnit, Shirt, ChefHat, Lock, Trees, ArrowForward } from 'lucide-react';
+import { ArrowLeft, Wifi, Wind, Shirt, ChefHat, Lock, Trees, ArrowRight } from 'lucide-react';
 
 interface Amenity {
   id: string;
@@ -31,7 +31,7 @@ const DEFAULT_AMENITIES: Amenity[] = [
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   wifi: <Wifi className="w-5 h-5" />,
-  ac_unit: <AcUnit className="w-5 h-5" />,
+  ac_unit: <Wind className="w-5 h-5" />,
   local_laundry_service: <Shirt className="w-5 h-5" />,
   kitchen: <ChefHat className="w-5 h-5" />,
   lock: <Lock className="w-5 h-5" />,
@@ -112,7 +112,7 @@ export function AddListingRulesAmenitiesResponsive({
               onClick={onBackToLocation}
               className="flex items-center gap-space-2 text-text-muted font-label text-label mb-space-2 hover:text-text-heading transition-colors"
             >
-              <ArrowBack className="w-4.5 h-4.5" />
+              <ArrowLeft className="w-4.5 h-4.5" />
               <span>Back to Location</span>
             </button>
             <h1 className="font-h1 text-h1 text-text-heading mb-space-4">Rules & Amenities</h1>
@@ -206,7 +206,7 @@ Check-out is strictly at 10 AM."
                 className="w-full sm:w-auto px-space-8 py-space-3 rounded-lg bg-action text-on-primary font-label text-label hover:bg-action-pressed active:scale-97 hover:-translate-y-[1px] transition-all shadow-sm focus:ring-2 focus:ring-action focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-space-2"
               >
                 {loading ? 'Submitting...' : 'Submit for Review'}
-                <ArrowForward className="w-4.5 h-4.5" />
+                <ArrowRight className="w-4.5 h-4.5" />
               </button>
             </div>
           </form>

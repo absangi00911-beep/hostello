@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { usePreloadImage } from '@/lib/performance-utils';
 
 interface SearchParams {
   city: string;
@@ -16,6 +17,17 @@ export function HeroSectionResponsive() {
     city: '',
     gender: '',
   });
+
+  // Preload hero images for better performance
+  const heroImages = [
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuCZnuHvnmz3UTjiWCTURUT1IRs7Gsl37RCrTpuYWACAmHI05nBRtk8WZNptBdhU80LZhQxHQoa3wlevXWR6QcZOvRldwSmjSwrOqBR7Eujmz8QhbbEereB6aeFSWyMEpuCZPX93uj_XYvj-xbGFn3vF8O6eE1MOE64_hvP62l5p07iJWRQYtDYAyQuSsyRDrDSXdwecl9gCLWOJJlLIcZD1tRvkxrQ52i91K4d4px7agfj5QjiPEzIxFS8YHBrurAvrUTKj7bcz-TNz',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuDVqHf6D_5MUtYuDzwiem7ZjMARzgPakEnVDWqB_UL6rP3N129G4BapDQn7mLWCoYGFKoY0ML2JAdW_8pS7s4TNS5Y22B-z-jBwbZ63DOEVGdH4n_-fiLehnhagTcavO9xNaTojwAvU-f5NVrLMxrNj7i7Go7kNJp7NYH8HtVEsM_n78aKT09pXTflq5Aq0Juijl11_wG-hWwG-WedRvcqMfBo110QcMSLOJjQudjO-2m6RdY7kLFrflRQcMjLvoB3R6ZSEjjaFoIotn',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuA3Y5ZyFerXeC6YT4qGpxQPtKaNUtMK8dd4_FavrBp3beyBbuQd1b107IIgUAAToVastjYNGt04DU7WlmPdE4xRC3kOx20lvXiaqW2PC6zTRnRFhPcam3UgtWTDEpPZ5-PZyYTaRCB5Y542NY3spZXQutM065D3InR1-voSSnLG0gmtOm2lKFa3o5VSNYA5ubz2xh7TKbk5zQK-REv962VJwibWnbHCSo509q08GTHYcxs88mQZf8ZpWze6WHeqBszJNpMxvOrf26RO',
+  ];
+
+  useEffect(() => {
+    heroImages.forEach((src) => usePreloadImage(src));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowBack, ArrowForward, Building } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building } from 'lucide-react';
 
 interface OwnerOnboardingWelcomeResponsiveProps {
   currentStep?: number;
@@ -112,7 +112,7 @@ export function OwnerOnboardingWelcomeResponsive({
             onClick={onBack}
             type="button"
           >
-            <ArrowBack className="w-5 h-5 hidden md:block" strokeWidth={1.5} />
+            <ArrowLeft className="w-5 h-5 hidden md:block" strokeWidth={1.5} />
             Back
           </button>
           <button
@@ -122,7 +122,7 @@ export function OwnerOnboardingWelcomeResponsive({
             type="button"
           >
             Next
-            <ArrowForward className="w-5 h-5 hidden md:block" strokeWidth={1.5} />
+            <ArrowRight className="w-5 h-5 hidden md:block" strokeWidth={1.5} />
           </button>
         </div>
       </div>
