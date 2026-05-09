@@ -1,0 +1,2 @@
+-- Notifications were added to init migration, this is a placeholder for migration history
+-- No changes needed as notifications are already created in 0_init
