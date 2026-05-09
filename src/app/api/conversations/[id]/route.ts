@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
 
 const messageSchema = z.object({
@@ -67,7 +68,7 @@ export async function GET(
 
 /**
  * POST /api/conversations/[id]
- * Sends a new message in a conversation.
+ * Sends a new message in a conversation and notifies the recipient.
  */
 export async function POST(
   req: NextRequest,
@@ -80,7 +81,10 @@ export async function POST(
     }
 
     // Rate limit: 30 messages per user per minute to prevent spam
-    const rl = await rateLimit(`msg:${session.user.id}`, { limit: 30, windowMs: 60 * 1000 });
+    const rl = await rateLimit(`msg:${session.user.id}`, {
+      limit: 30,
+      windowMs: 60 * 1000,
+    });
     if (!rl.ok) {
       return NextResponse.json(
         { error: "Too many messages. Please slow down." },
@@ -90,10 +94,13 @@ export async function POST(
 
     const { id } = await params;
 
+    // Fetch hostelId alongside participants so the notification can link
+    // directly to the hostel the conversation is about.
     const conversation = await db.conversation.findUnique({
       where: { id },
       select: {
         id: true,
+        hostelId: true,
         participants: {
           select: { userId: true },
         },
@@ -135,6 +142,35 @@ export async function POST(
         data: { updatedAt: new Date() },
       }),
     ]);
+
+    // ── Notify recipient(s) ────────────────────────────────────────────────
+    // Find every participant who is NOT the sender and notify them.
+    // In practice conversations are always 2-person (student + owner) but
+    // iterating guards against any future expansion.
+    //
+    // Fire-and-forget: a notification failure must never fail the message send.
+    const recipientIds = userIds.filter((uid) => uid !== session.user.id);
+
+    // Truncate the message preview to keep notification text readable.
+    const preview =
+      parsed.data.content.length > 100
+        ? `${parsed.data.content.slice(0, 100)}…`
+        : parsed.data.content;
+
+    for (const recipientId of recipientIds) {
+      void createNotification({
+        userId:   recipientId,
+        type:     "MESSAGE_RECEIVED",
+        title:    message.sender.name,   // sender name as title (messaging app convention)
+        message:  preview,
+        hostelId: conversation.hostelId, // lets the UI deep-link to the right hostel
+      }).catch((err) =>
+        console.error(
+          `[conversations/${id}] Failed to notify recipient ${recipientId}:`,
+          err
+        )
+      );
+    }
 
     return NextResponse.json({ data: message }, { status: 201 });
   } catch (err) {

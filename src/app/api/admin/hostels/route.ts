@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { listingApprovedEmail, listingSuspendedEmail } from "@/lib/email-templates/listing-status";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
+import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
 
 const schema = z.object({
@@ -32,70 +33,103 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const hostel = await db.hostel.update({
-      where:  { id: hostelId },
+      where: { id: hostelId },
       data,
-      select: { 
-        id: true, 
-        status: true, 
+      select: {
+        id:       true,
+        status:   true,
         verified: true,
-        name: true,
+        name:     true,
         owner: {
           select: {
+            id:    true,  // needed to address the in-app notification
             email: true,
-            name: true,
+            name:  true,
           },
         },
       },
     });
 
-    // Sync to Typesense based on action
+    // ── Typesense sync ─────────────────────────────────────────────────────
     if (action === "verify" || action === "activate") {
-      // Index the hostel when it becomes ACTIVE
-      await indexSingleHostel(hostel.id).catch((err) =>
-        console.error(`[typesense] Failed to index hostel ${hostel.id}:`, err)
+      void indexSingleHostel(hostel.id).catch((err) =>
+        console.error(`[typesense] Failed to index hostel ${hostel.id}:`, err),
       );
     } else if (action === "suspend") {
-      // Remove from index when suspended
-      await removeHostelIndex(hostel.id).catch((err) =>
-        console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err)
+      void removeHostelIndex(hostel.id).catch((err) =>
+        console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err),
       );
     }
 
-    // Send owner notification email based on action
+    // ── Email + in-app notification ────────────────────────────────────────
+    // Both are fire-and-forget. A failure in either must never block the
+    // admin action — the DB is already updated at this point.
     if (action === "verify" || action === "activate") {
       void sendEmail(
         listingApprovedEmail({
           ownerEmail: hostel.owner.email,
-          ownerName: hostel.owner.name,
+          ownerName:  hostel.owner.name,
           hostelName: hostel.name,
-          hostelId: hostel.id,
-          status: "APPROVED",
-        })
-      ).catch(() => {
-        // Silently ignore email failures but log them
-        console.error(`[email] Failed to send listing approved email to ${hostel.owner.email} for hostel ${hostel.id}`);
-      });
+          hostelId:   hostel.id,
+          status:     "APPROVED",
+        }),
+      ).catch(() =>
+        console.error(
+          `[email] Failed to send listing approved email to ${hostel.owner.email} ` +
+          `for hostel ${hostel.id}`,
+        ),
+      );
+
+      void createNotification({
+        userId:   hostel.owner.id,
+        type:     "HOSTEL_APPROVED",
+        title:    "Listing approved 🎉",
+        message:  `Your hostel "${hostel.name}" is now live and visible to students.`,
+        hostelId: hostel.id,
+      }).catch((err) =>
+        console.error(
+          `[notifications] Failed to send HOSTEL_APPROVED notification ` +
+          `to owner ${hostel.owner.id} for hostel ${hostel.id}:`,
+          err,
+        ),
+      );
     } else if (action === "suspend") {
       void sendEmail(
         listingSuspendedEmail({
           ownerEmail: hostel.owner.email,
-          ownerName: hostel.owner.name,
+          ownerName:  hostel.owner.name,
           hostelName: hostel.name,
-          hostelId: hostel.id,
-          status: "SUSPENDED",
-        })
-      ).catch(() => {
-        // Silently ignore email failures but log them
-        console.error(`[email] Failed to send listing suspended email to ${hostel.owner.email} for hostel ${hostel.id}`);
-      });
+          hostelId:   hostel.id,
+          status:     "SUSPENDED",
+        }),
+      ).catch(() =>
+        console.error(
+          `[email] Failed to send listing suspended email to ${hostel.owner.email} ` +
+          `for hostel ${hostel.id}`,
+        ),
+      );
+
+      void createNotification({
+        userId:   hostel.owner.id,
+        type:     "HOSTEL_REJECTED",
+        title:    "Listing suspended",
+        message:  `Your hostel "${hostel.name}" has been suspended. Check your email for details and next steps.`,
+        hostelId: hostel.id,
+      }).catch((err) =>
+        console.error(
+          `[notifications] Failed to send HOSTEL_REJECTED notification ` +
+          `to owner ${hostel.owner.id} for hostel ${hostel.id}:`,
+          err,
+        ),
+      );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       data: {
-        id: hostel.id,
-        status: hostel.status,
+        id:       hostel.id,
+        status:   hostel.status,
         verified: hostel.verified,
-      }
+      },
     });
   } catch (err) {
     console.error("[PATCH /api/admin/hostels]", err);

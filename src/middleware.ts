@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth/config";
 import { NextResponse } from "next/server";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { validateEnvironmentOnce } from "@/lib/env-validation";
@@ -32,8 +31,8 @@ const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
   { path: "/api/payment/callback", methods: ["POST"] },
 ];
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl;
+export default function middleware(req: Request) {
+  const { pathname } = new URL(req.url);
 
   // ── CSRF protection ────────────────────────────────────────────────────
   // Applied to every state-mutating API route that isn't exempt.
@@ -54,10 +53,11 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
+  runtime: "experimental-edge",
 };

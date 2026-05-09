@@ -9,7 +9,7 @@ const createSchema = z.object({
 });
 
 // GET /api/price-alerts — List user's price alerts
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

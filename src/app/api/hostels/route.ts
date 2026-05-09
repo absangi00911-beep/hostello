@@ -48,10 +48,6 @@ export async function GET(req: NextRequest) {
       limit,
     } = parsed.data;
 
-    let hostelIds: string[];
-    let total: number;
-    let isSearchDegraded = false;
-
     // Use shared search service with Typesense → Prisma fallback
     const searchResult = await searchHostelsWithFallback({
       q,
@@ -66,9 +62,9 @@ export async function GET(req: NextRequest) {
       limit,
     });
 
-    hostelIds = searchResult.hostelIds;
-    total = searchResult.total;
-    isSearchDegraded = searchResult.isSearchDegraded;
+    const hostelIds = searchResult.hostelIds;
+    const total = searchResult.total;
+    const isSearchDegraded = searchResult.isSearchDegraded;
 
     // Fetch full hostel details from database
     const hostels = await db.hostel.findMany({

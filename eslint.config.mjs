@@ -2,6 +2,21 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const eslintConfig = [
+  {
+    ignores: [
+      ".agents/**",
+      ".claude/**",
+      ".code-review-graph/**",
+      ".cursor/**",
+      ".impeccable-live/**",
+      ".kiro/**",
+      ".next/**",
+      ".superpowers/**",
+      ".venv/**",
+      ".vscode/**",
+      ".worktrees/**",
+    ],
+  },
   ...nextCoreWebVitals,
   ...nextTypescript,
   {

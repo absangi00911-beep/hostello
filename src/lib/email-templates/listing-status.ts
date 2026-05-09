@@ -60,7 +60,6 @@ export function listingSuspendedEmail({
   ownerEmail,
   ownerName,
   hostelName,
-  hostelId,
   reason = "Your listing did not meet our quality standards.",
 }: ListingStatusEmailProps) {
   const APP_URL = getAppUrl();

@@ -1,5 +1,5 @@
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton } from "./layout";
+import { emailLayout } from "./layout";
 
 export function accountDeletedEmail({
   name,

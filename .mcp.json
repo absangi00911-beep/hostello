@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "code-review-graph": {
-      "command": "code-review-graph",
+      "command": "D:\\Projects\\Personal\\hostello\\.venv\\Scripts\\python.exe",
       "args": [
+        "-m",
+        "code_review_graph",
         "serve"
       ],
       "type": "stdio"

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
-import { sanitizeString, rulesSchema } from "@/lib/validations";
+import { rulesSchema } from "@/lib/validations";
 import { getRequiredEnv, getOptionalEnv } from "@/lib/env-validation";
 import { z } from "zod";
 

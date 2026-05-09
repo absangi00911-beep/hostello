@@ -1,6 +1,3 @@
-Now I'll write the System Design Document for HostelLo using the codebase provided, applying the humanizer approach throughout.
-
----
 
 # System Design Document — HostelLo
 

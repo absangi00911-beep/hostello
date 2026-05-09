@@ -15,7 +15,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  *   - Development: a missing Origin is permitted (curl, Postman, etc.); a
  *     present but mismatched Origin is still rejected.
  */
-export function verifyCsrfOrigin(req: NextRequest): NextResponse | null {
+export function verifyCsrfOrigin(req: NextRequest | Request): NextResponse | null {
   const method = req.method ?? "GET";
   if (SAFE_METHODS.has(method)) return null;
 

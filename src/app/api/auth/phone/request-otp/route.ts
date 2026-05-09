@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { rateLimit, getIp } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 import { generateOTP, sendOtpSms, normalizePhoneNumber } from "@/lib/sms";
 import { z } from "zod";
 

@@ -7,12 +7,9 @@
  * 3. Check Price Alerts - Every 6 hours
  */
 
-import { Client } from "@upstash/qstash";
-
 const QSTASH_TOKEN = process.env.QSTASH_TOKEN;
 const QSTASH_URL = process.env.QSTASH_URL || "https://qstash-us-east-1.upstash.io";
 const APP_URL = process.env.APP_URL || "https://hostello.pk";
-const CRON_SECRET = process.env.CRON_SECRET || "default-secret";
 
 if (!QSTASH_TOKEN) {
   throw new Error("QSTASH_TOKEN environment variable is required");
@@ -55,11 +52,6 @@ async function scheduleJobs() {
     process.exit(1);
   }
 
-  const client = new Client({
-    token: QSTASH_TOKEN,
-    baseUrl: QSTASH_URL,
-  });
-
   for (const job of jobs) {
     try {
       const url = `${APP_URL}${job.endpoint}`;
@@ -88,8 +80,6 @@ async function scheduleJobs() {
       if (!response.ok) {
         throw new Error(`${response.status}: ${responseText}`);
       }
-
-      const data = JSON.parse(responseText);
 
       console.log(`✅ ${job.name}`);
       console.log(`   Schedule: ${job.schedule}`);
