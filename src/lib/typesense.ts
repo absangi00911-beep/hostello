@@ -276,8 +276,8 @@ export async function searchHostels(
   }
 
   if (amenities && amenities.length > 0) {
-    // For multi-value facet filters, use OR within parentheses
-    const amenityFilters = amenities.map((a) => `amenities:${a}`).join(" || ");
+    // For multi-value facet filters, use AND within parentheses to require all amenities
+    const amenityFilters = amenities.map((a) => `amenities:${a}`).join(" && ");
     filters.push(`(${amenityFilters})`);
   }
 

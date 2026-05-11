@@ -17,7 +17,6 @@ export function getAppUrl() {
   const candidates = [
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.AUTH_URL,
-    DEFAULT_APP_URL,
   ];
 
   for (const candidate of candidates) {
@@ -26,7 +25,14 @@ export function getAppUrl() {
     }
   }
 
-  return DEFAULT_APP_URL;
+  // Fallback behaviour for development only
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn("WARN: APP_URL not set, defaulting to local http://localhost:3000");
+    return "http://localhost:3000";
+  }
+
+  // Production MUST have it set
+  throw new Error("CRITICAL: APP_URL environment variable is not configured for production.");
 }
 
 export function getRequestOrigin(request: Request) {

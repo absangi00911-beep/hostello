@@ -70,11 +70,11 @@ function getClientIp(req: any): string | null {
   if (cfIp) return cfIp;
 
   // Traditional X-Forwarded-For (comma-separated list of IPs)
-  // Rightmost is set by your trusted proxy; leftmost is user-controlled and can be spoofed
+  // Leftmost is the original client IP.
   const xForwardedFor = req.headers?.get?.("x-forwarded-for");
   if (xForwardedFor) {
     const ips = xForwardedFor.split(",").map((ip: string) => ip.trim());
-    return ips[ips.length - 1] || null;
+    return ips[0] || null;
   }
 
   // Nginx reverse proxy

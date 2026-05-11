@@ -1,19 +1,7 @@
 import { Resend } from "resend";
+export { escapeHtml } from "@hostello/shared";
 
 const FROM = process.env.EMAIL_FROM ?? "HostelLo <noreply@hostello.pk>";
-
-/**
- * Escape HTML special characters to prevent injection attacks.
- * Use when interpolating user-supplied data into HTML strings.
- */
-export function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 function getResendClient() {
   const key = process.env.RESEND_API_KEY?.trim();

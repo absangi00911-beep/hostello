@@ -32,6 +32,8 @@ export async function createCheckoutSession({
   customerEmail,
   customerName,
   appUrl = getAppUrl(),
+  redirectPath = "/payment/success",
+  cancelPath,
 }: {
   bookingId: string;
   amount: number;
@@ -39,10 +41,20 @@ export async function createCheckoutSession({
   customerEmail: string;
   customerName: string;
   appUrl?: string;
+  redirectPath?: string;
+  cancelPath?: string;
 }): Promise<SafepaySession> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
   const origin = appUrl.replace(/\/+$/, "");
+
+  const finalRedirectUrl = redirectPath.startsWith("http") 
+    ? redirectPath 
+    : `${origin}${redirectPath}${redirectPath.includes("?") ? "&" : "?"}bookingId=${bookingId}`;
+
+  const finalCancelUrl = cancelPath 
+    ? (cancelPath.startsWith("http") ? cancelPath : `${origin}${cancelPath}`)
+    : `${origin}/bookings/${bookingId}?payment=cancelled`;
 
   const payload = {
     client: secret,
@@ -50,8 +62,8 @@ export async function createCheckoutSession({
     currency: "PKR",
     order_id: orderId,
     source: "custom",
-    cancel_url: `${origin}/bookings/${bookingId}?payment=cancelled`,
-    redirect_url: `${origin}/payment/success?bookingId=${bookingId}`,
+    cancel_url: finalCancelUrl,
+    redirect_url: finalRedirectUrl,
     webhook_url: `${origin}/api/payment/webhook`,
     customer: {
       email: customerEmail,

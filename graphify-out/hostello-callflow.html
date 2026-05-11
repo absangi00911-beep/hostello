@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hostello — Complete Call Flow &amp; Architecture Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>hostello — Complete Call Flow &amp; Architecture Documentation</h1>
+<p class="subtitle">Generated from graphify knowledge graph: 445 nodes, 891 edges, 29 communities. Commit: db5fd7e</p>
+
+<div class="nav">
+    <a href="#overview">Architecture Overview</a>
+    <a href="#ingest-cache-update">Ingestion &amp; Updates</a>
+    <a href="#serve-api">Serving API</a>
+    <a href="#security-global">Security &amp; Global Graph</a>
+    <a href="#types-session">Types &amp; Session</a>
+    <a href="#validation-schemas">Validation Schemas</a>
+    <a href="#performance-optimization">Performance Optimization</a>
+    <a href="#amenities-config">Amenities Config</a>
+    <a href="#styling-constants">Styling Constants</a>
+    <a href="#auth-context">Auth Context</a>
+    <a href="#hostel-types">Hostel Types</a>
+    <a href="#filter-modal">Filter Modal</a>
+    <a href="#search-bar">Search Bar</a>
+    <a href="#university-config">University Config</a>
+    <a href="#root-layout">Root Layout</a>
+    <a href="#other">Other</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    INGEST_CACHE_UPDATE_FF457338("Ingestion &amp; Updates<br/><small>49 nodes</small>")
+    class INGEST_CACHE_UPDATE_FF457338 module;
+    SERVE_API_35EC8E86("Serving API<br/><small>300 nodes</small>")
+    class SERVE_API_35EC8E86 module;
+    SECURITY_GLOBAL_5B9C6A04("Security &amp; Global Graph<br/><small>2 nodes</small>")
+    class SECURITY_GLOBAL_5B9C6A04 module;
+    TYPES_SESSION_52E6F10D("Types &amp; Session<br/><small>25 nodes</small>")
+    class TYPES_SESSION_52E6F10D module;
+    VALIDATION_SCHEMAS_F75166C0("Validation Schemas<br/><small>15 nodes</small>")
+    class VALIDATION_SCHEMAS_F75166C0 module;
+    PERFORMANCE_OPTIMIZATION_934FCBB1("Performance Optimization<br/><small>10 nodes</small>")
+    class PERFORMANCE_OPTIMIZATION_934FCBB1 module;
+    AMENITIES_CONFIG_1116CD96("Amenities Config<br/><small>8 nodes</small>")
+    class AMENITIES_CONFIG_1116CD96 module;
+    STYLING_CONSTANTS_42E772C4("Styling Constants<br/><small>8 nodes</small>")
+    class STYLING_CONSTANTS_42E772C4 module;
+    AUTH_CONTEXT_BD682459("Auth Context<br/><small>5 nodes</small>")
+    class AUTH_CONTEXT_BD682459 module;
+    HOSTEL_TYPES_9A2B2219("Hostel Types<br/><small>5 nodes</small>")
+    class HOSTEL_TYPES_9A2B2219 module;
+    FILTER_MODAL_78824C3A("Filter Modal<br/><small>4 nodes</small>")
+    class FILTER_MODAL_78824C3A module;
+    SEARCH_BAR_E8F6832D("Search Bar<br/><small>4 nodes</small>")
+    class SEARCH_BAR_E8F6832D module;
+    UNIVERSITY_CONFIG_63AE8D70("University Config<br/><small>4 nodes</small>")
+    class UNIVERSITY_CONFIG_63AE8D70 module;
+    ROOT_LAYOUT_863CB643("Root Layout<br/><small>3 nodes</small>")
+    class ROOT_LAYOUT_863CB643 module;
+    OTHER_D0941E68("Other<br/><small>3 nodes</small>")
+    class OTHER_D0941E68 module;
+    SERVE_API_35EC8E86 -->|imports x46| INGEST_CACHE_UPDATE_FF457338
+    INGEST_CACHE_UPDATE_FF457338 -->|calls x21| SERVE_API_35EC8E86
+    SERVE_API_35EC8E86 -->|imports| TYPES_SESSION_52E6F10D
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>Ingestion &amp; Updates</td><td>49</td><td><code>1, 25</code></td></tr><tr><td>Serving API</td><td>300</td><td><code>0, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 15, 18</code></td></tr><tr><td>Security &amp; Global Graph</td><td>2</td><td><code>27</code></td></tr><tr><td>Types &amp; Session</td><td>25</td><td><code>5</code></td></tr><tr><td>Validation Schemas</td><td>15</td><td><code>10</code></td></tr><tr><td>Performance Optimization</td><td>10</td><td><code>14</code></td></tr><tr><td>Amenities Config</td><td>8</td><td><code>16</code></td></tr><tr><td>Styling Constants</td><td>8</td><td><code>17</code></td></tr><tr><td>Auth Context</td><td>5</td><td><code>19</code></td></tr><tr><td>Hostel Types</td><td>5</td><td><code>20</code></td></tr><tr><td>Filter Modal</td><td>4</td><td><code>21</code></td></tr><tr><td>Search Bar</td><td>4</td><td><code>22</code></td></tr><tr><td>University Config</td><td>4</td><td><code>23</code></td></tr><tr><td>Root Layout</td><td>3</td><td><code>24</code></td></tr><tr><td>Other</td><td>3</td><td><code>26, 28</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Core Flow</h4>
+    <div class="arrow-chain">Security &amp; Global Graph -&gt; Ingestion &amp; Updates -&gt; Serving API -&gt; Types &amp; Session -&gt; Validation Schemas -&gt; Performance Optimization -&gt; Amenities Config</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>445 nodes · 891 edges · 29 communities (24 shown, 5 thin omitted)</li>
+      <li>Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.8)</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `rateLimit()` - 26 edges</li>
+      <li>2. `escapeHtml()` - 23 edges</li>
+      <li>3. `sendEmail()` - 23 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. Ingestion & Updates ====== -->
+<h2 id="ingest-cache-update">2. Ingestion &amp; Updates</h2>
+<p>Ingestion &amp; Updates groups implementation around email, templates, app, statusts, mostly in lib/email-templates/booking.ts, lib/email-templates/layout.ts, src/lib/app-url.ts. This section covers 49 nodes and 128 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Ingestion &amp; Updates (49 nodes, 128 edges)
+    subgraph ingest_cache_update_src_lib_app_url_ts_c5e9d989["src/lib/app-url.ts"]
+        lib_app_url_getappurl_12d7d818("getAppUrl()<br/><small>src/lib/app-url.ts</small>")
+        src_lib_app_url_ts_956b493f("app-url.ts")
+        lib_app_url_normalizeurl_7b8d6f57("normalizeUrl()<br/><small>src/lib/app-url.ts</small>")
+        lib_app_url_isabsolutehttpurl_51205cef("isAbsoluteHttpUrl()<br/><small>src/lib/app-url.ts</small>")
+    end
+    subgraph ingest_cache_update_lib_email_templates_booking_b5cc6665["lib/email-templates/booking.ts"]
+        email_templates_booking_formatdate_a38f623d("formatDate()<br/><small>lib/email-templates/booking.ts</small>")
+        email_templates_booking_formatprice_6913b5ca("formatPrice()<br/><small>lib/email-templates/booking.ts</small>")
+        email_templates_booking_bookingnotificationemail_87824748("bookingNotificationEmail()<br/><small>lib/email-templates/booking.ts</small>")
+    end
+    subgraph ingest_cache_update_src_lib_support_ts_28110fd8["src/lib/support.ts"]
+        lib_support_formatmultiline_fa51ba99("formatMultiline()<br/><small>src/lib/support.ts</small>")
+        lib_support_rendercontactemail_60ed6772("renderContactEmail()<br/><small>src/lib/support.ts</small>")
+        lib_support_renderissuereportemail_7cae188f("renderIssueReportEmail()<br/><small>src/lib/support.ts</small>")
+    end
+    subgraph ingest_cache_update_lib_email_templates_listing_e3b4c75f["lib/email-templates/listing-status.ts"]
+        email_templates_listing_status_listingapprovedem_2fb0d9ba("listingApprovedEmail()<br/><small>lib/email-templates/listing-status.ts</small>")
+        email_templates_listing_status_listingsuspendede_7117291e("listingSuspendedEmail()<br/><small>lib/email-templates/listing-status.ts</small>")
+    end
+    email_templates_account_deleted_accountdeletedem_5dfa188f("accountDeletedEmail()<br/><small>lib/email-templates/account-deleted.ts</small>")
+    email_templates_booking_status_bookingstatusemai_1050bf4a("bookingStatusEmail()<br/><small>lib/email-templates/booking-status.ts</small>")
+    email_templates_layout_emailbutton_c068373b("emailButton()<br/><small>lib/email-templates/layout.ts</small>")
+    email_templates_new_listing_newlistingadminemail_b6bcda89("newListingAdminEmail()<br/><small>lib/email-templates/new-listing.ts</small>")
+    email_templates_welcome_welcomeemail_73fcae08("welcomeEmail()<br/><small>lib/email-templates/welcome.ts</small>")
+    lib_email_escapehtml_fe5bc8ab("escapeHtml()<br/><small>src/lib/email.ts</small>")
+    lib_app_url_normalizeurl_7b8d6f57 -->|calls| lib_app_url_getappurl_12d7d818
+    lib_app_url_isabsolutehttpurl_51205cef -->|calls| lib_app_url_getappurl_12d7d818
+    lib_app_url_getappurl_12d7d818 -->|calls| email_templates_listing_status_listingapprovedem_2fb0d9ba
+    lib_app_url_getappurl_12d7d818 -->|calls| email_templates_listing_status_listingsuspendede_7117291e
+    lib_app_url_getappurl_12d7d818 -->|calls| email_templates_new_listing_newlistingadminemail_b6bcda89
+    lib_app_url_getappurl_12d7d818 -->|calls| email_templates_welcome_welcomeemail_73fcae08
+    lib_email_escapehtml_fe5bc8ab -->|calls| lib_support_formatmultiline_fa51ba99
+    lib_email_escapehtml_fe5bc8ab -->|calls| lib_support_rendercontactemail_60ed6772
+    lib_email_escapehtml_fe5bc8ab -->|calls| lib_support_renderissuereportemail_7cae188f
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_account_deleted_accountdeletedem_5dfa188f
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_booking_status_bookingstatusemai_1050bf4a
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_booking_bookingnotificationemail_87824748
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_listing_status_listingapprovedem_2fb0d9ba
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_listing_status_listingsuspendede_7117291e
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_new_listing_newlistingadminemail_b6bcda89
+    lib_email_escapehtml_fe5bc8ab -->|calls| email_templates_welcome_welcomeemail_73fcae08
+    lib_support_formatmultiline_fa51ba99 -->|calls| lib_support_rendercontactemail_60ed6772
+    lib_support_formatmultiline_fa51ba99 -->|calls| lib_support_renderissuereportemail_7cae188f
+    email_templates_booking_status_bookingstatusemai_1050bf4a -->|calls| email_templates_layout_emailbutton_c068373b
+    email_templates_booking_formatdate_a38f623d -->|calls| email_templates_booking_bookingnotificationemail_87824748
+    email_templates_booking_formatprice_6913b5ca -->|calls| email_templates_booking_bookingnotificationemail_87824748
+    email_templates_booking_bookingnotificationemail_87824748 -->|calls| email_templates_layout_emailbutton_c068373b
+    email_templates_layout_emailbutton_c068373b -->|calls| email_templates_listing_status_listingapprovedem_2fb0d9ba
+    email_templates_layout_emailbutton_c068373b -->|calls| email_templates_listing_status_listingsuspendede_7117291e
+    %% Omitted for readability: 31 nodes, 2 edges
+    class lib_app_url_getappurl_12d7d818 function;
+    class src_lib_app_url_ts_956b493f module;
+    class lib_app_url_normalizeurl_7b8d6f57 function;
+    class lib_app_url_isabsolutehttpurl_51205cef function;
+    class email_templates_booking_formatdate_a38f623d function;
+    class email_templates_booking_formatprice_6913b5ca function;
+    class email_templates_booking_bookingnotificationemail_87824748 function;
+    class lib_support_formatmultiline_fa51ba99 function;
+    class lib_support_rendercontactemail_60ed6772 function;
+    class lib_support_renderissuereportemail_7cae188f function;
+    class email_templates_listing_status_listingapprovedem_2fb0d9ba function;
+    class email_templates_listing_status_listingsuspendede_7117291e function;
+    class email_templates_account_deleted_accountdeletedem_5dfa188f function;
+    class email_templates_booking_status_bookingstatusemai_1050bf4a function;
+    class email_templates_layout_emailbutton_c068373b function;
+    class email_templates_new_listing_newlistingadminemail_b6bcda89 function;
+    class email_templates_welcome_welcomeemail_73fcae08 function;
+    class lib_email_escapehtml_fe5bc8ab function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">auth/verify-email/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td>Module file in auth/verify-email/route.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>APP_URL</code><br><small style="color:var(--muted)">auth/verify-email/route.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>APP_URL node in auth/verify-email/route.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">auth/verify-email/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in auth/verify-email/route.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">auth/verify-email/route.ts</small></td>
+  <td><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br><code>booking.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>csrf.ts</code><br><small style="color:var(--muted)">src/lib/csrf.ts</small><br>+4 more</td>
+  <td>Module file in src/lib/app-url.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>normalizeUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td>normalizeUrl() node in src/lib/app-url.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>isAbsoluteHttpUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td>isAbsoluteHttpUrl() node in src/lib/app-url.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>isAbsoluteHttpUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>normalizeUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>route.ts</code><br><small style="color:var(--muted)">auth/verify-email/route.ts</small></td>
+  <td><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br><code>booking.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>csrf.ts</code><br><small style="color:var(--muted)">src/lib/csrf.ts</small><br>+8 more</td>
+  <td>getAppUrl() node in src/lib/app-url.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>csrf.ts</code><br><small style="color:var(--muted)">src/lib/csrf.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/lib/csrf.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>SAFE_METHODS</code><br><small style="color:var(--muted)">src/lib/csrf.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SAFE_METHODS node in src/lib/csrf.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>account-deleted.ts</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small><br><code>accountDeletedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small><br><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br>+16 more</td>
+  <td>Exports documentation data to a target format.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>formatMultiline()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small></td>
+  <td><code>renderContactEmail()</code><br><small style="color:var(--muted)">src/lib/support.ts</small><br><code>renderIssueReportEmail()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td>formatMultiline() node in src/lib/support.ts.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>renderContactEmail()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>formatMultiline()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailRow()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>renderContactEmail() node in src/lib/support.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>renderIssueReportEmail()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>formatMultiline()</code><br><small style="color:var(--muted)">src/lib/support.ts</small></td>
+  <td><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailRow()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>renderIssueReportEmail() node in src/lib/support.ts.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>account-deleted.ts</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small></td>
+  <td><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>layout.ts</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>Module file in lib/email-templates/account-deleted.ts.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>accountDeletedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small></td>
+  <td><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>accountDeletedEmail() node in lib/email-templates/account-deleted.ts.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>layout.ts</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>Module file in lib/email-templates/booking-status.ts.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>APP_URL</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>APP_URL node in lib/email-templates/booking-status.ts.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>BookingStatusEmailProps</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BookingStatusEmailProps node in lib/email-templates/booking-status.ts.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>bookingStatusEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small></td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>bookingStatusEmail() node in lib/email-templates/booking-status.ts.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>booking.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>getAppUrl()</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small></td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailRow()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br>+1 more</td>
+  <td>Module file in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>APP_URL</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>APP_URL node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>BookingEmailProps</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BookingEmailProps node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>formatDate()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>bookingConfirmationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>bookingNotificationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td>formatDate() node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>formatPrice()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>bookingConfirmationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>bookingNotificationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td>formatPrice() node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>bookingNotificationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>formatDate()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>formatPrice()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailRow()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>bookingNotificationEmail() node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>bookingConfirmationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>escapeHtml()</code><br><small style="color:var(--muted)">src/lib/email.ts</small><br><code>formatDate()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>formatPrice()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small></td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small><br><code>emailRow()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td>bookingConfirmationEmail() node in lib/email-templates/booking.ts.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>layout.ts</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>account-deleted.ts</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small><br><code>app-url.ts</code><br><small style="color:var(--muted)">src/lib/app-url.ts</small><br><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br>+2 more</td>
+  <td><code>listing-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br><code>new-listing.ts</code><br><small style="color:var(--muted)">lib/email-templates/new-listing.ts</small><br><code>price-alert.ts</code><br><small style="color:var(--muted)">lib/email-templates/price-alert.ts</small><br>+1 more</td>
+  <td>Module file in lib/email-templates/layout.ts.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>APP_URL</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>APP_URL node in lib/email-templates/layout.ts.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>emailLayout()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>account-deleted.ts</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small><br><code>accountDeletedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/account-deleted.ts</small><br><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br>+6 more</td>
+  <td><code>listing-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br><code>listingApprovedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br><code>listingSuspendedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br>+6 more</td>
+  <td>emailLayout() node in lib/email-templates/layout.ts.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>emailButton()</code><br><small style="color:var(--muted)">lib/email-templates/layout.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>booking-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking-status.ts</small><br><code>booking.ts</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br><code>bookingConfirmationEmail()</code><br><small style="color:var(--muted)">lib/email-templates/booking.ts</small><br>+2 more</td>
+  <td><code>listing-status.ts</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br><code>listingApprovedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br><code>listingSuspendedEmail()</code><br><small style="color:var(--muted)">lib/email-templates/listing-status.ts</small><br>+6 more</td>
+  <td>emailButton() node in lib/email-templates/layout.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>lib/email-templates/booking.ts</code></td><td>7 nodes</td></tr>
+<tr><td><code>lib/email-templates/layout.ts</code></td><td>5 nodes</td></tr>
+<tr><td><code>src/lib/app-url.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>lib/email-templates/booking-status.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>lib/email-templates/listing-status.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>lib/email-templates/new-listing.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>lib/email-templates/price-alert.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>auth/verify-email/route.ts</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: calls x50, contains x33, imports x30, imports x15. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. Serving API ====== -->
+<h2 id="serve-api">3. Serving API</h2>
+<p>Serving API groups implementation around routets, api, app, auth, mostly in src/lib/typesense.ts, src/lib/rate-limit.ts, src/lib/api-client.ts. This section covers 300 nodes and 604 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Serving API (300 nodes, 604 edges)
+    subgraph serve_api_src_services_api_ts_8439c6bf["src/services/api.ts"]
+        services_api_getauthheaders_70576ebd("getAuthHeaders()<br/><small>src/services/api.ts</small>")
+        services_api_apirequest_39f6a286("apiRequest()<br/><small>src/services/api.ts</small>")
+        services_api_setauthtoken_a2fecc38("setAuthToken()<br/><small>src/services/api.ts</small>")
+        services_api_clearauthtoken_ad0fdcf2("clearAuthToken()<br/><small>src/services/api.ts</small>")
+    end
+    subgraph serve_api_admin_hostels_route_ts_81725178["admin/hostels/route.ts"]
+        src_app_api_admin_hostels_route_ts_bce329d0("route.ts")
+        hostels_route_patch_0e924c6c("PATCH()<br/><small>admin/hostels/route.ts</small>")
+    end
+    subgraph serve_api_src_lib_typesense_sync_ts_c416649c["src/lib/typesense-sync.ts"]
+        lib_typesense_sync_indexsinglehostel_c31f0f38("indexSingleHostel()<br/><small>src/lib/typesense-sync.ts</small>")
+        lib_typesense_sync_removehostelindex_deaf4da5("removeHostelIndex()<br/><small>src/lib/typesense-sync.ts</small>")
+    end
+    subgraph serve_api_src_services_auth_ts_f5a27304["src/services/auth.ts"]
+        services_auth_login_be3cb90b("login()<br/><small>src/services/auth.ts</small>")
+        services_auth_logout_dbdb0512("logout()<br/><small>src/services/auth.ts</small>")
+    end
+    src_app_api_hostels_route_ts_43d502a4("route.ts")
+    src_app_api_auth_resend_verification_route_ts_f87b967d("route.ts")
+    src_app_api_auth_signup_route_ts_80a3bb84("route.ts")
+    src_app_api_hostels_param_route_ts_9fbe505e("route.ts")
+    src_app_api_payment_initiate_route_ts_f54d35bb("route.ts")
+    lib_csrf_verifycsrforigin_da260125("verifyCsrfOrigin()<br/><small>src/lib/csrf.ts</small>")
+    lib_email_sendemail_ad8e808d("sendEmail()<br/><small>src/lib/email.ts</small>")
+    src_middleware_middleware_4e0a8fd9("middleware()<br/><small>src/middleware.ts</small>")
+    services_api_getauthheaders_70576ebd -->|calls| services_api_apirequest_39f6a286
+    services_api_setauthtoken_a2fecc38 -->|calls| services_auth_login_be3cb90b
+    services_api_clearauthtoken_ad0fdcf2 -->|calls| services_auth_logout_dbdb0512
+    src_middleware_middleware_4e0a8fd9 -->|calls| lib_csrf_verifycsrforigin_da260125
+    hostels_route_patch_0e924c6c -->|calls| lib_typesense_sync_indexsinglehostel_c31f0f38
+    hostels_route_patch_0e924c6c -->|calls| lib_typesense_sync_removehostelindex_deaf4da5
+    hostels_route_patch_0e924c6c -->|calls| lib_email_sendemail_ad8e808d
+    src_app_api_admin_hostels_route_ts_bce329d0 -->|imports| lib_email_sendemail_ad8e808d
+    src_app_api_admin_hostels_route_ts_bce329d0 -->|imports| lib_typesense_sync_indexsinglehostel_c31f0f38
+    src_app_api_admin_hostels_route_ts_bce329d0 -->|imports| lib_typesense_sync_removehostelindex_deaf4da5
+    src_app_api_auth_resend_verification_route_ts_f87b967d -->|imports| lib_email_sendemail_ad8e808d
+    src_app_api_auth_signup_route_ts_80a3bb84 -->|imports| lib_email_sendemail_ad8e808d
+    src_app_api_hostels_param_route_ts_9fbe505e -->|imports| lib_typesense_sync_indexsinglehostel_c31f0f38
+    src_app_api_hostels_param_route_ts_9fbe505e -->|imports| lib_typesense_sync_removehostelindex_deaf4da5
+    %% Omitted for readability: 282 nodes, 0 edges
+    class services_api_getauthheaders_70576ebd function;
+    class services_api_apirequest_39f6a286 api;
+    class services_api_setauthtoken_a2fecc38 function;
+    class services_api_clearauthtoken_ad0fdcf2 function;
+    class src_app_api_admin_hostels_route_ts_bce329d0 api;
+    class hostels_route_patch_0e924c6c function;
+    class lib_typesense_sync_indexsinglehostel_c31f0f38 function;
+    class lib_typesense_sync_removehostelindex_deaf4da5 function;
+    class services_auth_login_be3cb90b function;
+    class services_auth_logout_dbdb0512 function;
+    class src_app_api_hostels_route_ts_43d502a4 api;
+    class src_app_api_auth_resend_verification_route_ts_f87b967d api;
+    class src_app_api_auth_signup_route_ts_80a3bb84 api;
+    class src_app_api_hostels_param_route_ts_9fbe505e api;
+    class src_app_api_payment_initiate_route_ts_f54d35bb api;
+    class lib_csrf_verifycsrforigin_da260125 function;
+    class lib_email_sendemail_ad8e808d function;
+    class src_middleware_middleware_4e0a8fd9 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">mobile/login/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in mobile/login/route.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>loginSchema</code><br><small style="color:var(--muted)">mobile/login/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>loginSchema node in mobile/login/route.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">mobile/login/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in mobile/login/route.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">auth/reset-password/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small><br><code>invalidateLocalSessionCache()</code><br><small style="color:var(--muted)">lib/auth/config.ts</small></td>
+  <td>Module file in auth/reset-password/route.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>schema</code><br><small style="color:var(--muted)">auth/reset-password/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>schema node in auth/reset-password/route.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">auth/reset-password/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>invalidateLocalSessionCache()</code><br><small style="color:var(--muted)">lib/auth/config.ts</small></td>
+  <td>POST() node in auth/reset-password/route.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">auth/[...nextauth]/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small></td>
+  <td>Module file in auth/[...nextauth]/route.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">api/bookings/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>bookings.test.ts</code><br><small style="color:var(--muted)">src/lib/bookings.test.ts</small><br><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in api/bookings/route.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>ownerQuerySchema</code><br><small style="color:var(--muted)">api/bookings/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ownerQuerySchema node in api/bookings/route.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">api/bookings/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>bookings.test.ts</code><br><small style="color:var(--muted)">src/lib/bookings.test.ts</small></td>
+  <td>GET() node in api/bookings/route.ts.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">api/conversations/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in api/conversations/route.ts.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>createSchema</code><br><small style="color:var(--muted)">api/conversations/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>createSchema node in api/conversations/route.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">api/conversations/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in api/conversations/route.ts.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">api/conversations/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in api/conversations/route.ts.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">[param]/availability/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in [param]/availability/route.ts.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">[param]/availability/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in [param]/availability/route.ts.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in [param]/favorite/route.ts.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>getHostelId()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>DELETE()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small><br><code>POST()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td>getHostelId() node in [param]/favorite/route.ts.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>getHostelId()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in [param]/favorite/route.ts.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>DELETE()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>getHostelId()</code><br><small style="color:var(--muted)">[param]/favorite/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>DELETE() node in [param]/favorite/route.ts.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">notifications/device-token/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in notifications/device-token/route.ts.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>deviceTokenSchema</code><br><small style="color:var(--muted)">notifications/device-token/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>deviceTokenSchema node in notifications/device-token/route.ts.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">notifications/device-token/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in notifications/device-token/route.ts.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>DELETE()</code><br><small style="color:var(--muted)">notifications/device-token/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DELETE() node in notifications/device-token/route.ts.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">api/price-alerts/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in api/price-alerts/route.ts.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>createSchema</code><br><small style="color:var(--muted)">api/price-alerts/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>createSchema node in api/price-alerts/route.ts.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">api/price-alerts/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in api/price-alerts/route.ts.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">api/price-alerts/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in api/price-alerts/route.ts.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>route.ts</code><br><small style="color:var(--muted)">price-alerts/[id]/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>config.ts</code><br><small style="color:var(--muted)">lib/auth/config.ts</small><br><code>db.ts</code><br><small style="color:var(--muted)">src/lib/db.ts</small></td>
+  <td>Module file in price-alerts/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>updateSchema</code><br><small style="color:var(--muted)">price-alerts/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>updateSchema node in price-alerts/[id]/route.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/lib/typesense.ts</code></td><td>14 nodes</td></tr>
+<tr><td><code>src/lib/api-client.ts</code></td><td>13 nodes</td></tr>
+<tr><td><code>src/lib/rate-limit.ts</code></td><td>13 nodes</td></tr>
+<tr><td><code>src/lib/support.ts</code></td><td>11 nodes</td></tr>
+<tr><td><code>src/lib/jazzcash.ts</code></td><td>10 nodes</td></tr>
+<tr><td><code>src/lib/easypaisa.ts</code></td><td>9 nodes</td></tr>
+<tr><td><code>src/lib/utils.ts</code></td><td>9 nodes</td></tr>
+<tr><td><code>hostels/[param]/route.ts</code></td><td>8 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x233, imports x146, calls x127, imports x95. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. Security & Global Graph ====== -->
+<h2 id="security-global">4. Security &amp; Global Graph</h2>
+<p>Security &amp; Global Graph groups implementation around global, errortsx, app, globalerror, mostly in src/app/global-error.tsx. This section covers 2 nodes and 1 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Security &amp; Global Graph (2 nodes, 1 edges)
+    src_app_global_error_tsx_19a8ed8f("global-error.tsx")
+    app_global_error_globalerror_51d42641("GlobalError()<br/><small>src/app/global-error.tsx</small>")
+    src_app_global_error_tsx_19a8ed8f -->|contains| app_global_error_globalerror_51d42641
+    class src_app_global_error_tsx_19a8ed8f ui;
+    class app_global_error_globalerror_51d42641 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>global-error.tsx</code><br><small style="color:var(--muted)">src/app/global-error.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/app/global-error.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>GlobalError()</code><br><small style="color:var(--muted)">src/app/global-error.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GlobalError() node in src/app/global-error.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/app/global-error.tsx</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Types & Session ====== -->
+<h2 id="types-session">5. Types &amp; Session</h2>
+<p>Types &amp; Session groups implementation around indexts, types, sessionts, auth, mostly in src/types/index.ts, lib/auth/session.ts, src/types/index.ts. This section covers 25 nodes and 32 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Types &amp; Session (25 nodes, 32 edges)
+    subgraph types_session_src_types_index_ts_a8710b38["src/types/index.ts"]
+        types_index_userrole_78f506f0("UserRole<br/><small>src/types/index.ts</small>")
+        src_types_index_ts_508b7486("index.ts")
+        types_index_adapteruser_ca826a4c("AdapterUser<br/><small>src/types/index.ts</small>")
+        types_index_amenityconfig_4d5c24b8("AmenityConfig<br/><small>src/types/index.ts</small>")
+        types_index_apiresponse_4fc22d95("ApiResponse<br/><small>src/types/index.ts</small>")
+        types_index_bookingwithhostel_096eacf3("BookingWithHostel<br/><small>src/types/index.ts</small>")
+        types_index_compareitem_e2d52bba("CompareItem<br/><small>src/types/index.ts</small>")
+        types_index_hostelfilters_bc9ca4b0("HostelFilters<br/><small>src/types/index.ts</small>")
+        types_index_hostelwithdetails_9e50fc46("HostelWithDetails<br/><small>src/types/index.ts</small>")
+        types_index_hostelwithowner_40856320("HostelWithOwner<br/><small>src/types/index.ts</small>")
+    end
+    subgraph types_session_lib_auth_session_ts_8a6ac239["lib/auth/session.ts"]
+        auth_session_hasrole_db59b61d("hasRole()<br/><small>lib/auth/session.ts</small>")
+        auth_session_requirerole_20e963e7("requireRole()<br/><small>lib/auth/session.ts</small>")
+        src_lib_auth_session_ts_1174c01c("session.ts")
+        auth_session_requireauth_dca330ed("requireAuth()<br/><small>lib/auth/session.ts</small>")
+        auth_session_getsessionuser_543cf767("getSessionUser()<br/><small>lib/auth/session.ts</small>")
+        auth_session_isadmin_827669f4("isAdmin()<br/><small>lib/auth/session.ts</small>")
+        auth_session_isowner_44110d7d("isOwner()<br/><small>lib/auth/session.ts</small>")
+        auth_session_isstudent_9f2c4827("isStudent()<br/><small>lib/auth/session.ts</small>")
+    end
+    auth_session_hasrole_db59b61d -->|calls| auth_session_requirerole_20e963e7
+    auth_session_requirerole_20e963e7 -->|calls| auth_session_requireauth_dca330ed
+    types_index_userrole_78f506f0 -->|imports| src_lib_auth_session_ts_1174c01c
+    src_lib_auth_session_ts_1174c01c -->|imports| src_types_index_ts_508b7486
+    %% Omitted for readability: 7 nodes, 0 edges
+    class types_index_userrole_78f506f0 klass;
+    class src_types_index_ts_508b7486 module;
+    class types_index_adapteruser_ca826a4c klass;
+    class types_index_amenityconfig_4d5c24b8 klass;
+    class types_index_apiresponse_4fc22d95 api;
+    class types_index_bookingwithhostel_096eacf3 klass;
+    class types_index_compareitem_e2d52bba klass;
+    class types_index_hostelfilters_bc9ca4b0 klass;
+    class types_index_hostelwithdetails_9e50fc46 klass;
+    class types_index_hostelwithowner_40856320 klass;
+    class auth_session_hasrole_db59b61d function;
+    class auth_session_requirerole_20e963e7 function;
+    class src_lib_auth_session_ts_1174c01c module;
+    class auth_session_requireauth_dca330ed function;
+    class auth_session_getsessionuser_543cf767 function;
+    class auth_session_isadmin_827669f4 function;
+    class auth_session_isowner_44110d7d function;
+    class auth_session_isstudent_9f2c4827 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>index.ts</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>UserRole</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>session.ts</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td>UserRole node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>HostelFilters</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelFilters node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>SearchParams</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SearchParams node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>PaginatedResponse</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>PaginatedResponse node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>ApiResponse</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApiResponse node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>AmenityConfig</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>session.ts</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>UserRole</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><code>index.ts</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td>Module file in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>isAdmin()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>isAdmin() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>isOwner()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>isOwner() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>isStudent()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>isStudent() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>hasRole()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>requireRole()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td>hasRole() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>requireRole()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>hasRole()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><code>requireAuth()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td>requireRole() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>requireAuth()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>requireRole()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>requireAuth() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>getSessionUser()</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>getSessionUser() node in lib/auth/session.ts.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>index.ts</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>session.ts</code><br><small style="color:var(--muted)">lib/auth/session.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>User</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>User node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>HostelWithOwner</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelWithOwner node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>HostelWithDetails</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelWithDetails node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>ReviewWithUser</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ReviewWithUser node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>BookingWithHostel</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BookingWithHostel node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>CompareItem</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>CompareItem node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>Session</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Session node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>JWT</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>JWT node in src/types/index.ts.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>AdapterUser</code><br><small style="color:var(--muted)">src/types/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AdapterUser node in src/types/index.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/types/index.ts</code></td><td>16 nodes</td></tr>
+<tr><td><code>lib/auth/session.ts</code></td><td>8 nodes</td></tr>
+<tr><td><code>src/types/index.ts</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x28, calls x2, imports x1, imports x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Validation Schemas ====== -->
+<h2 id="validation-schemas">6. Validation Schemas</h2>
+<p>Validation Schemas groups implementation around indexts, packages, shared, validations, mostly in src/validations/index.ts. This section covers 15 nodes and 14 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Validation Schemas (15 nodes, 14 edges)
+    packages_shared_src_validations_index_ts_2661823c("index.ts")
+    validations_index_sanitizestring_af33a3be("sanitizeString()<br/><small>src/validations/index.ts</small>")
+    validations_index_rulesschema_8900479a("rulesSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_loginschema_e5c91a60("loginSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_signupschema_bdead207("signupSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_hostelcreateschema_79d413c2("hostelCreateSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_reviewschema_20dd4274("reviewSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_bookingschema_176aac45("bookingSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_searchparamsschema_0a2a76c7("searchParamsSchema<br/><small>src/validations/index.ts</small>")
+    validations_index_logininput_74a651e6("LoginInput<br/><small>src/validations/index.ts</small>")
+    validations_index_signupinput_be77a485("SignupInput<br/><small>src/validations/index.ts</small>")
+    validations_index_hostelcreateinput_28618705("HostelCreateInput<br/><small>src/validations/index.ts</small>")
+    validations_index_reviewinput_d2f592d3("ReviewInput<br/><small>src/validations/index.ts</small>")
+    validations_index_bookinginput_ab9097a0("BookingInput<br/><small>src/validations/index.ts</small>")
+    validations_index_searchparamsinput_790f6059("SearchParamsInput<br/><small>src/validations/index.ts</small>")
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_sanitizestring_af33a3be
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_rulesschema_8900479a
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_loginschema_e5c91a60
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_signupschema_bdead207
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_hostelcreateschema_79d413c2
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_reviewschema_20dd4274
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_bookingschema_176aac45
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_searchparamsschema_0a2a76c7
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_logininput_74a651e6
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_signupinput_be77a485
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_hostelcreateinput_28618705
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_reviewinput_d2f592d3
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_bookinginput_ab9097a0
+    packages_shared_src_validations_index_ts_2661823c -->|contains| validations_index_searchparamsinput_790f6059
+    class packages_shared_src_validations_index_ts_2661823c module;
+    class validations_index_sanitizestring_af33a3be function;
+    class validations_index_rulesschema_8900479a function;
+    class validations_index_loginschema_e5c91a60 function;
+    class validations_index_signupschema_bdead207 function;
+    class validations_index_hostelcreateschema_79d413c2 function;
+    class validations_index_reviewschema_20dd4274 function;
+    class validations_index_bookingschema_176aac45 function;
+    class validations_index_searchparamsschema_0a2a76c7 function;
+    class validations_index_logininput_74a651e6 klass;
+    class validations_index_signupinput_be77a485 klass;
+    class validations_index_hostelcreateinput_28618705 klass;
+    class validations_index_reviewinput_d2f592d3 klass;
+    class validations_index_bookinginput_ab9097a0 klass;
+    class validations_index_searchparamsinput_790f6059 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>index.ts</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>sanitizeString()</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sanitizeString() node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>rulesSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>rulesSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>loginSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>loginSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>signupSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>signupSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>hostelCreateSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>hostelCreateSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>reviewSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>reviewSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>bookingSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>bookingSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>searchParamsSchema</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>searchParamsSchema node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>LoginInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>LoginInput node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>SignupInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SignupInput node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>HostelCreateInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelCreateInput node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>ReviewInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ReviewInput node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>BookingInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BookingInput node in src/validations/index.ts.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>SearchParamsInput</code><br><small style="color:var(--muted)">src/validations/index.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SearchParamsInput node in src/validations/index.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/validations/index.ts</code></td><td>15 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x14. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. Performance Optimization ====== -->
+<h2 id="performance-optimization">7. Performance Optimization</h2>
+<p>Performance Optimization groups implementation around performance, utilstsx, lazyimageprops, lazyimage, mostly in src/lib/performance-utils.tsx. This section covers 10 nodes and 9 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Performance Optimization (10 nodes, 9 edges)
+    src_lib_performance_utils_tsx_94e55be4("performance-utils.tsx")
+    lib_performance_utils_lazyimageprops_289ac138("LazyImageProps<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_lazyimage_9d500b20("LazyImage<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_useintersectionobserver_81d2b067("useIntersectionObserver()<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_usedebounce_5c88e9e7("useDebounce()<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_listitemprops_1aa7dda7("ListItemProps<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_memoizedlistitem_b9c0efcd("MemoizedListItem<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_virtualizedlistprops_f2df9104("VirtualizedListProps<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_virtualizedlist_940a2f48("VirtualizedList<br/><small>src/lib/performance-utils.tsx</small>")
+    lib_performance_utils_usepreloadimage_6d574753("usePreloadImage()<br/><small>src/lib/performance-utils.tsx</small>")
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_lazyimageprops_289ac138
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_lazyimage_9d500b20
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_useintersectionobserver_81d2b067
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_usedebounce_5c88e9e7
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_listitemprops_1aa7dda7
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_memoizedlistitem_b9c0efcd
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_virtualizedlistprops_f2df9104
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_virtualizedlist_940a2f48
+    src_lib_performance_utils_tsx_94e55be4 -->|contains| lib_performance_utils_usepreloadimage_6d574753
+    class src_lib_performance_utils_tsx_94e55be4 ui;
+    class lib_performance_utils_lazyimageprops_289ac138 ui;
+    class lib_performance_utils_lazyimage_9d500b20 ui;
+    class lib_performance_utils_useintersectionobserver_81d2b067 ui;
+    class lib_performance_utils_usedebounce_5c88e9e7 ui;
+    class lib_performance_utils_listitemprops_1aa7dda7 ui;
+    class lib_performance_utils_memoizedlistitem_b9c0efcd ui;
+    class lib_performance_utils_virtualizedlistprops_f2df9104 ui;
+    class lib_performance_utils_virtualizedlist_940a2f48 ui;
+    class lib_performance_utils_usepreloadimage_6d574753 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>performance-utils.tsx</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>LazyImageProps</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>LazyImageProps node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>LazyImage</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>LazyImage node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>useIntersectionObserver()</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>useIntersectionObserver() node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>useDebounce()</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>useDebounce() node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>ListItemProps</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ListItemProps node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>MemoizedListItem</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>MemoizedListItem node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>VirtualizedListProps</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>VirtualizedListProps node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>VirtualizedList</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>VirtualizedList node in src/lib/performance-utils.tsx.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>usePreloadImage()</code><br><small style="color:var(--muted)">src/lib/performance-utils.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>usePreloadImage() node in src/lib/performance-utils.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/lib/performance-utils.tsx</code></td><td>10 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x9. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. Amenities Config ====== -->
+<h2 id="amenities-config">8. Amenities Config</h2>
+<p>Amenities Config groups implementation around amenitiests, config, amenity, amenities, mostly in src/config/amenities.ts. This section covers 8 nodes and 7 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Amenities Config (8 nodes, 7 edges)
+    src_config_amenities_ts_635e0b15("amenities.ts")
+    config_amenities_amenity_9572a2e7("Amenity<br/><small>src/config/amenities.ts</small>")
+    config_amenities_amenities_478e10fc("AMENITIES<br/><small>src/config/amenities.ts</small>")
+    config_amenities_amenity_map_cbbcf1d6("AMENITY_MAP<br/><small>src/config/amenities.ts</small>")
+    config_amenities_cities_f280936e("CITIES<br/><small>src/config/amenities.ts</small>")
+    config_amenities_city_60ea0f15("City<br/><small>src/config/amenities.ts</small>")
+    config_amenities_price_ranges_8b6cda1e("PRICE_RANGES<br/><small>src/config/amenities.ts</small>")
+    config_amenities_sort_options_7188309c("SORT_OPTIONS<br/><small>src/config/amenities.ts</small>")
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_amenity_9572a2e7
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_amenities_478e10fc
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_amenity_map_cbbcf1d6
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_cities_f280936e
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_city_60ea0f15
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_price_ranges_8b6cda1e
+    src_config_amenities_ts_635e0b15 -->|contains| config_amenities_sort_options_7188309c
+    class src_config_amenities_ts_635e0b15 module;
+    class config_amenities_amenity_9572a2e7 klass;
+    class config_amenities_amenities_478e10fc klass;
+    class config_amenities_amenity_map_cbbcf1d6 klass;
+    class config_amenities_cities_f280936e klass;
+    class config_amenities_city_60ea0f15 klass;
+    class config_amenities_price_ranges_8b6cda1e klass;
+    class config_amenities_sort_options_7188309c klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>amenities.ts</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Amenity</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Amenity node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>AMENITIES</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AMENITIES node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>AMENITY_MAP</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AMENITY_MAP node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>CITIES</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>CITIES node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>City</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>City node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>PRICE_RANGES</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>PRICE_RANGES node in src/config/amenities.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>SORT_OPTIONS</code><br><small style="color:var(--muted)">src/config/amenities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SORT_OPTIONS node in src/config/amenities.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/config/amenities.ts</code></td><td>8 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x7. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. Styling Constants ====== -->
+<h2 id="styling-constants">9. Styling Constants</h2>
+<p>Styling Constants groups implementation around styling, constantsts, styles, button, mostly in src/lib/styling-constants.ts. This section covers 8 nodes and 7 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Styling Constants (8 nodes, 7 edges)
+    src_lib_styling_constants_ts_8bd4c074("styling-constants.ts")
+    lib_styling_constants_button_styles_4e5da599("BUTTON_STYLES<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_input_styles_d5b36e8b("INPUT_STYLES<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_form_styles_24040a03("FORM_STYLES<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_focus_rings_b6d409cf("FOCUS_RINGS<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_transitions_bf0407a7("TRANSITIONS<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_hover_effects_25f708aa("HOVER_EFFECTS<br/><small>src/lib/styling-constants.ts</small>")
+    lib_styling_constants_utility_987cc981("UTILITY<br/><small>src/lib/styling-constants.ts</small>")
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_button_styles_4e5da599
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_input_styles_d5b36e8b
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_form_styles_24040a03
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_focus_rings_b6d409cf
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_transitions_bf0407a7
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_hover_effects_25f708aa
+    src_lib_styling_constants_ts_8bd4c074 -->|contains| lib_styling_constants_utility_987cc981
+    class src_lib_styling_constants_ts_8bd4c074 module;
+    class lib_styling_constants_button_styles_4e5da599 klass;
+    class lib_styling_constants_input_styles_d5b36e8b klass;
+    class lib_styling_constants_form_styles_24040a03 klass;
+    class lib_styling_constants_focus_rings_b6d409cf klass;
+    class lib_styling_constants_transitions_bf0407a7 klass;
+    class lib_styling_constants_hover_effects_25f708aa klass;
+    class lib_styling_constants_utility_987cc981 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>styling-constants.ts</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>BUTTON_STYLES</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BUTTON_STYLES node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>INPUT_STYLES</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>INPUT_STYLES node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>FORM_STYLES</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>FORM_STYLES node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>FOCUS_RINGS</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>FOCUS_RINGS node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>TRANSITIONS</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>TRANSITIONS node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>HOVER_EFFECTS</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HOVER_EFFECTS node in src/lib/styling-constants.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>UTILITY</code><br><small style="color:var(--muted)">src/lib/styling-constants.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>UTILITY node in src/lib/styling-constants.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/lib/styling-constants.ts</code></td><td>8 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x7. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. Auth Context ====== -->
+<h2 id="auth-context">10. Auth Context</h2>
+<p>Auth Context groups implementation around authcontexttsx, apps, mobile, context, mostly in src/context/AuthContext.tsx. This section covers 5 nodes and 4 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Auth Context (5 nodes, 4 edges)
+    apps_mobile_src_context_authcontext_tsx_96cd0753("AuthContext.tsx")
+    context_authcontext_authcontexttype_d6037ad2("AuthContextType<br/><small>src/context/AuthContext.tsx</small>")
+    context_authcontext_authcontext_ea9c76e5("AuthContext<br/><small>src/context/AuthContext.tsx</small>")
+    context_authcontext_authprovider_b1c8f442("AuthProvider()<br/><small>src/context/AuthContext.tsx</small>")
+    context_authcontext_useauth_2a79aa5d("useAuth()<br/><small>src/context/AuthContext.tsx</small>")
+    apps_mobile_src_context_authcontext_tsx_96cd0753 -->|contains| context_authcontext_authcontexttype_d6037ad2
+    apps_mobile_src_context_authcontext_tsx_96cd0753 -->|contains| context_authcontext_authcontext_ea9c76e5
+    apps_mobile_src_context_authcontext_tsx_96cd0753 -->|contains| context_authcontext_authprovider_b1c8f442
+    apps_mobile_src_context_authcontext_tsx_96cd0753 -->|contains| context_authcontext_useauth_2a79aa5d
+    class apps_mobile_src_context_authcontext_tsx_96cd0753 ui;
+    class context_authcontext_authcontexttype_d6037ad2 ui;
+    class context_authcontext_authcontext_ea9c76e5 ui;
+    class context_authcontext_authprovider_b1c8f442 ui;
+    class context_authcontext_useauth_2a79aa5d ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>AuthContext.tsx</code><br><small style="color:var(--muted)">src/context/AuthContext.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/context/AuthContext.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>AuthContextType</code><br><small style="color:var(--muted)">src/context/AuthContext.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AuthContextType node in src/context/AuthContext.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>AuthContext</code><br><small style="color:var(--muted)">src/context/AuthContext.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AuthContext node in src/context/AuthContext.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>AuthProvider()</code><br><small style="color:var(--muted)">src/context/AuthContext.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AuthProvider() node in src/context/AuthContext.tsx.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>useAuth()</code><br><small style="color:var(--muted)">src/context/AuthContext.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>useAuth() node in src/context/AuthContext.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/context/AuthContext.tsx</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x4. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 11. Hostel Types ====== -->
+<h2 id="hostel-types">11. Hostel Types</h2>
+<p>Hostel Types groups implementation around hostelts, types, room, hostelsearchresult, mostly in src/types/hostel.ts. This section covers 5 nodes and 4 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Hostel Types (5 nodes, 4 edges)
+    src_types_hostel_ts_742a2327("hostel.ts")
+    types_hostel_room_8a4b6838("Room<br/><small>src/types/hostel.ts</small>")
+    types_hostel_hostelsearchresult_ad0ccaa7("HostelSearchResult<br/><small>src/types/hostel.ts</small>")
+    types_hostel_hosteldetails_25f4b831("HostelDetails<br/><small>src/types/hostel.ts</small>")
+    types_hostel_tabtype_28051aa6("TabType<br/><small>src/types/hostel.ts</small>")
+    src_types_hostel_ts_742a2327 -->|contains| types_hostel_room_8a4b6838
+    src_types_hostel_ts_742a2327 -->|contains| types_hostel_hostelsearchresult_ad0ccaa7
+    src_types_hostel_ts_742a2327 -->|contains| types_hostel_hosteldetails_25f4b831
+    src_types_hostel_ts_742a2327 -->|contains| types_hostel_tabtype_28051aa6
+    class src_types_hostel_ts_742a2327 module;
+    class types_hostel_room_8a4b6838 klass;
+    class types_hostel_hostelsearchresult_ad0ccaa7 klass;
+    class types_hostel_hosteldetails_25f4b831 klass;
+    class types_hostel_tabtype_28051aa6 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>hostel.ts</code><br><small style="color:var(--muted)">src/types/hostel.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/types/hostel.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Room</code><br><small style="color:var(--muted)">src/types/hostel.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Room node in src/types/hostel.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>HostelSearchResult</code><br><small style="color:var(--muted)">src/types/hostel.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelSearchResult node in src/types/hostel.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>HostelDetails</code><br><small style="color:var(--muted)">src/types/hostel.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>HostelDetails node in src/types/hostel.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>TabType</code><br><small style="color:var(--muted)">src/types/hostel.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>TabType node in src/types/hostel.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/types/hostel.ts</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x4. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 12. Filter Modal ====== -->
+<h2 id="filter-modal">12. Filter Modal</h2>
+<p>Filter Modal groups implementation around filtermodaltsx, apps, mobile, components, mostly in src/components/FilterModal.tsx. This section covers 4 nodes and 3 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Filter Modal (4 nodes, 3 edges)
+    apps_mobile_src_components_filtermodal_tsx_1680afdf("FilterModal.tsx")
+    components_filtermodal_filtermodalprops_95ea22f1("FilterModalProps<br/><small>src/components/FilterModal.tsx</small>")
+    components_filtermodal_filtermodal_09210ca4("FilterModal()<br/><small>src/components/FilterModal.tsx</small>")
+    components_filtermodal_styles_0e3b786d("styles<br/><small>src/components/FilterModal.tsx</small>")
+    apps_mobile_src_components_filtermodal_tsx_1680afdf -->|contains| components_filtermodal_filtermodalprops_95ea22f1
+    apps_mobile_src_components_filtermodal_tsx_1680afdf -->|contains| components_filtermodal_filtermodal_09210ca4
+    apps_mobile_src_components_filtermodal_tsx_1680afdf -->|contains| components_filtermodal_styles_0e3b786d
+    class apps_mobile_src_components_filtermodal_tsx_1680afdf ui;
+    class components_filtermodal_filtermodalprops_95ea22f1 ui;
+    class components_filtermodal_filtermodal_09210ca4 ui;
+    class components_filtermodal_styles_0e3b786d ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>FilterModal.tsx</code><br><small style="color:var(--muted)">src/components/FilterModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/components/FilterModal.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>FilterModalProps</code><br><small style="color:var(--muted)">src/components/FilterModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>FilterModalProps node in src/components/FilterModal.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>FilterModal()</code><br><small style="color:var(--muted)">src/components/FilterModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>FilterModal() node in src/components/FilterModal.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>styles</code><br><small style="color:var(--muted)">src/components/FilterModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>styles node in src/components/FilterModal.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/components/FilterModal.tsx</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x3. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 13. Search Bar ====== -->
+<h2 id="search-bar">13. Search Bar</h2>
+<p>Search Bar groups implementation around searchbartsx, apps, mobile, components, mostly in src/components/SearchBar.tsx. This section covers 4 nodes and 3 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Search Bar (4 nodes, 3 edges)
+    apps_mobile_src_components_searchbar_tsx_38ceaf31("SearchBar.tsx")
+    components_searchbar_searchbarprops_caa8772e("SearchBarProps<br/><small>src/components/SearchBar.tsx</small>")
+    components_searchbar_searchbar_44cfdd2e("SearchBar()<br/><small>src/components/SearchBar.tsx</small>")
+    components_searchbar_styles_378af8bc("styles<br/><small>src/components/SearchBar.tsx</small>")
+    apps_mobile_src_components_searchbar_tsx_38ceaf31 -->|contains| components_searchbar_searchbarprops_caa8772e
+    apps_mobile_src_components_searchbar_tsx_38ceaf31 -->|contains| components_searchbar_searchbar_44cfdd2e
+    apps_mobile_src_components_searchbar_tsx_38ceaf31 -->|contains| components_searchbar_styles_378af8bc
+    class apps_mobile_src_components_searchbar_tsx_38ceaf31 ui;
+    class components_searchbar_searchbarprops_caa8772e ui;
+    class components_searchbar_searchbar_44cfdd2e ui;
+    class components_searchbar_styles_378af8bc ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>SearchBar.tsx</code><br><small style="color:var(--muted)">src/components/SearchBar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/components/SearchBar.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>SearchBarProps</code><br><small style="color:var(--muted)">src/components/SearchBar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SearchBarProps node in src/components/SearchBar.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>SearchBar()</code><br><small style="color:var(--muted)">src/components/SearchBar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>SearchBar() node in src/components/SearchBar.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>styles</code><br><small style="color:var(--muted)">src/components/SearchBar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>styles node in src/components/SearchBar.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/components/SearchBar.tsx</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x3. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 14. University Config ====== -->
+<h2 id="university-config">14. University Config</h2>
+<p>University Config groups implementation around universitiests, config, universities, university, mostly in src/config/universities.ts. This section covers 4 nodes and 3 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: University Config (4 nodes, 3 edges)
+    src_config_universities_ts_35e23e3b("universities.ts")
+    config_universities_university_89b0205a("University<br/><small>src/config/universities.ts</small>")
+    config_universities_universities_fd9c86e0("UNIVERSITIES<br/><small>src/config/universities.ts</small>")
+    config_universities_popular_universities_0e37ab99("POPULAR_UNIVERSITIES<br/><small>src/config/universities.ts</small>")
+    src_config_universities_ts_35e23e3b -->|contains| config_universities_university_89b0205a
+    src_config_universities_ts_35e23e3b -->|contains| config_universities_universities_fd9c86e0
+    src_config_universities_ts_35e23e3b -->|contains| config_universities_popular_universities_0e37ab99
+    class src_config_universities_ts_35e23e3b module;
+    class config_universities_university_89b0205a klass;
+    class config_universities_universities_fd9c86e0 klass;
+    class config_universities_popular_universities_0e37ab99 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>universities.ts</code><br><small style="color:var(--muted)">src/config/universities.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/config/universities.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>University</code><br><small style="color:var(--muted)">src/config/universities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>University node in src/config/universities.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>UNIVERSITIES</code><br><small style="color:var(--muted)">src/config/universities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>UNIVERSITIES node in src/config/universities.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>POPULAR_UNIVERSITIES</code><br><small style="color:var(--muted)">src/config/universities.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POPULAR_UNIVERSITIES node in src/config/universities.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/config/universities.ts</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x3. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 15. Root Layout ====== -->
+<h2 id="root-layout">15. Root Layout</h2>
+<p>Root Layout groups implementation around layouttsx, app, metadata, rootlayout, mostly in src/app/layout.tsx. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Root Layout (3 nodes, 2 edges)
+    src_app_layout_tsx_27d7cc35("layout.tsx")
+    app_layout_metadata_57b95e99("metadata<br/><small>src/app/layout.tsx</small>")
+    app_layout_rootlayout_bcc6c561("RootLayout()<br/><small>src/app/layout.tsx</small>")
+    src_app_layout_tsx_27d7cc35 -->|contains| app_layout_metadata_57b95e99
+    src_app_layout_tsx_27d7cc35 -->|contains| app_layout_rootlayout_bcc6c561
+    class src_app_layout_tsx_27d7cc35 ui;
+    class app_layout_metadata_57b95e99 ui;
+    class app_layout_rootlayout_bcc6c561 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>layout.tsx</code><br><small style="color:var(--muted)">src/app/layout.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/app/layout.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>metadata</code><br><small style="color:var(--muted)">src/app/layout.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>metadata node in src/app/layout.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>RootLayout()</code><br><small style="color:var(--muted)">src/app/layout.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>RootLayout() node in src/app/layout.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/app/layout.tsx</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 16. Other ====== -->
+<h2 id="other">16. Other</h2>
+<p>Other groups implementation around errortsx, app, indexts, error, mostly in src/app/error.tsx, shared/src/index.ts. This section covers 3 nodes and 1 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Other (3 nodes, 1 edges)
+    subgraph other_src_app_error_tsx_d7ae5058["src/app/error.tsx"]
+        src_app_error_tsx_14aca306("error.tsx")
+        app_error_error_4abbfb72("Error()<br/><small>src/app/error.tsx</small>")
+    end
+    packages_shared_src_index_ts_b2c83298("index.ts")
+    src_app_error_tsx_14aca306 -->|contains| app_error_error_4abbfb72
+    class src_app_error_tsx_14aca306 ui;
+    class app_error_error_4abbfb72 ui;
+    class packages_shared_src_index_ts_b2c83298 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>error.tsx</code><br><small style="color:var(--muted)">src/app/error.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/app/error.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Error()</code><br><small style="color:var(--muted)">src/app/error.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Error() node in src/app/error.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>index.ts</code><br><small style="color:var(--muted)">shared/src/index.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in shared/src/index.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/app/error.tsx</code></td><td>2 nodes</td></tr>
+<tr><td><code>shared/src/index.ts</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>445</td></tr>
+      <tr><td>Edges</td><td>891</td></tr>
+      <tr><td>Hyperedges</td><td>0</td></tr>
+      <tr><td>Communities</td><td>29</td></tr>
+      <tr><td>Documented Sections</td><td>15</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>887</td></tr>
+      <tr><td>INFERRED</td><td>4</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>hostello — Architecture Documentation</p>
+  <p>Generated: 2026-05-10 11:40 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

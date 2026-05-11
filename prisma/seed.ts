@@ -1,7 +1,7 @@
-import { PrismaClient, Gender, HostelStatus } from "@prisma/client";
+import "dotenv/config";
+import { Gender, HostelStatus } from "@prisma/client";
 import { hash } from "bcryptjs";
-
-const db = new PrismaClient();
+import { db } from "../src/lib/db";
 
 async function main() {
   // ─── Validate environment variables ────────────────────────────────────────
@@ -9,11 +9,19 @@ async function main() {
   const seedAdminPw = process.env.SEED_ADMIN_PASSWORD;
   const seedOwnerPw = process.env.SEED_OWNER_PASSWORD;
   const seedStudentPw = process.env.SEED_STUDENT_PASSWORD;
+  const seedOwner1Email = process.env.SEED_OWNER_1_EMAIL;
+  const seedOwner2Email = process.env.SEED_OWNER_2_EMAIL;
+  const seedOwner3Email = process.env.SEED_OWNER_3_EMAIL;
+  const seedOwner4Email = process.env.SEED_OWNER_4_EMAIL;
+  const seedStudentEmail = process.env.SEED_STUDENT_EMAIL;
 
-  if (!seedAdminEmail || !seedAdminPw || !seedOwnerPw || !seedStudentPw) {
+  if (
+    !seedAdminEmail || !seedAdminPw || !seedOwnerPw || !seedStudentPw ||
+    !seedOwner1Email || !seedOwner2Email || !seedOwner3Email || !seedOwner4Email ||
+    !seedStudentEmail
+  ) {
     throw new Error(
-      "Missing required seed environment variables. Set " +
-      "SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, SEED_OWNER_PASSWORD, and SEED_STUDENT_PASSWORD."
+      "Missing required seed environment variables. Check .env.example for required variables."
     );
   }
 
@@ -36,10 +44,10 @@ async function main() {
   });
 
   const owner1 = await db.user.upsert({
-    where: { email: "ali.raza@hostello.pk" },
+    where: { email: process.env.SEED_OWNER_1_EMAIL as string },
     update: {},
     create: {
-      email: "ali.raza@hostello.pk",
+      email: process.env.SEED_OWNER_1_EMAIL as string,
       password: ownerPassword,
       name: "Ali Raza",
       phone: "+92-300-1234567",
@@ -50,10 +58,10 @@ async function main() {
   });
 
   const owner2 = await db.user.upsert({
-    where: { email: "sara.khan@hostello.pk" },
+    where: { email: process.env.SEED_OWNER_2_EMAIL as string },
     update: {},
     create: {
-      email: "sara.khan@hostello.pk",
+      email: process.env.SEED_OWNER_2_EMAIL as string,
       password: ownerPassword,
       name: "Sara Khan",
       phone: "+92-311-9876543",
@@ -64,10 +72,10 @@ async function main() {
   });
 
   const owner3 = await db.user.upsert({
-    where: { email: "hassan.mirza@hostello.pk" },
+    where: { email: process.env.SEED_OWNER_3_EMAIL as string },
     update: {},
     create: {
-      email: "hassan.mirza@hostello.pk",
+      email: process.env.SEED_OWNER_3_EMAIL as string,
       password: ownerPassword,
       name: "Hassan Mirza",
       phone: "+92-321-5554321",
@@ -78,10 +86,10 @@ async function main() {
   });
 
   const owner4 = await db.user.upsert({
-    where: { email: "amna.sheikh@hostello.pk" },
+    where: { email: process.env.SEED_OWNER_4_EMAIL as string },
     update: {},
     create: {
-      email: "amna.sheikh@hostello.pk",
+      email: process.env.SEED_OWNER_4_EMAIL as string,
       password: ownerPassword,
       name: "Amna Sheikh",
       phone: "+92-333-7778899",
@@ -92,10 +100,10 @@ async function main() {
   });
 
   const student1 = await db.user.upsert({
-    where: { email: "hamza@hostello.pk" },
+    where: { email: process.env.SEED_STUDENT_EMAIL as string },
     update: {},
     create: {
-      email: "hamza@hostello.pk",
+      email: process.env.SEED_STUDENT_EMAIL as string,
       password: studentPassword,
       name: "Hamza Malik",
       role: "STUDENT",
@@ -684,6 +692,59 @@ async function main() {
       data: {
         rating: agg._avg.rating ?? 0,
         reviewCount: agg._count.rating,
+      },
+    });
+  }
+
+  // ─── Rooms ─────────────────────────────────────────────────────────────
+
+  if (greenValley) {
+    await db.room.upsert({
+      where: { id: "room-gv-1" },
+      update: {},
+      create: {
+        id: "room-gv-1",
+        hostelId: greenValley.id,
+        name: "Standard Double",
+        description: "Shared room with two single beds",
+        pricePerMonth: 8500,
+        capacity: 2,
+        available: 2,
+      },
+    });
+
+    await db.room.upsert({
+      where: { id: "room-gv-2" },
+      update: {},
+      create: {
+        id: "room-gv-2",
+        hostelId: greenValley.id,
+        name: "Premium Triple",
+        description: "Large shared room with three single beds and AC",
+        pricePerMonth: 9500,
+        capacity: 3,
+        available: 3,
+      },
+    });
+  }
+
+  const sitara = await db.hostel.findUnique({
+    where: { slug: "sitara-girls-residency" },
+    select: { id: true },
+  });
+
+  if (sitara) {
+    await db.room.upsert({
+      where: { id: "room-sitara-1" },
+      update: {},
+      create: {
+        id: "room-sitara-1",
+        hostelId: sitara.id,
+        name: "Double Shared",
+        description: "Spacious room with attached bath",
+        pricePerMonth: 10000,
+        capacity: 2,
+        available: 2,
       },
     });
   }

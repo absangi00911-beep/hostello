@@ -32,7 +32,8 @@ import { invalidateLocalSessionCache } from "@/lib/auth/config";
 
 const schema = z.object({
   token: z.string().min(1),
-  password: z.string()
+  password: z
+    .string()
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Include at least one uppercase letter")
     .regex(/[0-9]/, "Include at least one number"),
@@ -94,8 +95,14 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Clear in-process token-version cache for immediate effect on this instance.
-    // Other instances will detect revocation on their next session check.
-    invalidateLocalSessionCache(record.userId);
+    // Other instances will detect revocation on their next session check via Redis.
+    //
+    // MUST be awaited — without await, the Redis DEL completes asynchronously
+    // after this function returns. In the gap between the response being sent
+    // and the DEL completing, a concurrent request on the same instance could
+    // still validate the old tokenVersion from the in-process cache and accept
+    // a JWT that should already be invalid.
+    await invalidateLocalSessionCache(record.userId);
 
     return NextResponse.json({
       message: "Password updated. You can now sign in.",

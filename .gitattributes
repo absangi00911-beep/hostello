@@ -1,0 +1,4 @@
+# Ensure log files are never included in git archive exports
+*.log    export-ignore
+*.log    diff=nodiff
+build*.txt export-ignore

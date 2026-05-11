@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Dev-only allowance so impeccable live mode can load. Guarded by NODE_ENV.
 const __impeccableLiveDev =
@@ -63,6 +64,7 @@ const securityHeaders = [
         "https://payments.jazzcash.com.pk",
         "https://easypaisasandbox.pk",
         "https://easypaisa.com.pk",
+        "https://*.sentry.io",
       ].join(" ") + `${__impeccableLiveDev}`,
       // Allow POSTing to payment gateway checkout pages from this origin
       [
@@ -105,4 +107,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+});

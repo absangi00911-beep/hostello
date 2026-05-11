@@ -2,8 +2,6 @@ import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton, emailRow } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
-const APP_URL = getAppUrl();
-
 interface BookingEmailProps {
   studentName: string;
   studentEmail: string;
@@ -45,6 +43,7 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
     checkIn, checkOut, months, total, paymentMethod,
   } = props;
 
+  const APP_URL = getAppUrl();
   const escapedStudentName = escapeHtml(studentName);
   const escapedHostelName = escapeHtml(hostelName);
 
@@ -97,6 +96,7 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
     bookingId, checkIn, checkOut, months, total, paymentMethod,
   } = props;
 
+  const APP_URL = getAppUrl();
   const firstName = escapeHtml(studentName.split(" ")[0]);
   const shortId = bookingId.slice(-8).toUpperCase();
   const escapedHostelName = escapeHtml(hostelName);

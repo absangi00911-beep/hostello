@@ -1,69 +1,39 @@
-import type { Hostel, User as PrismaUser, Review, Booking, Room } from "@prisma/client";
+import type { Hostel as PrismaHostel, User as PrismaUser, Review as PrismaReview, Booking as PrismaBooking, Room } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
+import type { 
+  UserRole, 
+  HostelFilters, 
+  SearchParams, 
+  PaginatedResponse, 
+  ApiResponse, 
+  AmenityConfig, 
+  CompareItem,
+  HostelWithOwner,
+  HostelWithDetails,
+  ReviewWithUser,
+  BookingWithHostel
+} from "@hostello/shared/types";
 
-export type { Hostel, Review, Booking, Room };
+export type { 
+  UserRole,
+  HostelFilters,
+  SearchParams,
+  PaginatedResponse,
+  ApiResponse,
+  AmenityConfig,
+  CompareItem,
+  HostelWithOwner,
+  HostelWithDetails,
+  ReviewWithUser,
+  BookingWithHostel,
+  Room
+};
+
+// Use Prisma types for core entities in the web app to maintain backend compatibility
+export type Hostel = PrismaHostel;
 export type User = PrismaUser;
-
-export type HostelWithOwner = Hostel & {
-  owner: Pick<User, "id" | "name" | "avatar" | "phone">;
-};
-
-export type HostelWithDetails = HostelWithOwner & {
-  reviews: ReviewWithUser[];
-  _count: { favorites: number };
-};
-
-export type ReviewWithUser = Review & {
-  user: Pick<User, "id" | "name" | "avatar">;
-};
-
-export type BookingWithHostel = Booking & {
-  hostel: Pick<Hostel, "id" | "name" | "slug" | "coverImage" | "city">;
-};
-
-export interface HostelFilters {
-  city?: string;
-  gender?: "MALE" | "FEMALE" | "MIXED";
-  minPrice?: number;
-  maxPrice?: number;
-  amenities?: string[];
-  verified?: boolean;
-  q?: string;
-}
-
-export interface SearchParams extends HostelFilters {
-  page?: number;
-  limit?: number;
-  sort?: "price_asc" | "price_desc" | "rating" | "newest";
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
-
-export interface CompareItem {
-  slug: string;
-  name: string;
-  image: string | null;
-}
-
-export interface AmenityConfig {
-  id: string;
-  label: string;
-  icon: string;
-}
-
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-export type UserRole = "STUDENT" | "OWNER" | "ADMIN";
+export type Review = PrismaReview;
+export type Booking = PrismaBooking;
 
 declare module "next-auth" {
   interface Session {

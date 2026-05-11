@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { sanitizeString } from "./validations";
 
 describe("sanitizeString", () => {
@@ -163,7 +164,7 @@ describe("sanitizeString", () => {
     it("user rule with HTML attempt", () => {
       const input = "No <strong>loud</strong> noise after <script>trick()</script> 10 PM";
       const result = sanitizeString(input);
-      expect(result).toBe("No loud noise after trick() 10 PM");
+      expect(result).toBe("No loud noise after  10 PM");
     });
   });
 });

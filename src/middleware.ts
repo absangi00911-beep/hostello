@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { validateEnvironmentOnce } from "@/lib/env-validation";
 
@@ -7,9 +7,6 @@ validateEnvironmentOnce();
 
 // API route prefixes that are exempt from the CSRF origin check because they
 // use their own authentication mechanism (Bearer tokens, HMAC signatures) or are safe.
-// Note: be specific about /api/auth/* routes; only exempt NextAuth internals and safe routes.
-// Routes like /api/auth/forgot-password, /api/auth/delete-account, /api/auth/reset-password
-// must NOT be exempt—they handle sensitive user actions and need CSRF protection.
 const CSRF_EXEMPT: string[] = [
   "/api/auth/callback",     // NextAuth OAuth callbacks
   "/api/auth/signin",       // NextAuth sign-in
@@ -18,27 +15,36 @@ const CSRF_EXEMPT: string[] = [
   "/api/auth/csrf",         // NextAuth CSRF token
   "/api/auth/providers",    // NextAuth providers list
   "/api/auth/verify-email", // GET only, safe
+  "/api/auth/mobile/login", // Mobile login — no Origin header
   "/api/cron/",             // Upstash QStash — Bearer token auth
   "/api/payment/webhook",   // Safepay — HMAC signature auth
 ];
 
-// Routes where CSRF exemption depends on the HTTP method.
-// These routes use their own authentication (e.g., HMAC signatures) but still
-// need protection from CSRF attacks. The verifyCsrfOrigin function already
-// allows safe methods (GET/HEAD/OPTIONS) without CSRF checks; we only exempt
-// POST requests where the request originates from a payment gateway server.
 const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
   { path: "/api/payment/callback", methods: ["POST"] },
 ];
 
-export default function middleware(req: Request) {
+export default function middleware(req: NextRequest) {
   const { pathname } = new URL(req.url);
+
+  // ── Bearer Token Support (Mobile) ──────────────────────────────────────
+  // Mobile clients send the JWT in the Authorization header. We detect it
+  // and inject it into the cookies so NextAuth's auth() helper can find it.
+  const authHeader = req.headers.get("authorization");
+  const isBearer = authHeader?.startsWith("Bearer ");
+  
+  if (isBearer && authHeader) {
+    const token = authHeader.split(" ")[1];
+    // Set for both standard and secure cookie names to be safe.
+    // NextAuth uses __Secure- prefix in production for HTTPS.
+    req.cookies.set("authjs.session-token", token);
+    req.cookies.set("__Secure-authjs.session-token", token);
+  }
 
   // ── CSRF protection ────────────────────────────────────────────────────
   // Applied to every state-mutating API route that isn't exempt.
-  // For most exempt routes, all methods are skipped. For /api/payment/callback,
-  // only POST is exempted — GET requests still pass through verifyCsrfOrigin,
-  // which allows safe methods automatically.
+  // Bearer-authenticated requests (mobile) are exempt as they don't use
+  // browser-style ambient authority (cookies) for the initial request detection.
   const isMethodBasedExempt = METHOD_BASED_CSRF_EXEMPT.some(
     (rule) => pathname.startsWith(rule.path) && rule.methods.includes(req.method)
   );
@@ -46,13 +52,19 @@ export default function middleware(req: Request) {
   if (
     pathname.startsWith("/api/") &&
     !CSRF_EXEMPT.some((p) => pathname.startsWith(p)) &&
-    !isMethodBasedExempt
+    !isMethodBasedExempt &&
+    !isBearer
   ) {
     const csrfError = verifyCsrfOrigin(req);
     if (csrfError) return csrfError;
   }
 
-  return NextResponse.next();
+  // Ensure headers (including injected cookies) are passed to the next handler
+  return NextResponse.next({
+    request: {
+      headers: new Headers(req.headers),
+    },
+  });
 }
 
 export const config = {

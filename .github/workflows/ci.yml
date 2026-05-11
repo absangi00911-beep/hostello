@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Run Tests
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Mock env vars for build-time validation
+          NEXT_PUBLIC_APP_URL: "https://hostello.pk"
+          AUTH_URL: "https://hostello.pk"
+          SEED_ADMIN_EMAIL: "admin@hostello.pk"
+          SEED_ADMIN_PASSWORD: "mock"
+          SEED_OWNER_PASSWORD: "mock"
+          SEED_STUDENT_PASSWORD: "mock"
+          SEED_OWNER_1_EMAIL: "o1@hostello.pk"
+          SEED_OWNER_2_EMAIL: "o2@hostello.pk"
+          SEED_OWNER_3_EMAIL: "o3@hostello.pk"
+          SEED_OWNER_4_EMAIL: "o4@hostello.pk"
+          SEED_STUDENT_EMAIL: "s1@hostello.pk"

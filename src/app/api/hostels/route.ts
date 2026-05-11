@@ -126,6 +126,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only owners can list hostels." }, { status: 403 });
     }
 
+    // 10 listings per user per hour
+    const rl = await rateLimit(`hostel-create:${session.user.id}`, { limit: 10, windowMs: 60 * 60 * 1000 });
+    if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+
     const body = await req.json();
     const parsed = hostelCreateSchema.safeParse(body);
     if (!parsed.success) {
@@ -137,10 +141,17 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
+    if (!session.user.email) {
+      return NextResponse.json(
+        { error: "Account email is missing. Please update your profile." },
+        { status: 400 }
+      );
+    }
+
     const hostel = await createHostelRecord(
       session.user.id,
-      session.user.name ?? "",
-      session.user.email ?? "",
+      session.user.name && session.user.name.trim() !== "" ? session.user.name : "Owner",
+      session.user.email,
       data,
       body
     );

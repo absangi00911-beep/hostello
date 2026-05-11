@@ -135,7 +135,7 @@ export async function rateLimit(
 /**
  * Extract a stable IP string from a Next.js request.
  * Prioritises Cloudflare CF-Connecting-IP (cannot be spoofed),
- * then the rightmost X-Forwarded-For entry (set by your proxy).
+ * then the leftmost X-Forwarded-For entry (the original client IP).
  */
 export function getIp(req: Request): string {
   const cfIp = req.headers.get("cf-connecting-ip");
@@ -144,8 +144,8 @@ export function getIp(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     const ips = forwarded.split(",").map((ip) => ip.trim());
-    const rightmost = ips[ips.length - 1];
-    if (rightmost && rightmost !== "unknown") return rightmost;
+    const leftmost = ips[0];
+    if (leftmost && leftmost !== "unknown") return leftmost;
   }
 
   return req.headers.get("x-real-ip") ?? "unknown";

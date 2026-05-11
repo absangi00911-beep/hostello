@@ -4,18 +4,18 @@ import { db } from "@/lib/db";
 import { createCheckoutSession } from "@/lib/safepay";
 import { createJazzCashSession } from "@/lib/jazzcash";
 import { createEasypaisaSession } from "@/lib/easypaisa";
-import { rateLimit, getIp } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 import { getRequestOrigin } from "@/lib/app-url";
 import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
 export async function POST(req: NextRequest) {
-  // 20 payment initiations per IP per hour
-  const rl = await rateLimit(`pay:${getIp(req)}`, { limit: 20, windowMs: 60 * 60 * 1000 });
-  if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
-
   try {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // 20 payment initiations per user per hour
+    const rl = await rateLimit(`pay:${session.user.id}`, { limit: 20, windowMs: 60 * 60 * 1000 });
+    if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
 
     const { bookingId } = await req.json();
     if (!bookingId) return NextResponse.json({ error: "bookingId required." }, { status: 400 });
@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking is already paid." }, { status: 400 });
     }
 
-    const appUrl        = getRequestOrigin(req);
+    const isMobile      = req.headers.get("x-client") === "mobile";
+    const appUrl        = isMobile ? "https://hostello.app" : getRequestOrigin(req);
     const paymentMethod = booking.paymentMethod ?? "safepay";
 
     // Guard 3: reject disabled payment methods
@@ -64,6 +65,12 @@ export async function POST(req: NextRequest) {
 
     // ── JazzCash ────────────────────────────────────────────────────────────
     if (paymentMethod === "jazzcash") {
+      if (isMobile) {
+        return NextResponse.json(
+          { error: "JazzCash is not supported on mobile yet." },
+          { status: 400 }
+        );
+      }
       const jcSession = createJazzCashSession({
         bookingId:   booking.id,
         amount:      booking.total,
@@ -80,6 +87,12 @@ export async function POST(req: NextRequest) {
 
     // ── EasyPaisa ───────────────────────────────────────────────────────────
     if (paymentMethod === "easypaisa") {
+      if (isMobile) {
+        return NextResponse.json(
+          { error: "EasyPaisa is not supported on mobile yet." },
+          { status: 400 }
+        );
+      }
       const epSession = createEasypaisaSession({
         bookingId:     booking.id,
         amount:        booking.total,
@@ -102,6 +115,10 @@ export async function POST(req: NextRequest) {
       customerEmail: booking.user.email,
       customerName:  booking.user.name,
       appUrl,
+      ...(isMobile && { 
+        redirectPath: `/booking/${booking.id}/confirm`,
+        cancelPath: `/booking/${booking.id}?payment=cancelled`
+      }),
     });
 
     return NextResponse.json({ type: "redirect", redirectUrl });

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { getIp, rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 import { contactSchema, sendContactMessage } from "@/lib/support";
 
 export async function POST(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const rl = await rateLimit(`contact:${getIp(req)}`, {
+  const rl = await rateLimit(`contact:${session.user.id}`, {
     limit: 5,
     windowMs: 15 * 60 * 1000,
   });

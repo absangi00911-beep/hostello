@@ -141,13 +141,20 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
   // ── Search (Typesense) ─────────────────────────────────────────────────
   {
     name: "TYPESENSE_API_KEY",
-    requiredInProduction: true,
-    description: "Typesense search API key",
+    requiredInProduction: false,
+    description: "Typesense search API key (falls back to Prisma if not set)",
   },
   {
     name: "TYPESENSE_HOST",
-    requiredInProduction: true,
-    description: "Typesense server host/endpoint",
+    requiredInProduction: false,
+    description: "Typesense server host/endpoint (falls back to Prisma if not set)",
+  },
+
+  // ── Firebase (Push Notifications) ──────────────────────────────────────
+  {
+    name: "FIREBASE_SERVICE_ACCOUNT_JSON",
+    requiredInProduction: false,
+    description: "Firebase service account JSON string for FCM push notifications (optional, gracefully disabled if not set)",
   },
 ];
 

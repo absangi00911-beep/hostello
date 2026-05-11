@@ -116,6 +116,17 @@ async function purgeOrphanedImages(
   }
 }
 
+// NOTE: 'param' can be either an ID (CUID) or a slug.
+// We attempt lookup by ID first (if CUID-like), otherwise fallback to slug.
+async function findHostel(param: string) {
+  const isId = param.startsWith("c"); // Simple check, CUIDs start with 'c'
+  return await db.hostel.findFirst({
+    where: { [isId ? "id" : "slug"]: param },
+  });
+}
+
+export const runtime = 'nodejs';
+
 // ── Route handlers ─────────────────────────────────────────────────────────
 
 export async function GET(
@@ -125,8 +136,8 @@ export async function GET(
   try {
     const { param } = await params;
 
-    const hostel = await db.hostel.findUnique({
-      where: { slug: param },
+    const hostel = await db.hostel.findFirst({
+      where: { OR: [{ id: param }, { slug: param }] },
       include: {
         owner: {
           select: {
@@ -135,8 +146,6 @@ export async function GET(
             avatar: true,
             createdAt: true,
             _count: { select: { hostels: true } },
-            // SECURITY: Never include phone in public API responses
-            // Phone is only exposed through server-side gating after booking verification
           },
         },
         reviews: {
@@ -178,9 +187,9 @@ export async function PATCH(
 
     const { param } = await params;
 
-    const hostel = await db.hostel.findUnique({
-      where: { id: param },
-      select: { ownerId: true, images: true, status: true },
+    const hostel = await db.hostel.findFirst({
+      where: { OR: [{ id: param }, { slug: param }] },
+      select: { id: true, ownerId: true, images: true, status: true },
     });
 
     if (!hostel) {
@@ -232,7 +241,7 @@ export async function PATCH(
     }
 
     const updated = await db.hostel.update({
-      where: { id: param },
+      where: { id: hostel.id },
       data,
       select: {
         id: true,
@@ -247,8 +256,8 @@ export async function PATCH(
     // Sync to Typesense if hostel is ACTIVE
     // Fire-and-forget to not block response
     if (updated.status === "ACTIVE") {
-      void indexSingleHostel(param).catch((err) =>
-        console.error(`[typesense] Failed to sync hostel ${param}:`, err)
+      void indexSingleHostel(updated.id).catch((err) =>
+        console.error(`[typesense] Failed to sync hostel ${updated.id}:`, err)
       );
     }
 
@@ -277,9 +286,9 @@ export async function DELETE(
 
     const { param } = await params;
 
-    const hostel = await db.hostel.findUnique({
-      where: { id: param },
-      select: { ownerId: true, status: true },
+    const hostel = await db.hostel.findFirst({
+      where: { OR: [{ id: param }, { slug: param }] },
+      select: { id: true, ownerId: true, status: true },
     });
 
     if (!hostel) {
@@ -294,12 +303,12 @@ export async function DELETE(
 
     await db.$transaction([
       db.hostel.update({
-        where: { id: param },
+        where: { id: hostel.id },
         data: { status: "SUSPENDED" },
       }),
       db.booking.updateMany({
         where: {
-          hostelId: param,
+          hostelId: hostel.id,
           status: { in: ["PENDING", "CONFIRMED"] },
         },
         data: { status: "CANCELLED" },
@@ -307,8 +316,8 @@ export async function DELETE(
     ]);
 
     // Remove from Typesense index
-    void removeHostelIndex(param).catch((err) =>
-      console.error(`[typesense] Failed to remove hostel ${param}:`, err)
+    void removeHostelIndex(hostel.id).catch((err) =>
+      console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err)
     );
 
     return NextResponse.json({ message: "Hostel removed from listings." });

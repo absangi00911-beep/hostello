@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "K9Z8G7F6E5.com.hostello.app",
+        "paths": [
+          "/booking/*/confirm",
+          "/hostels/*"
+        ]
+      }
+    ]
+  }
+}
