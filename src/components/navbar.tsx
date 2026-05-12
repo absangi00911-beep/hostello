@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { Search, Heart, MessageCircle, User } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
-import { CitySelector } from "./CitySelector";
+import { CitySelector } from "./layout/CitySelector";
 import { Suspense, useState } from "react";
 
 /* ── HostelLo wordmark ───────────────────────────────────── */
