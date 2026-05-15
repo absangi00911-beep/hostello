@@ -389,23 +389,6 @@
     100% { background-position: -200% 0; }
   }
 
-  /* Reduce motion */
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton {
-      animation: none;
-      background: #E8DFCE;
-    }
-    .dark .skeleton {
-      background: #2C2519;
-    }
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-
   /* Booking reference / transaction ID display */
   .ref-id {
     font-family: var(--font-mono);
@@ -415,5 +398,22 @@
     padding: 2px 8px;
     border-radius: var(--radius-sm);
     display: inline-block;
+  }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: #E8DFCE;
+  }
+  .dark .skeleton {
+    background: #2C2519;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

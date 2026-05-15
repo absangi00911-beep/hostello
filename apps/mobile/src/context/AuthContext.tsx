@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useSegments } from 'expo-router';
+import { getAuthToken, setAuthToken, clearAuthToken } from '@/services/api';
 
 interface AuthContextType {
   token: string | null;
@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function checkAuth() {
-      const storedToken = await AsyncStorage.getItem('auth_token');
+      const storedToken = await getAuthToken();
       setToken(storedToken);
       setIsLoading(false);
     }
@@ -40,10 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       token,
       isLoading,
-      signIn: async (token) => { setToken(token); },
-      signOut: async () => { 
-        await AsyncStorage.removeItem('auth_token');
-        setToken(null); 
+      signIn: async (token) => {
+        await setAuthToken(token);
+        setToken(token);
+      },
+      signOut: async () => {
+        await clearAuthToken();
+        setToken(null);
       }
     }}>
       {children}

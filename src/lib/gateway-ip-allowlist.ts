@@ -1,3 +1,5 @@
+// Path: src/lib/gateway-ip-allowlist.ts
+
 /**
  * Gateway IP allowlist for verifying payment gateway callbacks.
  *

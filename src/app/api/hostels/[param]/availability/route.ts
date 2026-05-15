@@ -1,3 +1,4 @@
+// Path: src/app/api/hostels/[param]/availability/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { startOfMonth, endOfMonth, addMonths, eachDayOfInterval } from "date-fns";

@@ -1,10 +1,11 @@
+// Path: src/components/Footer.tsx
+
 import Link from "next/link";
 
 const NAV_LINKS = [
   { label: "Find hostels", href: "/hostels" },
   { label: "List your hostel", href: "/register?role=OWNER" },
   { label: "How it works", href: "/#how-it-works" },
-  { label: "Cities", href: "/hostels" },
 ];
 
 const LEGAL_LINKS = [

@@ -1,3 +1,5 @@
+// Path: src/components/dashboard/settings/profile-form.tsx
+
 'use client';
 
 import { useForm } from 'react-hook-form';

@@ -1,3 +1,5 @@
+// Path: src/components/booking/payment-flow.tsx
+
 'use client';
 
 import { useState } from 'react';

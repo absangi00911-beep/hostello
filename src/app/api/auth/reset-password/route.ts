@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/reset-password/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hash } from "bcryptjs";

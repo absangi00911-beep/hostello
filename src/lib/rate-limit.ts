@@ -1,3 +1,5 @@
+// Path: src/lib/rate-limit.ts
+
 import { Redis } from "@upstash/redis";
 import { Ratelimit, type Duration } from "@upstash/ratelimit";
 

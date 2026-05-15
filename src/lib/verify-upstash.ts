@@ -1,3 +1,5 @@
+// Path: src/lib/verify-upstash.ts
+
 /**
  * Utility to verify Upstash QStash requests
  * 

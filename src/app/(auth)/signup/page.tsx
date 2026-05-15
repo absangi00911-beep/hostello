@@ -1,3 +1,5 @@
+// Path: src/app/(auth)/signup/page.tsx
+
 'use client';
 
 import { useForm } from 'react-hook-form';

@@ -1,3 +1,4 @@
+// Path: src/lib/email-templates/new-listing.ts
 import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton, emailRow } from "./layout";
 import { getAppUrl } from "@/lib/app-url";

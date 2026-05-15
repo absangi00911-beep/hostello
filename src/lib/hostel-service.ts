@@ -1,3 +1,5 @@
+// Path: src/lib/hostel-service.ts
+
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { newListingAdminEmail } from "@/lib/email-templates/new-listing";

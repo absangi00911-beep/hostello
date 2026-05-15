@@ -1,3 +1,5 @@
+// Path: src/lib/validations.test.ts
+
 import { describe, it, expect } from "vitest";
 import { sanitizeString } from "./validations";
 

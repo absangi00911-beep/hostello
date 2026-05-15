@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/forgot-password/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";

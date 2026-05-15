@@ -1,3 +1,5 @@
+// Path: src/config/constants.ts
+
 import { 
   APP_NAME as SHARED_APP_NAME,
   APP_DESCRIPTION as SHARED_APP_DESCRIPTION,

@@ -1,3 +1,5 @@
+// Path: src/components/dashboard/owner/listings-tab.tsx
+
 'use client';
 
 import { useQuery } from '@tanstack/react-query';

@@ -1,3 +1,5 @@
+// Path: src/lib/payment-methods.ts
+
 export const PAYMENT_METHODS = [
   {
     value: "safepay",

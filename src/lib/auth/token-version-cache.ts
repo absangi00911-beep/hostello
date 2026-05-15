@@ -1,3 +1,5 @@
+// Path: src/lib/auth/token-version-cache.ts
+
 import { Redis } from "@upstash/redis";
 
 /**

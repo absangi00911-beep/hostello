@@ -1,3 +1,5 @@
+// Path: src/lib/email-templates/booking.ts
+
 import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton, emailRow } from "./layout";
 import { getAppUrl } from "@/lib/app-url";

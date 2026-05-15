@@ -1,60 +1,100 @@
-'use client';
+// Path: src/app/hostels/page.tsx
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import {
+  SearchPageClient,
+  type SearchPageClientProps,
+} from "./SearchPageClient";
+import { PageSpinner } from "@/components/ui/shared";
 
-import { Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
-import { HostelCard } from '@/components/hostel-card';
-import { Skeleton } from '@/components/ui/skeleton';
-
-function SearchResultsContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams.toString();
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['hostels', query],
-    queryFn: async () => {
-      const res = await fetch(`/api/hostels?${query}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      return res.json();
-    },
-  });
-
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Search Results</h1>
-      
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-64 w-full" />
-          ))}
-        </div>
-      ) : data?.data?.length === 0 ? (
-        <p>No hostels found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data?.data?.map((hostel: any) => (
-            <HostelCard key={hostel.id} hostel={hostel} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+/* ── Metadata ─────────────────────────────────────────────── */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const city = typeof params.city === "string" ? params.city : undefined;
+  return {
+    title: city ? `Hostels in ${city}` : "Find hostels",
+    description: city
+      ? `Browse verified student hostels in ${city}. Compare prices, amenities, and book online.`
+      : "Search verified student hostels across Pakistan. Filter by city, gender, price, and amenities.",
+  };
 }
 
-export default function SearchResultsPage() {
+/* ── Page ─────────────────────────────────────────────────── */
+export default async function HostelsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+
+  // Parse every param the API accepts
+  const initialQ =
+    typeof params.q === "string" ? params.q : "";
+
+  const initialCity =
+    typeof params.city === "string" ? params.city : "";
+
+  const initialGender =
+    params.gender === "MALE" ||
+    params.gender === "FEMALE" ||
+    params.gender === "MIXED"
+      ? params.gender
+      : ("" as const);
+
+  const initialMinPrice = params.minPrice
+    ? Math.max(0, parseInt(String(params.minPrice), 10) || 0)
+    : 0;
+
+  const initialMaxPrice = params.maxPrice
+    ? Math.min(50_000, parseInt(String(params.maxPrice), 10) || 50_000)
+    : 50_000;
+
+  const initialAmenities = Array.isArray(params.amenities)
+    ? params.amenities.filter(Boolean)
+    : typeof params.amenities === "string"
+    ? [params.amenities]
+    : [];
+
+  const sortRaw = typeof params.sort === "string" ? params.sort : "newest";
+  const initialSort =
+    sortRaw === "price_asc" ||
+    sortRaw === "price_desc" ||
+    sortRaw === "rating" ||
+    sortRaw === "newest"
+      ? sortRaw
+      : ("newest" as const);
+
+  const initialPage = params.page
+    ? Math.max(1, parseInt(String(params.page), 10) || 1)
+    : 1;
+
+  const clientProps: SearchPageClientProps = {
+    initialQ,
+    initialCity,
+    initialGender,
+    initialMinPrice,
+    initialMaxPrice,
+    initialAmenities,
+    initialSort,
+    initialPage,
+  };
+
   return (
-    <Suspense fallback={
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Search Results</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-64 w-full" />
-          ))}
-        </div>
-      </div>
-    }>
-      <SearchResultsContent />
-    </Suspense>
+    <PublicLayout noFooter>
+      <Suspense
+        fallback={
+          <div className="container-app py-10">
+            <PageSpinner label="Loading hostels…" />
+          </div>
+        }
+      >
+        <SearchPageClient {...clientProps} />
+      </Suspense>
+    </PublicLayout>
   );
 }

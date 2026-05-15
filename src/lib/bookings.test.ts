@@ -1,3 +1,5 @@
+// Path: src/lib/bookings.test.ts
+
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/bookings/route";

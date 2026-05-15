@@ -1,3 +1,5 @@
+// Path: src/lib/csrf.ts
+
 import { type NextRequest, NextResponse } from "next/server";
 import { getAppUrl } from "@/lib/app-url";
 

@@ -1,3 +1,5 @@
+// Path: src/types/index.ts
+
 import type { Hostel as PrismaHostel, User as PrismaUser, Review as PrismaReview, Booking as PrismaBooking, Room } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 import type { 

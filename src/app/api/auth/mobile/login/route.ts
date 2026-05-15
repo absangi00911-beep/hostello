@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/mobile/login/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { compare } from "bcryptjs";
 import { db } from "@/lib/db";

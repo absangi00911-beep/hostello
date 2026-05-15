@@ -1,3 +1,4 @@
+// Path: src/app/api/admin/search/sync/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { syncAllHostelsToTypesense, indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";

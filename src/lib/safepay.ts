@@ -1,3 +1,5 @@
+// Path: src/lib/safepay.ts
+
 /**
  * Safepay helper — Pakistan's cleanest payment gateway.
  * Docs: https://getsafepay.com/docs

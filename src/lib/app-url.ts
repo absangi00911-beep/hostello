@@ -1,3 +1,5 @@
+// Path: src/lib/app-url.ts
+
 const DEFAULT_APP_URL = "https://hostello.pk";
 
 function normalizeUrl(value: string) {

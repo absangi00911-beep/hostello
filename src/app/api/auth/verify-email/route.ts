@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/verify-email/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAppUrl } from "@/lib/app-url";

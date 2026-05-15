@@ -1,3 +1,5 @@
+// Path: src/components/layout/CitySelector.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,19 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MapPin, ChevronDown } from "lucide-react";
-
-const CITIES = [
-  "Lahore",
-  "Karachi",
-  "Islamabad",
-  "Rawalpindi",
-  "Peshawar",
-  "Faisalabad",
-  "Multan",
-  "Quetta",
-  "Hyderabad",
-  "Sialkot",
-];
+import { CITIES } from "@hostello/shared";
 
 const STORAGE_KEY = "hostello-city";
 

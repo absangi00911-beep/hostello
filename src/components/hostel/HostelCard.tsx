@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck, Star, Users, Mars, Venus, Equal } from "lucide-react";
-import { formatPKR } from "@/components/ui/Shared";
+import { formatPKR } from "@/components/ui/shared";
 
 export interface HostelCardData {
   id: string;

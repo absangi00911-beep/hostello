@@ -4,6 +4,8 @@
  * Monitors all active price alerts and notifies users when hostel prices drop below their target.
  */
 
+// Path: src/lib/price-alerts.ts
+
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { priceAlertEmail } from "@/lib/email-templates/price-alert";

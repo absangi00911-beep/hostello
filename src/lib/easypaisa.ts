@@ -10,6 +10,8 @@
  *   EASYPAISA_ENV         — "sandbox" | "production"  (default: sandbox)
  */
 
+// Path: src/lib/easypaisa.ts
+
 import crypto from "crypto";
 import { getAppUrl } from "@/lib/app-url";
 

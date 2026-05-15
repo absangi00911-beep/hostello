@@ -1,3 +1,4 @@
+// Path: src/app/api/cron/cleanup-tokens/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";

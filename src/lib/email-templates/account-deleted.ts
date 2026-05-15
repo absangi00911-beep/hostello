@@ -1,3 +1,5 @@
+// Path: src/lib/email-templates/account-deleted.ts
+
 import { escapeHtml } from "@/lib/email";
 import { emailLayout } from "./layout";
 

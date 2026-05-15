@@ -1,3 +1,5 @@
+// Path: src/components/ui/separator.tsx
+
 "use client"
 
 import * as React from "react"

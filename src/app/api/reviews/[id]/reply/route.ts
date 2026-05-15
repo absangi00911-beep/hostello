@@ -1,3 +1,4 @@
+// Path: src/app/api/reviews/[id]/reply/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";

@@ -1,3 +1,5 @@
+// Path: src/lib/booking-service.ts
+
 import { db } from "@/lib/db";
 import { calculateMonths } from "@/lib/utils";
 import { createNotification } from "@/lib/notifications";

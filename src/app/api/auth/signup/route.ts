@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/signup/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { db } from "@/lib/db";

@@ -1,3 +1,5 @@
+// Path: src/middleware.ts
+
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { validateEnvironmentOnce } from "@/lib/env-validation";

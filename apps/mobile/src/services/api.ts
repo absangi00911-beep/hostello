@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://hostello.pk/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('EXPO_PUBLIC_API_URL is not set. Add it to your .env file.');
+}
 const TOKEN_KEY = 'auth_token';
 
 async function getAuthHeaders() {
@@ -47,6 +50,10 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     console.error(`[API] ${endpoint} request failed:`, error);
     throw error;
   }
+}
+
+export async function getAuthToken(): Promise<string | null> {
+  return AsyncStorage.getItem(TOKEN_KEY);
 }
 
 export async function setAuthToken(token: string) {

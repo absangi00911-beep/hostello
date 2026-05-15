@@ -1,3 +1,5 @@
+// Path: src/components/dashboard/bookings-tab.tsx
+
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
