@@ -1,3 +1,5 @@
+// Path: src/components/AccountMenu.tsx
+
 "use client";
 
 import { useSession, signOut } from "next-auth/react";

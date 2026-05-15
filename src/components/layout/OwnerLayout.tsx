@@ -1,3 +1,5 @@
+// Path: src/components/layout/OwnerLayout.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -11,7 +13,7 @@ import {
   Settings,
   ChevronLeft,
 } from "lucide-react";
-import { NotificationBell } from "../NotificationBell";
+import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "../AccountMenu";
 
 const NAV_ITEMS = [

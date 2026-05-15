@@ -1,3 +1,5 @@
+// Path: src/lib/typesense-sync.ts
+
 import { db } from "@/lib/db";
 import { indexHostel, indexHostelsBatch, removeHostelFromIndex, HostelDocument } from "@/lib/typesense";
 

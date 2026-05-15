@@ -1,3 +1,4 @@
+// Path: src/app/api/cron/mark-completed-stays/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";

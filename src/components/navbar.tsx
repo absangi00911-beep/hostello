@@ -1,10 +1,12 @@
 "use client";
 
+// Path: src/components/Navbar.tsx
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Search, Heart, MessageCircle, User } from "lucide-react";
-import { NotificationBell } from "./NotificationBell";
+import { NotificationBell } from "./layout/NotificationBell";
 import { AccountMenu } from "./AccountMenu";
 import { CitySelector } from "./layout/CitySelector";
 import { Suspense, useState } from "react";

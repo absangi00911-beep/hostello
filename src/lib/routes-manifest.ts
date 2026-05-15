@@ -1,3 +1,5 @@
+// Path: src/lib/routes-manifest.ts
+
 type RoutesManifest = {
   dataRoutes?: unknown[];
   [key: string]: unknown;

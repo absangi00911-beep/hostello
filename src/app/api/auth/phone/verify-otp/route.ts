@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/phone/verify-otp/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";

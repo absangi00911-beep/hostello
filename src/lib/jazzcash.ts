@@ -13,6 +13,8 @@
  *   JAZZCASH_ENV              — "sandbox" | "production"  (default: sandbox)
  */
 
+// Path: src/lib/jazzcash.ts
+
 import crypto from "crypto";
 import { getAppUrl } from "@/lib/app-url";
 

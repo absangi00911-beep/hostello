@@ -1,3 +1,5 @@
+// Path: src/lib/hostel-search.ts
+
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";

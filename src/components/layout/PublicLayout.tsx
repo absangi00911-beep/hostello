@@ -1,3 +1,5 @@
+// Path: src/components/layout/PublicLayout.tsx
+
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
 

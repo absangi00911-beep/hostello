@@ -1,0 +1,36 @@
+name: Security audit
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC (1 PM PKT)
+    - cron: '0 8 * * 1'
+  push:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'apps/mobile/package.json'
+      - 'apps/mobile/package-lock.json'
+
+jobs:
+  audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Audit web dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+      - name: Audit mobile dependencies
+        working-directory: apps/mobile
+        run: npm audit --audit-level=high
+        continue-on-error: false

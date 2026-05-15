@@ -1,3 +1,5 @@
+// Path: src/components/dashboard/settings/password-form.tsx
+
 'use client';
 
 import { useForm } from 'react-hook-form';

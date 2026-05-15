@@ -1,3 +1,5 @@
+// Path: src/lib/auth/session.ts
+
 /**
  * Session utilities for Hostello API routes.
  *

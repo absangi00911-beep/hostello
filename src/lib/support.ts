@@ -1,3 +1,5 @@
+// Path: src/lib/support.ts
+
 import { z } from "zod";
 
 import { sendEmail, escapeHtml } from "./email";

@@ -1,3 +1,4 @@
+// Path: src/app/api/auth/delete-account/route.ts
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { compare } from "bcryptjs";

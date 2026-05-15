@@ -1,3 +1,4 @@
+// Path: src/app/api/report/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";

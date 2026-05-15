@@ -1,7 +1,5 @@
+// Path: src/app/global-error.tsx
 "use client";
-
-import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
 
 export default function GlobalError({
   error,
@@ -10,63 +8,75 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to Sentry
-    Sentry.captureException(error);
-  }, [error]);
-
   return (
-    <html>
-      <body>
-        <div
+    <html lang="en">
+      <body
+        style={{
+          margin:          0,
+          minHeight:       "100dvh",
+          background:      "#FDF8F0",
+          fontFamily:      "system-ui, -apple-system, sans-serif",
+          display:         "flex",
+          flexDirection:   "column",
+          alignItems:      "center",
+          justifyContent:  "center",
+          textAlign:       "center",
+          padding:         "1.5rem",
+        }}
+      >
+        <p
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            backgroundColor: "#f3f4f6",
-            fontFamily: "system-ui, sans-serif",
+            fontSize:    "clamp(60px, 14vw, 96px)",
+            fontWeight:  800,
+            color:       "#F5DFA3",
+            lineHeight:  1,
+            marginBottom: "1.5rem",
+            letterSpacing: "-0.04em",
+          }}
+          aria-hidden="true"
+        >
+          500
+        </p>
+
+        <h1
+          style={{
+            fontSize:    "1.5rem",
+            fontWeight:  600,
+            color:       "#2A2318",
+            marginBottom: "0.75rem",
           }}
         >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "40px",
-              borderRadius: "8px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-              maxWidth: "500px",
-              textAlign: "center",
-            }}
-          >
-            <h1 style={{ color: "#1f2937", marginBottom: "10px" }}>
-              Something went wrong
-            </h1>
-            <p style={{ color: "#6b7280", marginBottom: "20px" }}>
-              We've been notified and are working to fix the issue. Please try
-              again.
-            </p>
-            {error.digest && (
-              <p style={{ color: "#9ca3af", fontSize: "12px", marginBottom: "20px" }}>
-                Error ID: {error.digest}
-              </p>
-            )}
-            <button
-              onClick={reset}
-              style={{
-                backgroundColor: "#3b82f6",
-                color: "white",
-                border: "none",
-                padding: "10px 20px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "16px",
-              }}
-            >
-              Try again
-            </button>
-          </div>
-        </div>
+          Something went wrong
+        </h1>
+
+        <p
+          style={{
+            fontSize:   "0.9375rem",
+            color:      "#857060",
+            maxWidth:   "36ch",
+            lineHeight: 1.65,
+            marginBottom: "2rem",
+          }}
+        >
+          We&apos;ve been notified. Try again in a moment.
+        </p>
+
+        <button
+          onClick={reset}
+          style={{
+            height:        "2.75rem",
+            padding:       "0 1.5rem",
+            borderRadius:  "10px",
+            border:        "none",
+            background:    "#2A6545",
+            color:         "#F9F5EE",
+            fontSize:      "0.9375rem",
+            fontWeight:    500,
+            cursor:        "pointer",
+          }}
+        >
+          Reload page
+        </button>
       </body>
     </html>
   );

@@ -1,3 +1,4 @@
+// Path: src/lib/email-templates/password-reset.ts
 import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 

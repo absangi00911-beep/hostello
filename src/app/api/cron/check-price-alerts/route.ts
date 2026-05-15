@@ -1,3 +1,4 @@
+// Path: src/app/api/cron/check-price-alerts/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { checkPriceAlerts } from "@/lib/price-alerts";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";

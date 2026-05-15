@@ -1,3 +1,5 @@
+// Path: src/lib/notifications.ts
+
 import { db } from "@/lib/db";
 import { NotificationType } from "@prisma/client";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";

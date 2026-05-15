@@ -1,3 +1,5 @@
+// Path: src/lib/email-templates/layout.ts
+
 import { getAppUrl } from "@/lib/app-url";
 
 const APP_URL = getAppUrl();

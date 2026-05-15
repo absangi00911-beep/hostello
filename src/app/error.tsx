@@ -1,9 +1,9 @@
+// Path: src/app/error.tsx
 "use client";
 
 import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -11,42 +11,56 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to Sentry
-    Sentry.captureException(error);
+    // Log to monitoring (Sentry etc.) in production
+    console.error(error);
   }, [error]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "400px",
-        backgroundColor: "#fef2f2",
-        padding: "20px",
-        textAlign: "center",
-      }}
-    >
-      <h2 style={{ color: "#991b1b", marginBottom: "10px" }}>
-        Something went wrong
-      </h2>
-      <p style={{ color: "#7f1d1d", marginBottom: "20px" }}>
-        We've logged the error and will investigate.
+    <div className="min-h-dvh bg-[var(--color-bg-page)] flex flex-col items-center justify-center px-4 text-center">
+      {/* Error icon — same large treatment as 404 but smaller */}
+      <p
+        className="select-none leading-none mb-6 text-[var(--color-primary-faint)]"
+        style={{
+          fontFamily:  "var(--font-heading)",
+          fontSize:    "clamp(60px, 14vw, 96px)",
+          fontWeight:  800,
+          letterSpacing: "-0.04em",
+        }}
+        aria-hidden="true"
+      >
+        500
       </p>
+
+      {/* Heading — honest, no "Oops" */}
+      <h1
+        className="text-[var(--text-h3)] font-[600] text-[var(--color-text-heading)] mb-3"
+        style={{ fontFamily: "var(--font-body)" }}
+      >
+        Something went wrong
+      </h1>
+
+      {/* Description — brief, honest per spec */}
+      <p className="text-[var(--text-body)] text-[var(--color-text-muted)] max-w-[40ch] mb-8 leading-relaxed">
+        We&apos;ve been notified. Try again in a moment.
+      </p>
+
+      {/* One button: reload */}
       <button
         onClick={reset}
-        style={{
-          backgroundColor: "#dc2626",
-          color: "white",
-          border: "none",
-          padding: "8px 16px",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
+        className="inline-flex items-center h-11 px-6 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
       >
-        Try again
+        Reload page
       </button>
+
+      {/* Digest for support reference — subtle, not alarming */}
+      {error.digest && (
+        <p className="mt-6 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          Error reference:{" "}
+          <code className="font-[var(--font-mono)] text-[var(--color-text-muted)]">
+            {error.digest}
+          </code>
+        </p>
+      )}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+// Path: src/lib/typesense.ts
+
 import { Client as TypesenseClient } from "typesense";
 
 let typesenseClient: TypesenseClient | null = null;

@@ -1,3 +1,5 @@
+// Path: src/lib/email.ts
+
 import { Resend } from "resend";
 export { escapeHtml } from "@hostello/shared";
 

@@ -1,3 +1,5 @@
+// Path: src/components/ui/shared.tsx
+
 import { LucideIcon, AlertCircle, Loader2 } from "lucide-react";
 
 /* ── EmptyState ──────────────────────────────────────────── */

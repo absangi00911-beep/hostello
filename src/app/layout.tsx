@@ -1,8 +1,10 @@
+// Path: src/app/layout.tsx
+
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/providers";
-import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/Providers";
+import { Toaster } from "sonner";
 
 /* ── Google Fonts ────────────────────────────────────────────
    Loaded via next/font/google for optimal performance:

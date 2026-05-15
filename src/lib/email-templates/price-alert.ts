@@ -1,3 +1,4 @@
+// Path: src/lib/email-templates/price-alert.ts
 import { escapeHtml } from "@/lib/email";
 import { emailLayout, emailButton } from "./layout";
 
