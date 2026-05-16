@@ -41,7 +41,7 @@ export function AdminLayout({ children, pendingCount }: AdminLayoutProps) {
 
   return (
     <div className="flex min-h-dvh bg-[var(--color-bg-page)]">
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* -- Sidebar --------------------------------------------- */}
       <aside
         className="hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
         aria-label="Admin sidebar"
@@ -133,7 +133,7 @@ export function AdminLayout({ children, pendingCount }: AdminLayoutProps) {
         </div>
       </aside>
 
-      {/* ── Main content ──────────────────────────────────────── */}
+      {/* -- Main content ---------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:px-6 shrink-0">
           <h1

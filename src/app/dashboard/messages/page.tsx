@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { PageSpinner, InlineError, EmptyState } from "@/components/ui/shared";
 
-/* ── Types ───────────────────────────────────────────────── */
+/* -- Types ------------------------------------------------- */
 interface Conversation {
   id: string;
   hostelName: string;
@@ -36,7 +36,7 @@ interface Message {
   createdAt: string;
 }
 
-/* ── User avatar ─────────────────────────────────────────── */
+/* -- User avatar ------------------------------------------- */
 function Avatar({ name, avatar, size = 36 }: { name: string; avatar?: string | null; size?: number }) {
   const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   return (
@@ -56,7 +56,7 @@ function Avatar({ name, avatar, size = 36 }: { name: string; avatar?: string | n
   );
 }
 
-/* ── Conversation list item ──────────────────────────────── */
+/* -- Conversation list item -------------------------------- */
 function ConversationItem({
   convo,
   currentUserId,
@@ -110,7 +110,7 @@ function ConversationItem({
   );
 }
 
-/* ── Message bubble ──────────────────────────────────────── */
+/* -- Message bubble ---------------------------------------- */
 function MessageBubble({
   message,
   isMine,
@@ -138,7 +138,7 @@ function MessageBubble({
   );
 }
 
-/* ── Message thread ──────────────────────────────────────── */
+/* -- Message thread ---------------------------------------- */
 function MessageThread({
   conversationId,
   currentUserId,
@@ -288,7 +288,7 @@ function MessageThread({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function MessagesPage() {
   const { data: session } = useSession();
   const searchParams      = useSearchParams();
@@ -335,7 +335,7 @@ export default function MessagesPage() {
       style={{ height: "calc(100dvh - 280px)", minHeight: 400 }}
     >
       <div className="flex h-full">
-        {/* ── Conversation list ─────────────────────── */}
+        {/* -- Conversation list ----------------------- */}
         <div
           className={`flex flex-col border-r border-[var(--color-border-subtle)] shrink-0 ${
             showThread ? "hidden lg:flex" : "flex w-full"
@@ -362,7 +362,7 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* ── Message thread ────────────────────────── */}
+        {/* -- Message thread -------------------------- */}
         <div
           className={`flex-1 min-w-0 ${
             showThread ? "flex flex-col" : "hidden lg:flex lg:flex-col"

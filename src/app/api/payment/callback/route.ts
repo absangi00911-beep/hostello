@@ -30,7 +30,7 @@ import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
 
 const APP_URL = getAppUrl();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 /** Parse an application/x-www-form-urlencoded body into a plain object. */
 async function parseFormBody(req: NextRequest): Promise<Record<string, string>> {
@@ -127,7 +127,7 @@ async function confirmBooking(
   return updated;
 }
 
-// ── Route handler ─────────────────────────────────────────────────────────────
+// -- Route handler -------------------------------------------------------------
 
 async function handleCallback(req: NextRequest): Promise<NextResponse> {
   const url       = new URL(req.url);
@@ -139,7 +139,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(`${APP_URL}/?payment=error`, 303);
   }
 
-  // ── IP verification (optional, defense-in-depth) ──────────────────────
+  // -- IP verification (optional, defense-in-depth) ----------------------
   // If GATEWAY_IPS is configured, verify the request comes from an allowed IP.
   // This is optional; signature verification provides the primary security.
   if (provider) {

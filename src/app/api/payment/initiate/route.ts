@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── JazzCash ────────────────────────────────────────────────────────────
+    // -- JazzCash ------------------------------------------------------------
     if (paymentMethod === "jazzcash") {
       if (isMobile) {
         return NextResponse.json(
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── EasyPaisa ───────────────────────────────────────────────────────────
+    // -- EasyPaisa -----------------------------------------------------------
     if (paymentMethod === "easypaisa") {
       if (isMobile) {
         return NextResponse.json(
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Safepay (default) ───────────────────────────────────────────────────
+    // -- Safepay (default) ---------------------------------------------------
     const { redirectUrl } = await createCheckoutSession({
       bookingId:     booking.id,
       amount:        booking.total,

@@ -4,7 +4,7 @@ import { POST } from "@/app/api/reviews/route";
 import { db } from "@/lib/db";
 import * as authConfig from "@/lib/auth/config";
 
-// ─── Mocks ───────────────────────────────────────────────────────────────────
+// --- Mocks -------------------------------------------------------------------
 
 vi.mock("@/lib/auth/config", () => ({
   auth: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock("@/lib/notifications", () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// --- Helpers ------------------------------------------------------------------
 
 function mockRequest(options: {
   userId?: string;
@@ -67,7 +67,7 @@ function mockRequest(options: {
   return request;
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// --- Tests --------------------------------------------------------------------
 
 describe("POST /api/reviews (Integration Template)", () => {
   const mockDb = vi.mocked(db);

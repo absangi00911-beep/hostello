@@ -19,7 +19,7 @@ import { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { EmptyState, PageSpinner, InlineError } from "@/components/ui/shared";
 
-/* ── Notification type → icon + color ───────────────────── */
+/* -- Notification type → icon + color --------------------- */
 const TYPE_CONFIG: Record<
   string,
   { icon: LucideIcon; color: string; bg: string }
@@ -48,7 +48,7 @@ interface Notification {
   hostelId?: string | null;
 }
 
-/* ── Notification row ────────────────────────────────────── */
+/* -- Notification row -------------------------------------- */
 function NotificationRow({
   notification,
   onMarkRead,
@@ -118,7 +118,7 @@ function NotificationRow({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);

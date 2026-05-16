@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { inputCls } from "@/components/auth/AuthCardLayout";
 
-/* ── Section wrapper ─────────────────────────────────────── */
+/* -- Section wrapper --------------------------------------- */
 function Section({
   id, title, description, children, danger = false,
 }: {
@@ -66,7 +66,7 @@ function SaveBtn({ loading, label = "Save changes" }: { loading: boolean; label?
   );
 }
 
-/* ── Personal info ───────────────────────────────────────── */
+/* -- Personal info ----------------------------------------- */
 function PersonalInfo({ profile }: { profile: any }) {
   const { update } = useSession();
   const [name, setName] = useState(profile?.name ?? "");
@@ -157,7 +157,7 @@ function PersonalInfo({ profile }: { profile: any }) {
   );
 }
 
-/* ── Change password ─────────────────────────────────────── */
+/* -- Change password --------------------------------------- */
 function ChangePassword() {
   const [curr,   setCurr]   = useState("");
   const [newPw,  setNewPw]  = useState("");
@@ -216,7 +216,7 @@ function ChangePassword() {
   );
 }
 
-/* ── Danger zone ─────────────────────────────────────────── */
+/* -- Danger zone ------------------------------------------- */
 function DangerZone() {
   const router = useRouter();
   const [input,   setInput]   = useState("");
@@ -255,7 +255,7 @@ function DangerZone() {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function OwnerSettingsPage() {
   const { data: session } = useSession();
 

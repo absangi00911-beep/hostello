@@ -44,7 +44,7 @@ type PendingAction = {
   action: "suspend" | "activate";
 } | null;
 
-/* ── Inline action buttons ───────────────────────────────── */
+/* -- Inline action buttons --------------------------------- */
 function AdminActions({
   hostel,
   onApprove,
@@ -118,7 +118,7 @@ function AdminActions({
   return null;
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function AdminListingsPage() {
   const queryClient = useQueryClient();
 

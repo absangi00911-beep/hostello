@@ -27,7 +27,7 @@ function getClient(): TypesenseClient {
 
 export const HOSTEL_COLLECTION_NAME = "hostels";
 
-// ── Type Definitions ───────────────────────────────────────────────────────────
+// -- Type Definitions -----------------------------------------------------------
 
 /**
  * Typesense document for a hostel.

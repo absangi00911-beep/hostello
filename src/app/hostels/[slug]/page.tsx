@@ -19,7 +19,7 @@ import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-/* ── Data fetch ──────────────────────────────────────────── */
+/* -- Data fetch -------------------------------------------- */
 async function getHostel(slug: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -35,7 +35,7 @@ async function getHostel(slug: string) {
   }
 }
 
-/* ── Metadata ────────────────────────────────────────────── */
+/* -- Metadata ---------------------------------------------- */
 export async function generateMetadata({
   params,
 }: {
@@ -55,7 +55,7 @@ export async function generateMetadata({
   };
 }
 
-/* ── Amenity icon mapping (best-effort) ─────────────────── */
+/* -- Amenity icon mapping (best-effort) ------------------- */
 function AmenityIcon({ name }: { name: string }) {
   return (
     <CheckCircle2
@@ -67,7 +67,7 @@ function AmenityIcon({ name }: { name: string }) {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default async function HostelDetailPage({
   params,
 }: {
@@ -83,17 +83,17 @@ export default async function HostelDetailPage({
 
   return (
     <PublicLayout noFooter={false}>
-      {/* ── Image gallery — full width, no sidebar ──────── */}
+      {/* -- Image gallery — full width, no sidebar -------- */}
       <ImageGallery
         images={hostel.images ?? []}
         hostelName={hostel.name}
       />
 
-      {/* ── Main layout: 8-col content + 4-col booking ─── */}
+      {/* -- Main layout: 8-col content + 4-col booking --- */}
       <div className="container-app">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 py-8 pb-32 lg:pb-12">
 
-          {/* ── LEFT: content area ─────────────────────── */}
+          {/* -- LEFT: content area ----------------------- */}
           <div className="min-w-0">
             {/* Header */}
             <div className="mb-6">
@@ -193,7 +193,7 @@ export default async function HostelDetailPage({
                 ))}
               </TabsList>
 
-              {/* ── Details tab ─────────────────────────── */}
+              {/* -- Details tab --------------------------- */}
               <TabsContent value="details" className="mt-0">
                 {/* Description */}
                 <p className="text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed mb-8 max-w-[68ch]">
@@ -250,7 +250,7 @@ export default async function HostelDetailPage({
                 )}
               </TabsContent>
 
-              {/* ── Rooms tab ───────────────────────────── */}
+              {/* -- Rooms tab ----------------------------- */}
               <TabsContent value="rooms" className="mt-0">
                 {rooms.length === 0 ? (
                   <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] py-8">
@@ -327,7 +327,7 @@ export default async function HostelDetailPage({
                 )}
               </TabsContent>
 
-              {/* ── Reviews tab ─────────────────────────── */}
+              {/* -- Reviews tab --------------------------- */}
               <TabsContent value="reviews" className="mt-0">
                 <ReviewList
                   reviews={reviews}
@@ -336,7 +336,7 @@ export default async function HostelDetailPage({
                 />
               </TabsContent>
 
-              {/* ── Location tab ─────────────────────────── */}
+              {/* -- Location tab --------------------------- */}
               <TabsContent value="location" className="mt-0">
                 {hostel.latitude && hostel.longitude ? (
                   <HostelMap
@@ -352,7 +352,7 @@ export default async function HostelDetailPage({
             </Tabs>
           </div>
 
-          {/* ── RIGHT: sticky booking panel ────────────── */}
+          {/* -- RIGHT: sticky booking panel -------------- */}
           <BookingPanel
             hostelId={hostel.id}
             hostelSlug={hostel.slug}

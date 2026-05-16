@@ -30,7 +30,7 @@ interface ReviewListProps {
   reviewCount: number;
 }
 
-/* ── Score bar ───────────────────────────────────────────── */
+/* -- Score bar --------------------------------------------- */
 function ScoreBar({ label, score }: { label: string; score: number }) {
   const pct = (score / 5) * 100;
   return (
@@ -58,7 +58,7 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   );
 }
 
-/* ── User avatar ─────────────────────────────────────────── */
+/* -- User avatar ------------------------------------------- */
 function Avatar({ user, size = 36 }: { user: ReviewUser; size?: number }) {
   const initials = user.name
     .split(" ")
@@ -92,7 +92,7 @@ function Avatar({ user, size = 36 }: { user: ReviewUser; size?: number }) {
   );
 }
 
-/* ── Single review card ──────────────────────────────────── */
+/* -- Single review card ------------------------------------ */
 function ReviewCard({ review }: { review: ReviewData }) {
   const timeAgo = formatDistanceToNow(new Date(review.createdAt), {
     addSuffix: true,
@@ -159,7 +159,7 @@ function ReviewCard({ review }: { review: ReviewData }) {
   );
 }
 
-/* ── ReviewList ──────────────────────────────────────────── */
+/* -- ReviewList -------------------------------------------- */
 export function ReviewList({
   reviews,
   overallRating,

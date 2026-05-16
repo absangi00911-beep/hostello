@@ -48,7 +48,7 @@ export default function PaymentPage() {
   const [selected, setSelected] = useState<PaymentMethod>("safepay");
   const [paying,   setPaying]   = useState(false);
 
-  /* ── Fetch booking ──────────────────────────────────── */
+  /* -- Fetch booking ------------------------------------ */
   useEffect(() => {
     async function load() {
       try {
@@ -74,7 +74,7 @@ export default function PaymentPage() {
     load();
   }, [bookingId, router]);
 
-  /* ── Initiate payment ───────────────────────────────── */
+  /* -- Initiate payment --------------------------------- */
   async function handlePay() {
     if (!booking) return;
     setPaying(true);
@@ -109,7 +109,7 @@ export default function PaymentPage() {
     }
   }
 
-  /* ── Render states ──────────────────────────────────── */
+  /* -- Render states ------------------------------------ */
   if (loading) {
     return (
       <BookingStepLayout step={2} backHref={`/booking/${bookingId}/review`}>

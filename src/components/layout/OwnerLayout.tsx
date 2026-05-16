@@ -97,7 +97,7 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
 
   return (
     <div className="flex min-h-dvh bg-[var(--color-bg-page)]">
-      {/* ── Sidebar (desktop) ────────────────────────────────── */}
+      {/* -- Sidebar (desktop) ---------------------------------- */}
       <aside
         className="
           hidden md:flex flex-col
@@ -145,7 +145,7 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
         </div>
       </aside>
 
-      {/* ── Main content area ─────────────────────────────────── */}
+      {/* -- Main content area ----------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:px-6 shrink-0">
@@ -170,7 +170,7 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
         </main>
       </div>
 
-      {/* ── Mobile bottom tab bar ─────────────────────────────── */}
+      {/* -- Mobile bottom tab bar ------------------------------- */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)]"
         aria-label="Mobile owner navigation"

@@ -15,7 +15,7 @@
 import crypto from "crypto";
 import { getAppUrl } from "@/lib/app-url";
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// -- Config --------------------------------------------------------------------
 
 function getConfig() {
   return {
@@ -31,7 +31,7 @@ function getCheckoutUrl(env: string): string {
     : "https://easypaisasandbox.pk/tpg/";
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 /**
  * AES-128-ECB encryption used by EasyPaisa for the encryptedHashRequest field.
@@ -64,7 +64,7 @@ function formatTimestamp(d: Date): string {
   ].join("");
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
+// -- Public API ----------------------------------------------------------------
 
 export interface EasypaisaSession {
   /** URL the browser should POST the form to. */
@@ -135,7 +135,7 @@ export function createEasypaisaSession({
   return { formUrl: getCheckoutUrl(config.env), params };
 }
 
-// ── Callback parsing ──────────────────────────────────────────────────────────
+// -- Callback parsing ----------------------------------------------------------
 
 export interface EasypaisaCallbackResult {
   success: boolean;

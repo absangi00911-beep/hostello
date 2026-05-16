@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
 
 const PAGE_SIZE = 20;
 
-/* ── Admin inline actions ────────────────────────────────── */
+/* -- Admin inline actions ---------------------------------- */
 function AdminBookingActions({
   booking,
   onAction,
@@ -66,7 +66,7 @@ function AdminBookingActions({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function AdminBookingsPage() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState("");

@@ -31,7 +31,7 @@ interface OwnerHostel {
   rating: number;
 }
 
-/* ── Status action button ────────────────────────────────── */
+/* -- Status action button ---------------------------------- */
 function StatusAction({
   hostel,
   onAction,
@@ -82,7 +82,7 @@ function StatusAction({
   return null;
 }
 
-/* ── Listing row card ────────────────────────────────────── */
+/* -- Listing row card -------------------------------------- */
 function ListingCard({
   hostel,
   onStatusAction,
@@ -161,7 +161,7 @@ function ListingCard({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function OwnerListingsPage() {
   const queryClient = useQueryClient();
   const [actingId, setActingId] = useState<string | null>(null);

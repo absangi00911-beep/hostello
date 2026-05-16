@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
-// ─── GET /api/profile ────────────────────────────────────────────────────────
+// --- GET /api/profile --------------------------------------------------------
 //
 // Returns the authenticated user's own profile.
 // Never exposes password, tokenVersion, or internal session fields.
@@ -63,7 +63,7 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-// ─── PATCH /api/profile ───────────────────────────────────────────────────────
+// --- PATCH /api/profile -------------------------------------------------------
 //
 // Updates editable profile fields for the authenticated user.
 // Avatar updates go through /api/upload separately.

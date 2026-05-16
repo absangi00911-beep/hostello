@@ -52,7 +52,7 @@ interface Booking {
   };
 }
 
-/* ── Booking card ────────────────────────────────────────── */
+/* -- Booking card ------------------------------------------ */
 function BookingCard({
   booking,
   onCancel,
@@ -182,7 +182,7 @@ function BookingCard({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function BookingsPage() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<BookingStatus | "ALL">("ALL");

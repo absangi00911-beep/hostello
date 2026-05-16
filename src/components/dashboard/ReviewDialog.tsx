@@ -29,7 +29,7 @@ const SUBCATEGORIES = [
 
 type SubcategoryKey = typeof SUBCATEGORIES[number]["key"];
 
-/* ── Star rating picker ──────────────────────────────────── */
+/* -- Star rating picker ------------------------------------ */
 function StarPicker({
   value,
   onChange,

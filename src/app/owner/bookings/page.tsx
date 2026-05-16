@@ -28,7 +28,7 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 
 const PAGE_SIZE = 20;
 
-/* ── Inline action buttons ───────────────────────────────── */
+/* -- Inline action buttons --------------------------------- */
 function BookingActions({
   booking,
   onAction,

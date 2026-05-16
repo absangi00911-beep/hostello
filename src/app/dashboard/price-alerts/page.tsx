@@ -19,7 +19,7 @@ import {
   formatPKR,
 } from "@/components/ui/shared";
 
-/* ── Types ───────────────────────────────────────────────── */
+/* -- Types ------------------------------------------------- */
 interface PriceAlert {
   id: string;
   targetPrice: number;
@@ -34,7 +34,7 @@ interface PriceAlert {
   };
 }
 
-/* ── Alert row ───────────────────────────────────────────── */
+/* -- Alert row --------------------------------------------- */
 function AlertRow({
   alert,
   onToggle,
@@ -110,7 +110,7 @@ function AlertRow({
   );
 }
 
-/* ── Add alert sheet ─────────────────────────────────────── */
+/* -- Add alert sheet --------------------------------------- */
 function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
   const [open,        setOpen]        = useState(false);
   const [searchQ,     setSearchQ]     = useState("");
@@ -254,7 +254,7 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function PriceAlertsPage() {
   const queryClient = useQueryClient();
   const [togglingId, setTogglingId] = useState<string | null>(null);
