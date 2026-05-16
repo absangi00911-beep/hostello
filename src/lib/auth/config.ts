@@ -99,7 +99,7 @@ const credentialsProvider = Credentials({
         name: user.name,
         image: user.avatar,
         role: user.role,
-        emailVerified: !!user.emailVerified,
+        emailVerified: user.emailVerified,
         // Pass tokenVersion to the JWT callback via the user object.
         // NextAuth type augmentation in types/index.ts makes this field valid.
         tokenVersion: user.tokenVersion,
@@ -181,11 +181,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        // `user.emailVerified` is:
-        //   - boolean  — from Credentials (we coerce it in authorize())
-        //   - Date|null — from PrismaAdapter for OAuth users
-        // Both are handled correctly by the truthiness check.
-        token.emailVerified = user.emailVerified ? true : false;
+        // `user.emailVerified` is Date | null for both Credentials and OAuth users.
+        token.emailVerified = user.emailVerified ?? null;
         // tokenVersion defaults to 0 for all new users (Credentials or OAuth).
         // It is only incremented on password change / reset.
         token.tokenVersion = user.tokenVersion ?? 0;

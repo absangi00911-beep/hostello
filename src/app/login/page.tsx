@@ -1,7 +1,9 @@
 // Path: src/app/login/page.tsx
 "use client";
 
-import { useState } from "react";
+export const dynamic = "force-dynamic";
+
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -22,7 +24,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   Default:            "Something went wrong. Please try again.",
 };
 
-export default function LoginPage() {
+function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl  = searchParams.get("callbackUrl") ?? "/";
@@ -62,7 +64,7 @@ export default function LoginPage() {
       subheading="Welcome back to HostelLo"
       footer={
         <>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/register"
             className="text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
@@ -150,5 +152,13 @@ export default function LoginPage() {
         </button>
       </form>
     </AuthCardLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

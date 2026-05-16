@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { AuthCardLayout } from "@/components/auth/AuthCardLayout";
+import { ResendVerificationButton } from "./ResendButton";
 
 export default function VerifyEmailSentPage() {
   return (
@@ -29,11 +30,8 @@ export default function VerifyEmailSentPage() {
             see it.
           </p>
         </div>
-        <ResendButton />
+        <ResendVerificationButton />
       </div>
     </AuthCardLayout>
   );
 }
-
-// Client component for the resend action
-import { ResendVerificationButton as ResendButton } from "./ResendButton";

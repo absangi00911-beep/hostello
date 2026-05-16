@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Image, Button, ScrollView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { apiRequest } from '../../../../src/services/api';
+import { apiRequest } from '../../../src/services/api';
 
 export default function HostelDetailScreen() {
   const { slug } = useLocalSearchParams();

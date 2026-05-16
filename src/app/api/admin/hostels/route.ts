@@ -11,6 +11,7 @@ import { z } from "zod";
 const schema = z.object({
   hostelId: z.string().cuid(),
   action:   z.enum(["verify", "suspend", "activate"]),
+  reason:   z.string().max(500).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -25,7 +26,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { hostelId, action } = parsed.data;
+  const { hostelId, action, reason } = parsed.data;
 
   const data: Record<string, unknown> =
     action === "verify"   ? { verified: true, status: "ACTIVE" } :
@@ -102,6 +103,7 @@ export async function PATCH(req: NextRequest) {
           hostelName: hostel.name,
           hostelId:   hostel.id,
           status:     "SUSPENDED",
+          reason:     reason,
         }),
       ).catch(() =>
         console.error(
