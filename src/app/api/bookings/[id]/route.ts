@@ -88,7 +88,7 @@ export async function PATCH(
       );
     }
 
-    // ── Cancel (student or admin only) ────────────────────────────────────────
+    // -- Cancel (student or admin only) ----------------------------------------
     if (action === "cancel") {
       if (!isStudent && !isAdmin) {
         return NextResponse.json({ error: "Only the student can cancel." }, { status: 403 });
@@ -132,7 +132,7 @@ export async function PATCH(
       return NextResponse.json({ data: updated, message: "Booking cancelled." });
     }
 
-    // ── Confirm / Decline (hostel owner or admin only) ─────────────────────────
+    // -- Confirm / Decline (hostel owner or admin only) -------------------------
     if (!isHostelOwner && !isAdmin) {
       return NextResponse.json({ error: "Only the hostel owner can do this." }, { status: 403 });
     }

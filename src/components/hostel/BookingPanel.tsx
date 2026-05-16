@@ -32,7 +32,7 @@ interface BookingPanelProps {
   rooms: Room[];
 }
 
-/* ── Months between two dates (rounded up) ───────────────── */
+/* -- Months between two dates (rounded up) ----------------- */
 function monthsBetween(checkIn: string, checkOut: string): number {
   if (!checkIn || !checkOut) return 0;
   const d1 = new Date(checkIn);
@@ -44,7 +44,7 @@ function monthsBetween(checkIn: string, checkOut: string): number {
   return Math.max(1, months);
 }
 
-/* ── Booking form ────────────────────────────────────────── */
+/* -- Booking form ------------------------------------------ */
 function BookingForm({
   hostelId,
   hostelSlug,
@@ -238,7 +238,7 @@ function BookingForm({
   );
 }
 
-/* ── Main BookingPanel ───────────────────────────────────── */
+/* -- Main BookingPanel ------------------------------------- */
 export function BookingPanel({
   hostelId,
   hostelSlug,
@@ -280,7 +280,7 @@ export function BookingPanel({
 
   return (
     <>
-      {/* ── Desktop sticky panel ─────────────────────────── */}
+      {/* -- Desktop sticky panel --------------------------- */}
       <aside
         className="hidden lg:block sticky top-24 rounded-[var(--radius-xl)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-md)]"
         aria-label="Booking panel"
@@ -316,7 +316,7 @@ export function BookingPanel({
         </button>
       </aside>
 
-      {/* ── Mobile bottom bar ────────────────────────────── */}
+      {/* -- Mobile bottom bar ------------------------------ */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-3 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-4 py-3">
         <div>
           <p className="text-[var(--text-h5)] font-[700] text-[var(--color-primary-deep)] leading-none">

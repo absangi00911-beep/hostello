@@ -11,7 +11,7 @@ import { AccountMenu } from "./layout/AccountMenu";
 import { CitySelector } from "./layout/CitySelector";
 import { Suspense, useState } from "react";
 
-/* ── HostelLo wordmark ───────────────────────────────────── */
+/* -- HostelLo wordmark ------------------------------------- */
 function Logo() {
   return (
     <Link
@@ -41,7 +41,7 @@ function Logo() {
   );
 }
 
-/* ── Compact search bar ──────────────────────────────────── */
+/* -- Compact search bar ------------------------------------ */
 function NavSearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -79,7 +79,7 @@ function NavSearch() {
   );
 }
 
-/* ── Mobile bottom tab bar ───────────────────────────────── */
+/* -- Mobile bottom tab bar --------------------------------- */
 function MobileTabBar() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -130,7 +130,7 @@ function MobileTabBar() {
   );
 }
 
-/* ── Main Navbar ─────────────────────────────────────────── */
+/* -- Main Navbar ------------------------------------------- */
 export function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();

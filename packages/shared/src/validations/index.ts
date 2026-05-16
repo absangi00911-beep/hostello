@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// ─── Sanitization ─────────────────────────────────────────────────────────────
+// -- Sanitization --
 
 /**
  * Sanitizes a string by removing HTML tags and dangerous content.
@@ -39,7 +39,7 @@ export const rulesSchema = z
   )
   .max(20, "Cannot have more than 20 rules");
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// -- Auth --
 
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -68,7 +68,7 @@ export const signupSchema = z
     path: ["confirmPassword"],
   });
 
-// ─── Hostel ───────────────────────────────────────────────────────────────────
+// --- Hostel -------------------------------------------------------------------
 
 export const hostelCreateSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").max(100).transform(sanitizeString),
@@ -95,7 +95,7 @@ export const hostelCreateSchema = z.object({
   rules: rulesSchema,
 });
 
-// ─── Review ───────────────────────────────────────────────────────────────────
+// --- Review -------------------------------------------------------------------
 
 export const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -110,7 +110,7 @@ export const reviewSchema = z.object({
   safety: z.number().int().min(0).max(5),
 });
 
-// ─── Booking ──────────────────────────────────────────────────────────────────
+// --- Booking ------------------------------------------------------------------
 
 export const bookingSchema = z
   .object({
@@ -136,7 +136,7 @@ export const bookingSchema = z
     path: ["checkOut"],
   });
 
-// ─── Search ───────────────────────────────────────────────────────────────────
+// --- Search -------------------------------------------------------------------
 
 export const searchParamsSchema = z.object({
   q: z.string().optional(),
@@ -151,7 +151,7 @@ export const searchParamsSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });
 
-// ─── Profile ─────────────────────────────────────────────────────────────────
+// --- Profile -----------------------------------------------------------------
 
 export const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),

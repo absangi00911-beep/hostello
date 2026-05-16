@@ -71,7 +71,7 @@ export function AuthCardLayout({
   );
 }
 
-/* ── Shared form field wrapper ───────────────────────────── */
+/* -- Shared form field wrapper ----------------------------- */
 interface FormFieldProps {
   id: string;
   label: string;
@@ -111,15 +111,15 @@ export function FormField({ id, label, optional, error, children }: FormFieldPro
   );
 }
 
-/* ── Shared text input ───────────────────────────────────── */
+/* -- Shared text input ------------------------------------- */
 export const inputCls =
   "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)] aria-[invalid=true]:border-[var(--color-error)] aria-[invalid=true]:ring-[oklch(0.52_0.18_22_/_0.12)]";
 
-/* ── Primary action button ───────────────────────────────── */
+/* -- Primary action button --------------------------------- */
 export const primaryBtnCls =
   "inline-flex w-full items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2";
 
-/* ── Or divider ──────────────────────────────────────────── */
+/* -- Or divider -------------------------------------------- */
 export function OrDivider() {
   return (
     <div className="relative my-5 flex items-center">

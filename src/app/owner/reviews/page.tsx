@@ -25,7 +25,7 @@ interface Review {
   user: { name: string; avatar?: string | null };
 }
 
-/* ── Reply form ──────────────────────────────────────────── */
+/* -- Reply form -------------------------------------------- */
 function ReplyForm({
   reviewId,
   existing,
@@ -110,7 +110,7 @@ function ReplyForm({
   );
 }
 
-/* ── Review card ─────────────────────────────────────────── */
+/* -- Review card ------------------------------------------- */
 function ReviewCard({ review }: { review: Review }) {
   const [replying, setReplying] = useState(false);
   const timeAgo = formatDistanceToNow(new Date(review.createdAt), { addSuffix: true });
@@ -172,7 +172,7 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function OwnerReviewsPage() {
   const { data, isLoading, isError } = useQuery<{ data: Review[] }>({
     queryKey: ["owner-reviews"],

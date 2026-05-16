@@ -66,7 +66,7 @@ function isImageUrlAllowed(url: string): boolean {
   return allowed.some((o) => url.startsWith(o + "/") || url === o);
 }
 
-// ── R2 cleanup ─────────────────────────────────────────────────────────────
+// -- R2 cleanup -------------------------------------------------------------
 
 /**
  * Deletes R2 objects for images that were removed from a listing.
@@ -128,7 +128,7 @@ async function findHostel(param: string) {
 
 export const runtime = 'nodejs';
 
-// ── Route handlers ─────────────────────────────────────────────────────────
+// -- Route handlers ---------------------------------------------------------
 
 export async function GET(
   _req: NextRequest,

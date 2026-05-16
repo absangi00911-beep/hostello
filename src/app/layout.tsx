@@ -6,12 +6,12 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "sonner";
 
-/* ── Google Fonts ────────────────────────────────────────────
+/* -- Google Fonts --------------------------------------------
    Loaded via next/font/google for optimal performance:
    - Preloaded, no layout shift
    - Self-hosted via Next.js (no external request at runtime)
    - Exposed as CSS variables matching DESIGN.md
-──────────────────────────────────────────────────────────── */
+------------------------------------------------------------ */
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
@@ -34,7 +34,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-/* ── Metadata ─────────────────────────────────────────────── */
+/* -- Metadata ----------------------------------------------- */
 export const metadata: Metadata = {
   title: {
     default: "HostelLo — Find your room. Not a phone number.",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   },
 };
 
-/* ── Root Layout ──────────────────────────────────────────── */
+/* -- Root Layout -------------------------------------------- */
 export default function RootLayout({
   children,
 }: {

@@ -24,7 +24,7 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Auth ───────────────────────────────────────────────────────────────
+    // -- Auth ---------------------------------------------------------------
     try {
       await verifyUpstashRequest(req, { acceptBearerToken: true });
     } catch (error) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
 
-    // ── Step 1: Find all bookings that need completing ─────────────────────
+    // -- Step 1: Find all bookings that need completing ---------------------
     // Select only the fields needed for notifications — no over-fetching.
     const bookingsToComplete = await db.booking.findMany({
       where: {
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Step 2: Update exactly those bookings ──────────────────────────────
+    // -- Step 2: Update exactly those bookings ------------------------------
     // Scoping to explicit IDs + re-checking status:"CONFIRMED" prevents a
     // race condition where a booking is cancelled between the findMany above
     // and this update (e.g. the student cancels at 23:59 UTC on checkout day).
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`[cron] mark-completed-stays: marked ${result.count} bookings as completed`);
 
-    // ── Step 3: Notify each student ────────────────────────────────────────
+    // -- Step 3: Notify each student ----------------------------------------
     // Run all notifications concurrently. Promise.allSettled ensures a single
     // notification failure never prevents the others from being sent.
     // createNotification is already fire-and-forget internally (never throws),

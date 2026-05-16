@@ -8,7 +8,7 @@ import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { apiRequest } from '../../../../src/services/api';
 import type { HostelWithDetails } from '@hostello/shared';
 
-/* ── Types ─────────────────────────────────────────────── */
+/* -- Types -- */
 interface Room {
   id: string;
   name: string;
@@ -21,7 +21,7 @@ type PaymentMethod = 'safepay' | 'jazzcash' | 'easypaisa';
 
 type Step = 'details' | 'confirm';
 
-/* ── Helpers ────────────────────────────────────────────── */
+/* -- Helpers -- */
 function formatPKR(amount: number) {
   return `Rs. ${amount.toLocaleString('en-PK')}`;
 }
@@ -52,7 +52,7 @@ const PAYMENT_METHODS: { id: PaymentMethod; label: string; desc: string }[] = [
   { id: 'easypaisa', label: 'EasyPaisa', desc: 'Mobile wallet' },
 ];
 
-/* ── DatePicker row ─────────────────────────────────────── */
+/* -- DatePicker row --------------------------------------- */
 interface DateRowProps {
   label: string;
   date: Date;
@@ -93,11 +93,11 @@ function DateRow({ label, date, minDate, onChange }: DateRowProps) {
   );
 }
 
-/* ── Main Screen ────────────────────────────────────────── */
+/* -- Main Screen ------------------------------------------ */
 export default function BookingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  /* ── State ──────────────────────────────────────────── */
+  /* -- State -------------------------------------------- */
   const [hostel, setHostel]         = useState<HostelWithDetails | null>(null);
   const [rooms, setRooms]           = useState<Room[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -115,7 +115,7 @@ export default function BookingScreen() {
   const [selectedRoom,   setSelectedRoom]   = useState<Room | null>(null);
   const [paymentMethod,  setPaymentMethod]  = useState<PaymentMethod>('safepay');
 
-  /* ── Fetch hostel + rooms ───────────────────────────── */
+  /* -- Fetch hostel + rooms ----------------------------- */
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -133,12 +133,12 @@ export default function BookingScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  /* ── Derived values ─────────────────────────────────── */
+  /* -- Derived values ----------------------------------- */
   const months       = monthsBetween(checkIn, checkOut);
   const pricePerMonth = selectedRoom?.pricePerMonth ?? hostel?.pricePerMonth ?? 0;
   const total         = pricePerMonth * months;
 
-  /* ── Validation ─────────────────────────────────────── */
+  /* -- Validation --------------------------------------- */
   const validate = useCallback((): string | null => {
     if (checkOut <= checkIn)    return 'Check-out must be after check-in.';
     if (months < 1)             return 'Minimum stay is 1 month.';
@@ -146,7 +146,7 @@ export default function BookingScreen() {
     return null;
   }, [checkIn, checkOut, months, guests]);
 
-  /* ── Submit ─────────────────────────────────────────── */
+  /* -- Submit ------------------------------------------- */
   const handleSubmit = useCallback(async () => {
     const validationError = validate();
     if (validationError) {
@@ -176,13 +176,13 @@ export default function BookingScreen() {
     }
   }, [id, selectedRoom, checkIn, checkOut, guests, paymentMethod, validate]);
 
-  /* ── Handle checkIn change — push checkOut forward ─── */
+  /* -- Handle checkIn change — push checkOut forward --- */
   function handleCheckInChange(date: Date) {
     setCheckIn(date);
     if (checkOut <= date) setCheckOut(addMonths(date, 1));
   }
 
-  /* ── Loading / error states ─────────────────────────── */
+  /* -- Loading / error states --------------------------- */
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -205,7 +205,7 @@ export default function BookingScreen() {
     );
   }
 
-  /* ── Step 1: Details ────────────────────────────────── */
+  /* -- Step 1: Details ---------------------------------- */
   if (step === 'details') {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -368,7 +368,7 @@ export default function BookingScreen() {
     );
   }
 
-  /* ── Step 2: Confirm ────────────────────────────────── */
+  /* -- Step 2: Confirm ---------------------------------- */
   return (
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ title: 'Confirm booking', headerBackTitle: 'Edit' }} />
@@ -432,7 +432,7 @@ export default function BookingScreen() {
   );
 }
 
-/* ── Styles ─────────────────────────────────────────────── */
+/* -- Styles ----------------------------------------------- */
 const GOLD    = '#C28B1A';
 const GOLD_DK = '#9E6F0E';
 const BG      = '#FDF8F0';

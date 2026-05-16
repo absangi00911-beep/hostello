@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { PageSpinner, StatusBadge, formatPKR } from "@/components/ui/shared";
 
-/* ── Stat tile — horizontal: label left, number right ─────── */
+/* -- Stat tile — horizontal: label left, number right ------- */
 function StatTile({
   label,
   value,
@@ -47,7 +47,7 @@ function StatTile({
   );
 }
 
-/* ── Recent bookings row ─────────────────────────────────── */
+/* -- Recent bookings row ----------------------------------- */
 function BookingRow({ booking }: { booking: any }) {
   return (
     <tr className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]">
@@ -90,7 +90,7 @@ function BookingRow({ booking }: { booking: any }) {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function OwnerDashboardPage() {
   const { data: bookingsData, isLoading: loadingBookings } = useQuery<{
     data: any[];

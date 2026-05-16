@@ -7,7 +7,7 @@ import { bookingSchema } from "@hostello/shared";
 import { createBooking } from "@/lib/booking-service";
 import { rateLimit } from "@/lib/rate-limit";
 
-// ── Query param schema (owner / admin only) ────────────────────────────────
+// -- Query param schema (owner / admin only) --------------------------------
 const ownerQuerySchema = z.object({
   hostelId: z.string().cuid().optional(),
   status: z
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
     const role = session.user.role;
 
-    // ── STUDENT: existing behaviour, no params accepted ────────────────────
+    // -- STUDENT: existing behaviour, no params accepted --------------------
     if (role === "STUDENT") {
       const bookings = await db.booking.findMany({
         where:   { userId: session.user.id },
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: bookings });
     }
 
-    // ── OWNER / ADMIN: scoped, paginated, filterable ───────────────────────
+    // -- OWNER / ADMIN: scoped, paginated, filterable -----------------------
     const raw    = Object.fromEntries(new URL(req.url).searchParams);
     const parsed = ownerQuerySchema.safeParse(raw);
 

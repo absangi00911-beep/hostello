@@ -16,7 +16,7 @@ import {
 import { CITIES, AMENITIES } from "@hostello/shared";
 import { inputCls } from "@/components/auth/AuthCardLayout";
 
-/* ── Types ───────────────────────────────────────────────── */
+/* -- Types ------------------------------------------------- */
 export interface ListingFormData {
   name: string;
   description: string;
@@ -47,7 +47,7 @@ const DEFAULT_FORM: ListingFormData = {
 
 const AMENITY_PRESETS = AMENITIES.map((a) => a.label);
 
-/* ── Step indicator ──────────────────────────────────────── */
+/* -- Step indicator ---------------------------------------- */
 const STEPS = ["Basic info","Location","Amenities","Photos","Rules","Review"];
 
 function StepProgress({ step }: { step: number }) {
@@ -68,7 +68,7 @@ function StepProgress({ step }: { step: number }) {
   );
 }
 
-/* ── Tag input ───────────────────────────────────────────── */
+/* -- Tag input --------------------------------------------- */
 function TagInput({
   label, values, onChange, placeholder, presets,
 }: {
@@ -136,7 +136,7 @@ function TagInput({
   );
 }
 
-/* ── Photo uploader ──────────────────────────────────────── */
+/* -- Photo uploader ---------------------------------------- */
 function PhotoUploader({
   images, coverImage, onChange, onCoverChange, hostelId,
 }: {
@@ -255,7 +255,7 @@ function PhotoUploader({
   );
 }
 
-/* ── Main wizard ─────────────────────────────────────────── */
+/* -- Main wizard ------------------------------------------- */
 interface ListingFormWizardProps {
   initialData?: Partial<ListingFormData>;
   hostelId?: string;  // present on edit
@@ -334,7 +334,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
     <div className="mx-auto max-w-[640px]">
       <StepProgress step={step} />
 
-      {/* ── Step 1: Basic info ─────────────────────── */}
+      {/* -- Step 1: Basic info ----------------------- */}
       {step === 1 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Basic info</h2>
@@ -408,7 +408,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Step 2: Location ───────────────────────── */}
+      {/* -- Step 2: Location ------------------------- */}
       {step === 2 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Location coordinates <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
@@ -428,7 +428,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Step 3: Amenities ──────────────────────── */}
+      {/* -- Step 3: Amenities ------------------------ */}
       {step === 3 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Amenities</h2>
@@ -436,7 +436,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Step 4: Photos ─────────────────────────── */}
+      {/* -- Step 4: Photos --------------------------- */}
       {step === 4 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Photos</h2>
@@ -453,7 +453,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Step 5: Rules ──────────────────────────── */}
+      {/* -- Step 5: Rules ---------------------------- */}
       {step === 5 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>House rules</h2>
@@ -461,7 +461,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Step 6: Review & submit ─────────────────── */}
+      {/* -- Step 6: Review & submit ------------------- */}
       {step === 6 && (
         <div className={sectionCls}>
           <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Review and submit</h2>
@@ -495,7 +495,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         </div>
       )}
 
-      {/* ── Navigation buttons ─────────────────────── */}
+      {/* -- Navigation buttons ----------------------- */}
       <div className="flex gap-3 mt-8 pt-6 border-t border-[var(--color-border-subtle)]">
         {step > 1 && (
           <button

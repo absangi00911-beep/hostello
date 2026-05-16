@@ -5,18 +5,18 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Grid2x2, Images } from "lucide-react";
 
-/* ── Types ───────────────────────────────────────────────── */
+/* -- Types ------------------------------------------------- */
 interface ImageGalleryProps {
   images: string[];
   hostelName: string;
 }
 
-/* ── Helpers ─────────────────────────────────────────────── */
+/* -- Helpers ----------------------------------------------- */
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
 }
 
-/* ── Lightbox ────────────────────────────────────────────── */
+/* -- Lightbox ---------------------------------------------- */
 interface LightboxProps {
   images: string[];
   hostelName: string;
@@ -185,7 +185,7 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
   );
 }
 
-/* ── Main gallery grid ───────────────────────────────────── */
+/* -- Main gallery grid ------------------------------------- */
 export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -225,7 +225,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
 
   return (
     <>
-      {/* ── Grid layout ─────────────────────────────────── */}
+      {/* -- Grid layout ----------------------------------- */}
       <div
         className="w-full overflow-hidden"
         style={{ borderBottom: "1px solid var(--color-border-subtle)" }}
@@ -368,7 +368,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
         )}
       </div>
 
-      {/* ── Lightbox ─────────────────────────────────────── */}
+      {/* -- Lightbox --------------------------------------- */}
       {lightboxIndex !== null && (
         <Lightbox
           images={images}

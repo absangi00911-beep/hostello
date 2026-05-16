@@ -8,7 +8,7 @@ import {
 } from "./SearchPageClient";
 import { PageSpinner } from "@/components/ui/shared";
 
-/* ── Metadata ─────────────────────────────────────────────── */
+/* -- Metadata ----------------------------------------------- */
 export async function generateMetadata({
   searchParams,
 }: {
@@ -24,7 +24,7 @@ export async function generateMetadata({
   };
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default async function HostelsPage({
   searchParams,
 }: {

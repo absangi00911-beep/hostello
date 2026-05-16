@@ -20,7 +20,7 @@ export function BookingStepLayout({
 
   return (
     <div className="min-h-dvh bg-[var(--color-bg-page)]">
-      {/* ── Top progress bar — 4px amber, full width ──── */}
+      {/* -- Top progress bar — 4px amber, full width ---- */}
       <div
         className="fixed top-0 left-0 right-0 z-50 h-1 bg-[var(--color-border-subtle)]"
         role="progressbar"
@@ -35,7 +35,7 @@ export function BookingStepLayout({
         />
       </div>
 
-      {/* ── Minimal top bar ───────────────────────────── */}
+      {/* -- Minimal top bar ----------------------------- */}
       <header className="sticky top-1 z-40 flex h-14 items-center border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4">
         <div className="flex w-full max-w-[640px] mx-auto items-center gap-3">
           {/* Back button */}
@@ -79,7 +79,7 @@ export function BookingStepLayout({
         </div>
       </header>
 
-      {/* ── Page content — centered, max 640px ───────── */}
+      {/* -- Page content — centered, max 640px --------- */}
       <main
         className="mx-auto w-full max-w-[640px] px-4 py-8 pb-16"
         id="main-content"

@@ -29,7 +29,7 @@ export default function ConfirmationPage() {
   const [fetchErr, setFetchErr] = useState("");
   const [polls,    setPolls]    = useState(0);
 
-  /* ── Poll booking status until PAID/CONFIRMED ───────── */
+  /* -- Poll booking status until PAID/CONFIRMED --------- */
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
@@ -70,7 +70,7 @@ export default function ConfirmationPage() {
     return () => clearTimeout(timer);
   }, [bookingId]);
 
-  /* ── Render states ──────────────────────────────────── */
+  /* -- Render states ------------------------------------ */
   if (loading) {
     return (
       <BookingStepLayout step={3}>
@@ -93,7 +93,7 @@ export default function ConfirmationPage() {
   const isCancelled = booking.status === "CANCELLED";
   const stillWaiting = !isSuccess && !isCancelled && polls < MAX_POLLS;
 
-  /* ── Cancelled ──────────────────────────────────────── */
+  /* -- Cancelled ---------------------------------------- */
   if (isCancelled) {
     return (
       <BookingStepLayout step={3}>
@@ -129,7 +129,7 @@ export default function ConfirmationPage() {
     );
   }
 
-  /* ── Still polling — payment webhook not yet received ─ */
+  /* -- Still polling — payment webhook not yet received - */
   if (stillWaiting) {
     return (
       <BookingStepLayout step={3}>
@@ -155,7 +155,7 @@ export default function ConfirmationPage() {
     );
   }
 
-  /* ── Timed out without confirmation ─────────────────── */
+  /* -- Timed out without confirmation ------------------- */
   if (!isSuccess) {
     return (
       <BookingStepLayout step={3}>
@@ -190,7 +190,7 @@ export default function ConfirmationPage() {
     );
   }
 
-  /* ── Success ─────────────────────────────────────────── */
+  /* -- Success ------------------------------------------- */
   const checkInFmt = format(new Date(booking.checkIn), "d MMMM yyyy");
 
   return (
@@ -285,7 +285,7 @@ export default function ConfirmationPage() {
   );
 }
 
-/* ── Message owner button — inline client action ─────── */
+/* -- Message owner button — inline client action ------- */
 function MessageOwnerButton({
   bookingId,
   hostelId,

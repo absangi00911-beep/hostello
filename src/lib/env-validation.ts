@@ -26,7 +26,7 @@ type EnvValidationRule = {
  * Add entries here to enforce validation across the app.
  */
 const ENV_VALIDATION_RULES: EnvValidationRule[] = [
-  // ── Database & Auth ────────────────────────────────────────────────────
+  // -- Database & Auth ----------------------------------------------------
   {
     name: "DATABASE_URL",
     requiredInProduction: true,
@@ -43,7 +43,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "NextAuth callback URL",
   },
 
-  // ── Storage (R2/Cloudflare) ────────────────────────────────────────────
+  // -- Storage (R2/Cloudflare) --------------------------------------------
   {
     name: "R2_ACCOUNT_ID",
     requiredInProduction: true,
@@ -72,7 +72,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
       "Absence in production causes image updates to silently fail with misleading errors.",
   },
 
-  // ── Payments ───────────────────────────────────────────────────────────
+  // -- Payments -----------------------------------------------------------
   {
     name: "SAFEPAY_SECRET",
     requiredInProduction: true,
@@ -109,7 +109,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "EasyPaisa AES-128 hash key (required only when easypaisa payment method is enabled)",
   },
 
-  // ── Upstash (rate limiting, caching, cron) ─────────────────────────────
+  // -- Upstash (rate limiting, caching, cron) -----------------------------
   {
     name: "UPSTASH_REDIS_REST_URL",
     requiredInProduction: true,
@@ -126,7 +126,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "Secret token for authenticating cron job requests from Upstash",
   },
 
-  // ── Email ──────────────────────────────────────────────────────────────
+  // -- Email --------------------------------------------------------------
   {
     name: "RESEND_API_KEY",
     requiredInProduction: true,
@@ -138,7 +138,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "Sender email address and name (e.g., 'App <app@domain.com>')",
   },
 
-  // ── Search (Typesense) ─────────────────────────────────────────────────
+  // -- Search (Typesense) -------------------------------------------------
   {
     name: "TYPESENSE_API_KEY",
     requiredInProduction: false,
@@ -150,7 +150,7 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "Typesense server host/endpoint (falls back to Prisma if not set)",
   },
 
-  // ── Firebase (Push Notifications) ──────────────────────────────────────
+  // -- Firebase (Push Notifications) --------------------------------------
   {
     name: "FIREBASE_SERVICE_ACCOUNT_JSON",
     requiredInProduction: false,

@@ -18,7 +18,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// ── Token-version cache ────────────────────────────────────────────────────
+// -- Token-version cache ----------------------------------------------------
 // Purpose: Reduces DB round-trips on every auth() call while detecting
 // password resets across all instances via Redis. TTL is 5 minutes.
 //
@@ -62,7 +62,7 @@ async function validateTokenVersion(
   return user.tokenVersion === claimed;
 }
 
-// ── Provider list ──────────────────────────────────────────────────────────
+// -- Provider list ----------------------------------------------------------
 //
 // Credentials: always included.
 //
@@ -127,7 +127,7 @@ const googleProvider =
       })
     : null;
 
-// ── NextAuth config ────────────────────────────────────────────────────────
+// -- NextAuth config --------------------------------------------------------
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // PrismaAdapter persists OAuth accounts and links them to users in the DB.
@@ -152,7 +152,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
-    // ── signIn ─────────────────────────────────────────────────────────────
+    // -- signIn -------------------------------------------------------------
     // Called before a session is created. Return false or a URL string to
     // block the sign-in; return true to allow it.
     async signIn({ user, account }) {
@@ -174,7 +174,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    // ── jwt ────────────────────────────────────────────────────────────────
+    // -- jwt ----------------------------------------------------------------
     // Runs whenever a JWT is created (sign-in) or accessed (request).
     // The `user` object is only populated on initial sign-in.
     jwt({ token, user }) {
@@ -190,7 +190,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
 
-    // ── session ────────────────────────────────────────────────────────────
+    // -- session ------------------------------------------------------------
     // Runs on every auth() or useSession() call.
     // Validates tokenVersion to detect password resets across all instances.
     async session({ session, token }) {

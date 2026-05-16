@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    // ── Typesense sync ─────────────────────────────────────────────────────
+    // -- Typesense sync --
     if (action === "verify" || action === "activate") {
       void indexSingleHostel(hostel.id).catch((err) =>
         console.error(`[typesense] Failed to index hostel ${hostel.id}:`, err),
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // ── Email + in-app notification ────────────────────────────────────────
+    // -- Email + in-app notification --
     // Both are fire-and-forget. A failure in either must never block the
     // admin action — the DB is already updated at this point.
     if (action === "verify" || action === "activate") {

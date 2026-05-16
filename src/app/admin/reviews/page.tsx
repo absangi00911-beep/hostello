@@ -27,7 +27,7 @@ interface AdminReview {
   user:   { id: string; name: string; email: string };
 }
 
-/* ── Delete confirmation — two-tap pattern per DESIGN.md ──── */
+/* -- Delete confirmation — two-tap pattern per DESIGN.md -- */
 function DeleteButton({
   reviewId,
   onDelete,
@@ -72,7 +72,7 @@ function DeleteButton({
   );
 }
 
-/* ── Review row ──────────────────────────────────────────── */
+/* -- Review row -- */
 function ReviewRow({
   review,
   onDelete,
@@ -138,7 +138,7 @@ function ReviewRow({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function AdminReviewsPage() {
   const queryClient = useQueryClient();
   const [page,       setPage]       = useState(1);

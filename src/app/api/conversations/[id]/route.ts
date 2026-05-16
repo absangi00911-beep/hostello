@@ -144,7 +144,7 @@ export async function POST(
       }),
     ]);
 
-    // ── Notify recipient(s) ────────────────────────────────────────────────
+    // -- Notify recipient(s) ------------------------------------------------
     // Find every participant who is NOT the sender and notify them.
     // In practice conversations are always 2-person (student + owner) but
     // iterating guards against any future expansion.

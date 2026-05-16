@@ -14,7 +14,7 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { inputCls } from "@/components/auth/AuthCardLayout";
 
-/* ── Section wrapper ─────────────────────────────────────── */
+/* -- Section wrapper --------------------------------------- */
 function Section({
   id, title, description, children,
 }: {
@@ -45,7 +45,7 @@ function Section({
   );
 }
 
-/* ── Save button ─────────────────────────────────────────── */
+/* -- Save button ------------------------------------------- */
 function SaveButton({ loading, label = "Save changes" }: { loading: boolean; label?: string }) {
   return (
     <button
@@ -59,7 +59,7 @@ function SaveButton({ loading, label = "Save changes" }: { loading: boolean; lab
   );
 }
 
-/* ── 1. Personal Info section ────────────────────────────── */
+/* -- 1. Personal Info section ------------------------------ */
 function PersonalInfoSection({ profile }: { profile: any }) {
   const { update: updateSession } = useSession();
   const [name,   setName]   = useState(profile?.name ?? "");
@@ -277,7 +277,7 @@ function PersonalInfoSection({ profile }: { profile: any }) {
   );
 }
 
-/* ── 2. Security section ─────────────────────────────────── */
+/* -- 2. Security section ----------------------------------- */
 function SecuritySection() {
   const [current,  setCurrent]  = useState("");
   const [newPw,    setNewPw]    = useState("");
@@ -337,7 +337,7 @@ function SecuritySection() {
   );
 }
 
-/* ── 3. Danger Zone section ──────────────────────────────── */
+/* -- 3. Danger Zone section -------------------------------- */
 function DangerZoneSection() {
   const router   = useRouter();
   const [input,   setInput]   = useState("");
@@ -385,7 +385,7 @@ function DangerZoneSection() {
   );
 }
 
-/* ── Mini-nav ────────────────────────────────────────────── */
+/* -- Mini-nav ---------------------------------------------- */
 const NAV_ITEMS = [
   { id: "personal",     label: "Personal info",    icon: User },
   { id: "security",     label: "Security",         icon: Shield },
@@ -414,7 +414,7 @@ function MiniNav({ active }: { active: string }) {
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default function ProfileSettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();

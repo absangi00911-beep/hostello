@@ -5,7 +5,7 @@ import { hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 
-// ─── Session Invalidation Pattern ──────────────────────────────────────────
+// --- Session Invalidation Pattern ------------------------------------------
 // When a user's password changes (either via reset-password or change-password),
 // all existing sessions must be revoked immediately to prevent account takeover.
 //
@@ -29,7 +29,7 @@ import { invalidateLocalSessionCache } from "@/lib/auth/config";
 //
 // BOTH achieve identical security: active sessions are revoked, forcing
 // re-authentication with new credentials.
-// ────────────────────────────────────────────────────────────────────────────
+// ----------------------------------------------------------------------------
 
 const schema = z.object({
   token: z.string().min(1),

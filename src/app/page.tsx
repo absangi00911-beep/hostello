@@ -6,7 +6,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
 import { HeroSearch } from "@/components/landing/HeroSearch";
 
-/* ── Data fetching ───────────────────────────────────────── */
+/* -- Data fetching ----------------------------------------- */
 async function getFeaturedHostels(): Promise<HostelCardData[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -22,7 +22,7 @@ async function getFeaturedHostels(): Promise<HostelCardData[]> {
   }
 }
 
-/* ── Photo stack (hero right column) ────────────────────── */
+/* -- Photo stack (hero right column) ---------------------- */
 function PhotoStack({ images }: { images: string[] }) {
   const photos = images.slice(0, 3);
   const rotations = ["rotate-[5deg]", "-rotate-[3deg]", "rotate-[2deg]"];
@@ -67,7 +67,7 @@ function PhotoStack({ images }: { images: string[] }) {
   );
 }
 
-/* ── How it works step ───────────────────────────────────── */
+/* -- How it works step ------------------------------------- */
 function HowItWorksStep({
   number,
   title,
@@ -102,7 +102,7 @@ function HowItWorksStep({
   );
 }
 
-/* ── Page ─────────────────────────────────────────────────── */
+/* -- Page --------------------------------------------------- */
 export default async function HomePage() {
   const featuredHostels = await getFeaturedHostels();
 

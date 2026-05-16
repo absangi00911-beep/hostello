@@ -2,7 +2,7 @@
 
 import { LucideIcon, AlertCircle, Loader2 } from "lucide-react";
 
-/* ── EmptyState ──────────────────────────────────────────── */
+/* -- EmptyState -------------------------------------------- */
 interface EmptyStateProps {
   icon: LucideIcon;
   heading: string;
@@ -33,7 +33,7 @@ export function EmptyState({ icon: Icon, heading, description, action }: EmptySt
   );
 }
 
-/* ── PageSpinner ─────────────────────────────────────────── */
+/* -- PageSpinner ------------------------------------------- */
 export function PageSpinner({ label = "Loading..." }: { label?: string }) {
   return (
     <div className="flex items-center justify-center py-20" role="status" aria-label={label}>
@@ -48,7 +48,7 @@ export function PageSpinner({ label = "Loading..." }: { label?: string }) {
   );
 }
 
-/* ── InlineError ─────────────────────────────────────────── */
+/* -- InlineError ------------------------------------------- */
 export function InlineError({ message }: { message: string }) {
   return (
     <div
@@ -66,7 +66,7 @@ export function InlineError({ message }: { message: string }) {
   );
 }
 
-/* ── StatusBadge ─────────────────────────────────────────── */
+/* -- StatusBadge ------------------------------------------- */
 type BadgeVariant =
   | "pending"
   | "confirmed"
@@ -135,7 +135,7 @@ export function StatusBadge({ variant, label }: StatusBadgeProps) {
   );
 }
 
-/* ── SkeletonLine / SkeletonCard ─────────────────────────── */
+/* -- SkeletonLine / SkeletonCard --------------------------- */
 export function SkeletonLine({ width = "100%", height = "16px" }: { width?: string; height?: string }) {
   return (
     <span
@@ -162,7 +162,7 @@ export function SkeletonCard() {
   );
 }
 
-/* ── SearchDegradedNotice ────────────────────────────────── */
+/* -- SearchDegradedNotice ---------------------------------- */
 export function SearchDegradedNotice() {
   return (
     <div
@@ -182,7 +182,7 @@ export function SearchDegradedNotice() {
   );
 }
 
-/* ── PKR formatter ───────────────────────────────────────── */
+/* -- PKR formatter ----------------------------------------- */
 export function formatPKR(amount: number): string {
   return `PKR ${amount.toLocaleString("en-PK")}`;
 }

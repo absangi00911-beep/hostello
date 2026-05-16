@@ -18,7 +18,7 @@
 import crypto from "crypto";
 import { getAppUrl } from "@/lib/app-url";
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// -- Config --------------------------------------------------------------------
 
 interface JazzCashConfig {
   merchantId: string;
@@ -42,7 +42,7 @@ function getCheckoutUrl(env: string): string {
     : "https://sandbox.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform/";
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 /** Format a Date as YYYYMMDDHHMMSS (UTC). JazzCash expects this format. */
 function formatDateTime(d: Date): string {
@@ -83,7 +83,7 @@ function computeSecureHash(
     .toUpperCase();
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
+// -- Public API ----------------------------------------------------------------
 
 export interface JazzCashSession {
   /** URL the browser should POST the form to. */
@@ -149,7 +149,7 @@ export function createJazzCashSession({
   return { formUrl: getCheckoutUrl(config.env), params };
 }
 
-// ── Callback parsing ──────────────────────────────────────────────────────────
+// -- Callback parsing ----------------------------------------------------------
 
 export interface JazzCashCallbackResult {
   success: boolean;

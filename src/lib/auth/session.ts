@@ -20,7 +20,7 @@ import { db } from "@/lib/db";
 import type { Session } from "next-auth";
 import type { UserRole } from "@/types";
 
-// ── Role predicates ────────────────────────────────────────────────────────
+// -- Role predicates --------------------------------------------------------
 
 /** True when the session user has the ADMIN role. */
 export function isAdmin(session: Session): boolean {
@@ -47,7 +47,7 @@ export function hasRole(session: Session, ...roles: UserRole[]): boolean {
   return roles.includes(session.user.role as UserRole);
 }
 
-// ── API route guards ───────────────────────────────────────────────────────
+// -- API route guards -------------------------------------------------------
 
 /**
  * Returns a 401 NextResponse if there is no session, or a 403 if the
@@ -92,7 +92,7 @@ export function requireAuth(session: Session | null): NextResponse | null {
   return requireRole(session);
 }
 
-// ── Full user fetch ────────────────────────────────────────────────────────
+// -- Full user fetch --------------------------------------------------------
 
 /**
  * Fetches the authenticated user's full record from the database.
@@ -130,6 +130,6 @@ export async function getSessionUser(session: Session) {
   });
 }
 
-// ── Convenience re-export ──────────────────────────────────────────────────
+// -- Convenience re-export --------------------------------------------------
 // Import auth() from here so route files only need one auth import.
 export { auth } from "@/lib/auth/config";

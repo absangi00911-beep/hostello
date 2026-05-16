@@ -29,7 +29,7 @@ const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
 export default function middleware(req: NextRequest) {
   const { pathname } = new URL(req.url);
 
-  // ── Bearer Token Support (Mobile) ──────────────────────────────────────
+  // -- Bearer Token Support (Mobile) --
   // Mobile clients send the JWT in the Authorization header. We detect it
   // and inject it into the cookies so NextAuth's auth() helper can find it.
   const authHeader = req.headers.get("authorization");
@@ -43,7 +43,7 @@ export default function middleware(req: NextRequest) {
     req.cookies.set("__Secure-authjs.session-token", token);
   }
 
-  // ── CSRF protection ────────────────────────────────────────────────────
+  // -- CSRF protection --
   // Applied to every state-mutating API route that isn't exempt.
   // Bearer-authenticated requests (mobile) are exempt as they don't use
   // browser-style ambient authority (cookies) for the initial request detection.

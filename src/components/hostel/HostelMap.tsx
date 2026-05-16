@@ -123,7 +123,7 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
   );
 }
 
-/* ── Fallback when coordinates are missing ───────────────── */
+/* -- Fallback when coordinates are missing ----------------- */
 export function NoMapAvailable({ address }: { address: string }) {
   return (
     <div className="space-y-4">

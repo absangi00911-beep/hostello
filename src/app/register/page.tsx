@@ -17,7 +17,7 @@ import {
 
 type Role = "STUDENT" | "OWNER";
 
-/* ── Password strength indicator ────────────────────────── */
+/* -- Password strength indicator -------------------------- */
 function PasswordStrength({ password }: { password: string }) {
   if (!password) return null;
   const checks = [

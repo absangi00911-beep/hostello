@@ -66,7 +66,7 @@ function FilterControls({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ── City ──────────────────────────────── */}
+      {/* -- City -------------------------------- */}
       <div>
         <label htmlFor="filter-city" className={labelCls}>
           City
@@ -92,7 +92,7 @@ function FilterControls({
         </div>
       </div>
 
-      {/* ── Gender ────────────────────────────── */}
+      {/* -- Gender ------------------------------ */}
       <fieldset>
         <legend className={labelCls}>Gender</legend>
         <div className="space-y-2">
@@ -138,7 +138,7 @@ function FilterControls({
         </div>
       </fieldset>
 
-      {/* ── Price range ───────────────────────── */}
+      {/* -- Price range ------------------------- */}
       <div>
         <p className={labelCls}>Price range (PKR / month)</p>
         <Slider
@@ -177,7 +177,7 @@ function FilterControls({
         </div>
       </div>
 
-      {/* ── Amenities ─────────────────────────── */}
+      {/* -- Amenities --------------------------- */}
       <fieldset>
         <legend className={labelCls}>Amenities</legend>
         <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -230,7 +230,7 @@ function FilterControls({
         )}
       </fieldset>
 
-      {/* ── Mobile actions ────────────────────── */}
+      {/* -- Mobile actions ---------------------- */}
       {showApply && (
         <div className="flex flex-col gap-2 pt-2 border-t border-[var(--color-border-subtle)] sticky bottom-0 bg-[var(--color-bg-card)] pb-2">
           <button
@@ -248,7 +248,7 @@ function FilterControls({
         </div>
       )}
 
-      {/* ── Desktop reset ─────────────────────── */}
+      {/* -- Desktop reset ----------------------- */}
       {!showApply && (
         <button
           onClick={onReset}
@@ -261,7 +261,7 @@ function FilterControls({
   );
 }
 
-/* ── Desktop sidebar ──────────────────────────────────────── */
+/* -- Desktop sidebar ---------------------------------------- */
 interface FilterSidebarProps {
   filters: FilterState;
   onChange: (f: FilterState) => void;
@@ -294,7 +294,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
   );
 }
 
-/* ── Mobile filter sheet ──────────────────────────────────── */
+/* -- Mobile filter sheet ------------------------------------ */
 interface MobileFilterSheetProps {
   filters: FilterState;
   pendingFilters: FilterState;
