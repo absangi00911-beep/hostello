@@ -2,7 +2,7 @@
 
 import { LucideIcon, AlertCircle, Loader2 } from "lucide-react";
 
-/* -- EmptyState -------------------------------------------- */
+/* ── EmptyState ──────────────────────────────────────────── */
 interface EmptyStateProps {
   icon: LucideIcon;
   heading: string;
@@ -33,7 +33,7 @@ export function EmptyState({ icon: Icon, heading, description, action }: EmptySt
   );
 }
 
-/* -- PageSpinner ------------------------------------------- */
+/* ── PageSpinner ─────────────────────────────────────────── */
 export function PageSpinner({ label = "Loading..." }: { label?: string }) {
   return (
     <div className="flex items-center justify-center py-20" role="status" aria-label={label}>
@@ -48,7 +48,7 @@ export function PageSpinner({ label = "Loading..." }: { label?: string }) {
   );
 }
 
-/* -- InlineError ------------------------------------------- */
+/* ── InlineError ─────────────────────────────────────────── */
 export function InlineError({ message }: { message: string }) {
   return (
     <div
@@ -66,7 +66,7 @@ export function InlineError({ message }: { message: string }) {
   );
 }
 
-/* -- StatusBadge ------------------------------------------- */
+/* ── StatusBadge ─────────────────────────────────────────── */
 type BadgeVariant =
   | "pending"
   | "confirmed"
@@ -135,7 +135,7 @@ export function StatusBadge({ variant, label }: StatusBadgeProps) {
   );
 }
 
-/* -- SkeletonLine / SkeletonCard --------------------------- */
+/* ── SkeletonLine / SkeletonCard ─────────────────────────── */
 export function SkeletonLine({ width = "100%", height = "16px" }: { width?: string; height?: string }) {
   return (
     <span
@@ -162,7 +162,93 @@ export function SkeletonCard() {
   );
 }
 
-/* -- SearchDegradedNotice ---------------------------------- */
+
+/* ── SkeletonHostelDetail ────────────────────────────────── */
+export function SkeletonHostelDetail() {
+  return (
+    <div aria-hidden="true" aria-label="Loading hostel details" className="animate-pulse">
+      <div className="skeleton w-full" style={{ height: 480 }} />
+      <div className="container-app py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <SkeletonLine width="60%" height="32px" />
+              <SkeletonLine width="35%" height="16px" />
+              <SkeletonLine width="25%" height="14px" />
+            </div>
+            <div className="space-y-2">
+              {[100, 90, 95, 80].map((w, i) => (
+                <SkeletonLine key={i} width={`${w}%`} height="15px" />
+              ))}
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {[70, 90, 60, 80, 75].map((w, i) => (
+                <span key={i} className="skeleton h-7 rounded-full" style={{ width: w }} />
+              ))}
+            </div>
+          </div>
+          <div className="skeleton rounded-[var(--radius-xl)]" style={{ height: 320 }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SkeletonBookingRow ───────────────────────────────────── */
+export function SkeletonBookingRow() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex items-center gap-4 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 animate-pulse"
+    >
+      <div className="skeleton shrink-0 rounded-[var(--radius-md)]" style={{ width: 80, height: 64 }} />
+      <div className="flex-1 space-y-2">
+        <SkeletonLine width="55%" height="18px" />
+        <SkeletonLine width="40%" height="13px" />
+        <SkeletonLine width="30%" height="13px" />
+      </div>
+      <div className="skeleton h-7 w-24 rounded-full" />
+    </div>
+  );
+}
+
+/* ── SkeletonDashboardRow ─────────────────────────────────── */
+export function SkeletonDashboardRow() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border-subtle)] animate-pulse last:border-b-0"
+    >
+      <div className="skeleton h-9 w-9 rounded-full shrink-0" />
+      <div className="flex-1 space-y-1.5">
+        <SkeletonLine width="50%" height="14px" />
+        <SkeletonLine width="70%" height="12px" />
+      </div>
+      <SkeletonLine width="40px" height="12px" />
+    </div>
+  );
+}
+
+/* ── SkeletonDetailPage ──────────────────────────────────── */
+export function SkeletonDetailPage() {
+  return (
+    <div aria-hidden="true" className="container-app py-10 animate-pulse space-y-6">
+      <SkeletonLine width="40%" height="28px" />
+      <div className="space-y-3">
+        {[100, 95, 90, 80].map((w, i) => (
+          <SkeletonLine key={i} width={`${w}%`} height="15px" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="skeleton rounded-[var(--radius-xl)]" style={{ height: 120 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── SearchDegradedNotice ────────────────────────────────── */
 export function SearchDegradedNotice() {
   return (
     <div
@@ -182,7 +268,7 @@ export function SearchDegradedNotice() {
   );
 }
 
-/* -- PKR formatter ----------------------------------------- */
+/* ── PKR formatter ───────────────────────────────────────── */
 export function formatPKR(amount: number): string {
   return `PKR ${amount.toLocaleString("en-PK")}`;
 }

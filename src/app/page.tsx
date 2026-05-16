@@ -1,12 +1,14 @@
 // Path: src/app/page.tsx
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import Image from "next/image";
 import { CheckCircle2, MessageCircle, Calendar } from "lucide-react";
+import { CITIES } from "@hostello/shared";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
 import { HeroSearch } from "@/components/landing/HeroSearch";
 
-/* -- Data fetching ----------------------------------------- */
+/* ── Data fetching ───────────────────────────────────────── */
 async function getFeaturedHostels(): Promise<HostelCardData[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -22,7 +24,7 @@ async function getFeaturedHostels(): Promise<HostelCardData[]> {
   }
 }
 
-/* -- Photo stack (hero right column) ---------------------- */
+/* ── Photo stack (hero right column) ────────────────────── */
 function PhotoStack({ images }: { images: string[] }) {
   const photos = images.slice(0, 3);
   const rotations = ["rotate-[5deg]", "-rotate-[3deg]", "rotate-[2deg]"];
@@ -67,7 +69,7 @@ function PhotoStack({ images }: { images: string[] }) {
   );
 }
 
-/* -- How it works step ------------------------------------- */
+/* ── How it works step ───────────────────────────────────── */
 function HowItWorksStep({
   number,
   title,
@@ -102,7 +104,7 @@ function HowItWorksStep({
   );
 }
 
-/* -- Page --------------------------------------------------- */
+/* ── Page ─────────────────────────────────────────────────── */
 export default async function HomePage() {
   const featuredHostels = await getFeaturedHostels();
 
@@ -210,6 +212,37 @@ export default async function HomePage() {
           Horizontal numbered list, NOT cards, NO icons
           Numbers are the visual (64px/800 Bricolage)
       ══════════════════════════════════════════════════════ */}
+      {/* Browse by city — links to static SEO city landing pages */}
+      <section className="py-12 md:py-14" aria-labelledby="cities-heading">
+        <div className="container-app">
+          <h2
+            id="cities-heading"
+            className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-6"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Browse by city
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {CITIES.map((city) => (
+              <Link
+                key={city}
+                href={`/hostels/in/${city.toLowerCase()}`}
+                className="group flex items-center gap-2 rounded-[var(--radius-lg)] border px-4 py-3 transition-all duration-[var(--transition-base)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                style={{ borderColor: "var(--color-border-default)", background: "var(--color-bg-card)" }}
+              >
+                <MapPin size={14} strokeWidth={1.5} style={{ color: "var(--color-primary)", flexShrink: 0 }} aria-hidden="true" />
+                <span
+                  className="text-[var(--text-body-sm)] font-[500] group-hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+                  style={{ color: "var(--color-text-body)" }}
+                >
+                  {city}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section
         id="how-it-works"
         className="container-app py-14 md:py-20"
