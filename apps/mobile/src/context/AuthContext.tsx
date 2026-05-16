@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { router, useSegments } from 'expo-router';
-import { getAuthToken, setAuthToken, clearAuthToken } from '@/services/api';
+import { getAuthToken, setAuthToken, clearAuthToken } from '../services/api';
 
 interface AuthContextType {
   token: string | null;

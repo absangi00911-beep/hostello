@@ -1,7 +1,9 @@
 // Path: src/app/register/page.tsx
 "use client";
 
-import { useState } from "react";
+export const dynamic = "force-dynamic";
+
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -52,7 +54,7 @@ function PasswordStrength({ password }: { password: string }) {
   );
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const defaultRole  = searchParams.get("role") === "OWNER" ? "OWNER" : "STUDENT";
@@ -299,5 +301,13 @@ export default function RegisterPage() {
         </button>
       </form>
     </AuthCardLayout>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Search, Heart, MessageCircle, User } from "lucide-react";
 import { NotificationBell } from "./layout/NotificationBell";
-import { AccountMenu } from "./AccountMenu";
+import { AccountMenu } from "./layout/AccountMenu";
 import { CitySelector } from "./layout/CitySelector";
 import { Suspense, useState } from "react";
 

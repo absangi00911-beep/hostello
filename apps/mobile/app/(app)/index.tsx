@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image, TextInput } from 'react-native';
-import { apiRequest } from '../../../src/services/api';
+import { apiRequest } from '../../src/services/api';
 import { router } from 'expo-router';
 
 export default function HostelListScreen() {

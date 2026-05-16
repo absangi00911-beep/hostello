@@ -14,7 +14,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
-import { AccountMenu } from "../AccountMenu";
+import { AccountMenu } from "./AccountMenu";
 
 const NAV_ITEMS = [
   { href: "/owner/dashboard",   label: "Overview",     icon: LayoutDashboard },

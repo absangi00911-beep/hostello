@@ -23,7 +23,7 @@ export function CitySelector() {
   // On mount, restore from localStorage
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && CITIES.includes(stored)) {
+    if (stored && CITIES.includes(stored as (typeof CITIES)[number])) {
       setCity(stored);
     }
   }, []);
@@ -31,7 +31,7 @@ export function CitySelector() {
   // Sync from URL param when on search page
   useEffect(() => {
     const urlCity = searchParams.get("city");
-    if (urlCity && CITIES.includes(urlCity)) {
+    if (urlCity && CITIES.includes(urlCity as (typeof CITIES)[number])) {
       setCity(urlCity);
     }
   }, [searchParams]);
