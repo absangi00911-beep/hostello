@@ -5,10 +5,15 @@
 
 ## Executive Summary
 
-The web app is nearly ready for production. Most features are implemented and working. Two critical blockers must be resolved before mobile development can begin:
+The web app is nearly ready for production. Most features are implemented and working. Infrastructure and deployment pipelines are now fully configured.
 
-1. **Prisma Migration Workflow** (db push vs migrate deploy) — Production risk
-2. **CSS Design Token Sync** (HSL to OKLCH) — Design system compliance
+**Recent Updates (May 17, 2026):**
+- ✅ Fixed Sentry config import paths (instrumentation.ts)
+- ✅ Vercel deployment configured with GitHub Actions
+- ✅ Mobile app dependencies installed and ready
+- ✅ Project structure synchronized and cleaned up
+- ⚠️ Prisma migration workflow (db push vs migrate deploy) — Production risk
+- ⚠️ CSS design tokens need OKLCH migration — Design system compliance
 
 See `/memories/repo/codebase-state-may-17-2026.md` for detailed technical breakdown.
 
@@ -32,6 +37,13 @@ See `/memories/repo/codebase-state-may-17-2026.md` for detailed technical breakd
 - ⚠️ Migrate CSS tokens to OKLCH spec (P1)
 - 📧 Add email unsubscribe links (P2)
 - ⏳ PITR verification (low effort)
+- 🔄 Audit security vulnerabilities in mobile app (6 found, 2 high)
+
+**Infrastructure Completed (May 17, 2026):**
+- ✅ Vercel deployment pipeline with GitHub Actions
+- ✅ GitHub branch protection rules
+- ✅ Sentry error tracking configured
+- ✅ Mobile app environment ready (Expo + React Native)
 
 ---
 
@@ -282,6 +294,39 @@ See `/memories/repo/codebase-state-may-17-2026.md` for detailed technical breakd
 - API search endpoint optimization
 - Improved filtering and sorting
 - Better error handling
+
+---
+
+### Infrastructure & Deployment Setup ✅ COMPLETED (May 17)
+
+**Vercel Deployment Pipeline:**
+- ✅ GitHub Actions CI/CD workflow configured
+- ✅ Preview deployments on pull requests
+- ✅ Production deployments on `main` merge
+- ✅ Branch protection rules for `main` branch
+- ✅ Vercel secrets configured (TOKEN, ORG_ID, PROJECT_ID)
+- ✅ Ignored Build Step set to `exit 1` (prevents Vercel auto-builds)
+
+**Error Tracking:**
+- ✅ Sentry configured for client, server, and edge runtime
+- ✅ Fixed import paths: `./sentry.*.config` instead of `../sentry.*.config`
+- ✅ Instrumentation.ts updated and deployed
+
+**Project Structure Cleanup:**
+- ✅ Removed obsolete tool config directories (.agents, .claude, .gemini, .cursor, .kiro, .qoder)
+- ✅ Removed deprecated documentation (AGENTS.md, CLAUDE.md, GEMINI.md, MASTER_PLAN.md, QODER.md)
+- ✅ Moved amenities.ts and universities.ts to `packages/shared/src/constants/`
+- ✅ PROJECT_STRUCTURE.md fully synchronized with actual workspace
+
+**Mobile App Setup:**
+- ✅ React Native 0.81.5 configured
+- ✅ Expo 54.0.33 with Expo Router
+- ✅ npm dependencies installed (743 packages)
+- ⚠️ 6 security vulnerabilities (4 moderate, 2 high) — TODO: review npm audit
+
+**Commits Pushed (May 17):**
+1. `b4c2ffd` - Project structure update and tool config cleanup
+2. `3f38525` - Fix Sentry config import paths
 
 ---
 

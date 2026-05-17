@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { login } from '../../src/services/auth';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -18,8 +25,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const response = await login({ email, password });
-      await signIn(response.token);
-      // AuthContext will handle navigation via its useEffect
+      // Pass both token and user so the Profile tab can display account info
+      await signIn(response.token, response.user);
+      // AuthContext route-guard will redirect to /(app) automatically
     } catch (err: any) {
       Alert.alert('Login Failed', err.message);
     } finally {
@@ -35,6 +43,7 @@ export default function LoginScreen() {
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
+        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}

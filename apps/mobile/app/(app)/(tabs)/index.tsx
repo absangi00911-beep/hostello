@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image, TextInput } from 'react-native';
-import { apiRequest } from '../../src/services/api';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from 'react-native';
 import { router } from 'expo-router';
+import { apiRequest } from '../../../src/services/api';
 
 export default function HostelListScreen() {
   const [hostels, setHostels] = useState<any[]>([]);
@@ -41,13 +50,22 @@ export default function HostelListScreen() {
           data={hostels}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.card}
-              onPress={() => router.push({ pathname: '/(app)/hostel/[slug]', params: { slug: item.slug } })}
+              onPress={() =>
+                router.push({
+                  pathname: '/(app)/hostel/[slug]',
+                  params: { slug: item.slug },
+                })
+              }
             >
-              {item.coverImage && <Image source={{ uri: item.coverImage }} style={styles.image} />}
+              {item.coverImage && (
+                <Image source={{ uri: item.coverImage }} style={styles.image} />
+              )}
               <Text style={styles.name}>{item.name}</Text>
-              <Text>{item.city} • Rs. {item.pricePerMonth}</Text>
+              <Text>
+                {item.city} • Rs. {item.pricePerMonth}
+              </Text>
             </TouchableOpacity>
           )}
         />
@@ -59,8 +77,19 @@ export default function HostelListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 10 },
   loader: { flex: 1, justifyContent: 'center' },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5, backgroundColor: '#fff' },
-  card: { padding: 15, backgroundColor: '#fff', marginBottom: 10, borderRadius: 8 },
+  input: {
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+  },
+  card: {
+    padding: 15,
+    backgroundColor: '#fff',
+    marginBottom: 10,
+    borderRadius: 8,
+  },
   image: { width: '100%', height: 150, borderRadius: 5, marginBottom: 10 },
   name: { fontSize: 18, fontWeight: 'bold' },
 });
