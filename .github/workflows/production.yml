@@ -1,0 +1,125 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+
+# Only one production deploy at a time
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false   # never cancel an in-flight production deploy
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Gate: run all checks before touching production
+  # (Same jobs as ci.yml — duplicated intentionally so production deploys
+  #  never skip the quality gate even if ci.yml is modified incorrectly)
+  # ─────────────────────────────────────────────────────────────────────────
+  gate-web:
+    name: Gate — Web checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      DATABASE_URL:        postgresql://ci:ci@localhost:5432/ci
+      NEXTAUTH_SECRET:     ci-secret-not-used-in-unit-tests
+      NEXTAUTH_URL:        http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx tsc --noEmit
+      - run: npm test -- --run
+      - run: npm run lint
+
+  gate-mobile:
+    name: Gate — Mobile type-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Deploy: only runs after the gate jobs pass
+  # ─────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [gate-web, gate-mobile]
+
+    env:
+      VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment (production)
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Deploy to production
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Print deploy URL
+        run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
+
+      - name: Create GitHub deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              owner:              context.repo.owner,
+              repo:               context.repo.repo,
+              ref:                context.sha,
+              environment:        'production',
+              description:        'Deployed to hostello.pk',
+              auto_merge:         false,
+              required_contexts:  [],
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner:          context.repo.owner,
+              repo:           context.repo.repo,
+              deployment_id:  deployment.id,
+              state:          'success',
+              environment_url: '${{ steps.deploy.outputs.url }}',
+              description:    'Production deploy succeeded',
+            });
