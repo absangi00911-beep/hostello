@@ -16,8 +16,9 @@ import {
   InlineError,
 } from "@/components/ui/shared";
 import { Building2 } from "lucide-react";
+import { SearchMap } from "@/components/hostel/SearchMap";
 
-/* -- Types ------------------------------------------------- */
+/* ── Types ───────────────────────────────────────────────── */
 interface SearchResponse {
   data: HostelCardData[];
   total: number;
@@ -46,7 +47,7 @@ const DEFAULT_FILTERS: FilterState = {
 
 const PAGE_SIZE = 20;
 
-/* -- URL ↔ state helpers ----------------------------------- */
+/* ── URL ↔ state helpers ─────────────────────────────────── */
 function filtersToParams(
   filters: FilterState,
   sort: SortOption,
@@ -74,7 +75,7 @@ function countActiveFilters(f: FilterState): number {
   return n;
 }
 
-/* -- Props from server page -------------------------------- */
+/* ── Props from server page ──────────────────────────────── */
 export interface SearchPageClientProps {
   initialQ:        string;
   initialCity:     string;
@@ -123,7 +124,7 @@ export function SearchPageClient({
     router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
   }, [filters, sort, page, q, pathname, router]);
 
-  /* -- Fetch ------------------------------------------------ */
+  /* ── Fetch ──────────────────────────────────────────────── */
   const queryKey = ["hostels", q, filters, sort, page] as const;
 
   const { data, isLoading, isError, error } = useQuery<SearchResponse>({
@@ -142,7 +143,7 @@ export function SearchPageClient({
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
   const activeCount = countActiveFilters(filters);
 
-  /* -- Handlers --------------------------------------------- */
+  /* ── Handlers ───────────────────────────────────────────── */
   // Desktop: apply immediately on filter change
   function handleDesktopFilterChange(next: FilterState) {
     setFilters(next);
@@ -177,7 +178,7 @@ export function SearchPageClient({
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  /* -- Results summary text --------------------------------- */
+  /* ── Results summary text ───────────────────────────────── */
   function resultsSummary(): string {
     if (!data) return "";
     const { total } = data;
@@ -188,7 +189,7 @@ export function SearchPageClient({
 
   return (
     <div className="container-app py-6">
-      {/* -- Controls row ------------------------------------ */}
+      {/* ── Controls row ──────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         {/* Mobile filter button */}
         <MobileFilterSheet
@@ -254,7 +255,7 @@ export function SearchPageClient({
         </button>
       </div>
 
-      {/* -- Layout: sidebar + content ---------------------- */}
+      {/* ── Layout: sidebar + content ────────────────────── */}
       <div className="flex gap-6 items-start">
         {/* Desktop filter sidebar */}
         <FilterSidebar
@@ -330,19 +331,26 @@ export function SearchPageClient({
             </div>
           )}
 
-          {/* Results grid */}
+          {/* Results — list or map view */}
           {!isLoading && data && data.data.length > 0 && (
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
-              role="list"
-              aria-label={resultsSummary()}
-            >
-              {data.data.map((hostel) => (
-                <div key={hostel.id} role="listitem">
-                  <HostelCard hostel={hostel} />
-                </div>
-              ))}
-            </div>
+            mapView ? (
+              <SearchMap
+                hostels={data.data}
+                city={filters.city || undefined}
+              />
+            ) : (
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+                role="list"
+                aria-label={resultsSummary()}
+              >
+                {data.data.map((hostel) => (
+                  <div key={hostel.id} role="listitem">
+                    <HostelCard hostel={hostel} />
+                  </div>
+                ))}
+              </div>
+            )
           )}
 
           {/* Empty state */}
@@ -378,7 +386,7 @@ export function SearchPageClient({
   );
 }
 
-/* -- Active filter chip ------------------------------------- */
+/* ── Active filter chip ───────────────────────────────────── */
 function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span
