@@ -5,11 +5,11 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     // Server-side Sentry init (Node.js runtime — API routes, Server Components)
-    await import("../sentry.server.config");
+    await import("./sentry.server.config");
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {
     // Edge runtime Sentry init (middleware, edge routes)
-    await import("../sentry.edge.config");
+    await import("./sentry.edge.config");
   }
 }
