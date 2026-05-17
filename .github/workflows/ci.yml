@@ -113,3 +113,101 @@ jobs:
 
       - name: Type check
         run: npx tsc --noEmit
+
+  # ─────────────────────────────────────────────
+  # Job 4: Vercel preview deploy
+  # Only runs on PRs (not on pushes to main — that's handled by production.yml).
+  # Waits for all checks to pass, then deploys a preview and posts the URL.
+  # ─────────────────────────────────────────────
+  preview:
+    name: Preview deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Only deploy previews for pull requests, not direct pushes to main
+    if: github.event_name == 'pull_request'
+    # Only deploy after all quality gates pass
+    needs: [web, mobile, shared]
+
+    permissions:
+      pull-requests: write  # needed to post the URL comment
+
+    env:
+      VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment (preview)
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Deploy to Vercel (preview)
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Post preview URL as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deploy.outputs.url }}';
+            const sha        = context.sha.slice(0, 7);
+            const actor      = context.actor;
+            const body = [
+              '## \u1F680 Preview deployment ready',
+              '',
+              '| | |',
+              '|---|---|',
+              `| **URL** | ${previewUrl} |`,
+              `| **Commit** | \`${sha}\` |`,
+              `| **Deployed by** | @${actor} |`,
+              '',
+              '### Quick smoke test',
+              `- [ ] [Homepage](${previewUrl}) loads`,
+              `- [ ] [Search page](${previewUrl}/hostels) loads`,
+              `- [ ] [Lahore city page](${previewUrl}/hostels/in/lahore) loads`,
+              `- [ ] [Login page](${previewUrl}/login) loads`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(
+              c => c.user.login === 'github-actions[bot]' &&
+                   c.body.includes('Preview deployment ready')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner:        context.repo.owner,
+                repo:         context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

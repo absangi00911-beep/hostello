@@ -447,3 +447,17 @@ model Notification {
   @@index([createdAt])
   @@map("notifications")
 }
+
+// Tracks last run time and status of each cron job.
+// Used by /api/health/crons to detect missed/failing jobs.
+model CronLog {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  ranAt      DateTime
+  status     String   // "success" | "error"
+  durationMs Int
+  error      String?
+  updatedAt  DateTime @updatedAt
+
+  @@map("cron_logs")
+}

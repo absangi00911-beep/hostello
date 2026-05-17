@@ -1,5 +1,3 @@
-// Path: src/components/ui/tabs.tsx
-
 "use client"
 
 import * as React from "react"

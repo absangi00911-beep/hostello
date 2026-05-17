@@ -2,6 +2,10 @@
 
 A comprehensive hostel booking platform built with Next.js, React, TypeScript, Prisma ORM, and supporting mobile app in React Native.
 
+**Last Updated:** May 17, 2026 | Current state reflects all active documentation, migrations, and mobile app structure
+**Verification Status:** ✓ All documents synchronized - includes all nested documentation files
+**Version:** Fully synchronized with actual workspace structure
+
 ```
 hostello/
 │
@@ -37,39 +41,22 @@ hostello/
 ├── sentry.server.config.ts               # Sentry server-side config
 │
 ├── 📚 Documentation
-├── MASTER_PLAN.md                        # High-level project roadmap
+├── WEB_APP_PROGRESS.md                   # Web app development progress tracking
+├── Mobile_Dev_Plan.md                    # Mobile app development plan
 ├── SYSTEM.md                             # System architecture & design
 ├── DESIGN.md                             # Frontend design guidelines
 ├── DESIGN_MOBILE.md                      # Mobile app design specs
 ├── MOBILE_APP_STRATEGY.md                # Mobile app development strategy
 ├── MOBILE_ALIGNMENT.md                   # Web & mobile alignment
-├── AGENTS.md                             # Agent & MCP tools documentation
-├── CLAUDE.md                             # Claude agent configuration
-├── GEMINI.md                             # Gemini agent configuration
-├── QODER.md                              # Qoder tool documentation
+├── PROJECT_STRUCTURE.md                  # This file - project structure overview
 ├── SENTRY_SETUP.md                       # Sentry setup guide
 │
 ├── 🛠️ Tool Configuration Directories
-├── .vscode/                              # VS Code workspace settings
 ├── .github/
 │   ├── code-review-graph.instruction.md
 │   └── workflows/                        # GitHub Actions CI/CD
-├── .agents/
-│   └── skills/                           # Agent skill definitions
-├── .claude/
-│   ├── settings.json
-│   ├── settings.json.bak
-│   └── skills/                           # Claude skill configs
 ├── .code-review-graph/                   # Code review graph cache
-├── .cursor/                              # Cursor AI editor config
-├── .gemini/                              # Gemini AI config
-├── .kiro/                                # Kiro config
 ├── .mcp.json                             # Model Context Protocol config
-├── .opencode.json                        # OpenCode config
-├── .qoder/                               # Qoder config
-├── .impeccable-live/                     # Impeccable design config
-├── .impeccable-live.json                 # Impeccable design tool config
-├── .windsurfrules                        # Windsurf IDE rules
 │
 ├── 🔧 Build & Cache Directories (git-ignored)
 ├── .next/                                # Next.js build output
@@ -237,9 +224,7 @@ hostello/
 │
 │   ├── ⚙️ Configuration - config/
 │   └── config/
-│       ├── constants.ts                  # App-wide constants
-│       ├── amenities.ts                  # Hostel amenities config
-│       └── universities.ts               # University listings
+│       └── constants.ts                  # App-wide constants
 │
 │   └── 📘 TypeScript Types - types/
 │       └── types/
@@ -270,8 +255,8 @@ hostello/
 │       └── src/                          # Shared source code
 │           ├── api/                      # Shared API utilities
 │           ├── types/                    # Shared TypeScript types
-│           ├── constants/                # Shared constants
-│           ├── utils/                    # Shared utility functions
+│           ├── constants/                # Shared constants│           │   ├── amenities.ts         # Hostel amenities config
+│           │   └── universities.ts      # University listings│           ├── utils/                    # Shared utility functions
 │           ├── validations/              # Shared validation schemas
 │           └── index.ts                  # Main export file
 │
@@ -282,24 +267,25 @@ hostello/
 │   ├── schema.prisma                     # Prisma ORM schema definition
 │   ├── client.ts                         # Prisma client config
 │   ├── seed.ts                           # Database seeding script
+│   ├── MIGRATION_RENAME_RUNBOOK.md       # Migration naming and process documentation
 │   │
 │   └── 🔄 Database Migrations
 │       └── migrations/
 │           ├── migration_lock.toml       # Migration lock file
-│           ├── 0_init/
+│           ├── 20260101000000_init/
 │           │   └── migration.sql         # Initial database schema
-│           ├── 1_currency_int/
+│           ├── 20260115000000_currency_int/
 │           │   └── migration.sql         # Currency data type migration
-│           ├── 2_add_notifications/
+│           ├── 20260201000000_add_notifications/
 │           │   └── migration.sql         # Notifications table
-│           ├── 3_add_phone_verification/
-│           │   └── migration.sql         # Phone verification
-│           ├── 4_add_last_known_price/
-│           │   └── migration.sql         # Price tracking
+│           ├── 20260215000000_add_phone_verification/
+│           │   └── migration.sql         # Phone verification table
+│           ├── 20260301000000_add_last_known_price/
+│           │   └── migration.sql         # Price tracking schema
 │           ├── 20260426075853_add_conversation_participants_table/
-│           │   └── migration.sql         # Conversation participants
+│           │   └── migration.sql         # Conversation participants table
 │           └── 20260510065319_add_device_token/
-│               └── migration.sql         # Device token storage
+│               └── migration.sql         # Device token storage for notifications
 │
 ├── 🔨 BUILD & AUTOMATION SCRIPTS - scripts/
 ├── scripts/
@@ -354,13 +340,17 @@ hostello/
 ## Directory Hierarchy Summary
 
 ### **Tier 1: Project Root**
-Configuration, environment, and documentation at the top level.
+Configuration files, environment setup, documentation, and monitoring at the top level.
+- Core config: `package.json`, `tsconfig.json`, `next.config.ts`, etc.
+- Documentation: Design specs, strategy docs, and setup guides
+- Monitoring: Sentry configuration for error tracking
+- Instrumentation: Application monitoring setup
 
 ### **Tier 2: Application Source** (`/src`)
-- **app/**: Next.js pages and API routes
-- **components/**: React component library
+- **app/**: Next.js pages (grouped by feature), API routes, layouts
+- **components/**: React component library (UI components, feature components)
 - **hooks/**: Custom React hooks
-- **lib/**: Business logic and services
+- **lib/**: Business logic, services, external integrations
 - **config/**: Constants and configuration
 - **types/**: TypeScript definitions
 
@@ -371,7 +361,7 @@ React Native + Expo separate mobile application.
 Monorepo shared utilities for web and mobile.
 
 ### **Tier 5: Database** (`/prisma`)
-Schema definition and 8 migration versions.
+Schema definition and 7 migration versions (init, currency, notifications, phone verification, price tracking, conversation participants, device tokens).
 
 ### **Tier 6: Build & Analysis**
 - `/scripts`: Automation and build helpers
