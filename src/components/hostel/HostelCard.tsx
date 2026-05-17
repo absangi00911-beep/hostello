@@ -21,6 +21,8 @@ export interface HostelCardData {
   reviewCount: number;
   capacity: number;
   rooms: number;
+  latitude?: number | null;
+  longitude?: number | null;
   owner: { id: string; name: string; avatar?: string | null };
 }
 

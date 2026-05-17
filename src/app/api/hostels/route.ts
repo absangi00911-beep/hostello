@@ -87,6 +87,8 @@ export async function GET(req: NextRequest) {
         reviewCount: true,
         capacity: true,
         rooms: true,
+        latitude: true,
+        longitude: true,
         owner: {
           select: { id: true, name: true, avatar: true },
         },

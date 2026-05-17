@@ -17,25 +17,43 @@ import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
 import { BookingPanel } from "@/components/hostel/BookingPanel";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
+import { db } from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-/* -- Data fetch -------------------------------------------- */
+/* ── Data fetch — direct Prisma, no self-HTTP ───────────── */
 async function getHostel(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/hostels/${slug}`, {
-      next: { revalidate: 3600 }, // HOSTEL_REVALIDATE = 1 hour
+    const hostel = await db.hostel.findFirst({
+      where: { OR: [{ slug }, { id: slug }], status: "ACTIVE" },
+      include: {
+        owner: { 
+          select: { 
+            id: true, 
+            name: true, 
+            avatar: true, 
+            phone: true,
+            _count: { select: { hostels: true } }
+          } 
+        },
+        reviews: {
+          where:   { verified: true },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: { user: { select: { id: true, name: true, avatar: true } } },
+        },
+        rooms_rel: {
+          where:   { available: { gt: 0 } },
+          orderBy: { pricePerMonth: "asc" },
+        },
+      },
     });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error("Failed to fetch hostel");
-    const json = await res.json();
-    return json.data;
+    return hostel;
   } catch {
     return null;
   }
 }
 
-/* -- Metadata ---------------------------------------------- */
+/* ── Metadata ────────────────────────────────────────────── */
 export async function generateMetadata({
   params,
 }: {
@@ -55,7 +73,7 @@ export async function generateMetadata({
   };
 }
 
-/* -- Amenity icon mapping (best-effort) ------------------- */
+/* ── Amenity icon mapping (best-effort) ─────────────────── */
 function AmenityIcon({ name }: { name: string }) {
   return (
     <CheckCircle2
@@ -67,7 +85,7 @@ function AmenityIcon({ name }: { name: string }) {
   );
 }
 
-/* -- Page --------------------------------------------------- */
+/* ── Page ─────────────────────────────────────────────────── */
 export default async function HostelDetailPage({
   params,
 }: {
@@ -78,22 +96,26 @@ export default async function HostelDetailPage({
 
   if (!hostel) notFound();
 
-  const reviews: ReviewData[] = hostel.reviews ?? [];
+  const reviews: ReviewData[] = (hostel.reviews ?? []).map((review: any) => ({
+    ...review,
+    createdAt: review.createdAt instanceof Date ? review.createdAt.toISOString() : review.createdAt,
+    repliedAt: review.repliedAt instanceof Date ? review.repliedAt.toISOString() : review.repliedAt,
+  }));
   const rooms = hostel.rooms_rel ?? [];
 
   return (
     <PublicLayout noFooter={false}>
-      {/* -- Image gallery — full width, no sidebar -------- */}
+      {/* ── Image gallery — full width, no sidebar ──────── */}
       <ImageGallery
         images={hostel.images ?? []}
         hostelName={hostel.name}
       />
 
-      {/* -- Main layout: 8-col content + 4-col booking --- */}
+      {/* ── Main layout: 8-col content + 4-col booking ─── */}
       <div className="container-app">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 py-8 pb-32 lg:pb-12">
 
-          {/* -- LEFT: content area ----------------------- */}
+          {/* ── LEFT: content area ─────────────────────── */}
           <div className="min-w-0">
             {/* Header */}
             <div className="mb-6">
@@ -193,7 +215,7 @@ export default async function HostelDetailPage({
                 ))}
               </TabsList>
 
-              {/* -- Details tab --------------------------- */}
+              {/* ── Details tab ─────────────────────────── */}
               <TabsContent value="details" className="mt-0">
                 {/* Description */}
                 <p className="text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed mb-8 max-w-[68ch]">
@@ -250,7 +272,7 @@ export default async function HostelDetailPage({
                 )}
               </TabsContent>
 
-              {/* -- Rooms tab ----------------------------- */}
+              {/* ── Rooms tab ───────────────────────────── */}
               <TabsContent value="rooms" className="mt-0">
                 {rooms.length === 0 ? (
                   <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] py-8">
@@ -327,7 +349,7 @@ export default async function HostelDetailPage({
                 )}
               </TabsContent>
 
-              {/* -- Reviews tab --------------------------- */}
+              {/* ── Reviews tab ─────────────────────────── */}
               <TabsContent value="reviews" className="mt-0">
                 <ReviewList
                   reviews={reviews}
@@ -336,7 +358,7 @@ export default async function HostelDetailPage({
                 />
               </TabsContent>
 
-              {/* -- Location tab --------------------------- */}
+              {/* ── Location tab ─────────────────────────── */}
               <TabsContent value="location" className="mt-0">
                 {hostel.latitude && hostel.longitude ? (
                   <HostelMap
@@ -352,7 +374,7 @@ export default async function HostelDetailPage({
             </Tabs>
           </div>
 
-          {/* -- RIGHT: sticky booking panel -------------- */}
+          {/* ── RIGHT: sticky booking panel ────────────── */}
           <BookingPanel
             hostelId={hostel.id}
             hostelSlug={hostel.slug}
