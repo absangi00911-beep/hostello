@@ -1,7 +1,7 @@
 
 # System Design Document — HostelLo
 
-**Version:** 1.2 | **Date:** May 12, 2026 | **Last Updated:** May 17, 2026 (Design Audit Complete, Listing Pages Added) | **Author:** Engineering Team
+**Version:** 1.3 | **Date:** May 12, 2026 | **Last Updated:** May 17, 2026 (Vercel Deploy Pipeline, Mobile Setup, Infrastructure Complete) | **Author:** Engineering Team
 
 ---
 
