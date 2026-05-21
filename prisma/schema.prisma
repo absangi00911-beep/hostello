@@ -406,7 +406,7 @@ model PriceAlert {
   // When the user last received an alert for this hostel
   lastAlertAt DateTime?
 
-  unsubscribeToken String   @unique
+  unsubscribeToken String   @default(cuid()) @unique
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -10,6 +10,7 @@ import {
   TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../../src/theme';
 import { apiRequest } from '../../../src/services/api';
 
 export default function HostelListScreen() {
@@ -21,8 +22,8 @@ export default function HostelListScreen() {
     setLoading(true);
     try {
       const query = filterCity ? `?city=${filterCity}` : '';
-      const response: any = await apiRequest(`/hostels${query}`);
-      setHostels(response.data);
+      const data = await apiRequest<any[]>(`/hostels${query}`);
+      setHostels(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -75,21 +76,25 @@ export default function HostelListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10 },
+  container: { flex: 1, padding: spacing.sm, backgroundColor: colors.bgPage },
   loader: { flex: 1, justifyContent: 'center' },
   input: {
     borderWidth: 1,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    padding: spacing.sm,
+    marginBottom: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.bgCard,
+    borderColor: colors.borderDefault,
+    color: colors.textBody,
   },
   card: {
-    padding: 15,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 8,
+    padding: spacing.lg,
+    backgroundColor: colors.bgCard,
+    marginBottom: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
   },
-  image: { width: '100%', height: 150, borderRadius: 5, marginBottom: 10 },
-  name: { fontSize: 18, fontWeight: 'bold' },
+  image: { width: '100%', height: 150, borderRadius: radius.sm, marginBottom: spacing.sm },
+  name: { fontSize: fontSize.h3, fontWeight: fontWeight.bold, color: colors.textHeading },
 });

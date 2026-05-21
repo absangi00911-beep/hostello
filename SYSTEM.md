@@ -143,7 +143,7 @@ HostelLo is a Next.js monolith deployed on Vercel. This is not a microservices a
 
 | Layer | Choice | Why |
 |---|---|---|
-| Framework | Next.js 15 (App Router) | Co-located API and UI, RSCs for faster page loads, mature ecosystem |
+| Framework | Next.js 16 (App Router) | Co-located API and UI, RSCs for faster page loads, mature ecosystem |
 | Language | TypeScript | Catches shape errors at build time; essential when Prisma types flow through the whole app |
 | Database | Neon PostgreSQL | Serverless-friendly connection pooling, branching for dev environments |
 | ORM | Prisma | Type-safe queries, migration tooling, schema-as-code |

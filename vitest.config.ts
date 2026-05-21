@@ -18,6 +18,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    env: {
+      EXPO_PUBLIC_API_URL: 'http://localhost:3000',
+    },
   },
   resolve: {
     alias: {

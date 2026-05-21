@@ -13,7 +13,8 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "schedule-cron": "tsx scripts/schedule-cron-jobs.ts"
+    "schedule-cron": "tsx scripts/schedule-cron-jobs.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
@@ -82,7 +83,8 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "@playwright/test": "^1.44.0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
