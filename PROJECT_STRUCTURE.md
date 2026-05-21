@@ -390,7 +390,7 @@ Schema definition and 7 migration versions (init, currency, notifications, phone
 
 | Layer | Technology | Location |
 |-------|-----------|----------|
-| **Framework** | Next.js 15+ | `/src/app`, `next.config.ts` |
+| **Framework** | Next.js 16 | `/src/app`, `next.config.ts` |
 | **UI Library** | React + Radix UI + Tailwind | `/src/components/ui` |
 | **Language** | TypeScript | Throughout `**/*.ts(x)` |
 | **Database** | PostgreSQL + Prisma ORM | `/prisma/**` |

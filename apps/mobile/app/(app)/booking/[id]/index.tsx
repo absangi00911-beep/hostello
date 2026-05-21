@@ -7,6 +7,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { apiRequest } from '../../../../src/services/api';
 import type { HostelWithDetails } from '@hostello/shared';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../../../src/theme';
 
 /* -- Types -- */
 interface Room {
@@ -121,9 +122,9 @@ export default function BookingScreen() {
     setLoading(true);
     setError(null);
 
-    apiRequest<{ data: HostelWithDetails & { rooms_rel?: Room[] } }>(`/hostels/${id}`)
+    apiRequest<HostelWithDetails & { rooms_rel?: Room[] }>(`/hostels/${id}`)
       .then((res) => {
-        const h = res.data;
+        const h = res;
         setHostel(h);
         const availableRooms = (h.rooms_rel ?? []).filter((r) => r.available > 0);
         setRooms(availableRooms);
@@ -186,7 +187,7 @@ export default function BookingScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#C28B1A" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading hostel details…</Text>
       </View>
     );
@@ -423,7 +424,7 @@ export default function BookingScreen() {
           accessibilityState={{ disabled: submitting }}
         >
           {submitting
-            ? <ActivityIndicator color="#fff" size="small" />
+            ? <ActivityIndicator color={colors.textInverse} size="small" />
             : <Text style={styles.ctaText}>Confirm & pay</Text>
           }
         </TouchableOpacity>
@@ -433,108 +434,100 @@ export default function BookingScreen() {
 }
 
 /* -- Styles ----------------------------------------------- */
-const GOLD    = '#C28B1A';
-const GOLD_DK = '#9E6F0E';
-const BG      = '#FDF8F0';
-const CARD    = '#FEFCF8';
-const BORDER  = '#E0D4C0';
-const TEXT    = '#2A2318';
-const MUTED   = '#857060';
-
 const styles = StyleSheet.create({
-  safeArea:   { flex: 1, backgroundColor: BG },
+  safeArea:   { flex: 1, backgroundColor: colors.bgPage },
   scroll:     { flex: 1 },
   scrollContent: { paddingBottom: 24 },
-  centered:   { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: BG },
+  centered:   { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: colors.bgPage },
 
   // Loading / error
-  loadingText:  { marginTop: 12, color: MUTED, fontSize: 14 },
+  loadingText:  { marginTop: 12, color: colors.textMuted, fontSize: 14 },
   errorIcon:    { fontSize: 36, marginBottom: 12 },
-  errorTitle:   { fontSize: 18, fontWeight: '600', color: TEXT, marginBottom: 6 },
-  errorBody:    { fontSize: 13, color: MUTED, textAlign: 'center', marginBottom: 20 },
-  retryButton:  { backgroundColor: GOLD, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12 },
-  retryText:    { color: '#fff', fontWeight: '600', fontSize: 14 },
+  errorTitle:   { fontSize: 18, fontWeight: '600', color: colors.textHeading, marginBottom: 6 },
+  errorBody:    { fontSize: 13, color: colors.textMuted, textAlign: 'center', marginBottom: 20 },
+  retryButton:  { backgroundColor: colors.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12 },
+  retryText:    { color: colors.textInverse, fontWeight: '600', fontSize: 14 },
 
   // Hostel card
-  hostelCard:   { padding: 16, backgroundColor: CARD },
-  hostelName:   { fontSize: 18, fontWeight: '700', color: TEXT, marginBottom: 2 },
-  hostelCity:   { fontSize: 13, color: MUTED },
+  hostelCard:   { padding: 16, backgroundColor: colors.bgCard },
+  hostelName:   { fontSize: 18, fontWeight: '700', color: colors.textHeading, marginBottom: 2 },
+  hostelCity:   { fontSize: 13, color: colors.textMuted },
 
-  divider:      { height: 1, backgroundColor: BORDER, marginHorizontal: 0 },
+  divider:      { height: 1, backgroundColor: colors.borderDefault, marginHorizontal: 0 },
 
   // Section
   section:      { padding: 16 },
-  sectionTitle: { fontSize: 13, fontWeight: '600', color: MUTED, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: '600', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 12 },
 
   // Room options
   roomOption: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    padding: 14, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER,
-    backgroundColor: CARD, marginBottom: 8,
+    padding: 14, borderRadius: 10, borderWidth: 1.5, borderColor: colors.borderDefault,
+    backgroundColor: colors.bgCard, marginBottom: 8,
   },
-  roomOptionSelected: { borderColor: GOLD, backgroundColor: '#FDF3DC' },
+  roomOptionSelected: { borderColor: colors.primary, backgroundColor: colors.primaryFaint },
   roomOptionLeft:     { flex: 1 },
-  roomName:           { fontSize: 14, fontWeight: '500', color: TEXT },
-  roomNameSelected:   { color: GOLD_DK, fontWeight: '600' },
-  roomMeta:           { fontSize: 12, color: MUTED, marginTop: 2 },
-  roomPrice:          { fontSize: 14, fontWeight: '600', color: MUTED },
-  roomPriceSelected:  { color: GOLD_DK },
+  roomName:           { fontSize: 14, fontWeight: '500', color: colors.textHeading },
+  roomNameSelected:   { color: colors.primaryDark, fontWeight: '600' },
+  roomMeta:           { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  roomPrice:          { fontSize: 14, fontWeight: '600', color: colors.textMuted },
+  roomPriceSelected:  { color: colors.primaryDark },
 
   // Dates
   dateRow:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10 },
-  dateLabel:      { fontSize: 14, color: TEXT, fontWeight: '500' },
+  dateLabel:      { fontSize: 14, color: colors.textHeading, fontWeight: '500' },
   dateButton:     { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dateButtonText: { fontSize: 14, color: GOLD_DK, fontWeight: '600' },
-  dateChevron:    { fontSize: 18, color: GOLD_DK },
-  durationBadge:  { alignSelf: 'flex-start', backgroundColor: '#FDF3DC', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginTop: 8 },
-  durationText:   { fontSize: 13, fontWeight: '600', color: GOLD_DK },
+  dateButtonText: { fontSize: 14, color: colors.primaryDark, fontWeight: '600' },
+  dateChevron:    { fontSize: 18, color: colors.primaryDark },
+  durationBadge:  { alignSelf: 'flex-start', backgroundColor: colors.primaryFaint, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginTop: 8 },
+  durationText:   { fontSize: 13, fontWeight: '600', color: colors.primaryDark },
 
   // Stepper
   stepper:           { flexDirection: 'row', alignItems: 'center', gap: 20 },
-  stepperBtn:        { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: BORDER, alignItems: 'center', justifyContent: 'center', backgroundColor: CARD },
+  stepperBtn:        { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: colors.borderDefault, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bgCard },
   stepperBtnDisabled:{ opacity: 0.35 },
-  stepperBtnText:    { fontSize: 20, color: TEXT, lineHeight: 24 },
-  stepperValue:      { fontSize: 20, fontWeight: '600', color: TEXT, minWidth: 28, textAlign: 'center' },
+  stepperBtnText:    { fontSize: 20, color: colors.textHeading, lineHeight: 24 },
+  stepperValue:      { fontSize: 20, fontWeight: '600', color: colors.textHeading, minWidth: 28, textAlign: 'center' },
 
   // Payment
   paymentOption: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 14, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER,
-    backgroundColor: CARD, marginBottom: 8,
+    padding: 14, borderRadius: 10, borderWidth: 1.5, borderColor: colors.borderDefault,
+    backgroundColor: colors.bgCard, marginBottom: 8,
   },
-  paymentOptionSelected: { borderColor: GOLD, backgroundColor: '#FDF3DC' },
-  radio:         { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: BORDER, alignItems: 'center', justifyContent: 'center' },
-  radioSelected: { borderColor: GOLD },
-  radioDot:      { width: 10, height: 10, borderRadius: 5, backgroundColor: GOLD },
-  paymentLabel:  { fontSize: 14, fontWeight: '600', color: TEXT },
-  paymentDesc:   { fontSize: 12, color: MUTED, marginTop: 1 },
+  paymentOptionSelected: { borderColor: colors.primary, backgroundColor: colors.primaryFaint },
+  radio:         { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.borderDefault, alignItems: 'center', justifyContent: 'center' },
+  radioSelected: { borderColor: colors.primary },
+  radioDot:      { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
+  paymentLabel:  { fontSize: 14, fontWeight: '600', color: colors.textHeading },
+  paymentDesc:   { fontSize: 12, color: colors.textMuted, marginTop: 1 },
 
   // Footer
   footer: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderTopWidth: 1, borderColor: BORDER, backgroundColor: CARD,
+    padding: 16, borderTopWidth: 1, borderColor: colors.borderDefault, backgroundColor: colors.bgCard,
   },
   footerPriceRow:  { flex: 1 },
-  footerPriceLabel:{ fontSize: 12, color: MUTED },
-  footerTotal:     { fontSize: 18, fontWeight: '700', color: TEXT },
+  footerPriceLabel:{ fontSize: 12, color: colors.textMuted },
+  footerTotal:     { fontSize: 18, fontWeight: '700', color: colors.textHeading },
   ctaButton: {
-    backgroundColor: GOLD, borderRadius: 12,
+    backgroundColor: colors.primary, borderRadius: 12,
     paddingHorizontal: 20, paddingVertical: 14,
     alignItems: 'center', justifyContent: 'center',
   },
   ctaButtonFlex:     { flex: 1 },
   ctaButtonDisabled: { opacity: 0.6 },
-  ctaText:           { color: '#fff', fontWeight: '700', fontSize: 15 },
+  ctaText:           { color: colors.textInverse, fontWeight: '700', fontSize: 15 },
   backButton:        { paddingHorizontal: 12, paddingVertical: 14 },
-  backButtonText:    { fontSize: 15, color: GOLD_DK, fontWeight: '600' },
+  backButtonText:    { fontSize: 15, color: colors.primaryDark, fontWeight: '600' },
 
   // Confirm step
-  confirmHeading: { fontSize: 22, fontWeight: '700', color: TEXT, padding: 16, paddingBottom: 8 },
-  summaryRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: BORDER },
-  summaryLabel:   { fontSize: 14, color: MUTED },
-  summaryValue:   { fontSize: 14, fontWeight: '500', color: TEXT, maxWidth: '55%', textAlign: 'right' },
+  confirmHeading: { fontSize: 22, fontWeight: '700', color: colors.textHeading, padding: 16, paddingBottom: 8 },
+  summaryRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.borderDefault },
+  summaryLabel:   { fontSize: 14, color: colors.textMuted },
+  summaryValue:   { fontSize: 14, fontWeight: '500', color: colors.textHeading, maxWidth: '55%', textAlign: 'right' },
   totalRow:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
-  totalLabel:     { fontSize: 16, fontWeight: '600', color: TEXT },
-  totalAmount:    { fontSize: 22, fontWeight: '700', color: GOLD_DK },
-  disclaimer:     { fontSize: 12, color: MUTED, paddingHorizontal: 16, paddingBottom: 16, lineHeight: 18 },
+  totalLabel:     { fontSize: 16, fontWeight: '600', color: colors.textHeading },
+  totalAmount:    { fontSize: 22, fontWeight: '700', color: colors.primaryDark },
+  disclaimer:     { fontSize: 12, color: colors.textMuted, paddingHorizontal: 16, paddingBottom: 16, lineHeight: 18 },
 });

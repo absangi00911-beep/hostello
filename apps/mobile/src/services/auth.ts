@@ -1,4 +1,4 @@
-import { apiRequest, setAuthToken, clearAuthToken } from "./api";
+import { apiRequest, clearAuthToken } from "./api";
 import { LoginInput } from "@hostello/shared/validations";
 
 export interface AuthResponse {
@@ -19,7 +19,6 @@ export async function login(credentials: LoginInput): Promise<AuthResponse> {
     body: JSON.stringify(credentials),
   });
 
-  await setAuthToken(result.token);
   return result;
 }
 
