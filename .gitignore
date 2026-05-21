@@ -58,6 +58,10 @@ build*.txt
 build-*.log
 build-*.txt
 
+# Test outputs and temporary files
+test-results/
+tmp_del.sql
+
 # Covers logs nested anywhere: logs/ci/build.log, packages/app/logs/build.log
 logs/
 **/logs/*.log
