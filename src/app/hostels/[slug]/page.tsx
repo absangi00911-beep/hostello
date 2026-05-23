@@ -17,7 +17,9 @@ import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
 import { BookingPanel } from "@/components/hostel/BookingPanel";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
+import { ShareButton } from "@/components/hostel/ShareButton";
 import { db } from "@/lib/db";
+import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /* ── Data fetch — direct Prisma, no self-HTTP ───────────── */
@@ -62,12 +64,27 @@ export async function generateMetadata({
   const { slug } = await params;
   const hostel = await getHostel(slug);
   if (!hostel) return { title: "Hostel not found" };
+  
+  const description = hostel.description?.slice(0, 160);
+  const url = `${getAppUrl()}/hostels/${hostel.slug}`;
+
   return {
     title: hostel.name,
-    description: hostel.description?.slice(0, 160),
+    description,
     openGraph: {
+      type: "website",
+      url,
+      siteName: "HostelLo",
       title: hostel.name,
-      description: hostel.description?.slice(0, 160),
+      description,
+      images: hostel.coverImage
+        ? [{ url: hostel.coverImage, width: 1200, height: 630, alt: hostel.name }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: hostel.name,
+      description,
       images: hostel.coverImage ? [hostel.coverImage] : [],
     },
   };
@@ -102,6 +119,7 @@ export default async function HostelDetailPage({
     repliedAt: review.repliedAt instanceof Date ? review.repliedAt.toISOString() : review.repliedAt,
   }));
   const rooms = hostel.rooms_rel ?? [];
+  const hostelUrl = `${getAppUrl()}/hostels/${hostel.slug}`;
 
   return (
     <PublicLayout noFooter={false}>
@@ -179,6 +197,15 @@ export default async function HostelDetailPage({
                   </div>
                 ) : null;
               })()}
+
+              <div className="flex items-center gap-3 mt-3">
+                <ShareButton
+                  url={hostelUrl}
+                  name={hostel.name}
+                  price={hostel.pricePerMonth}
+                  variant="detail"
+                />
+              </div>
             </div>
 
             {/* Owner info strip */}
