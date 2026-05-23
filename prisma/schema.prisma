@@ -206,6 +206,7 @@ model Hostel {
   conversations Conversation[]
   priceAlerts PriceAlert[]
   notifications Notification[]
+  blockedDates BlockedDate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -463,4 +464,17 @@ model CronLog {
   updatedAt  DateTime @updatedAt
 
   @@map("cron_logs")
+}
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  hostel    Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId  String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([hostelId])
+  @@map("blocked_dates")
 }

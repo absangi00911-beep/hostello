@@ -1,7 +1,6 @@
-
 # System Design Document — HostelLo
 
-**Version:** 1.3 | **Date:** May 12, 2026 | **Last Updated:** May 17, 2026 (Vercel Deploy Pipeline, Mobile Setup, Infrastructure Complete) | **Author:** Engineering Team
+**Version:** 1.4 | **Date:** May 12, 2026 | **Last Updated:** May 23, 2026 (Doc/Code Sync Audit: stale warnings cleared, undocumented routes added, mobile status updated) | **Author:** Engineering Team
 
 ---
 
@@ -31,8 +30,7 @@ Success means a student in Lahore can find, compare, message the owner of, and b
 - Transactional emails and in-app notifications
 
 **Out of scope (deliberate):**
-- Native mobile apps — the web app is responsive, not native
-- Multi-city or international expansion (Pakistan only for now)
+- International expansion (Pakistan only for now; changing this requires backend, payment, and data-residency work)
 - Property management features beyond booking (lease agreements, maintenance requests)
 - Aggregating hostel data from external sources
 - Revenue sharing or commission tracking for owners
@@ -166,7 +164,7 @@ HostelLo is a Next.js monolith deployed on Vercel. This is not a microservices a
 
 The schema lives in `prisma/schema.prisma`. Key entities:
 
-**User** — `id`, `email` (unique), `emailVerified`, `password` (bcrypt hash), `name`, `phone`, `phoneVerified`, `avatar`, `role` (STUDENT/OWNER/ADMIN), `bio`, `city`, `tokenVersion`. The `tokenVersion` integer is incremented on password change; sessions with a stale version are invalidated.
+**User** — `id`, `email` (unique), `emailVerified`, `password` (bcrypt hash), `name`, `phone`, `phoneVerified`, `avatar`, `role` (STUDENT/OWNER/ADMIN), `bio`, `city`, `tokenVersion`, `emailNotifications` (boolean, default true — controls whether transactional emails are sent). The `tokenVersion` integer is incremented on password change; sessions with a stale version are invalidated.
 
 **Hostel** — `id`, `slug` (unique), `name`, `description`, `status` (DRAFT/PENDING_REVIEW/ACTIVE/SUSPENDED), `city`, `area`, `address`, `latitude`, `longitude`, `pricePerMonth` (integer PKR), `rooms`, `capacity`, `gender` (MALE/FEMALE/MIXED), `amenities` (string array), `rules` (string array), `images` (string array), `coverImage`, `verified`, `featured`, `viewCount`, `rating` (denormalized float), `reviewCount` (denormalized int), `ownerId`.
 
@@ -180,9 +178,13 @@ The `rating` and `reviewCount` fields are denormalized for read performance. Eve
 
 **Conversation + Message** — a conversation ties two participants (student + owner) to a hostel. Messages belong to a conversation. Unread count is computed via a filtered count query.
 
-**PriceAlert** — `userId`, `hostelId` (unique together), `targetPrice`, `lastKnownPrice`, `active`, `lastAlertAt`.
+**PriceAlert** — `userId`, `hostelId` (unique together), `targetPrice`, `lastKnownPrice`, `active`, `lastAlertAt`, `unsubscribeToken` (unique cuid, used for one-click unsubscribe links in price alert emails).
 
 **Notification** — `userId`, `type` (enum), `title`, `message`, optional foreign keys to `bookingId`, `reviewId`, `hostelId`. `read` boolean, `readAt` timestamp.
+
+**DeviceToken** — `userId`, `token` (unique FCM token), `platform` ("ios" | "android"). Upserted on login from mobile; deleted on logout or when FCM returns `UNREGISTERED`.
+
+**CronLog** — `name` (unique — one row per cron job), `ranAt`, `status` ("success" | "error"), `durationMs`, `error` (nullable). Updated on each cron execution as an upsert. Surfaced via `GET /api/health/crons` for observability.
 
 **VerificationToken, PasswordResetToken, PhoneVerificationToken** — short-lived tokens for auth flows.
 
@@ -202,7 +204,7 @@ Errors always include a human-readable `error` string. Validation errors may inc
 
 HTTP status codes follow standard conventions: 200 for success, 201 for created, 400 for validation failure, 401 for unauthenticated, 403 for forbidden, 404 for not found, 409 for conflict (double booking, duplicate email), 429 for rate limit, 500 for internal error.
 
-**Key routes:**
+**Key routes (46 total):**
 
 | Method | Path | Description |
 |---|---|---|
@@ -214,10 +216,12 @@ HTTP status codes follow standard conventions: 200 for success, 201 for created,
 | POST | `/api/auth/delete-account` | Permanently delete account |
 | POST | `/api/auth/phone/request-otp` | Send SMS OTP |
 | POST | `/api/auth/phone/verify-otp` | Verify phone number |
+| POST | `/api/auth/mobile/login` | Mobile: email+password login, returns JWT in response body |
 | PATCH | `/api/profile` | Update name, phone, bio, city |
 | POST | `/api/profile/change-password` | Change password (authenticated) |
 | GET | `/api/hostels` | Search hostels (paginated) |
 | POST | `/api/hostels` | Create hostel listing |
+| GET | `/api/hostels/mine` | Owner's own listings |
 | GET | `/api/hostels/[slug]` | Hostel detail |
 | PATCH | `/api/hostels/[id]` | Update hostel (owner or admin) |
 | DELETE | `/api/hostels/[id]` | Suspend hostel + cancel bookings |
@@ -225,6 +229,7 @@ HTTP status codes follow standard conventions: 200 for success, 201 for created,
 | DELETE | `/api/hostels/[slug]/favorite` | Unsave hostel |
 | POST | `/api/hostels/[slug]/view` | Increment view count |
 | GET | `/api/hostels/[slug]/availability` | 12-month occupancy calendar |
+| GET | `/api/favorites` | List current user's saved hostels |
 | POST | `/api/bookings` | Create booking request |
 | GET | `/api/bookings` | List current user's bookings |
 | GET | `/api/bookings/[id]` | Booking detail |
@@ -234,6 +239,7 @@ HTTP status codes follow standard conventions: 200 for success, 201 for created,
 | POST,GET | `/api/payment/callback` | JazzCash / EasyPaisa browser redirect callback |
 | POST | `/api/reviews` | Submit or update review |
 | GET | `/api/reviews` | List reviews for a hostel |
+| GET | `/api/reviews/mine` | Current user's submitted reviews |
 | PUT | `/api/reviews/[id]` | Edit own review |
 | DELETE | `/api/reviews/[id]` | Delete own review |
 | PATCH | `/api/reviews/[id]/reply` | Owner reply to review |
@@ -246,18 +252,24 @@ HTTP status codes follow standard conventions: 200 for success, 201 for created,
 | PUT | `/api/notifications` | Mark all as read |
 | PUT | `/api/notifications/[id]` | Mark one as read |
 | DELETE | `/api/notifications/[id]` | Delete notification |
+| POST | `/api/notifications/device-token` | Register FCM device token (mobile) |
+| DELETE | `/api/notifications/device-token` | Deregister FCM device token (logout) |
 | GET | `/api/price-alerts` | List user's price alerts |
 | POST | `/api/price-alerts` | Create price alert |
 | PATCH | `/api/price-alerts/[id]` | Update or toggle alert |
 | DELETE | `/api/price-alerts/[id]` | Delete alert |
+| GET | `/api/email/unsubscribe` | One-click unsubscribe from price alerts via token |
 | POST | `/api/upload` | Upload image to R2 |
 | PATCH | `/api/admin/hostels` | Admin: verify, suspend, activate |
+| GET,PATCH | `/api/admin/listings` | Admin: listing management |
 | POST | `/api/admin/search/sync` | Admin: sync Typesense |
 | POST | `/api/report` | Submit issue report |
 | POST | `/api/contact` | Contact support |
+| GET | `/api/health/crons` | Cron job health status (last run time, status per job) |
 | POST | `/api/cron/mark-completed-stays` | Cron: CONFIRMED → COMPLETED after checkout |
 | POST | `/api/cron/cancel-abandoned-payments` | Cron: cancel PENDING bookings after 30 min |
 | POST | `/api/cron/check-price-alerts` | Cron: check and send price alert emails |
+| POST | `/api/cron/cleanup-tokens` | Cron: purge expired verification and password reset tokens |
 
 There is no API versioning currently. The app is a monolith; API and frontend ship together, so version drift is not possible. If the API is ever exposed externally, versioning via URL prefix (`/api/v2/`) would be the approach.
 
@@ -453,15 +465,17 @@ Every API route is wrapped in a try/catch that returns `{ error: "Something went
 
 ## 18. Background Jobs and Async Processing
 
-Three scheduled cron jobs run via Upstash QStash:
+Four scheduled cron jobs run via Upstash QStash:
 
 **mark-completed-stays** — Daily at 00:00 UTC. Finds all CONFIRMED bookings where `checkOut < now` and transitions them to COMPLETED. This is the prerequisite for review eligibility. A single `updateMany` call handles the transition; no per-record processing.
 
 **cancel-abandoned-payments** — Every 5 minutes. Finds PENDING bookings created more than 30 minutes ago with PENDING payment status. Cancels them and restores room availability. Uses a transaction to atomically cancel the booking and restore the `Room.available` counter.
 
-**check-price-alerts** — Every 6 hours. Loads all active price alerts with hostel current prices. For each alert where `hostel.pricePerMonth < targetPrice`, sends a price drop email and deactivates the alert. Also updates `lastKnownPrice` for all remaining alerts.
+**check-price-alerts** — Every 6 hours. Loads all active price alerts with hostel current prices. For each alert where `hostel.pricePerMonth < targetPrice`, sends a price drop email (with unsubscribe link using `PriceAlert.unsubscribeToken`) and deactivates the alert. Also updates `lastKnownPrice` for all remaining alerts.
 
-All three endpoints require either a QStash HMAC signature or a Bearer token matching `CRON_SECRET`. Unauthorized requests receive 401.
+**cleanup-tokens** — Daily. Purges expired `VerificationToken`, `PasswordResetToken`, and `PhoneVerificationToken` rows. Prevents unbounded table growth from tokens that were never used.
+
+All four endpoints require either a QStash HMAC signature or a Bearer token matching `CRON_SECRET`. Unauthorized requests receive 401. Each cron job upserts a row in `CronLog` on completion, viewable via `GET /api/health/crons`.
 
 ---
 
@@ -505,6 +519,8 @@ Templates: verification, welcome, password reset, booking notification (to owner
 
 **Test Framework:** Vitest (v4.1.5) — configured in `vitest.config.ts` with globals enabled and Node environment. Run via `npm run test`.
 
+**E2E Test Framework:** Playwright — configured in `playwright.config.ts`. Run via `npm run e2e`. Three spec files exist in `e2e/`: `auth.spec.ts`, `homepage.spec.ts`, `search.spec.ts`. Coverage is currently thin (UI render checks, not full flow tests).
+
 **Unit Tests:**
 - `src/lib/validations.test.ts`: Tests `sanitizeString` with 20+ test cases including XSS vectors, encoded entities, Unicode, emoji, and edge cases.
 - `src/lib/bookings.test.ts`: Tests booking-related logic.
@@ -513,23 +529,20 @@ Templates: verification, welcome, password reset, booking notification (to owner
 **Integration Tests:**
 - `src/lib/reviews.integration.test.ts`: Integration tests for review API operations.
 
-**No end-to-end tests** currently exist (no Playwright/Cypress configuration).
-
 **Manual QA process:** Documented in the implementation plan. Includes browser checks at desktop (1280px) and mobile (375px), network panel verification of request payloads, and validation error walkthroughs.
 
 **Test Coverage Gaps:**
+- E2E specs exist but cover only shallow UI renders — no full flow tests (signup → search → book → payment).
 - Integration test coverage is limited; most API routes lack dedicated test cases.
 - No test coverage for auth flows (NextAuth login/logout/session/password reset).
 - No test coverage for payment webhook handlers (Safepay, JazzCash, EasyPaisa).
 - No load testing configured for high-concurrency scenarios.
-- No security penetration testing documented.
-- No end-to-end tests for user flows (signup → search → book → payment).
 
 **Recommended Additions:**
-- Expand integration tests to cover all 41 API routes.
+- Expand Playwright E2E tests for the full student booking flow and owner confirmation flow.
+- Expand integration tests to cover all 46 API routes.
 - Add auth flow tests (login, signup, password reset, phone OTP verification, session revocation).
 - Add payment webhook handler tests with idempotency verification.
-- Add Playwright E2E tests for critical user journeys.
 - Add `k6` load tests for `/api/hostels` search endpoint (simulated high concurrency).
 
 ---
@@ -606,34 +619,29 @@ Templates: verification, welcome, password reset, booking notification (to owner
 
 ## 25. Open Issues, Risks, and Decisions Pending
 
-**Risk: Database migration file workflow not fully enforced (P1).** The build process uses `prisma migrate deploy`, expecting migration files in `prisma/migrations/`. However, development uses `db push` which doesn't generate files. When developers push schema changes to main without committing migration files, the CI build will fail. **Decision needed:** Enforce `prisma migrate dev` in the development workflow or add a pre-commit hook to check for orphaned schema changes.
+**Risk: Database migration file workflow not fully enforced (P1).** The build process uses `prisma migrate deploy`, expecting migration files in `prisma/migrations/`. However, development uses `db push` which doesn't generate files. When developers push schema changes to main without committing migration files, the CI build will fail. **Decision needed:** Enforce `prisma migrate dev` in the development workflow. A `migrate:new` script already exists (`npm run migrate:new`). Add a git hook to prevent pushing without migration files.
 
-**Risk: CSS design tokens not synchronized with design system (P1).** 
-- DESIGN.md specifies OKLCH color system: primary amber (#C28B1A), action green (#2A6545), etc.
-- `src/app/globals.css` uses generic HSL tokens (--primary: 0 0% 9%, --secondary: 0 0% 96.1%, etc.)
-- Components hardcode color values instead of using CSS custom properties
-- Consequence: Design changes require updating hardcoded values in multiple files instead of one central place
-- **Decision needed:** Migrate CSS custom properties to match OKLCH spec from DESIGN.md, then refactor components to use `var(--color-*)` instead of hardcoded values.
+**Risk: Mobile JWT stored in unencrypted AsyncStorage (P1 — security).** The mobile app stores JWTs in `AsyncStorage` (unencrypted on Android, accessible on jailbroken iOS). `expo-secure-store` is the correct solution but is not installed. **Fix needed:** Add `expo-secure-store` to `apps/mobile/package.json`, replace all `AsyncStorage` calls in `src/services/api.ts` and `src/context/AuthContext.tsx`.
 
-**Risk: No database migration files.** Using `prisma db push` in a team context or for production schema changes is dangerous. A breaking migration applied without a rollback path could corrupt production data. **Decision needed:** Adopt `prisma migrate dev` workflow before the next schema change and ensure all developers understand when to use `db push` (dev only) vs `migrate dev` (production changes).
+**Risk: Mobile JWT has no refresh mechanism (P2).** Mobile clients store a long-lived JWT. When it expires, the app clears the token and redirects to login — no silent refresh. For a booking app, this is a UX regression. **Decision needed:** Implement a token refresh endpoint (`POST /api/auth/mobile/refresh`) and add refresh logic to the `apiRequest` wrapper.
+
+**Risk: Middleware file naming (P2 — potential bug).** The actual middleware is `src/proxy.ts`. PROJECT_STRUCTURE.md incorrectly lists it as `src/middleware.ts`. Next.js auto-discovers middleware by filename — confirm `next.config.ts` correctly references `src/proxy.ts`, or rename to `src/middleware.ts` to use the convention.
 
 **Risk: Single Typesense node.** If Typesense Cloud goes down, all searches degrade to Prisma. Prisma full-text search is not indexed for text (only for filter fields). A long Typesense outage would degrade search quality noticeably. **Option:** Add a secondary Typesense node or accept the Prisma fallback as sufficient for the current user base.
 
-**Risk: No email unsubscribe for price alerts.** Price alert emails are transactional, but users may not remember setting an alert. **Decision needed:** Add an unsubscribe or alert-management link in the price alert email template.
+**Decision pending: Push notifications for mobile (P2).** FCM infrastructure is now implemented (DeviceToken table, firebase-admin integration, `sendPushNotification()` in `notifications.ts`). The remaining work is on the mobile client: call `POST /api/notifications/device-token` on login and `DELETE` on logout, handle deep links from FCM notification taps.
 
-**Risk: Mobile app build status unknown (P2).** The `apps/mobile/` directory has base structure but has not been tested in CI. The root `tsconfig.json` excludes it from type-checking. **Decision needed:** Set up a separate build process for the mobile app or remove if not actively developed.
+**Decision pending: Safepay deep linking for mobile payments.** The backend webhook flow is unchanged. The missing piece is Universal Links (iOS) and App Links (Android) configuration so Safepay's redirect URL opens the app instead of a browser tab. This requires domain verification files and a deep link handler in the Expo app.
 
-**Decision pending: Push notifications (P2).** The in-app notification system exists but doesn't push to users' devices. Messaging is a real-time-adjacent feature; users checking for replies have to reload the page. **Options:** Polling (current), Server-Sent Events (SSE), WebSockets (not available on Vercel Edge), or web push with Service Worker.
+**Trade-off made: Denormalized rating fields.** Faster reads at the cost of potential drift. Maintenance scripts exist to fix drift.
 
-**Trade-off made: Denormalized rating fields.** Faster reads at the cost of potential drift. Maintenance scripts exist to fix drift. The alternative (computing rating on every read) would require a subquery on every listing render.
+**Trade-off made: Fire-and-forget emails.** A failed booking email does not block the booking.
 
-**Trade-off made: Fire-and-forget emails.** A failed booking email does not block the booking. This is the right trade-off (email failures are rare and recoverable), but it means some users may not receive a confirmation and would need to check the platform directly.
+**Known gap: No structured logging.** `console.error` goes to Vercel's log drain but is not structured JSON. Recommend Axiom or Logtail integration.
 
-**Known gap: No structured logging.** `console.error` goes to Vercel's log drain but is not structured JSON. Searching logs for specific booking IDs or user IDs requires string matching. Recommend Axiom or Logtail integration.
+**Known gap: No PITR confirmation.** Neon PITR availability depends on the plan. The team should confirm PITR is enabled for the production Neon database.
 
-**Known gap: No PITR confirmation.** Neon PITR availability depends on the plan. The team should confirm PITR is enabled for the production Neon database and document the recovery procedure.
-
-**Known gap: No end-to-end tests.** No Playwright/Cypress configuration exists. Critical user flows (signup → search → booking → payment) are not automated. Recommend adding E2E tests for at least the happy path.
+**Known gap: E2E test coverage is shallow.** Playwright is configured and 3 spec files exist, but they test only that pages render and buttons are visible. Full flow tests (signup → search → book → payment) do not exist yet.
 
 ---
 
@@ -684,26 +692,30 @@ npm run postbuild    # patch-routes-manifest.mjs fixes build artifacts
 - **Feature Components:** 50+ custom components (HostelCard, BookingDialog, Dashboard, etc.)
 - **State:** React Query for server-state, Zustand available, React Hook Form for validation
 
-**Known Broken/Incomplete Parts:**
+**Known Open Issues (as of May 23, 2026):**
 
-| Issue | Severity | Component | Status | Workaround |
-|-------|----------|-----------|--------|-----------|
-| CSS Design Tokens Mismatch | P1 | globals.css vs DESIGN.md | Hardcoded colors in components | Refactor to CSS variables matching OKLCH spec |
-| Migration File Workflow | P1 | Database schema | db push used in dev, migrate deploy in prod | Enforce migrate dev for tracked changes |
-| Email Unsubscribe | P2 | Price Alerts | No unsubscribe link in emails | Add unsubscribe/manage link to email template |
-| Push Notifications | P2 | Notifications | In-app only, no device push | Implement Web Push API + Service Worker |
-| E2E Tests | P2 | Testing | No Playwright/Cypress config | Add E2E test suite for critical flows |
-| Mobile App Status | P2 | apps/mobile/ | Unknown if builds/deploys | Set up separate CI pipeline or remove |
-| Structured Logging | P3 | Infrastructure | Using console.error | Integrate Axiom or Logtail |
+| Issue | Severity | Component | Status | Fix |
+|-------|----------|-----------|--------|----|
+| Migration File Workflow | P1 | Database schema | `db push` used in dev, `migrate deploy` in prod | Enforce `npm run migrate:new` for all schema changes |
+| Mobile JWT in AsyncStorage | P1 | `apps/mobile/src/services/api.ts` | Unencrypted token storage | Install `expo-secure-store`, replace AsyncStorage |
+| Mobile Token Refresh | P2 | Mobile auth flow | No refresh mechanism | Add `POST /api/auth/mobile/refresh` endpoint |
+| Middleware Filename | P2 | `src/proxy.ts` | PROJECT_STRUCTURE.md says `middleware.ts` | Confirm Next.js config references `proxy.ts` correctly |
+| E2E Test Coverage | P2 | `e2e/` specs | Shallow render checks only | Expand to full booking journey flow tests |
+| Safepay Deep Link (Mobile) | P2 | Mobile payments | No Universal Links / App Links | Configure domain verification + deep link handler |
+| Structured Logging | P3 | Infrastructure | `console.error` only | Integrate Axiom or Logtail |
 | PITR Confirmation | P3 | Disaster Recovery | Not verified on production | Confirm PITR enabled in Neon console |
 
-**All Recent Fixes Applied (from previous session):**
+**Previously Fixed (now resolved):**
+- ✅ CSS design tokens: `globals.css` now uses the full OKLCH system from DESIGN.md; feature components use `var(--color-*)` throughout
+- ✅ Email unsubscribe: `PriceAlert.unsubscribeToken` in schema, email template includes unsubscribe link, `GET /api/email/unsubscribe` endpoint implemented
+- ✅ Push notifications backend: `DeviceToken` model in schema, Firebase Admin SDK integrated, `sendPushNotification()` fires on every `createNotification()` call
+- ✅ Bearer token auth for mobile: implemented in `src/proxy.ts`
+- ✅ CSRF exemption for mobile: Bearer token presence skips CSRF check in `src/proxy.ts`
+- ✅ E2E test framework: Playwright configured, 3 spec files in `e2e/`
+- ✅ Mobile login endpoint: `POST /api/auth/mobile/login` returns NextAuth-compatible JWT in response body
 - ✅ Added missing `phoneVerificationTokens` relation to User model in Prisma schema
-- ✅ Exported `cn()` utility function from utils.ts (fixes 50+ component compilation errors)
+- ✅ Exported `cn()` utility function from utils.ts
 - ✅ Implemented missing `profileSchema` and `passwordSchema` in validations
-- ✅ Fixed Zod type inference issues (removed `.default()` from enums and required fields)
-- ✅ Corrected import paths in toaster component and mobile app screens
-- ✅ Added apps/mobile to tsconfig exclude to prevent root type-checking
 - ✅ Removed unsupported Calendar component props (initialFocus, invalid classNames)
 - ✅ Changed Firebase and Typesense to `requiredInProduction: false` (have fallbacks)
 - ✅ Wrapped useSearchParams() in Suspense boundary for Next.js 16 requirement
@@ -764,5 +776,7 @@ npm run postbuild    # patch-routes-manifest.mjs fixes build artifacts
 
 | Version | Date | Author | Summary |
 |---|---|---|---|
-| 1.1 | 2026-05-12 | Engineering Team + AI Audit | Comprehensive technical audit: vitest confirmed, CSS design token gap documented, migration workflow clarified, build status verified (all 41 routes passing, TypeScript 0 errors), new P1 issues identified (design token sync, migration file enforcement), incomplete features catalogued (push notifications, E2E tests, mobile app), all recent fixes documented, open issues prioritized |
+| 1.4 | 2026-05-23 | Engineering Team + AI Audit | Doc/code sync audit: 7 stale warnings cleared, 9 undocumented routes and models added to API table and data design, mobile scope officially added, 4th cron job documented, CronLog model documented, User.emailNotifications documented, open issues list updated with accurate current state |
+| 1.3 | 2026-05-17 | Engineering Team | Vercel deploy pipeline, mobile setup, infrastructure complete |
+| 1.1 | 2026-05-12 | Engineering Team + AI Audit | Comprehensive technical audit: vitest confirmed, CSS design token gap documented, migration workflow clarified, build status verified (all 41 routes passing, TypeScript 0 errors), new P1 issues identified, incomplete features catalogued, all recent fixes documented, open issues prioritized |
 | 1.0 | 2026-05-05 | Engineering Team | Initial system design document, derived from codebase analysis |

@@ -14,7 +14,9 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "schedule-cron": "tsx scripts/schedule-cron-jobs.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "migrate:new": "prisma migrate dev",
+    "prepare": "simple-git-hooks"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
@@ -41,10 +43,10 @@
     "@sentry/nextjs": "^10.52.0",
     "@tanstack/react-query": "^5.100.9",
     "@types/pg": "^8.20.0",
-    "@upstash/qstash": "^0.3.1",
+    "@upstash/qstash": "^2.11.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -69,6 +71,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/postcss": "^4.3.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.19.18",
@@ -80,13 +84,16 @@
     "eslint-config-next": "^16.2.4",
     "postcss": "^8.5.14",
     "prisma": "^7.8.0",
-    "tailwindcss": "^3.4.1",
+    "simple-git-hooks": "^2.11.1",
+    "tailwindcss": "^4.3.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
-    "vitest": "^4.1.5",
-    "@playwright/test": "^1.44.0"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "if git diff --cached --name-only | grep -q 'prisma/schema.prisma'; then if ! git diff --cached --name-only | grep -q '^prisma/migrations/'; then printf '\\nERROR: Schema changed without a migration. Run: npm run migrate:new\\n\\n' >&2; exit 1; fi; fi"
   }
 }

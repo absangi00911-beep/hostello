@@ -1,21 +1,20 @@
 # HostelLo — Web App Progress & Phase 0 Completion
-**Status:** Phase 0 ~85% Complete | May 17, 2026 | Living Document
+**Status:** Phase 0 ~90% Complete | May 23, 2026 | Living Document
 
 ---
 
 ## Executive Summary
 
-The web app is nearly ready for production. Most features are implemented and working. Infrastructure and deployment pipelines are now fully configured.
+The web app is near production-ready. Infrastructure is configured. Most documented P1 issues are resolved. Two real blockers remain before mobile work can start.
 
-**Recent Updates (May 17, 2026):**
-- ✅ Fixed Sentry config import paths (instrumentation.ts)
-- ✅ Vercel deployment configured with GitHub Actions
-- ✅ Mobile app dependencies installed and ready
-- ✅ Project structure synchronized and cleaned up
-- ⚠️ Prisma migration workflow (db push vs migrate deploy) — Production risk
-- ⚠️ CSS design tokens need OKLCH migration — Design system compliance
-
-See `/memories/repo/codebase-state-may-17-2026.md` for detailed technical breakdown.
+**Updates (May 23, 2026 — Doc/Code Sync Audit):**
+- ✅ CSS design tokens: `globals.css` now has full OKLCH system; components use `var(--color-*)` — P1 RESOLVED
+- ✅ Email unsubscribe: schema field + email template + API endpoint all implemented — P2 RESOLVED
+- ✅ Push notification backend: FCM, DeviceToken, `sendPushNotification()` all implemented — RESOLVED
+- ✅ Bearer token auth + CSRF exemption for mobile: implemented in `src/proxy.ts` — RESOLVED
+- ✅ E2E framework: Playwright configured, 3 spec files exist — RESOLVED (coverage still thin)
+- ⚠️ **Still blocking:** Prisma migration workflow — must fix before next schema change
+- ⚠️ **Security gap:** Mobile JWT stored in AsyncStorage (unencrypted) — `expo-secure-store` needed
 
 ---
 
