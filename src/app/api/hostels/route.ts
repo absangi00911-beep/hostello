@@ -95,10 +95,24 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Aggregate avg safety score per hostel from reviews
+    const safetyAgg = await db.review.groupBy({
+      by: ['hostelId'],
+      where: { hostelId: { in: hostelIds }, safety: { gt: 0 } },
+      _avg: { safety: true },
+    });
+    const safetyMap = new Map(
+      safetyAgg.map((r) => [r.hostelId, r._avg.safety])
+    );
+
     // Maintain search result order from Typesense
     const hostelMap = new Map(hostels.map((h) => [h.id, h]));
     const orderedHostels = hostelIds
-      .map((id: string) => hostelMap.get(id))
+      .map((id: string) => {
+        const h = hostelMap.get(id);
+        if (!h) return undefined;
+        return { ...h, safetyScore: safetyMap.get(id) ?? null };
+      })
       .filter((h): h is Exclude<typeof h, undefined> => h !== undefined);
 
     return NextResponse.json({
