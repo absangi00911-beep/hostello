@@ -19,6 +19,7 @@ export interface HostelCardData {
   featured: boolean;
   rating: number;
   reviewCount: number;
+  safetyScore?: number | null;
   capacity: number;
   rooms: number;
   latitude?: number | null;
@@ -166,6 +167,24 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
             </span>
             <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
               ({hostel.reviewCount})
+            </span>
+          </div>
+        )}
+
+        {/* Safety score — only show when reviews exist and safety has been rated */}
+        {hostel.safetyScore != null && hostel.safetyScore > 0 && (
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck
+              size={13}
+              strokeWidth={1.5}
+              className="text-[var(--color-primary)] shrink-0"
+              aria-hidden="true"
+            />
+            <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
+              {hostel.safetyScore.toFixed(1)}
+            </span>
+            <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+              safety
             </span>
           </div>
         )}
