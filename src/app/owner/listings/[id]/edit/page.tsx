@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { ListingFormWizard } from "@/components/owner/ListingFormWizard";
+import { BlockedDatesManager } from "@/components/owner/BlockedDatesManager";
 import type { Metadata } from "next";
 
 async function getHostel(id: string) {
@@ -120,6 +121,7 @@ export default async function EditListingPage({
         hostelId={hostel.id}
         initialData={initialData}
       />
+      <BlockedDatesManager hostelId={hostel.id} />
     </div>
   );
 }

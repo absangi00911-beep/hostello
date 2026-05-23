@@ -25,15 +25,26 @@ export async function GET(
     const windowStart = startOfMonth(months[0]);
     const windowEnd = endOfMonth(months[11]);
 
-    const bookings = await db.booking.findMany({
-      where: {
-        hostelId: hostel.id,
-        status: { in: ["PENDING", "CONFIRMED"] },
-        checkIn: { lte: windowEnd },
-        checkOut: { gte: windowStart },
-      },
-      select: { checkIn: true, checkOut: true, guests: true },
-    });
+    // Fetch bookings AND blocked dates in parallel
+    const [bookings, blockedRanges] = await Promise.all([
+      db.booking.findMany({
+        where: {
+          hostelId: hostel.id,
+          status: { in: ["PENDING", "CONFIRMED"] },
+          checkIn: { lte: windowEnd },
+          checkOut: { gte: windowStart },
+        },
+        select: { checkIn: true, checkOut: true, guests: true },
+      }),
+      db.blockedDate.findMany({
+        where: {
+          hostelId: hostel.id,
+          startDate: { lte: windowEnd },
+          endDate: { gte: windowStart },
+        },
+        select: { startDate: true, endDate: true },
+      }),
+    ]);
 
     const calendar = months.map((month) => {
       const days = eachDayOfInterval({
@@ -42,6 +53,12 @@ export async function GET(
       });
 
       const dailyOccupancy = days.map((day) => {
+        // If the owner has blocked this day, treat it as fully occupied
+        const isBlocked = blockedRanges.some(
+          (b) => b.startDate <= day && b.endDate >= day
+        );
+        if (isBlocked) return hostel.capacity;
+
         const occupied = bookings
           .filter((b) => b.checkIn <= day && b.checkOut > day)
           .reduce((sum, b) => sum + b.guests, 0);

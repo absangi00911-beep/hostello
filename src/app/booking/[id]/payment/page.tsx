@@ -94,9 +94,9 @@ export default function PaymentPage() {
         return;
       }
 
-      // Safepay: redirect URL returned
-      if (json.data?.redirectUrl) {
-        window.location.href = json.data.redirectUrl;
+      // Safepay: redirect to checkout URL
+      if (json.data?.paymentUrl) {
+        window.location.href = json.data.paymentUrl;
         return;
       }
 

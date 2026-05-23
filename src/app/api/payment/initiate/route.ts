@@ -116,13 +116,17 @@ export async function POST(req: NextRequest) {
       customerEmail: booking.user.email,
       customerName:  booking.user.name,
       appUrl,
-      ...(isMobile && { 
-        redirectPath: `/booking/${booking.id}/confirm`,
-        cancelPath: `/booking/${booking.id}?payment=cancelled`
+      // For mobile, redirect to the custom app scheme so that
+    // expo-web-browser's openAuthSessionAsync can intercept the return URL
+    // and close the in-app browser automatically.  A plain https:// redirect
+    // would land in the system browser and strand the user outside the app.
+    ...(isMobile && {
+        redirectPath: `hostello://payment/return?bookingId=${booking.id}&status=paid`,
+        cancelPath:   `hostello://payment/return?bookingId=${booking.id}&status=cancelled`,
       }),
     });
 
-    return NextResponse.json({ type: "redirect", redirectUrl });
+    return NextResponse.json({ data: { paymentUrl: redirectUrl }, message: "Payment initiated" });
   } catch (err) {
     console.error("[POST /api/payment/initiate]", err);
     return NextResponse.json({ error: "Payment setup failed." }, { status: 500 });

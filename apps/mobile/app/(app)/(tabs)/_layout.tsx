@@ -83,6 +83,22 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="messages"
+        options={{
+          title: 'Messages',
+          tabBarAccessibilityLabel: 'Messages',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              focused={focused}
+              outlineIcon="chatbubble-outline"
+              solidIcon="chatbubble"
+              label="Messages"
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="favorites"
         options={{
           title: 'Saved',
