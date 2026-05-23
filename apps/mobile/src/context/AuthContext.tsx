@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { router, useSegments } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { getAuthToken, setAuthToken, clearAuthToken } from '../services/api';
 
 // ---------------------------------------------------------------------------
@@ -47,13 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const segments = useSegments();
 
-  // Rehydrate from AsyncStorage on mount
+  // Rehydrate from SecureStore on mount
   useEffect(() => {
     async function rehydrate() {
       try {
         const [storedToken, storedUser] = await Promise.all([
           getAuthToken(),
-          AsyncStorage.getItem(USER_STORAGE_KEY),
+          SecureStore.getItemAsync(USER_STORAGE_KEY),
         ]);
         setToken(storedToken);
         setUser(storedUser ? (JSON.parse(storedUser) as StoredUser) : null);
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (newToken: string, newUser: StoredUser) => {
     await Promise.all([
       setAuthToken(newToken),
-      AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser)),
+      SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(newUser)),
     ]);
     setToken(newToken);
     setUser(newUser);
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await Promise.all([
       clearAuthToken(),
-      AsyncStorage.removeItem(USER_STORAGE_KEY),
+      SecureStore.deleteItemAsync(USER_STORAGE_KEY),
     ]);
     setToken(null);
     setUser(null);

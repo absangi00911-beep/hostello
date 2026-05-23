@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -7,7 +7,7 @@ if (!API_BASE_URL) {
 const TOKEN_KEY = 'auth_token';
 
 async function getAuthHeaders() {
-  const token = await AsyncStorage.getItem(TOKEN_KEY);
+  const token = await SecureStore.getItemAsync(TOKEN_KEY);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Client': 'mobile',
@@ -53,13 +53,13 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
 }
 
 export async function getAuthToken(): Promise<string | null> {
-  return AsyncStorage.getItem(TOKEN_KEY);
+  return SecureStore.getItemAsync(TOKEN_KEY);
 }
 
 export async function setAuthToken(token: string) {
-  await AsyncStorage.setItem(TOKEN_KEY, token);
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
 }
 
 export async function clearAuthToken() {
-  await AsyncStorage.removeItem(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
