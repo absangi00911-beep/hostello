@@ -12,6 +12,7 @@ import {
   Star,
   Settings,
   ChevronLeft,
+  BarChart2,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/owner/bookings",    label: "Bookings",     icon: CalendarDays },
   { href: "/owner/messages",    label: "Messages",     icon: MessageCircle },
   { href: "/owner/reviews",     label: "Reviews",      icon: Star },
+  { href: "/owner/analytics",   label: "Analytics",    icon: BarChart2 },
   { href: "/owner/settings",    label: "Settings",     icon: Settings },
 ];
 
