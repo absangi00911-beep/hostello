@@ -18,7 +18,7 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
     const alerts = await db.priceAlert.findMany({
       where: { active: true },
       include: {
-        user: { select: { id: true, email: true, name: true } },
+        user: { select: { id: true, email: true, name: true, emailNotifications: true } },
         hostel: { select: { id: true, name: true, slug: true, pricePerMonth: true } },
       },
     });
@@ -26,6 +26,7 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
     console.log(`[Price Alert] Found ${alerts.length} active alerts to check`);
 
     let emailsSent = 0;
+    let skipped = 0;
     const alertsToUpdate: Array<{ id: string; hostelName: string; userEmail: string }> = [];
 
     // Check each alert
@@ -37,12 +38,22 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
           `[Price Alert] Price drop detected for ${alert.user.email}: ${alert.hostel.name} (${alert.hostel.pricePerMonth} < ${alert.targetPrice})`
         );
 
+        // Respect the user's master email opt-out flag — do not send, do not deactivate
+        if (alert.user.emailNotifications === false) {
+          console.log(`[Price Alert] Skipping ${alert.user.email} — email notifications disabled`);
+          skipped++;
+          continue;
+        }
+
         try {
           // Use the last known price if available, otherwise fall back to target price
           // For the first alert, we estimate based on the target
           const oldPrice = alert.lastKnownPrice ?? alert.targetPrice;
           const newPrice = alert.hostel.pricePerMonth;
           const hostelUrl = `${baseUrl}/hostels/${alert.hostel.slug}`;
+
+          // Per-alert unsubscribe — deactivates only this alert, not all emails
+          const unsubscribeUrl = `${baseUrl}/api/alerts/unsubscribe?token=${alert.unsubscribeToken}`;
 
           const { subject, html } = priceAlertEmail({
             userName: alert.user.name,
@@ -51,6 +62,7 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
             oldPrice,
             newPrice,
             targetPrice: alert.targetPrice,
+            unsubscribeUrl,
           });
 
           await sendEmail({
@@ -96,6 +108,9 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
     // Update lastKnownPrice for all active alerts (whether they triggered or not)
     // This ensures we always have the latest price for comparison
     // Skip alerts that were just deactivated to avoid unnecessary DB operations
+    // Note: skipped (suppressed) alerts are intentionally included here — price tracking
+    // must continue even when email delivery is suppressed, so the alert fires correctly
+    // once the user re-enables notifications.
     const deactivatedIds = new Set(
       alertsToUpdate.map((a) => a.id)
     );
@@ -114,7 +129,7 @@ async function checkPriceAlerts(baseUrl: string = "https://hostello.pk") {
     console.log(
       `[Price Alert] Completed: ${emailsSent} emails sent, ${alerts.length - emailsSent} alerts without price drops`
     );
-    return { success: true, emailsSent, alertsChecked: alerts.length };
+    return { success: true, emailsSent, alertsChecked: alerts.length, skipped };
   } catch (err) {
     console.error("[Price Alert] Fatal error:", err);
     throw err;
