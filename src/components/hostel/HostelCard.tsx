@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShieldCheck, Star, Users, Mars, Venus, Equal } from "lucide-react";
 import { formatPKR } from "@/components/ui/shared";
+import { ShareButton } from "@/components/hostel/ShareButton";
 
 export interface HostelCardData {
   id: string;
@@ -93,11 +94,12 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
   }
 
   return (
-    <Link
-      href={`/hostels/${hostel.slug}`}
-      className="group flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden transition-all duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
-      aria-label={`${hostel.name} — ${formatPKR(hostel.pricePerMonth)} per month`}
-    >
+    <div className="relative group">
+      <Link
+        href={`/hostels/${hostel.slug}`}
+        className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden transition-all duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+        aria-label={`${hostel.name} — ${formatPKR(hostel.pricePerMonth)} per month`}
+      >
       {/* Image */}
       <div className="relative aspect-video w-full overflow-hidden bg-[var(--color-bg-overlay)]">
         {coverSrc ? (
@@ -202,5 +204,12 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
         </div>
       </div>
     </Link>
+      <ShareButton
+        url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"}/hostels/${hostel.slug}`}
+        name={hostel.name}
+        price={hostel.pricePerMonth}
+        variant="card"
+      />
+    </div>
   );
 }
