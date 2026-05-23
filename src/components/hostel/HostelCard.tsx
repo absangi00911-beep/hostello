@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ShieldCheck, Star, Users, Mars, Venus, Equal } from "lucide-react";
 import { formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
+import { CompareToggle } from "@/components/hostel/CompareToggle";
 
 export interface HostelCardData {
   id: string;
@@ -39,9 +40,12 @@ interface HostelCardProps {
   /** Compact horizontal layout — used in comparison, favorites list */
   compact?: boolean;
   priority?: boolean;
+  compareSelected?: boolean;
+  compareDisabled?: boolean;
+  onToggleCompare?: (e: React.MouseEvent) => void;
 }
 
-export function HostelCard({ hostel, compact = false, priority = false }: HostelCardProps) {
+export function HostelCard({ hostel, compact = false, priority = false, compareSelected, compareDisabled, onToggleCompare }: HostelCardProps) {
   const coverSrc = hostel.coverImage ?? hostel.images[0] ?? null;
   const GenderIcon = GENDER_LABELS[hostel.gender].icon;
   const genderLabel = GENDER_LABELS[hostel.gender].label;
@@ -204,6 +208,14 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
         </div>
       </div>
     </Link>
+      {onToggleCompare && (
+        <CompareToggle
+          name={hostel.name}
+          isSelected={compareSelected ?? false}
+          isDisabled={compareDisabled ?? false}
+          onToggle={onToggleCompare}
+        />
+      )}
       <ShareButton
         url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"}/hostels/${hostel.slug}`}
         name={hostel.name}
