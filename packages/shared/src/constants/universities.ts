@@ -65,3 +65,16 @@ export const POPULAR_UNIVERSITIES: Pick<University, "shortName" | "city">[] = [
   { shortName: "KU", city: "Karachi" },
   { shortName: "BZU", city: "Multan" },
 ];
+
+// Slug: shortName → URL-safe string. e.g. "UET Lahore" → "uet-lahore"
+export function universityToSlug(shortName: string): string {
+  return shortName
+    .toLowerCase()
+    .replace(/[\s/]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+// Reverse: slug → University record
+export function slugToUniversity(slug: string): University | undefined {
+  return UNIVERSITIES.find((u) => universityToSlug(u.shortName) === slug);
+}

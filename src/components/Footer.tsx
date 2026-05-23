@@ -1,6 +1,8 @@
 // Path: src/components/Footer.tsx
 
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
+import { POPULAR_UNIVERSITIES, universityToSlug } from "@hostello/shared";
 
 const NAV_LINKS = [
   { label: "Find hostels", href: "/hostels" },
@@ -22,7 +24,7 @@ export function Footer() {
       aria-label="Site footer"
     >
       <div className="container-app py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Col 1 — Brand */}
           <div className="space-y-3">
             <Link
@@ -69,7 +71,27 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3 — Legal & Contact */}
+          {/* Col 3 — Universities */}
+          <div className="space-y-3">
+            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] flex items-center gap-1.5">
+              <GraduationCap size={14} strokeWidth={1.5} aria-hidden="true" />
+              Universities
+            </p>
+            <ul className="space-y-2.5" role="list">
+              {POPULAR_UNIVERSITIES.map((u) => (
+                <li key={u.shortName}>
+                  <Link
+                    href={`/university/${universityToSlug(u.shortName)}`}
+                    className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-deep)] transition-colors"
+                  >
+                    Hostels near {u.shortName}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Col 4 — Legal & Contact */}
           <div className="space-y-3">
             <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
               Company
