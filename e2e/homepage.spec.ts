@@ -27,4 +27,12 @@ test.describe('Homepage', () => {
     await expect(page).toHaveURL(/\/hostels/);
     await expect(page.getByRole('main', { name: 'Search results' })).toBeVisible();
   });
+
+  test('homepage shows trust proof near search', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByText(/verified hostel listings/i)).toBeVisible();
+    await expect(page.getByText(/real prices before you call/i)).toBeVisible();
+    await expect(page.getByText(/secure booking handoff/i)).toBeVisible();
+  });
 });
