@@ -184,25 +184,6 @@ export default async function HostelDetailPage({
                 </div>
               )}
 
-              {/* Compute aggregate safety score from fetched reviews */}
-              {(() => {
-                const ratedReviews = reviews.filter((r) => r.safety > 0);
-                const avgSafety = ratedReviews.length > 0
-                  ? ratedReviews.reduce((sum, r) => sum + r.safety, 0) / ratedReviews.length
-                  : null;
-                return avgSafety !== null ? (
-                  <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-primary-faint)] px-3 py-2 w-fit">
-                    <ShieldCheck size={15} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
-                    <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-primary-deep)]">
-                      Safety {avgSafety.toFixed(1)}/5
-                    </span>
-                    <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-                      · avg across {ratedReviews.length} {ratedReviews.length === 1 ? 'review' : 'reviews'}
-                    </span>
-                  </div>
-                ) : null;
-              })()}
-
               <div className="flex items-center gap-3 mt-3">
                 <ShareButton
                   url={hostelUrl}
