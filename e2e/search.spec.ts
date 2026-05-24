@@ -36,4 +36,18 @@ test.describe('Hostel search page', () => {
       expect(firstHref).toBeTruthy();
     }
   });
+  test('empty search recovery offers clearing filters', async ({ page }) => {
+    await page.goto('/hostels?city=Lahore&minPrice=49000&maxPrice=50000&gender=FEMALE');
+
+    await expect(page.getByText(/no exact matches yet/i)).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('button', { name: /clear all filters/i })).toBeVisible();
+  });
+
+  test('search controls expose active result context', async ({ page }) => {
+    await page.goto('/hostels?city=Lahore&q=campus');
+
+    await expect(
+      page.getByText(/hostels in lahore for "campus"|no hostels found in lahore for "campus"/i),
+    ).toBeVisible({ timeout: 8000 });
+  });
 });
