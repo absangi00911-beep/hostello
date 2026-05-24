@@ -1,12 +1,19 @@
 // Path: src/app/page.tsx
 import Link from "next/link";
-import { MapPin } from "lucide-react";
 import Image from "next/image";
-import { CheckCircle2, MessageCircle, Calendar } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  MapPin,
+  MessageCircle,
+  ShieldCheck,
+  Tags,
+} from "lucide-react";
 import { CITIES } from "@hostello/shared";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
 import { HeroSearch } from "@/components/landing/HeroSearch";
+import { auth } from "@/lib/auth/config";
 
 /* ── Data fetching ───────────────────────────────────────── */
 async function getFeaturedHostels(): Promise<HostelCardData[]> {
@@ -105,8 +112,61 @@ function HowItWorksStep({
 }
 
 /* ── Page ─────────────────────────────────────────────────── */
+function HeroTrustProof() {
+  const items = [
+    {
+      icon: ShieldCheck,
+      label: "Verified hostel listings",
+      description: "Listings are reviewed before students book.",
+    },
+    {
+      icon: Tags,
+      label: "Real prices before you call",
+      description: "Monthly rent is visible before you message.",
+    },
+    {
+      icon: CheckCircle2,
+      label: "Secure booking handoff",
+      description: "Payment and status updates stay inside HostelLo.",
+    },
+  ];
+
+  return (
+    <div
+      className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+      aria-label="HostelLo trust proof"
+    >
+      {items.map(({ icon: Icon, label, description }) => (
+        <div
+          key={label}
+          className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-3 py-3 shadow-[var(--shadow-xs)]"
+        >
+          <div className="mb-1.5 flex items-center gap-2">
+            <Icon
+              size={15}
+              strokeWidth={1.5}
+              className="text-[var(--color-action)]"
+              aria-hidden="true"
+            />
+            <p className="text-[var(--text-body-sm)] font-[700] text-[var(--color-text-heading)]">
+              {label}
+            </p>
+          </div>
+          <p className="text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+            {description}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function HomePage() {
-  const featuredHostels = await getFeaturedHostels();
+  const [featuredHostels, session] = await Promise.all([
+    getFeaturedHostels(),
+    auth(),
+  ]);
+  const showOwnerAcquisition = session?.user.role !== "STUDENT";
 
   // Collect cover images from featured hostels for the photo stack
   const stackImages = featuredHostels
@@ -156,6 +216,7 @@ export default async function HomePage() {
 
             {/* Search form — first interactive element in tab order */}
             <HeroSearch />
+            <HeroTrustProof />
           </div>
 
           {/* Right — photo stack (desktop only) */}
@@ -280,10 +341,11 @@ export default async function HomePage() {
           Split panel: left = amber-drenched, right = benefits + CTA
           This is the ONLY section with amber as a bg color
       ══════════════════════════════════════════════════════ */}
-      <section
-        className="container-app pb-16 md:pb-20"
-        aria-labelledby="owners-heading"
-      >
+      {showOwnerAcquisition && (
+        <section
+          className="container-app pb-16 md:pb-20"
+          aria-labelledby="owners-heading"
+        >
         <div className="grid grid-cols-1 md:grid-cols-2 rounded-[var(--radius-xl)] overflow-hidden shadow-[var(--shadow-md)]">
           {/* Left — amber panel */}
           <div
@@ -350,7 +412,8 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+        </section>
+      )}
     </PublicLayout>
   );
 }
