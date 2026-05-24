@@ -1,7 +1,7 @@
 // Path: src/components/hostel/HostelCard.tsx
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, Star, Users, Mars, Venus, Equal } from "lucide-react";
+import { ShieldCheck, Star, Mars, Venus, Equal } from "lucide-react";
 import { formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
 import { CompareToggle } from "@/components/hostel/CompareToggle";
@@ -172,7 +172,7 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
               {hostel.rating.toFixed(1)}
             </span>
             <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-              ({hostel.reviewCount})
+              {hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""}
             </span>
           </div>
         )}
@@ -187,7 +187,7 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
               aria-hidden="true"
             />
             <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
-              {hostel.safetyScore.toFixed(1)}
+              Safety {hostel.safetyScore.toFixed(1)}
             </span>
             <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
               safety
