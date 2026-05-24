@@ -74,12 +74,12 @@ export default async function ReviewBookingPage({
           Review your booking
         </h1>
         <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-          Check the details before proceeding to payment.
+          Confirm your dates, room, guests, and total before moving to secure payment.
         </p>
       </div>
 
       {/* Booking summary card */}
-      <BookingSummaryCard booking={booking} />
+      <BookingSummaryCard booking={booking} showPaymentHint />
 
       {/* Cancellation policy */}
       <div className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-4 py-3 space-y-1">

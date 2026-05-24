@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Loader2, CreditCard, ShieldCheck, Lock } from "lucide-react";
 import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
-import { PageSpinner, InlineError } from "@/components/ui/shared";
+import { PageSpinner, RecoveryNotice } from "@/components/ui/shared";
 
 type PaymentMethod = "safepay" | "jazzcash" | "easypaisa";
 
@@ -121,7 +121,20 @@ export default function PaymentPage() {
   if (fetchErr) {
     return (
       <BookingStepLayout step={2} backHref={`/booking/${bookingId}/review`}>
-        <InlineError message={fetchErr} />
+        <RecoveryNotice
+          tone="error"
+          title="Payment details unavailable"
+          message={fetchErr}
+          primaryAction={
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
+            >
+              Try again
+            </button>
+          }
+        />
       </BookingStepLayout>
     );
   }

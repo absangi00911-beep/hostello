@@ -1,6 +1,6 @@
 // Path: src/components/booking/BookingSummaryCard.tsx
 import Image from "next/image";
-import { Calendar, Users, Building2 } from "lucide-react";
+import { Calendar, Users, Building2, CreditCard } from "lucide-react";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { format } from "date-fns";
 
@@ -24,16 +24,46 @@ interface BookingSummaryCardProps {
   };
   /** Show status badges (useful on confirmation page) */
   showStatus?: boolean;
+  /** Show payment state guidance for booking review and recovery screens */
+  showPaymentHint?: boolean;
+}
+
+function paymentHint(paymentStatus: string) {
+  switch (paymentStatus.toUpperCase()) {
+    case "PAID":
+      return {
+        title: "Payment secured",
+        message: "Your payment is protected while the owner confirms the booking.",
+      };
+    case "FAILED":
+      return {
+        title: "Payment needs attention",
+        message: "Retry secure payment or choose another method to continue.",
+      };
+    case "REFUNDED":
+      return {
+        title: "Refund in progress",
+        message: "Your refund is being processed by the payment provider.",
+      };
+    case "PENDING":
+    default:
+      return {
+        title: "Payment pending",
+        message: "Confirm with secure payment to send this request to the owner.",
+      };
+  }
 }
 
 export function BookingSummaryCard({
   booking,
   showStatus = false,
+  showPaymentHint = false,
 }: BookingSummaryCardProps) {
   const { hostel } = booking;
 
   const checkInFmt  = format(new Date(booking.checkIn),  "d MMM yyyy");
   const checkOutFmt = format(new Date(booking.checkOut), "d MMM yyyy");
+  const hint = showPaymentHint ? paymentHint(booking.paymentStatus) : null;
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
@@ -122,6 +152,25 @@ export function BookingSummaryCard({
             {formatPKR(booking.total)}
           </span>
         </div>
+
+        {hint && (
+          <div className="flex items-start gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-action-light)] bg-[var(--color-action-light)] px-3 py-2.5">
+            <CreditCard
+              size={15}
+              strokeWidth={1.5}
+              className="mt-0.5 shrink-0 text-[var(--color-action)]"
+              aria-hidden="true"
+            />
+            <div className="space-y-0.5">
+              <p className="text-[var(--text-caption)] font-[700] text-[var(--color-primary-deep)]">
+                {hint.title}
+              </p>
+              <p className="text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+                {hint.message}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
