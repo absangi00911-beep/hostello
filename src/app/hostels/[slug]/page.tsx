@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Star,
   Users,
-  Wifi,
   CheckCircle2,
   XCircle,
   User,
@@ -18,6 +17,7 @@ import { BookingPanel } from "@/components/hostel/BookingPanel";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
+import { TrustSummary } from "@/components/hostel/TrustSummary";
 import { db } from "@/lib/db";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -91,7 +91,7 @@ export async function generateMetadata({
 }
 
 /* ── Amenity icon mapping (best-effort) ─────────────────── */
-function AmenityIcon({ name }: { name: string }) {
+function AmenityIcon({ name: _name }: { name: string }) {
   return (
     <CheckCircle2
       size={16}
@@ -120,6 +120,11 @@ export default async function HostelDetailPage({
   }));
   const rooms = hostel.rooms_rel ?? [];
   const hostelUrl = `${getAppUrl()}/hostels/${hostel.slug}`;
+  const ratedReviews = reviews.filter((r) => r.safety > 0);
+  const avgSafety =
+    ratedReviews.length > 0
+      ? ratedReviews.reduce((sum, r) => sum + r.safety, 0) / ratedReviews.length
+      : null;
 
   return (
     <PublicLayout noFooter={false}>
@@ -231,6 +236,22 @@ export default async function HostelDetailPage({
                   {hostel.owner._count?.hostels ?? 1} listing{hostel.owner._count?.hostels !== 1 ? "s" : ""} on HostelLo
                 </p>
               </div>
+            </div>
+
+            <div className="mb-8">
+              <TrustSummary
+                verified={hostel.verified}
+                reviewCount={hostel.reviewCount}
+                rating={hostel.rating}
+                safetyScore={avgSafety}
+                ownerName={hostel.owner.name}
+                ownerListingCount={hostel.owner._count?.hostels || 1}
+                availableRooms={rooms.reduce(
+                  (sum: number, room: any) => sum + room.available,
+                  0,
+                )}
+                hasLocation={Boolean(hostel.latitude && hostel.longitude)}
+              />
             </div>
 
             {/* Tabs: Details / Rooms / Reviews / Location */}
