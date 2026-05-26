@@ -239,5 +239,9 @@ export function validateEnvironmentOnce(): void {
   validateEnvironment();
 }
 
-// Run validation once when this module is imported
-validateEnvironmentOnce();
+// Only validate at runtime, not during Next.js build phase
+// NEXT_PHASE is set by Next.js: during build it's "phase-production-build" or similar
+// During runtime it's not set or is something else
+if (typeof process !== "undefined" && process.env.NEXT_PHASE === undefined) {
+  validateEnvironmentOnce();
+}
