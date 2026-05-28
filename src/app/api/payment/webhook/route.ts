@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { verifyWebhookSignature } from "@/lib/safepay";
 import { sendEmail } from "@/lib/email";
 import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +26,42 @@ export async function POST(req: NextRequest) {
 
     const orderId = event?.data?.order_id as string;
     if (!orderId) return NextResponse.json({ error: "No order_id." }, { status: 400 });
+
+    // Handle subscription payments
+    if (orderId.startsWith("sub_")) {
+      const subscriptionId = orderId.replace("sub_", "");
+      const sub = await db.subscription.findUnique({
+        where: { id: subscriptionId },
+      });
+
+      if (sub) {
+        const now = new Date();
+        const endDate = new Date(now);
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        // Activate subscription and upgrade user to PRO
+        await Promise.all([
+          db.subscription.update({
+            where: { id: subscriptionId },
+            data: { status: "ACTIVE", startDate: now, endDate },
+          }),
+          db.user.update({
+            where: { id: sub.userId },
+            data: { plan: "PRO" },
+          }),
+        ]);
+
+        // Send welcome notification
+        createNotification({
+          userId: sub.userId,
+          type: "HOSTEL_APPROVED",
+          title: "Welcome to HostelLo Pro 🎉",
+          message: "Your Pro subscription is now active. Unlimited listings and featured placement are enabled.",
+        }).catch(() => {});
+      }
+
+      return NextResponse.json({ received: true });
+    }
 
     const booking = await db.booking.findUnique({
       where: { id: orderId },

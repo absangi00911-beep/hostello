@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 const REPORT_TYPES = [
   { value: "FAKE_LISTING",       label: "Fake or misleading listing" },
@@ -66,8 +66,8 @@ export default function ReportPage() {
               />
             </div>
             <h1
-              className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
-              style={{ fontFamily: "var(--font-heading)" }}
+              className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+
             >
               Report an issue
             </h1>
@@ -88,7 +88,7 @@ export default function ReportPage() {
             />
             <h2
               className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-body)" }}
+
             >
               Report submitted
             </h2>

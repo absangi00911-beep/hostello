@@ -167,7 +167,7 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
         className="w-full sm:max-w-[440px] bg-[var(--color-bg-card)] border-l border-[var(--color-border-default)] p-6"
       >
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] text-left" style={{ fontFamily: "var(--font-body)" }}>
+          <SheetTitle className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] text-left">
             Add price alert
           </SheetTitle>
         </SheetHeader>

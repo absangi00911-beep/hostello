@@ -55,14 +55,11 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
       role="dialog"
       aria-modal="true"
       aria-label={`Photo gallery for ${hostelName}`}
-      className="fixed inset-0 z-[100] flex flex-col"
-      style={{ background: "rgba(26,18,10,0.97)" }}
+      className="fixed inset-0 z-[100] flex flex-col bg-[oklch(0.10_0.012_65_/_0.97)]"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 shrink-0"
-           style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="flex items-center justify-between px-4 py-3 shrink-0 border-b border-white/[0.08]">
         <span style={{
-          fontFamily: "var(--font-body)",
           fontSize: "var(--text-body-sm)",
           color: "rgba(255,255,255,0.55)",
           letterSpacing: "0.01em",
@@ -70,7 +67,6 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
           {hostelName}
         </span>
         <span style={{
-          fontFamily: "var(--font-body)",
           fontSize: "var(--text-body-sm)",
           color: "rgba(255,255,255,0.40)",
         }}>
@@ -79,14 +75,8 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
         <button
           onClick={onClose}
           aria-label="Close gallery"
-          className="flex items-center justify-center rounded-full transition-colors"
-          style={{
-            width: 36, height: 36,
-            background: "rgba(255,255,255,0.08)",
-            color: "rgba(255,255,255,0.70)",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.16)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+          className="flex items-center justify-center rounded-full transition-colors bg-white/[0.08] text-white/70 hover:bg-white/[0.16]"
+          style={{ width: 36, height: 36 }}
         >
           <X size={18} strokeWidth={1.5} />
         </button>
@@ -98,15 +88,8 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
           <button
             onClick={prev}
             aria-label="Previous photo"
-            className="absolute left-3 flex items-center justify-center rounded-full transition-all"
-            style={{
-              width: 44, height: 44,
-              background: "rgba(255,255,255,0.10)",
-              color: "rgba(255,255,255,0.80)",
-              zIndex: 10,
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.20)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.10)")}
+            className="absolute left-3 flex items-center justify-center rounded-full transition-all bg-white/10 text-white/80 hover:bg-white/20 z-10"
+            style={{ width: 44, height: 44 }}
           >
             <ChevronLeft size={22} strokeWidth={1.5} />
           </button>
@@ -128,15 +111,8 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
           <button
             onClick={next}
             aria-label="Next photo"
-            className="absolute right-3 flex items-center justify-center rounded-full transition-all"
-            style={{
-              width: 44, height: 44,
-              background: "rgba(255,255,255,0.10)",
-              color: "rgba(255,255,255,0.80)",
-              zIndex: 10,
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.20)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.10)")}
+            className="absolute right-3 flex items-center justify-center rounded-full transition-all bg-white/10 text-white/80 hover:bg-white/20 z-10"
+            style={{ width: 44, height: 44 }}
           >
             <ChevronRight size={22} strokeWidth={1.5} />
           </button>
@@ -146,8 +122,7 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
       {/* Thumbnail strip */}
       {images.length > 1 && (
         <div
-          className="shrink-0 flex gap-2 overflow-x-auto px-4 py-3"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          className="shrink-0 flex gap-2 overflow-x-auto px-4 py-3 border-t border-white/[0.08]"
           role="tablist"
           aria-label="Photo thumbnails"
         >
@@ -203,12 +178,10 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
       >
         <Images
           size={36}
-          strokeWidth={1}
-          style={{ color: "var(--color-text-placeholder)" }}
+          strokeWidth={1} className="text-[var(--color-text-placeholder)]"
           aria-hidden="true"
         />
         <p style={{
-          fontFamily: "var(--font-body)",
           fontSize: "var(--text-body-sm)",
           color: "var(--color-text-muted)",
         }}>
@@ -227,8 +200,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
     <>
       {/* -- Grid layout ----------------------------------- */}
       <div
-        className="w-full overflow-hidden"
-        style={{ borderBottom: "1px solid var(--color-border-subtle)" }}
+        className="w-full overflow-hidden border-b border-[var(--color-border-subtle)]"
         role="region"
         aria-label={`Photos of ${hostelName}`}
       >
@@ -323,12 +295,10 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
                   />
                   {isLastVisible && (
                     <div
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-2"
-                      style={{ background: "rgba(26,18,10,0.62)" }}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[oklch(0.10_0.012_65_/_0.62)]"
                     >
-                      <Grid2x2 size={22} strokeWidth={1.5} style={{ color: "#fff" }} aria-hidden="true" />
+                      <Grid2x2 size={22} strokeWidth={1.5} className="text-white" aria-hidden="true" />
                       <span style={{
-                        fontFamily: "var(--font-body)",
                         fontSize: "var(--text-body-sm)",
                         fontWeight: 600,
                         color: "#fff",
@@ -345,21 +315,17 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
 
         {/* See all button */}
         {images.length >= 3 && (
-          <div className="flex justify-end px-4 py-2"
-               style={{ background: "var(--color-bg-raised)" }}>
+          <div className="flex justify-end px-4 py-2 bg-[var(--color-bg-raised)]">
             <button
               onClick={() => setLightboxIndex(0)}
-              className="flex items-center gap-2 rounded-full px-4 py-1.5 transition-colors"
+              className="flex items-center gap-2 rounded-full px-4 py-1.5 transition-colors hover:bg-[var(--color-bg-overlay)]"
               style={{
                 border: "1px solid var(--color-border-default)",
                 background: "var(--color-bg-card)",
-                fontFamily: "var(--font-body)",
                 fontSize: "var(--text-caption)",
                 fontWeight: 600,
                 color: "var(--color-text-body)",
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = "var(--color-bg-overlay)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "var(--color-bg-card)")}
             >
               <Grid2x2 size={13} strokeWidth={1.5} aria-hidden="true" />
               See all {images.length} photos

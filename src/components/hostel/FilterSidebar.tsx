@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { inputCls } from "@/components/ui/input";
 import { CITIES, AMENITIES } from "@hostello/shared";
 
 export interface FilterState {
@@ -57,9 +58,6 @@ function FilterControls({
       : [...filters.amenities, amenity];
     set("amenities", next);
   }
-
-  const inputCls =
-    "h-9 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)]";
 
   const labelCls =
     "block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-2";
@@ -278,7 +276,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
       >
         <div className="sticky top-20 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-xs)]">
           <p className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-5"
-             style={{ fontFamily: "var(--font-body)" }}>
+>
             Filters
           </p>
           <FilterControls
@@ -338,7 +336,7 @@ export function MobileFilterSheet({
         <SheetHeader className="mb-5">
           <SheetTitle
             className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] text-left"
-            style={{ fontFamily: "var(--font-body)" }}
+
           >
             Filters
           </SheetTitle>

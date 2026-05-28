@@ -14,11 +14,13 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ImageGallery } from "@/components/hostel/ImageGallery";
 import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
 import { BookingPanel } from "@/components/hostel/BookingPanel";
+import { RoommateBoard } from "@/components/hostel/RoommateBoard";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
 import { TrustSummary } from "@/components/hostel/TrustSummary";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -109,6 +111,8 @@ export default async function HostelDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const session = await auth();
+  const currentUserId = session?.user.id ?? null;
   const hostel = await getHostel(slug);
 
   if (!hostel) notFound();
@@ -160,8 +164,8 @@ export default async function HostelDetailPage({
 
               {/* Hostel name — H2 */}
               <h1
-                className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em] mb-2"
-                style={{ fontFamily: "var(--font-heading)" }}
+                className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em] mb-2"
+
               >
                 {hostel.name}
               </h1>
@@ -235,32 +239,90 @@ export default async function HostelDetailPage({
               />
             </div>
 
-            {/* Tabs: Details / Rooms / Reviews / Location */}
+            {/* Tabs: Details / Rooms / Reviews / Roommates / Location */}
             <Tabs defaultValue="details">
               <TabsList className="flex w-full border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto">
-                {["details", "rooms", "reviews", "location"].map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    className="
-                      flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
-                      text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                      capitalize transition-all duration-[var(--transition-fast)]
-                      data-[state=active]:border-[var(--color-primary)]
-                      data-[state=active]:text-[var(--color-text-heading)]
-                      data-[state=active]:font-[600]
-                      hover:text-[var(--color-text-body)]
-                      focus-visible:outline-none
-                    "
-                  >
-                    {tab}
-                    {tab === "reviews" && hostel.reviewCount > 0 && (
-                      <span className="ml-1.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
-                        ({hostel.reviewCount})
-                      </span>
-                    )}
-                  </TabsTrigger>
-                ))}
+                <TabsTrigger
+                  value="details"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rooms"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Rooms
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reviews"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Reviews
+                  {hostel.reviewCount > 0 && (
+                    <span className="ml-1.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                      ({hostel.reviewCount})
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="roommates"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  <Users size={14} strokeWidth={1.5} aria-hidden="true" />
+                  Roommates
+                </TabsTrigger>
+                <TabsTrigger
+                  value="location"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Location
+                </TabsTrigger>
               </TabsList>
 
               {/* ── Details tab ─────────────────────────── */}
@@ -275,7 +337,7 @@ export default async function HostelDetailPage({
                   <div className="mb-8">
                     <h2
                       className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
-                      style={{ fontFamily: "var(--font-body)" }}
+
                     >
                       Amenities
                     </h2>
@@ -297,7 +359,7 @@ export default async function HostelDetailPage({
                   <div>
                     <h2
                       className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
-                      style={{ fontFamily: "var(--font-body)" }}
+
                     >
                       House rules
                     </h2>
@@ -418,6 +480,15 @@ export default async function HostelDetailPage({
                 ) : (
                   <NoMapAvailable address={hostel.address} />
                 )}
+              </TabsContent>
+
+              {/* ── Roommates tab ─────────────────────────── */}
+              <TabsContent value="roommates" className="mt-0">
+                <RoommateBoard
+                  hostelId={hostel.id}
+                  hostelName={hostel.name}
+                  currentUserId={currentUserId}
+                />
               </TabsContent>
             </Tabs>
           </div>

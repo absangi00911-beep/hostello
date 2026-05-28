@@ -4,13 +4,33 @@ import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
 import { encode } from "next-auth/jwt";
 import { z } from "zod";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
+// JWT lifetime must match the refresh route's MAX_AGE_SECONDS so the two flows
+// are consistent. Without an explicit maxAge the token would inherit NextAuth's
+// session default, which may differ from the 30-day window the refresh endpoint
+// always issues — leading to confusing early-expiry UX on first login.
+const TOKEN_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
+
 export async function POST(req: NextRequest) {
+  // 10 attempts per IP per 15 minutes — prevents password brute-forcing.
+  // Keyed on IP rather than email to stop enumeration via timing on per-email keys.
+  const rl = await rateLimit(`mobile-login:${getIp(req)}`, {
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   try {
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);
@@ -70,6 +90,7 @@ export async function POST(req: NextRequest) {
       },
       secret,
       salt,
+      maxAge: TOKEN_MAX_AGE_SECONDS,
     });
 
     return NextResponse.json({

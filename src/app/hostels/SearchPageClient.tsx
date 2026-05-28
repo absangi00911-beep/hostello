@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Map, List, ChevronDown } from "lucide-react";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
-import { CompareTray, type CompareItem } from "@/components/hostel/CompareTray";
 import { FilterSidebar, MobileFilterSheet, type FilterState } from "@/components/hostel/FilterSidebar";
 import { Pagination } from "@/components/hostel/Pagination";
 import {
@@ -117,7 +116,6 @@ export function SearchPageClient({
   const [pendingFilters, setPendingFilters] = useState<FilterState>(filters);
 
   const [mapView, setMapView] = useState(false);
-  const [compareItems, setCompareItems] = useState<CompareItem[]>([]);
 
   // Sync URL whenever applied state changes
   useEffect(() => {
@@ -178,17 +176,6 @@ export function SearchPageClient({
   function handlePageChange(next: number) {
     setPage(next);
     window.scrollTo({ top: 0, behavior: "instant" });
-  }
-
-  function handleToggleCompare(hostel: HostelCardData, e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    setCompareItems((prev) => {
-      const exists = prev.find((i) => i.id === hostel.id);
-      if (exists) return prev.filter((i) => i.id !== hostel.id);
-      if (prev.length >= 3) return prev;
-      return [...prev, { id: hostel.id, name: hostel.name, slug: hostel.slug }];
-    });
   }
 
   /* ── Results summary text ───────────────────────────────── */
@@ -360,12 +347,7 @@ export function SearchPageClient({
               >
                 {data.data.map((hostel) => (
                   <div key={hostel.id} role="listitem">
-                    <HostelCard
-                      hostel={hostel}
-                      compareSelected={compareItems.some((i) => i.id === hostel.id)}
-                      compareDisabled={compareItems.length >= 3 && !compareItems.some((i) => i.id === hostel.id)}
-                      onToggleCompare={(e) => handleToggleCompare(hostel, e)}
-                    />
+                    <HostelCard hostel={hostel} />
                   </div>
                 ))}
               </div>
@@ -409,11 +391,6 @@ export function SearchPageClient({
           )}
         </main>
       </div>
-      <CompareTray
-        items={compareItems}
-        onRemove={(id) => setCompareItems((prev) => prev.filter((i) => i.id !== id))}
-        onClear={() => setCompareItems([])}
-      />
     </div>
   );
 }

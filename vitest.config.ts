@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'path';
 
 const SHARED_ROOT = path.resolve(__dirname, './packages/shared/src');
@@ -18,6 +18,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     env: {
       EXPO_PUBLIC_API_URL: 'http://localhost:3000',
     },

@@ -20,7 +20,7 @@ import {
   CheckCircle2,
   Upload,
 } from "lucide-react";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 /* -- Section wrapper --------------------------------------- */
 function Section({
@@ -41,7 +41,7 @@ function Section({
       <div className="mb-5">
         <h2
           className={`text-[var(--text-h5)] font-[600] ${danger ? "text-[var(--color-error)]" : "text-[var(--color-text-heading)]"}`}
-          style={{ fontFamily: "var(--font-body)" }}
+
         >
           {title}
         </h2>

@@ -4,11 +4,15 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 
-async function getPendingCount(): Promise<number> {
+async function getPendingCounts() {
   try {
-    return await db.hostel.count({ where: { status: "PENDING_REVIEW" } });
+    const [hostels, verifications] = await Promise.all([
+      db.hostel.count({ where: { status: "PENDING_REVIEW" } }),
+      db.user.count({ where: { verificationStatus: "PENDING" } }),
+    ]);
+    return { hostels, verifications };
   } catch {
-    return 0;
+    return { hostels: 0, verifications: 0 };
   }
 }
 
@@ -22,10 +26,10 @@ export default async function AdminRootLayout({
   if (!session)                      redirect("/login");
   if (session.user.role !== "ADMIN") redirect("/");
 
-  const pendingCount = await getPendingCount();
+  const { hostels: hostelCount, verifications: verificationCount } = await getPendingCounts();
 
   return (
-    <AdminLayout pendingCount={pendingCount}>
+    <AdminLayout pendingCount={hostelCount} verificationCount={verificationCount}>
       {children}
     </AdminLayout>
   );

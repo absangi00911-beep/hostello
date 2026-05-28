@@ -1,6 +1,7 @@
 // Path: src/components/booking/BookingStepLayout.tsx
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const TOTAL_STEPS = 3;
 const STEP_LABELS = ["Review booking", "Payment", "Confirmation"];
@@ -48,23 +49,7 @@ export function BookingStepLayout({
               Back
             </Link>
           ) : (
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
-              aria-label="HostelLo home"
-            >
-              <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect x="2" y="8" width="16" height="18" rx="2" fill="var(--color-primary)" />
-                <rect x="10" y="2" width="16" height="18" rx="2" fill="var(--color-primary-deep)" opacity="0.7" />
-                <rect x="6" y="16" width="4" height="6" rx="1" fill="var(--color-bg-card)" />
-              </svg>
-              <span
-                className="text-[0.9375rem] font-[700] tracking-[-0.02em] text-[var(--color-text-heading)]"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                HostelLo
-              </span>
-            </Link>
+            <Logo size="compact" aria-label="HostelLo home" />
           )}
 
           <div className="flex-1" />

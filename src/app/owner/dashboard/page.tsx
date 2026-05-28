@@ -38,7 +38,7 @@ function StatTile({
       ) : (
         <p
           className="text-[1.75rem] font-[700] leading-none text-[var(--color-text-heading)]"
-          style={{ fontFamily: "var(--font-heading)" }}
+
         >
           {value}
         </p>
@@ -140,7 +140,7 @@ export default function OwnerDashboardPage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border-subtle)]">
           <h2
             className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-body)" }}
+
           >
             Recent bookings
           </h2>

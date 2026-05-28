@@ -68,8 +68,8 @@ export default async function ReviewBookingPage({
       {/* Heading */}
       <div className="mb-6">
         <h1
-          className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)] mb-1"
-          style={{ fontFamily: "var(--font-heading)" }}
+          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)] mb-1"
+
         >
           Review your booking
         </h1>
