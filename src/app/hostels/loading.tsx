@@ -1,51 +1,46 @@
-// Path: src/app/hostels/loading.tsx
-import { SkeletonCard } from "@/components/ui/shared";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-
-export default function HostelsLoading() {
+// Path: src/app/hostels/in/[city]/loading.tsx
+export default function CityLandingLoading() {
   return (
-    <PublicLayout noFooter>
-      <div className="container-app py-8 animate-pulse">
-        {/* Search bar skeleton */}
-        <div className="mb-6 flex gap-3">
-          <div
-            className="skeleton flex-1 rounded-[var(--radius-md)]"
-            style={{ height: 44 }}
-          />
-          <div
-            className="skeleton w-24 rounded-[var(--radius-md)]"
-            style={{ height: 44 }}
-          />
-        </div>
-        <div className="flex gap-6">
-          {/* Sidebar skeleton */}
-          <aside
-            className="hidden lg:block shrink-0 space-y-4"
-            style={{ width: 240 }}
-            aria-hidden="true"
-          >
-            {[120, 160, 100, 140].map((h, i) => (
-              <div
-                key={i}
-                className="skeleton rounded-[var(--radius-lg)]"
-                style={{ height: h }}
-              />
+    <div className="animate-pulse">
+      {/* Hero skeleton */}
+      <div
+        className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]"
+      >
+        <div className="container-app py-10 md:py-14 space-y-4">
+          <div className="h-3 w-32 rounded-full bg-[var(--color-bg-overlay)]" />
+          <div className="h-9 w-64 rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]" />
+          <div className="h-4 w-80 rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]" />
+          <div className="flex gap-2">
+            {[60, 80, 90, 60].map((w, i) => (
+              <div key={i} className="h-8 rounded-full" style={{ width: w, background: "var(--color-bg-overlay)" }} />
             ))}
-          </aside>
-          {/* Cards grid skeleton */}
-          <div className="flex-1">
-            <div
-              className="skeleton mb-4 rounded-[var(--radius-sm)]"
-              style={{ width: 120, height: 16 }}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
           </div>
         </div>
       </div>
-    </PublicLayout>
+
+      {/* Cards skeleton */}
+      <div className="container-app py-10">
+        <div className="h-6 w-40 rounded-[var(--radius-md)] mb-6 bg-[var(--color-bg-overlay)]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]"
+            >
+              <div className="h-44 bg-[var(--color-bg-overlay)]" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 w-3/4 rounded bg-[var(--color-bg-overlay)]" />
+                <div className="h-5 w-1/3 rounded bg-[var(--color-bg-overlay)]" />
+                <div className="flex gap-2">
+                  {[50, 60, 45].map((w, j) => (
+                    <div key={j} className="h-5 rounded-full" style={{ width: w, background: "var(--color-bg-overlay)" }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

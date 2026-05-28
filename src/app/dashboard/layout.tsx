@@ -11,6 +11,8 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   if (!session) redirect("/login?callbackUrl=/dashboard/bookings");
+  if (session.user.role === "OWNER") redirect("/owner/dashboard");
+  if (session.user.role === "ADMIN") redirect("/admin");
 
   return (
     <PublicLayout noFooter>
@@ -19,8 +21,8 @@ export default async function DashboardLayout({
         {/* Page heading */}
         <div className="mb-6">
           <h1
-            className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+
           >
             My account
           </h1>

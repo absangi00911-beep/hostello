@@ -11,7 +11,7 @@ import {
   PageSpinner,
   InlineError,
 } from "@/components/ui/shared";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 interface Review {
   id: string;

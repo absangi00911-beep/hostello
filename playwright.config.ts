@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+   // Exclude fixture helpers and setup files from test collection
+  testIgnore: ['**/fixtures/**', '**/global.setup.ts', '**/global.teardown.ts'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -14,9 +16,23 @@ export default defineConfig({
   },
 
   projects: [
+     // Global setup — seeds the test DB once before any test runs
+    {
+      name: 'setup',
+      testMatch: /global\.setup\.ts/,
+    },
+
+    // Global teardown — cleans up after all tests complete
+    {
+      name: 'teardown',
+      testMatch: /global\.teardown\.ts/,
+    },
+
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+      teardown: 'teardown',
     },
   ],
 });

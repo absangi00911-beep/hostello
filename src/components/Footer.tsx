@@ -1,8 +1,9 @@
 // Path: src/components/Footer.tsx
+"use client";
 
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
-import { POPULAR_UNIVERSITIES, universityToSlug } from "@hostello/shared";
+import { useSession } from "next-auth/react";
+import { Logo } from "./Logo";
 
 const NAV_LINKS = [
   { label: "Find hostels", href: "/hostels" },
@@ -18,32 +19,32 @@ const LEGAL_LINKS = [
 ];
 
 export function Footer() {
+  const { data: session, status } = useSession();
+  const hideOwnerLinks =
+    status === "loading" ||
+    session?.user.role === "STUDENT" ||
+    session?.user.role === "ADMIN";
+  const ownerListingHref =
+    session?.user.role === "OWNER" ? "/owner/listings/new" : "/register?role=OWNER";
+  const navLinks =
+    hideOwnerLinks
+      ? NAV_LINKS.filter((link) => link.href !== "/register?role=OWNER")
+      : NAV_LINKS.map((link) =>
+          link.href === "/register?role=OWNER"
+            ? { ...link, href: ownerListingHref }
+            : link,
+        );
+
   return (
     <footer
       className="border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
       aria-label="Site footer"
     >
       <div className="container-app py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           {/* Col 1 — Brand */}
           <div className="space-y-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
-              aria-label="HostelLo home"
-            >
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                <rect x="2" y="8" width="16" height="18" rx="2" fill="var(--color-primary)" />
-                <rect x="10" y="2" width="16" height="18" rx="2" fill="var(--color-primary-deep)" opacity="0.7" />
-                <rect x="6" y="16" width="4" height="6" rx="1" fill="var(--color-bg-sidebar)" />
-              </svg>
-              <span
-                className="text-[1rem] font-[700] tracking-[-0.02em] text-[var(--color-text-heading)]"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                HostelLo
-              </span>
-            </Link>
+            <Logo />
             <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] max-w-[220px] leading-relaxed">
               Find your room. Not a phone number.
             </p>
@@ -58,7 +59,7 @@ export function Footer() {
               Platform
             </p>
             <ul className="space-y-2.5" role="list">
-              {NAV_LINKS.map(({ label, href }) => (
+              {navLinks.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
@@ -71,27 +72,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3 — Universities */}
-          <div className="space-y-3">
-            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] flex items-center gap-1.5">
-              <GraduationCap size={14} strokeWidth={1.5} aria-hidden="true" />
-              Universities
-            </p>
-            <ul className="space-y-2.5" role="list">
-              {POPULAR_UNIVERSITIES.map((u) => (
-                <li key={u.shortName}>
-                  <Link
-                    href={`/university/${universityToSlug(u.shortName)}`}
-                    className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-deep)] transition-colors"
-                  >
-                    Hostels near {u.shortName}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 4 — Legal & Contact */}
+          {/* Col 3 — Legal & Contact */}
           <div className="space-y-3">
             <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
               Company

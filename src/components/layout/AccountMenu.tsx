@@ -19,7 +19,53 @@ import {
   LogOut,
   LayoutDashboard,
   ChevronDown,
+  Building2,
+  CalendarDays,
+  MessageCircle,
+  Star,
+  BarChart2,
+  ShieldCheck,
+  RefreshCw,
+  TrendingDown,
+  type LucideIcon,
 } from "lucide-react";
+
+type Role = "STUDENT" | "OWNER" | "ADMIN";
+
+type MenuItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const MENU_ITEMS_BY_ROLE: Record<Role, MenuItem[]> = {
+  STUDENT: [
+    { href: "/dashboard/bookings", label: "My bookings", icon: BookOpen },
+    { href: "/dashboard/saved", label: "Saved hostels", icon: Heart },
+    { href: "/dashboard/messages", label: "Messages", icon: MessageCircle },
+    { href: "/dashboard/price-alerts", label: "Price alerts", icon: TrendingDown },
+    { href: "/profile", label: "Profile", icon: User },
+    { href: "/profile/settings", label: "Settings", icon: Settings },
+  ],
+  OWNER: [
+    { href: "/owner/dashboard", label: "Owner dashboard", icon: LayoutDashboard },
+    { href: "/owner/listings", label: "My listings", icon: Building2 },
+    { href: "/owner/bookings", label: "Bookings", icon: CalendarDays },
+    { href: "/owner/messages", label: "Messages", icon: MessageCircle },
+    { href: "/owner/reviews", label: "Reviews", icon: Star },
+    { href: "/owner/analytics", label: "Analytics", icon: BarChart2 },
+    { href: "/owner/settings", label: "Settings", icon: Settings },
+  ],
+  ADMIN: [
+    { href: "/admin", label: "Admin panel", icon: LayoutDashboard },
+    { href: "/admin/listings", label: "Listings", icon: Building2 },
+    { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
+    { href: "/admin/bookings", label: "All bookings", icon: CalendarDays },
+    { href: "/admin/reviews", label: "Reviews", icon: Star },
+    { href: "/admin/search", label: "Sync search", icon: RefreshCw },
+    { href: "/profile/settings", label: "Settings", icon: Settings },
+  ],
+};
 
 export function AccountMenu() {
   const { data: session } = useSession();
@@ -44,6 +90,7 @@ export function AccountMenu() {
   }
 
   const user = session.user;
+  const menuItems = MENU_ITEMS_BY_ROLE[user.role as Role] ?? MENU_ITEMS_BY_ROLE.STUDENT;
   const initials = user.name
     ? user.name
         .split(" ")
@@ -60,7 +107,6 @@ export function AccountMenu() {
           className="flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
           aria-label="Account menu"
         >
-          {/* Avatar */}
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] text-[var(--text-body-sm)] font-[600] select-none overflow-hidden">
             {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -85,9 +131,8 @@ export function AccountMenu() {
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-52 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-1 shadow-[var(--shadow-lg)]"
+        className="w-56 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-1 shadow-[var(--shadow-lg)]"
       >
-        {/* User info header */}
         <div className="px-3 py-2 mb-1">
           <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate">
             {user.name}
@@ -99,77 +144,17 @@ export function AccountMenu() {
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 
-        {/* Owner dashboard link — only for owners */}
-        {user.role === "OWNER" && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/owner/dashboard"
-                className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-              >
-                <LayoutDashboard size={15} strokeWidth={1.5} aria-hidden="true" />
-                Owner dashboard
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
-          </>
-        )}
-
-        {/* Admin panel link — only for admins */}
-        {user.role === "ADMIN" && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/admin"
-                className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-              >
-                <LayoutDashboard size={15} strokeWidth={1.5} aria-hidden="true" />
-                Admin panel
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
-          </>
-        )}
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/dashboard/bookings"
-            className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-          >
-            <BookOpen size={15} strokeWidth={1.5} aria-hidden="true" />
-            My bookings
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/dashboard/saved"
-            className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-          >
-            <Heart size={15} strokeWidth={1.5} aria-hidden="true" />
-            Saved hostels
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/profile"
-            className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-          >
-            <User size={15} strokeWidth={1.5} aria-hidden="true" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/profile/settings"
-            className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
-          >
-            <Settings size={15} strokeWidth={1.5} aria-hidden="true" />
-            Settings
-          </Link>
-        </DropdownMenuItem>
+        {menuItems.map(({ href, label, icon: Icon }) => (
+          <DropdownMenuItem key={href} asChild>
+            <Link
+              href={href}
+              className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
+            >
+              <Icon size={15} strokeWidth={1.5} aria-hidden="true" />
+              {label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 

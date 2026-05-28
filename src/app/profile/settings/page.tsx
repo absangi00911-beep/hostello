@@ -12,7 +12,7 @@ import {
   CheckCircle2, Upload,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 /* -- Section wrapper --------------------------------------- */
 function Section({
@@ -30,7 +30,7 @@ function Section({
         <h2
           id={`${id}-heading`}
           className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
-          style={{ fontFamily: "var(--font-body)" }}
+
         >
           {title}
         </h2>
@@ -452,8 +452,8 @@ export default function ProfileSettingsPage() {
         {/* Page heading */}
         <div className="mb-8">
           <h1
-            className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+
           >
             Settings
           </h1>

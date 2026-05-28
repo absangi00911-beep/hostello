@@ -5,43 +5,75 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Search, Heart, MessageCircle, User } from "lucide-react";
+import {
+  Search,
+  Heart,
+  MessageCircle,
+  User,
+  LayoutDashboard,
+  Building2,
+  CalendarDays,
+  ShieldCheck,
+  RefreshCw,
+  type LucideIcon,
+} from "lucide-react";
 import { NotificationBell } from "./layout/NotificationBell";
 import { AccountMenu } from "./layout/AccountMenu";
 import { CitySelector } from "./layout/CitySelector";
+import { Logo } from "./Logo";
 import { Suspense, useState } from "react";
 
-/* -- HostelLo wordmark ------------------------------------- */
-function Logo() {
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2 shrink-0 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
-      aria-label="HostelLo home"
-    >
-      {/* Simple geometric mark — two overlapping squares suggesting a building */}
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 28 28"
-        fill="none"
-        aria-hidden="true"
-      >
-        <rect x="2" y="8" width="16" height="18" rx="2" fill="currentColor" className="text-[var(--color-primary)]" />
-        <rect x="10" y="2" width="16" height="18" rx="2" fill="currentColor" className="text-[var(--color-primary-deep)]" opacity="0.7" />
-        <rect x="6" y="16" width="4" height="6" rx="1" fill="var(--color-bg-card)" />
-      </svg>
-      <span
-        className="text-[1.125rem] font-[700] tracking-[-0.02em] text-[var(--color-text-heading)]"
-        style={{ fontFamily: "var(--font-heading)" }}
-      >
-        HostelLo
-      </span>
-    </Link>
-  );
+type Role = "STUDENT" | "OWNER" | "ADMIN";
+
+type MobileTab = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const PUBLIC_TABS: MobileTab[] = [
+  { href: "/hostels", label: "Search", icon: Search },
+  { href: "/login", label: "Account", icon: User },
+];
+
+const STUDENT_TABS: MobileTab[] = [
+  { href: "/hostels", label: "Search", icon: Search },
+  { href: "/dashboard/saved", label: "Saved", icon: Heart },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageCircle },
+  { href: "/profile", label: "Account", icon: User },
+];
+
+const OWNER_TABS: MobileTab[] = [
+  { href: "/owner/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/owner/listings", label: "Listings", icon: Building2 },
+  { href: "/owner/bookings", label: "Bookings", icon: CalendarDays },
+  { href: "/owner/messages", label: "Messages", icon: MessageCircle },
+];
+
+const ADMIN_TABS: MobileTab[] = [
+  { href: "/admin", label: "Admin", icon: LayoutDashboard },
+  { href: "/admin/listings", label: "Listings", icon: Building2 },
+  { href: "/admin/verifications", label: "Verify", icon: ShieldCheck },
+  { href: "/admin/search", label: "Sync", icon: RefreshCw },
+];
+
+function tabsForRole(role?: Role | null): MobileTab[] {
+  if (role === "OWNER") return OWNER_TABS;
+  if (role === "ADMIN") return ADMIN_TABS;
+  if (role === "STUDENT") return STUDENT_TABS;
+  return PUBLIC_TABS;
 }
 
-/* -- Compact search bar ------------------------------------ */
+function isActiveTab(pathname: string, href: string) {
+  if (href === "/hostels") return pathname.startsWith("/hostels");
+  if (href === "/profile" || href === "/login") {
+    return pathname.startsWith("/profile") || pathname === "/login";
+  }
+  if (href === "/admin") return pathname === "/admin";
+  if (href === "/owner/dashboard") return pathname === href;
+  return pathname.startsWith(href);
+}
+
 function NavSearch() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -79,31 +111,21 @@ function NavSearch() {
   );
 }
 
-/* -- Mobile bottom tab bar --------------------------------- */
 function MobileTabBar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-
-  const tabs = [
-    { href: "/hostels", label: "Search", icon: Search },
-    { href: "/dashboard/saved", label: "Saved", icon: Heart },
-    { href: "/dashboard/messages", label: "Messages", icon: MessageCircle },
-    { href: session ? "/profile" : "/login", label: "Account", icon: User },
-  ];
+  const { data: session, status } = useSession();
+  const role = status === "authenticated" ? (session?.user.role as Role) : null;
+  const tabs = tabsForRole(role);
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)]"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Mobile navigation"
     >
       <div className="flex">
         {tabs.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === "/hostels"
-              ? pathname.startsWith("/hostels")
-              : href === "/profile" || href === "/login"
-              ? pathname.startsWith("/profile") || pathname === "/login"
-              : pathname.startsWith(href);
+          const isActive = isActiveTab(pathname, href);
 
           return (
             <Link
@@ -116,11 +138,7 @@ function MobileTabBar() {
               }`}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon
-                size={20}
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
+              <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
               {label}
             </Link>
           );
@@ -130,13 +148,10 @@ function MobileTabBar() {
   );
 }
 
-/* -- Main Navbar ------------------------------------------- */
 export function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  // Add shadow after 40px scroll — handled via CSS + scroll event would be
-  // cleaner but this static class works for the SSR render
   const isHome = pathname === "/";
 
   return (
@@ -147,25 +162,19 @@ export function Navbar() {
       >
         <div className="container-app">
           <div className="flex h-16 items-center gap-3">
-            {/* Logo */}
-            <Logo />
+            <Logo aria-label="HostelLo home" className="shrink-0" />
 
-            {/* City selector — shown on non-home pages (home has its own hero search) */}
             {!isHome && (
               <Suspense fallback={null}>
                 <CitySelector />
               </Suspense>
             )}
 
-            {/* Search bar (desktop, hidden on home — hero handles it) */}
             {!isHome && <NavSearch />}
 
-            {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Right side actions */}
             <div className="flex items-center gap-1">
-              {/* Mobile search icon — links to search page */}
               <Link
                 href="/hostels"
                 className="flex md:hidden h-9 w-9 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
@@ -174,21 +183,18 @@ export function Navbar() {
                 <Search size={18} strokeWidth={1.5} aria-hidden="true" />
               </Link>
 
-              {/* Notification bell — only for signed-in users */}
               {session && (
                 <Suspense fallback={null}>
                   <NotificationBell />
                 </Suspense>
               )}
 
-              {/* Account menu / auth buttons */}
               <AccountMenu />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile bottom tab bar */}
       <MobileTabBar />
     </>
   );

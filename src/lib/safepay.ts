@@ -50,11 +50,8 @@ export async function createCheckoutSession({
   const secret = getSafepaySecret();
   const origin = appUrl.replace(/\/+$/, "");
 
-  // A path starting with "/" is relative — prepend origin + append bookingId.
-  // A full URL (http/https or a custom app scheme like hostello://) is used as-is.
-  const isAbsolute = redirectPath.startsWith("http") || redirectPath.includes("://");
-  const finalRedirectUrl = isAbsolute
-    ? redirectPath
+  const finalRedirectUrl = redirectPath.startsWith("http") 
+    ? redirectPath 
     : `${origin}${redirectPath}${redirectPath.includes("?") ? "&" : "?"}bookingId=${bookingId}`;
 
   const finalCancelUrl = cancelPath 

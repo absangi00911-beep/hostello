@@ -68,7 +68,7 @@ function SavedHostelCard({
         <div className="p-4 space-y-1.5">
           <h3
             className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+
           >
             {hostel.name}
           </h3>

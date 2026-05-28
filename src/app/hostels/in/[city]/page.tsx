@@ -205,22 +205,19 @@ export default async function CityLandingPage({
       <CityJsonLd city={city} hostels={hostels} appUrl={APP_URL} />
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <section
-        className="border-b border-[var(--color-border-subtle)]"
-        style={{ background: "var(--color-bg-raised)" }}
-      >
+      <section className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
         <div className="container-app py-10 md:py-14">
           <div className="flex items-center gap-2 mb-3 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
             <Link href="/hostels" className="hover:text-[var(--color-text-body)] transition-colors">
               All hostels
             </Link>
             <span aria-hidden="true">›</span>
-            <span style={{ color: "var(--color-text-body)" }}>{city}</span>
+            <span className="text-[var(--color-text-body)]">{city}</span>
           </div>
 
           <h1
-            className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-3"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-3"
+
           >
             Student Hostels in {city}
           </h1>
@@ -263,15 +260,14 @@ export default async function CityLandingPage({
             <h2
               id="hostels-heading"
               className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
+
             >
               {count > 0 ? `Top hostels in ${city}` : `Hostels in ${city}`}
             </h2>
             {count > 12 && (
               <Link
                 href={`/hostels?city=${encodeURIComponent(city)}`}
-                className="inline-flex items-center gap-1 text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)]"
-                style={{ color: "var(--color-primary-deep)" }}
+                className="inline-flex items-center gap-1 text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] text-[var(--color-primary-deep)]"
               >
                 See all {count}
                 <ArrowRight size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -281,14 +277,12 @@ export default async function CityLandingPage({
 
           {hostels.length === 0 ? (
             <div
-              className="flex flex-col items-center justify-center py-20 rounded-[var(--radius-xl)] border-2 border-dashed text-center"
-              style={{ borderColor: "var(--color-border-default)" }}
+              className="flex flex-col items-center justify-center py-20 rounded-[var(--radius-xl)] border-2 border-dashed text-center border-[var(--color-border-default)]"
             >
               <Building2
                 size={36}
                 strokeWidth={1.5}
-                style={{ color: "var(--color-text-muted)" }}
-                className="mb-3"
+                className="text-[var(--color-text-muted)] mb-3"
                 aria-hidden="true"
               />
               <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
@@ -296,8 +290,7 @@ export default async function CityLandingPage({
               </p>
               <Link
                 href="/hostels"
-                className="mt-4 inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500]"
-                style={{ color: "var(--color-primary-deep)" }}
+                className="mt-4 inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500] text-[var(--color-primary-deep)]"
               >
                 Browse all cities
                 <ArrowRight size={13} strokeWidth={1.5} aria-hidden="true" />
@@ -337,14 +330,13 @@ export default async function CityLandingPage({
             <div className="flex items-center gap-2 mb-5">
               <GraduationCap
                 size={20}
-                strokeWidth={1.5}
-                style={{ color: "var(--color-primary)" }}
+                strokeWidth={1.5} className="text-[var(--color-primary)]"
                 aria-hidden="true"
               />
               <h2
                 id="unis-heading"
                 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
-                style={{ fontFamily: "var(--font-heading)" }}
+
               >
                 Universities in {city}
               </h2>
@@ -364,15 +356,13 @@ export default async function CityLandingPage({
                   }}
                 >
                   <span
-                    className="text-[var(--text-body-sm)] font-[600]"
-                    style={{ color: "var(--color-text-heading)" }}
+                    className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
                   >
                     {uni.shortName}
                   </span>
                   {uni.area && (
                     <span
-                      className="text-[var(--text-caption)] flex items-center gap-1"
-                      style={{ color: "var(--color-text-muted)" }}
+                      className="text-[var(--text-caption)] flex items-center gap-1 text-[var(--color-text-muted)]"
                     >
                       <MapPin size={10} strokeWidth={1.5} aria-hidden="true" />
                       {uni.area}
@@ -389,7 +379,7 @@ export default async function CityLandingPage({
           <h2
             id="other-cities-heading"
             className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
-            style={{ fontFamily: "var(--font-heading)" }}
+
           >
             Hostels in other cities
           </h2>
@@ -432,7 +422,7 @@ export default async function CityLandingPage({
           <h2
             id="faq-heading"
             className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-6"
-            style={{ fontFamily: "var(--font-heading)" }}
+
           >
             Frequently asked questions
           </h2>
@@ -448,7 +438,7 @@ export default async function CityLandingPage({
               >
                 <dt
                   className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] mb-2"
-                  style={{ fontFamily: "var(--font-heading)" }}
+
                 >
                   {q}
                 </dt>

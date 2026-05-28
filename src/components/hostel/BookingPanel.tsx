@@ -1,7 +1,7 @@
 // Path: src/components/hostel/BookingPanel.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -47,7 +47,7 @@ function monthsBetween(checkIn: string, checkOut: string): number {
 /* -- Booking form ------------------------------------------ */
 function BookingForm({
   hostelId,
-  hostelSlug,
+  hostelSlug: _hostelSlug,
   basePricePerMonth,
   rooms,
   onSuccess,
@@ -64,8 +64,6 @@ function BookingForm({
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests]     = useState(1);
   const [loading, setLoading]   = useState(false);
-  const [semesterMode, setSemesterMode] = useState(false);
-  const [semesterMonths, setSemesterMonths] = useState(5);
 
   const selectedRoom = rooms.find((r) => r.id === roomId);
   const pricePerMonth = selectedRoom?.pricePerMonth ?? basePricePerMonth;
@@ -78,14 +76,6 @@ function BookingForm({
     d.setDate(d.getDate() + 1);
     return d.toISOString().split("T")[0];
   }, []);
-
-  // In semester mode, checkout is always driven by the month count
-  useEffect(() => {
-    if (!semesterMode || !checkIn) return;
-    const d = new Date(checkIn);
-    d.setMonth(d.getMonth() + semesterMonths);
-    setCheckOut(d.toISOString().split("T")[0]);
-  }, [semesterMode, semesterMonths, checkIn]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -168,110 +158,38 @@ function BookingForm({
         </div>
       )}
 
-      {/* ── Booking mode toggle ──────────────────────────── */}
-      <div
-        className="flex rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] p-0.5"
-        role="group"
-        aria-label="Booking mode"
-      >
-        {(["Custom dates", "By semester"] as const).map((mode) => {
-          const active = mode === "By semester" ? semesterMode : !semesterMode;
-          return (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setSemesterMode(mode === "By semester")}
-              className={`flex-1 rounded-[calc(var(--radius-md)-2px)] py-1.5 text-[var(--text-body-sm)] font-[500] transition-all duration-[150ms]
-                ${
-                  active
-                    ? "bg-[var(--color-bg-card)] text-[var(--color-text-heading)] shadow-[var(--shadow-xs)]"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-body)]"
-                }`}
-              aria-pressed={active}
-            >
-              {mode}
-            </button>
-          );
-        })}
-      </div>
-
       {/* Dates */}
-      <div className="space-y-3">
-        {/* Semester quick-pick — only in semester mode */}
-        {semesterMode && (
-          <div>
-            <p className={labelCls}>Duration</p>
-            <div className="flex gap-2" role="group" aria-label="Semester length">
-              {([4, 5, 6] as const).map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setSemesterMonths(n)}
-                  aria-pressed={semesterMonths === n}
-                  className={`flex-1 rounded-[var(--radius-md)] border py-2 text-[var(--text-body-sm)] font-[500] transition-colors duration-[150ms]
-                    ${
-                      semesterMonths === n
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]"
-                        : "border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)]"
-                    }`}
-                >
-                  {n} months
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className={semesterMode ? "" : "grid grid-cols-2 gap-3"}>
-          <div>
-            <label htmlFor="check-in" className={labelCls}>
-              Check-in
-            </label>
-            <input
-              id="check-in"
-              type="date"
-              value={checkIn}
-              min={tomorrow}
-              onChange={(e) => {
-                setCheckIn(e.target.value);
-                if (!semesterMode && checkOut && e.target.value >= checkOut) setCheckOut("");
-              }}
-              required
-              className={inputCls}
-            />
-          </div>
-
-          {/* Check-out — manual in custom mode, read-only in semester mode */}
-          {semesterMode ? (
-            checkIn && (
-              <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] pt-1">
-                Check-out:{" "}
-                <span className="font-[500] text-[var(--color-text-body)]">
-                  {new Date(checkOut).toLocaleDateString("en-PK", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-                {" "}(auto-calculated)
-              </p>
-            )
-          ) : (
-            <div>
-              <label htmlFor="check-out" className={labelCls}>
-                Check-out
-              </label>
-              <input
-                id="check-out"
-                type="date"
-                value={checkOut}
-                min={checkIn || tomorrow}
-                onChange={(e) => setCheckOut(e.target.value)}
-                required
-                className={inputCls}
-              />
-            </div>
-          )}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="check-in" className={labelCls}>
+            Check-in
+          </label>
+          <input
+            id="check-in"
+            type="date"
+            value={checkIn}
+            min={tomorrow}
+            onChange={(e) => {
+              setCheckIn(e.target.value);
+              if (checkOut && e.target.value >= checkOut) setCheckOut("");
+            }}
+            required
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label htmlFor="check-out" className={labelCls}>
+            Check-out
+          </label>
+          <input
+            id="check-out"
+            type="date"
+            value={checkOut}
+            min={checkIn || tomorrow}
+            onChange={(e) => setCheckOut(e.target.value)}
+            required
+            className={inputCls}
+          />
         </div>
       </div>
 
@@ -294,18 +212,11 @@ function BookingForm({
       {/* Total */}
       {months > 0 && (
         <div className="rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] px-4 py-3 space-y-1.5">
-          {semesterMode && (
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary-faint)] px-2.5 py-0.5 text-[11px] font-[600] text-[var(--color-primary-deep)]">
-                {semesterMonths}-month semester
-              </span>
-            </div>
-          )}
           <div className="flex justify-between text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
             <span>{formatPKR(pricePerMonth)} × {months} month{months !== 1 ? "s" : ""}</span>
             <span>{formatPKR(total)}</span>
           </div>
-          <div className="flex justify-between text-[var(--text-body)] font-[700] text-[var(--color-primary-deep)] pt-1.5 border-t border-[var(--color-border-subtle)]">
+          <div className="flex justify-between text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] pt-1 border-t border-[var(--color-border-subtle)]">
             <span>Total</span>
             <span>{formatPKR(total)}</span>
           </div>
@@ -327,18 +238,32 @@ function BookingForm({
   );
 }
 
+function StudentOnlyBookingNotice() {
+  return (
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] px-4 py-3">
+      <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+        Only student accounts can request bookings.
+      </p>
+      <p className="mt-1 text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+        Switch to a student account to book a hostel.
+      </p>
+    </div>
+  );
+}
+
 /* -- Main BookingPanel ------------------------------------- */
 export function BookingPanel({
   hostelId,
   hostelSlug,
   hostelName,
-  ownerId,
+  ownerId: _ownerId,
   basePricePerMonth,
   rooms,
 }: BookingPanelProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const canRequestBooking = !session || session.user.role === "STUDENT";
 
   function handleBookingSuccess(bookingId: string) {
     setSheetOpen(false);
@@ -377,8 +302,8 @@ export function BookingPanel({
         {/* Price */}
         <div className="mb-5">
           <p
-            className="text-[var(--text-h3)] font-[700] text-[var(--color-primary-deep)] leading-none"
-            style={{ fontFamily: "var(--font-body)" }}
+            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-primary-deep)] leading-none"
+
           >
             {formatPKR(basePricePerMonth)}
             <span className="text-[var(--text-body)] font-[400] text-[var(--color-text-muted)]">
@@ -387,13 +312,17 @@ export function BookingPanel({
           </p>
         </div>
 
-        <BookingForm
-          hostelId={hostelId}
-          hostelSlug={hostelSlug}
-          basePricePerMonth={basePricePerMonth}
-          rooms={rooms}
-          onSuccess={handleBookingSuccess}
-        />
+        {canRequestBooking ? (
+          <BookingForm
+            hostelId={hostelId}
+            hostelSlug={hostelSlug}
+            basePricePerMonth={basePricePerMonth}
+            rooms={rooms}
+            onSuccess={handleBookingSuccess}
+          />
+        ) : (
+          <StudentOnlyBookingNotice />
+        )}
 
         {/* Message owner */}
         <button
@@ -423,6 +352,7 @@ export function BookingPanel({
             <MessageCircle size={18} strokeWidth={1.5} aria-hidden="true" />
           </button>
 
+          {canRequestBooking ? (
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button className="h-10 px-5 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]">
@@ -436,7 +366,7 @@ export function BookingPanel({
               <SheetHeader className="mb-5">
                 <SheetTitle
                   className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] text-left"
-                  style={{ fontFamily: "var(--font-body)" }}
+
                 >
                   Request booking — {hostelName}
                 </SheetTitle>
@@ -450,6 +380,11 @@ export function BookingPanel({
               />
             </SheetContent>
           </Sheet>
+          ) : (
+            <div className="max-w-[180px]">
+              <StudentOnlyBookingNotice />
+            </div>
+          )}
         </div>
       </div>
     </>

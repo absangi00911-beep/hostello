@@ -6,7 +6,7 @@ export default function EditListingNotFound() {
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <p
         className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-2"
-        style={{ fontFamily: "var(--font-heading)" }}
+
       >
         Listing not found
       </p>

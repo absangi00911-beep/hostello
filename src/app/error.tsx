@@ -33,8 +33,8 @@ export default function ErrorPage({
 
       {/* Heading — honest, no "Oops" */}
       <h1
-        className="text-[var(--text-h3)] font-[600] text-[var(--color-text-heading)] mb-3"
-        style={{ fontFamily: "var(--font-body)" }}
+        className="font-heading text-[var(--text-h3)] font-[600] text-[var(--color-text-heading)] mb-3"
+
       >
         Something went wrong
       </h1>
