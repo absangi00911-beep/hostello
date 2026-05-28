@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
-import { PageSpinner, InlineError } from "@/components/ui/shared";
+import { PageSpinner, InlineError, RecoveryNotice } from "@/components/ui/shared";
 import { format } from "date-fns";
 
 const POLL_INTERVAL = 4_000; // 4s
@@ -21,7 +21,6 @@ const MAX_POLLS     = 15;    // give up after ~60s
 
 export default function ConfirmationPage() {
   const params    = useParams<{ id: string }>();
-  const router    = useRouter();
   const bookingId = params.id;
 
   const [booking,  setBooking]  = useState<any>(null);
@@ -109,8 +108,8 @@ export default function ConfirmationPage() {
             </span>
           </div>
           <h1
-            className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
           >
             Booking cancelled
           </h1>
@@ -141,8 +140,8 @@ export default function ConfirmationPage() {
             aria-hidden="true"
           />
           <h1
-            className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
           >
             Confirming your payment…
           </h1>
@@ -160,31 +159,20 @@ export default function ConfirmationPage() {
     return (
       <BookingStepLayout step={3}>
         <div className="space-y-5">
-          <div className="text-center space-y-3">
-            <Clock
-              size={40}
-              strokeWidth={1.5}
-              className="text-[var(--color-warning)] mx-auto"
-              aria-hidden="true"
-            />
-            <h1
-              className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Payment pending
-            </h1>
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] max-w-[40ch] mx-auto">
-              Your payment is being processed. Check your bookings page for the
-              latest status — it usually updates within a minute.
-            </p>
-          </div>
-          <BookingSummaryCard booking={booking} />
-          <Link
-            href="/dashboard/bookings"
-            className="inline-flex w-full h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-          >
-            View my bookings
-          </Link>
+          <RecoveryNotice
+            tone="warning"
+            title="Payment pending"
+            message="Your payment is still being verified. Check your bookings page for the latest status; it usually updates within a minute."
+            primaryAction={
+              <Link
+                href="/dashboard/bookings"
+                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
+              >
+                View my bookings
+              </Link>
+            }
+          />
+          <BookingSummaryCard booking={booking} showPaymentHint />
         </div>
       </BookingStepLayout>
     );
@@ -211,8 +199,8 @@ export default function ConfirmationPage() {
 
           <div>
             <h1
-              className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
-              style={{ fontFamily: "var(--font-heading)" }}
+              className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
+
             >
               Booking confirmed
             </h1>
@@ -239,7 +227,7 @@ export default function ConfirmationPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-5">
           <h2
             className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] mb-4"
-            style={{ fontFamily: "var(--font-body)" }}
+
           >
             What happens next
           </h2>
@@ -257,7 +245,7 @@ export default function ConfirmationPage() {
                 icon: CheckCircle2,
                 text: "After your stay, you'll be able to leave a review to help other students.",
               },
-            ].map(({ icon: Icon, text }, i) => (
+            ].map(({ icon: _Icon, text }, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--text-caption)] font-[700] text-[var(--color-primary-deep)]">
                   {i + 1}
@@ -287,7 +275,7 @@ export default function ConfirmationPage() {
 
 /* -- Message owner button — inline client action ------- */
 function MessageOwnerButton({
-  bookingId,
+  bookingId: _bookingId,
   hostelId,
 }: {
   bookingId: string;

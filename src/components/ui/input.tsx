@@ -1,6 +1,13 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
+
+/**
+ * Canonical input class string — the single source of truth for all text inputs.
+ * Import this wherever you need a raw <input> outside of the <Input> component
+ * (e.g. FilterSidebar selects, AuthCardLayout).
+ */
+export const inputCls =
+  "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)] disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-[var(--color-error)] aria-[invalid=true]:ring-[oklch(0.52_0.18_22_/_0.12)]"
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
@@ -10,10 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
-        className={cn(
-          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
+        className={cn(inputCls, className)}
         ref={ref}
         {...props}
       />

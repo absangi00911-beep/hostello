@@ -3,7 +3,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { X, Loader2 } from "lucide-react";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const QUICK_REASONS = [
   "Photos are missing or low quality",
@@ -38,12 +39,8 @@ export function RejectReasonModal({
     ? "Provide a reason. This will be sent to the owner by email."
     : "Reactivating will make this listing visible again.";
 
-  // Focus textarea on open
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
+  useEffect(() => { textareaRef.current?.focus(); }, []);
 
-  // Close on Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape" && !loading) onCancel();
@@ -52,17 +49,11 @@ export function RejectReasonModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [onCancel, loading]);
 
-  // Lock body scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
   }, []);
-
-  function handleQuickReason(r: string) {
-    setReason(r);
-    textareaRef.current?.focus();
-  }
 
   function handleConfirm() {
     const trimmed = reason.trim();
@@ -74,10 +65,9 @@ export function RejectReasonModal({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — warm scrim */}
       <div
-        className="fixed inset-0 z-[60]"
-        style={{ background: "rgba(26,18,10,0.55)" }}
+        className="fixed inset-0 z-[60] bg-[oklch(0.18_0.016_65_/_0.6)]"
         onClick={() => { if (!loading) onCancel(); }}
         aria-hidden="true"
       />
@@ -89,21 +79,14 @@ export function RejectReasonModal({
         aria-labelledby="modal-title"
         className="fixed left-1/2 top-1/2 z-[70] w-full max-w-[440px] -translate-x-1/2 -translate-y-1/2"
       >
-        <div
-          className="rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]"
-          style={{
-            background:  "var(--color-bg-card)",
-            border:      "1px solid var(--color-border-subtle)",
-          }}
-        >
+        <div className="rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)] bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)]">
+
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4"
-               style={{ borderBottom: "1px solid var(--color-border-subtle)" }}>
+          <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-[var(--color-border-subtle)]">
             <div>
               <h2
                 id="modal-title"
                 className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]"
-                style={{ fontFamily: "var(--font-heading)" }}
               >
                 {title}
               </h2>
@@ -115,8 +98,7 @@ export function RejectReasonModal({
               onClick={onCancel}
               disabled={loading}
               aria-label="Close"
-              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--color-bg-overlay)]"
-              style={{ color: "var(--color-text-muted)" }}
+              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
             >
               <X size={16} strokeWidth={1.5} aria-hidden="true" />
             </button>
@@ -140,19 +122,13 @@ export function RejectReasonModal({
                       <button
                         key={r}
                         type="button"
-                        onClick={() => handleQuickReason(r)}
-                        className="h-7 px-2.5 rounded-full border text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)]"
-                        style={{
-                          borderColor: reason === r
-                            ? "var(--color-error)"
-                            : "var(--color-border-default)",
-                          background: reason === r
-                            ? "var(--color-error-bg)"
-                            : "var(--color-bg-sidebar)",
-                          color: reason === r
-                            ? "var(--color-error)"
-                            : "var(--color-text-muted)",
-                        }}
+                        onClick={() => { setReason(r); textareaRef.current?.focus(); }}
+                        className={cn(
+                          "h-7 px-2.5 rounded-full border text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)]",
+                          reason === r
+                            ? "border-[var(--color-error)] bg-[var(--color-error-bg)] text-[var(--color-error)]"
+                            : "border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-body)]"
+                        )}
                       >
                         {r}
                       </button>
@@ -166,7 +142,7 @@ export function RejectReasonModal({
                     htmlFor="reason"
                     className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
                   >
-                    Reason <span style={{ color: "var(--color-error)" }}>*</span>
+                    Reason <span className="text-[var(--color-error)]" aria-hidden="true">*</span>
                   </label>
                   <textarea
                     id="reason"
@@ -175,7 +151,7 @@ export function RejectReasonModal({
                     onChange={(e) => setReason(e.target.value)}
                     rows={3}
                     placeholder="Explain why this listing is being suspended…"
-                    className={`${inputCls} h-auto resize-none py-2.5`}
+                    className={cn(inputCls, "h-auto resize-none py-2.5")}
                     disabled={loading}
                   />
                   <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
@@ -192,11 +168,7 @@ export function RejectReasonModal({
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="h-9 px-4 rounded-[var(--radius-md)] border text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)]"
-              style={{
-                borderColor: "var(--color-border-default)",
-                color:       "var(--color-text-muted)",
-              }}
+              className="h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
             >
               Cancel
             </button>
@@ -204,12 +176,12 @@ export function RejectReasonModal({
               type="button"
               onClick={handleConfirm}
               disabled={!canSubmit || loading}
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white transition-colors duration-[var(--transition-base)] disabled:opacity-50"
-              style={{
-                background: isSuspend
-                  ? "var(--color-error)"
-                  : "var(--color-action)",
-              }}
+              className={cn(
+                "inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white transition-colors duration-[var(--transition-base)] disabled:opacity-50",
+                isSuspend
+                  ? "bg-[var(--color-error)] hover:bg-[oklch(0.45_0.16_22)]"
+                  : "bg-[var(--color-action)] hover:bg-[var(--color-action-dark)]"
+              )}
             >
               {loading && (
                 <Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />

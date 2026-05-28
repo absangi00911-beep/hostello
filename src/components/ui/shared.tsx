@@ -1,6 +1,7 @@
 // Path: src/components/ui/shared.tsx
 
 import { LucideIcon, AlertCircle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ── EmptyState ──────────────────────────────────────────── */
 interface EmptyStateProps {
@@ -8,27 +9,155 @@ interface EmptyStateProps {
   heading: string;
   description?: string;
   action?: React.ReactNode;
+  compact?: boolean;
 }
 
-export function EmptyState({ icon: Icon, heading, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon: Icon,
+  heading,
+  description,
+  action,
+  compact = false,
+}: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center px-4 text-center",
+        compact ? "py-10" : "py-16",
+      )}
+    >
       <Icon
-        size={40}
+        size={compact ? 32 : 40}
         strokeWidth={1.5}
-        className="text-[var(--color-text-muted)] mb-4"
+        className="mb-4 text-[var(--color-text-muted)]"
         aria-hidden="true"
       />
-      <h3 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-2"
-          style={{ fontFamily: "var(--font-body)" }}>
+      <h3 className="mb-2 text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
         {heading}
       </h3>
       {description && (
-        <p className="text-[var(--text-body)] text-[var(--color-text-muted)] max-w-[55ch] mb-6">
+        <p className="mb-6 max-w-[55ch] text-[var(--text-body)] text-[var(--color-text-muted)]">
           {description}
         </p>
       )}
       {action && <div>{action}</div>}
+    </div>
+  );
+}
+
+interface TrustCueProps {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  tone?: "trust" | "neutral" | "warning";
+}
+
+const TRUST_CUE_TONES = {
+  trust:
+    "border-[var(--color-success)/0.18] bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
+  neutral:
+    "border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] text-[var(--color-text-body)]",
+  warning:
+    "border-[var(--color-warning)/0.22] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
+};
+
+export function TrustCue({
+  icon: Icon,
+  label,
+  value,
+  tone = "trust",
+}: TrustCueProps) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 items-start gap-2 rounded-[var(--radius-md)] border px-3 py-2",
+        TRUST_CUE_TONES[tone],
+      )}
+    >
+      <Icon
+        size={15}
+        strokeWidth={1.5}
+        className="mt-0.5 shrink-0"
+        aria-hidden="true"
+      />
+      <div className="min-w-0">
+        <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.06em]">
+          {label}
+        </p>
+        <p className="truncate text-[var(--text-body-sm)] font-[500]">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+interface TrustCueListProps {
+  ariaLabel: string;
+  cues: TrustCueProps[];
+}
+
+export function TrustCueList({ ariaLabel, cues }: TrustCueListProps) {
+  if (cues.length === 0) return null;
+
+  return (
+    <div
+      className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+      role="list"
+      aria-label={ariaLabel}
+    >
+      {cues.map((cue) => (
+        <div key={`${cue.label}-${cue.value}`} role="listitem">
+          <TrustCue {...cue} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface RecoveryNoticeProps {
+  tone?: "info" | "warning" | "error" | "success";
+  title: string;
+  message: string;
+  primaryAction?: React.ReactNode;
+  secondaryAction?: React.ReactNode;
+}
+
+const RECOVERY_TONES = {
+  info: "border-[var(--color-info)/0.2] bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
+  warning:
+    "border-[var(--color-warning)/0.25] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
+  error:
+    "border-[var(--color-error)/0.2] bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
+  success:
+    "border-[var(--color-success)/0.2] bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
+};
+
+export function RecoveryNotice({
+  tone = "info",
+  title,
+  message,
+  primaryAction,
+  secondaryAction,
+}: RecoveryNoticeProps) {
+  return (
+    <div
+      role={tone === "error" ? "alert" : "status"}
+      className={cn(
+        "rounded-[var(--radius-lg)] border p-4",
+        RECOVERY_TONES[tone],
+      )}
+    >
+      <p className="text-[var(--text-body-sm)] font-[700]">{title}</p>
+      <p className="mt-1 text-[var(--text-body-sm)] leading-relaxed">
+        {message}
+      </p>
+      {(primaryAction || secondaryAction) && (
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          {primaryAction}
+          {secondaryAction}
+        </div>
+      )}
     </div>
   );
 }
@@ -85,21 +214,24 @@ type BadgeVariant =
   | "mixed";
 
 const BADGE_STYLES: Record<BadgeVariant, string> = {
-  pending:        "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
-  confirmed:      "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  cancelled:      "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  completed:      "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  active:         "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  draft:          "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)]",
-  pending_review: "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
-  suspended:      "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  paid:           "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  refunded:       "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  failed:         "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  verified:       "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]",
-  male:           "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  female:         "bg-[oklch(0.97_0.02_340)] text-[oklch(0.45_0.12_340)]",
-  mixed:          "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)]",
+  // Semantic — map directly to design system palette
+  pending:        "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
+  confirmed:      "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  cancelled:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  completed:      "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
+  active:         "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  draft:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
+  pending_review: "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
+  suspended:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  paid:           "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  refunded:       "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
+  failed:         "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  // Trust signal — success green, NOT amber (amber is brand/price only)
+  verified:       "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  // Gender — neutral info, muted, sidebar tones
+  male:           "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.15]     text-[var(--color-info-text)]",
+  female:         "bg-[oklch(0.97_0.02_340)]     border border-[oklch(0.72_0.12_340/0.2)]   text-[oklch(0.45_0.12_340)]",
+  mixed:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
 };
 
 const BADGE_LABELS: Record<BadgeVariant, string> = {

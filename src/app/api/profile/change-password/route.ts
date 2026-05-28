@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
+import { rateLimit } from "@/lib/rate-limit";
 
 // --- Session Invalidation Pattern ------------------------------------------
 // When a user's password changes (either via change-password or reset-password),
@@ -49,6 +50,19 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // 5 attempts per user per 15 minutes — limits brute-forcing of the current
+    // password by an attacker who has stolen a session token.
+    const rl = await rateLimit(`change-password:${session.user.id}`, {
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429 },
+      );
     }
 
     const body = await req.json();

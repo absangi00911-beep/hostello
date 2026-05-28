@@ -5,24 +5,20 @@ export default function EditListingLoading() {
       {/* Heading skeleton */}
       <div className="mb-8 space-y-2">
         <div
-          className="h-7 w-36 rounded-[var(--radius-md)]"
-          style={{ background: "var(--color-bg-overlay)" }}
+          className="h-7 w-36 rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]"
         />
         <div
-          className="h-4 w-48 rounded-[var(--radius-sm)]"
-          style={{ background: "var(--color-bg-overlay)" }}
+          className="h-4 w-48 rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]"
         />
       </div>
 
       {/* Progress bar skeleton */}
       <div className="mb-8 space-y-2">
         <div
-          className="h-1 w-full rounded-full"
-          style={{ background: "var(--color-bg-overlay)" }}
+          className="h-1 w-full rounded-full bg-[var(--color-bg-overlay)]"
         />
         <div
-          className="h-3 w-32 rounded-[var(--radius-sm)]"
-          style={{ background: "var(--color-bg-overlay)" }}
+          className="h-3 w-32 rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]"
         />
       </div>
 
@@ -31,8 +27,7 @@ export default function EditListingLoading() {
         {[120, 96, 80, 80].map((h, i) => (
           <div key={i} className="space-y-2">
             <div
-              className="h-3 w-24 rounded-[var(--radius-sm)]"
-              style={{ background: "var(--color-bg-overlay)" }}
+              className="h-3 w-24 rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]"
             />
             <div
               className="w-full rounded-[var(--radius-md)]"

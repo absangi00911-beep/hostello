@@ -34,7 +34,7 @@ function StatCard({
       </div>
       <p
         className="text-[2rem] font-[700] leading-none text-[var(--color-text-heading)]"
-        style={{ fontFamily: "var(--font-heading)" }}
+
       >
         {value}
       </p>

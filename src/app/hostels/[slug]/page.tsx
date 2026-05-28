@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Star,
   Users,
-  Wifi,
   CheckCircle2,
   XCircle,
   User,
@@ -15,10 +14,13 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ImageGallery } from "@/components/hostel/ImageGallery";
 import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
 import { BookingPanel } from "@/components/hostel/BookingPanel";
+import { RoommateBoard } from "@/components/hostel/RoommateBoard";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
+import { TrustSummary } from "@/components/hostel/TrustSummary";
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -91,7 +93,7 @@ export async function generateMetadata({
 }
 
 /* ── Amenity icon mapping (best-effort) ─────────────────── */
-function AmenityIcon({ name }: { name: string }) {
+function AmenityIcon({ name: _name }: { name: string }) {
   return (
     <CheckCircle2
       size={16}
@@ -109,6 +111,8 @@ export default async function HostelDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const session = await auth();
+  const currentUserId = session?.user.id ?? null;
   const hostel = await getHostel(slug);
 
   if (!hostel) notFound();
@@ -120,6 +124,11 @@ export default async function HostelDetailPage({
   }));
   const rooms = hostel.rooms_rel ?? [];
   const hostelUrl = `${getAppUrl()}/hostels/${hostel.slug}`;
+  const ratedReviews = reviews.filter((r) => r.safety > 0);
+  const avgSafety =
+    ratedReviews.length > 0
+      ? ratedReviews.reduce((sum, r) => sum + r.safety, 0) / ratedReviews.length
+      : null;
 
   return (
     <PublicLayout noFooter={false}>
@@ -155,8 +164,8 @@ export default async function HostelDetailPage({
 
               {/* Hostel name — H2 */}
               <h1
-                className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em] mb-2"
-                style={{ fontFamily: "var(--font-heading)" }}
+                className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em] mb-2"
+
               >
                 {hostel.name}
               </h1>
@@ -178,25 +187,6 @@ export default async function HostelDetailPage({
                   </span>
                 </div>
               )}
-
-              {/* Compute aggregate safety score from fetched reviews */}
-              {(() => {
-                const ratedReviews = reviews.filter((r) => r.safety > 0);
-                const avgSafety = ratedReviews.length > 0
-                  ? ratedReviews.reduce((sum, r) => sum + r.safety, 0) / ratedReviews.length
-                  : null;
-                return avgSafety !== null ? (
-                  <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-primary-faint)] px-3 py-2 w-fit">
-                    <ShieldCheck size={15} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
-                    <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-primary-deep)]">
-                      Safety {avgSafety.toFixed(1)}/5
-                    </span>
-                    <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-                      · avg across {ratedReviews.length} {ratedReviews.length === 1 ? 'review' : 'reviews'}
-                    </span>
-                  </div>
-                ) : null;
-              })()}
 
               <div className="flex items-center gap-3 mt-3">
                 <ShareButton
@@ -233,32 +223,106 @@ export default async function HostelDetailPage({
               </div>
             </div>
 
-            {/* Tabs: Details / Rooms / Reviews / Location */}
+            <div className="mb-8">
+              <TrustSummary
+                verified={hostel.verified}
+                reviewCount={hostel.reviewCount}
+                rating={hostel.rating}
+                safetyScore={avgSafety}
+                ownerName={hostel.owner.name}
+                ownerListingCount={hostel.owner._count?.hostels || 1}
+                availableRooms={rooms.reduce(
+                  (sum: number, room: any) => sum + room.available,
+                  0,
+                )}
+                hasLocation={Boolean(hostel.latitude && hostel.longitude)}
+              />
+            </div>
+
+            {/* Tabs: Details / Rooms / Reviews / Roommates / Location */}
             <Tabs defaultValue="details">
               <TabsList className="flex w-full border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto">
-                {["details", "rooms", "reviews", "location"].map((tab) => (
-                  <TabsTrigger
-                    key={tab}
-                    value={tab}
-                    className="
-                      flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
-                      text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                      capitalize transition-all duration-[var(--transition-fast)]
-                      data-[state=active]:border-[var(--color-primary)]
-                      data-[state=active]:text-[var(--color-text-heading)]
-                      data-[state=active]:font-[600]
-                      hover:text-[var(--color-text-body)]
-                      focus-visible:outline-none
-                    "
-                  >
-                    {tab}
-                    {tab === "reviews" && hostel.reviewCount > 0 && (
-                      <span className="ml-1.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
-                        ({hostel.reviewCount})
-                      </span>
-                    )}
-                  </TabsTrigger>
-                ))}
+                <TabsTrigger
+                  value="details"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="rooms"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Rooms
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reviews"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Reviews
+                  {hostel.reviewCount > 0 && (
+                    <span className="ml-1.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                      ({hostel.reviewCount})
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="roommates"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  <Users size={14} strokeWidth={1.5} aria-hidden="true" />
+                  Roommates
+                </TabsTrigger>
+                <TabsTrigger
+                  value="location"
+                  className="
+                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                    capitalize transition-all duration-[var(--transition-fast)]
+                    data-[state=active]:border-[var(--color-primary)]
+                    data-[state=active]:text-[var(--color-text-heading)]
+                    data-[state=active]:font-[600]
+                    hover:text-[var(--color-text-body)]
+                    focus-visible:outline-none
+                  "
+                >
+                  Location
+                </TabsTrigger>
               </TabsList>
 
               {/* ── Details tab ─────────────────────────── */}
@@ -273,7 +337,7 @@ export default async function HostelDetailPage({
                   <div className="mb-8">
                     <h2
                       className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
-                      style={{ fontFamily: "var(--font-body)" }}
+
                     >
                       Amenities
                     </h2>
@@ -295,7 +359,7 @@ export default async function HostelDetailPage({
                   <div>
                     <h2
                       className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
-                      style={{ fontFamily: "var(--font-body)" }}
+
                     >
                       House rules
                     </h2>
@@ -416,6 +480,15 @@ export default async function HostelDetailPage({
                 ) : (
                   <NoMapAvailable address={hostel.address} />
                 )}
+              </TabsContent>
+
+              {/* ── Roommates tab ─────────────────────────── */}
+              <TabsContent value="roommates" className="mt-0">
+                <RoommateBoard
+                  hostelId={hostel.id}
+                  hostelName={hostel.name}
+                  currentUserId={currentUserId}
+                />
               </TabsContent>
             </Tabs>
           </div>

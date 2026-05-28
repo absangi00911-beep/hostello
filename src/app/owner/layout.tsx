@@ -12,7 +12,11 @@ export default async function OwnerRootLayout({
 
   if (!session) redirect("/login?callbackUrl=/owner/dashboard");
 
-  if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+  if (session.user.role === "ADMIN") {
+    redirect("/admin");
+  }
+
+  if (session.user.role !== "OWNER") {
     redirect("/");
   }
 

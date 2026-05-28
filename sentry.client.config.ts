@@ -6,4 +6,12 @@ Sentry.init({
   debug: false,
   replaysOnErrorSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
+  // Sentry v10: replayIntegration must be registered explicitly when using
+  // replaysOnErrorSampleRate / replaysSessionSampleRate.
+  integrations: [
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
 });

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
+import { rateLimit, getIp } from "@/lib/rate-limit";
 
 // --- Session Invalidation Pattern ------------------------------------------
 // When a user's password changes (either via reset-password or change-password),
@@ -41,6 +42,20 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // 5 attempts per IP per 15 minutes. The reset token is already single-use,
+  // but rate-limiting prevents token-flooding DoS and limits brute-forcing of
+  // short tokens from compromised reset links.
+  const rl = await rateLimit(`reset-password:${getIp(req)}`, {
+    limit: 5,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   try {
     const body = await req.json();
     const parsed = schema.safeParse(body);

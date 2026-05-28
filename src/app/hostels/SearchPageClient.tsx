@@ -1,20 +1,19 @@
 // Path: src/app/hostels/SearchPageClient.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Map, List, ChevronDown } from "lucide-react";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
-import { CompareTray, type CompareItem } from "@/components/hostel/CompareTray";
 import { FilterSidebar, MobileFilterSheet, type FilterState } from "@/components/hostel/FilterSidebar";
 import { Pagination } from "@/components/hostel/Pagination";
 import {
-  PageSpinner,
   SkeletonCard,
   SearchDegradedNotice,
   EmptyState,
   InlineError,
+  RecoveryNotice,
 } from "@/components/ui/shared";
 import { Building2 } from "lucide-react";
 import { SearchMap } from "@/components/hostel/SearchMap";
@@ -102,7 +101,7 @@ export function SearchPageClient({
   const pathname = usePathname();
 
   // Applied (active) filters
-  const [q,       setQ]       = useState(initialQ);
+  const [q]                  = useState(initialQ);
   const [filters, setFilters] = useState<FilterState>({
     city:      initialCity,
     gender:    initialGender,
@@ -117,7 +116,6 @@ export function SearchPageClient({
   const [pendingFilters, setPendingFilters] = useState<FilterState>(filters);
 
   const [mapView, setMapView] = useState(false);
-  const [compareItems, setCompareItems] = useState<CompareItem[]>([]);
 
   // Sync URL whenever applied state changes
   useEffect(() => {
@@ -180,24 +178,14 @@ export function SearchPageClient({
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  function handleToggleCompare(hostel: HostelCardData, e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    setCompareItems((prev) => {
-      const exists = prev.find((i) => i.id === hostel.id);
-      if (exists) return prev.filter((i) => i.id !== hostel.id);
-      if (prev.length >= 3) return prev;
-      return [...prev, { id: hostel.id, name: hostel.name, slug: hostel.slug }];
-    });
-  }
-
   /* ── Results summary text ───────────────────────────────── */
   function resultsSummary(): string {
     if (!data) return "";
     const { total } = data;
-    if (total === 0) return "No hostels found";
     const cityLabel = filters.city ? ` in ${filters.city}` : "";
-    return `${total.toLocaleString()} hostel${total === 1 ? "" : "s"}${cityLabel}`;
+    const queryLabel = q ? ` for "${q}"` : "";
+    if (total === 0) return `No hostels found${cityLabel}${queryLabel}`;
+    return `${total.toLocaleString()} hostel${total === 1 ? "" : "s"}${cityLabel}${queryLabel}`;
   }
 
   return (
@@ -359,12 +347,7 @@ export function SearchPageClient({
               >
                 {data.data.map((hostel) => (
                   <div key={hostel.id} role="listitem">
-                    <HostelCard
-                      hostel={hostel}
-                      compareSelected={compareItems.some((i) => i.id === hostel.id)}
-                      compareDisabled={compareItems.length >= 3 && !compareItems.some((i) => i.id === hostel.id)}
-                      onToggleCompare={(e) => handleToggleCompare(hostel, e)}
-                    />
+                    <HostelCard hostel={hostel} />
                   </div>
                 ))}
               </div>
@@ -373,21 +356,29 @@ export function SearchPageClient({
 
           {/* Empty state */}
           {!isLoading && data && data.data.length === 0 && (
-            <EmptyState
-              icon={Building2}
-              heading="No hostels match your filters"
-              description="Try removing a filter or searching a nearby area."
-              action={
-                activeCount > 0 ? (
-                  <button
-                    onClick={handleReset}
-                    className="inline-flex h-9 items-center px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-                  >
-                    Clear all filters
-                  </button>
-                ) : undefined
-              }
-            />
+            <div className="space-y-4">
+              <RecoveryNotice
+                tone="warning"
+                title="No exact matches yet"
+                message="Try clearing filters, widening your price range, or searching a nearby city."
+                primaryAction={
+                  activeCount > 0 ? (
+                    <button
+                      onClick={handleReset}
+                      className="inline-flex h-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
+                    >
+                      Clear all filters
+                    </button>
+                  ) : undefined
+                }
+              />
+              <EmptyState
+                icon={Building2}
+                heading="No hostels match your filters"
+                description="Clear filters or search a nearby area to see more options."
+                compact
+              />
+            </div>
           )}
 
           {/* Pagination */}
@@ -400,11 +391,6 @@ export function SearchPageClient({
           )}
         </main>
       </div>
-      <CompareTray
-        items={compareItems}
-        onRemove={(id) => setCompareItems((prev) => prev.filter((i) => i.id !== id))}
-        onClear={() => setCompareItems([])}
-      />
     </div>
   );
 }

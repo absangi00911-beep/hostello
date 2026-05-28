@@ -1,134 +1,75 @@
-// Path: src/app/api/reviews/route.ts
+// Path: src/app/api/reviews/mine/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { reviewSchema } from "@/lib/validations";
-import { indexSingleHostel } from "@/lib/typesense-sync";
-import { createNotification } from "@/lib/notifications";
 
-export async function POST(req: NextRequest) {
+/**
+ * GET /api/reviews/mine
+ *
+ * Returns all reviews across every hostel owned by the authenticated user.
+ * Used by the owner dashboard Reviews tab.
+ *
+ * ADMIN: returns all reviews on the platform (no ownership filter).
+ *
+ * Query params:
+ *   page  - 1-indexed (default: 1)
+ *   limit - per page, max 50 (default: 20)
+ *
+ * Response:
+ *   { data: Review[], total: number, page: number, limit: number }
+ */
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
-      return NextResponse.json({ error: "Sign in to leave a review." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const hostelId = body.hostelId as string | undefined;
-
-    if (!hostelId) {
-      return NextResponse.json({ error: "hostelId is required." }, { status: 400 });
+    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const parsed = reviewSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed.", details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
+    const url   = new URL(req.url);
+    const page  = Math.max(1, parseInt(url.searchParams.get("page")  ?? "1",  10) || 1);
+    const limit = Math.min(50, parseInt(url.searchParams.get("limit") ?? "20", 10) || 20);
+    const skip  = (page - 1) * limit;
 
-    // Check user had a completed booking at this hostel
-    const hasStayed = await db.booking.findFirst({
-      where: {
-        hostelId,
-        userId: session.user.id,
-        status: "COMPLETED",
-      },
-    });
+    // Build where clause: owner sees reviews on their hostels; admin sees all
+    const where =
+      session.user.role === "OWNER"
+        ? { hostel: { ownerId: session.user.id } }
+        : {};
 
-    if (!hasStayed) {
-      return NextResponse.json(
-        { error: "You can only review hostels where you have completed a stay." },
-        { status: 403 }
-      );
-    }
-
-    // Upsert review and atomically recompute hostel rating in a single transaction
-    // This ensures if anything fails, both roll back together
-    const review = await db.$transaction(async (tx) => {
-      // Upsert — one review per user per hostel
-      const review = await tx.review.upsert({
-        where: { hostelId_userId: { hostelId, userId: session.user.id } },
-        update: {
-          ...parsed.data,
-          updatedAt: new Date(),
-        },
-        create: {
-          hostelId,
-          userId: session.user.id,
-          ...parsed.data,
-        },
+    const [reviews, total] = await Promise.all([
+      db.review.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
         include: {
-          user: { select: { id: true, name: true, avatar: true } },
+          user: {
+            select: { id: true, name: true, avatar: true },
+          },
+          hostel: {
+            select: { id: true, name: true, slug: true },
+          },
         },
-      });
+      }),
+      db.review.count({ where }),
+    ]);
 
-      // Atomically recompute hostel rating and update it
-      const aggregate = await tx.review.aggregate({
-        where: { hostelId },
-        _avg: { rating: true },
-        _count: { rating: true },
-      });
-
-      await tx.hostel.update({
-        where: { id: hostelId },
-        data: {
-          rating: aggregate._avg.rating ?? 0,
-          reviewCount: aggregate._count.rating,
-        },
-      });
-
-      return review;
+    return NextResponse.json({
+      data:    reviews,
+      total,
+      page,
+      limit,
+      hasMore: skip + reviews.length < total,
     });
-
-    // Sync updated rating to Typesense
-    void indexSingleHostel(hostelId).catch((err) =>
-      console.error(`[typesense] Failed to sync hostel ${hostelId} after review:`, err)
+  } catch (err) {
+    console.error("[GET /api/reviews/mine]", err);
+    return NextResponse.json(
+      { error: "Something went wrong." },
+      { status: 500 }
     );
-
-    // Notify hostel owner of new review
-    const hostel = await db.hostel.findUnique({
-      where: { id: hostelId },
-      select: { ownerId: true, name: true },
-    });
-
-    if (hostel) {
-      void createNotification({
-        userId: hostel.ownerId,
-        type: "REVIEW_RECEIVED",
-        title: `New Review: ${review.rating}⭐`,
-        message: `${review.user.name} left a review: "${review.title || review.comment.substring(0, 50)}..."`,
-        reviewId: review.id,
-        hostelId: hostelId,
-      });
-    }
-
-    return NextResponse.json({ data: review, message: "Review submitted." }, { status: 201 });
-  } catch (err) {
-    console.error("[POST /api/reviews]", err);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
-  }
-}
-
-export async function GET(req: NextRequest) {
-  try {
-    const hostelId = new URL(req.url).searchParams.get("hostelId");
-    if (!hostelId) {
-      return NextResponse.json({ error: "hostelId query param required." }, { status: 400 });
-    }
-
-    const reviews = await db.review.findMany({
-      where: { hostelId },
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-      },
-    });
-
-    return NextResponse.json({ data: reviews });
-  } catch (err) {
-    console.error("[GET /api/reviews]", err);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

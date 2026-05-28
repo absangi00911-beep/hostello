@@ -8,8 +8,8 @@ export default function NewListingPage() {
     <div className="py-2">
       <div className="mb-8">
         <h1
-          className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-          style={{ fontFamily: "var(--font-heading)" }}
+          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
         >
           Add new listing
         </h1>

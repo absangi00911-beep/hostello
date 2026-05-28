@@ -13,21 +13,24 @@ import {
   Settings,
   ChevronLeft,
   BarChart2,
+  Zap,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
+import { Logo } from "@/components/Logo";
 
 const NAV_ITEMS = [
-  { href: "/owner/dashboard",   label: "Overview",     icon: LayoutDashboard },
-  { href: "/owner/listings",    label: "My listings",  icon: Building2 },
-  { href: "/owner/bookings",    label: "Bookings",     icon: CalendarDays },
-  { href: "/owner/messages",    label: "Messages",     icon: MessageCircle },
-  { href: "/owner/reviews",     label: "Reviews",      icon: Star },
-  { href: "/owner/analytics",   label: "Analytics",    icon: BarChart2 },
-  { href: "/owner/settings",    label: "Settings",     icon: Settings },
+  { href: "/owner/dashboard",    label: "Overview",    icon: LayoutDashboard },
+  { href: "/owner/listings",     label: "My listings", icon: Building2 },
+  { href: "/owner/bookings",     label: "Bookings",    icon: CalendarDays },
+  { href: "/owner/messages",     label: "Messages",    icon: MessageCircle },
+  { href: "/owner/reviews",      label: "Reviews",     icon: Star },
+  { href: "/owner/analytics",    label: "Analytics",   icon: BarChart2 },
+  { href: "/owner/subscription", label: "Subscription", icon: Zap },
+  { href: "/owner/settings",     label: "Settings",    icon: Settings },
 ];
 
-function SidebarNav({ collapsed }: { collapsed: boolean }) {
+function SidebarNav() {
   const pathname = usePathname();
 
   return (
@@ -44,35 +47,26 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
               <Link
                 href={href}
                 aria-current={isActive ? "page" : undefined}
-                title={collapsed ? label : undefined}
                 className={`
-                  group relative flex items-center gap-3 rounded-[var(--radius-md)] transition-colors duration-[var(--transition-fast)]
-                  ${collapsed ? "h-10 w-10 justify-center" : "h-10 px-3"}
+                  flex items-center gap-3 h-10 px-3 rounded-[var(--radius-md)]
+                  transition-colors duration-[var(--transition-fast)]
                   ${
                     isActive
-                      ? "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]"
+                      // Full-row background tint — no side stripe
+                      ? "bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] font-[600]"
                       : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
                   }
                 `}
               >
-                {/* Active left-edge indicator */}
-                {isActive && !collapsed && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[var(--color-primary)]"
-                  />
-                )}
                 <Icon
                   size={18}
                   strokeWidth={1.5}
                   aria-hidden="true"
                   className={isActive ? "text-[var(--color-primary)]" : ""}
                 />
-                {!collapsed && (
-                  <span className="text-[var(--text-body-sm)] font-[500]">
-                    {label}
-                  </span>
-                )}
+                <span className="text-[var(--text-body-sm)] flex-1">
+                  {label}
+                </span>
               </Link>
             </li>
           );
@@ -89,7 +83,6 @@ interface OwnerLayoutProps {
 export function OwnerLayout({ children }: OwnerLayoutProps) {
   const pathname = usePathname();
 
-  // Derive the page title from the current route
   const currentNav = NAV_ITEMS.find((item) =>
     item.href === "/owner/dashboard"
       ? pathname === item.href
@@ -101,41 +94,19 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
     <div className="flex min-h-dvh bg-[var(--color-bg-page)]">
       {/* -- Sidebar (desktop) ---------------------------------- */}
       <aside
-        className="
-          hidden md:flex flex-col
-          w-[var(--sidebar-width)] shrink-0
-          sticky top-0 h-screen
-          border-r border-[var(--color-border-subtle)]
-          bg-[var(--color-bg-sidebar)]
-        "
+        className="hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
         aria-label="Owner dashboard sidebar"
       >
         {/* Logo */}
         <div className="flex h-16 items-center px-5 border-b border-[var(--color-border-subtle)] shrink-0">
-          <Link
-            href="/"
-            className="flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
-          >
-            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <rect x="2" y="8" width="16" height="18" rx="2" fill="var(--color-primary)" />
-              <rect x="10" y="2" width="16" height="18" rx="2" fill="var(--color-primary-deep)" opacity="0.7" />
-              <rect x="6" y="16" width="4" height="6" rx="1" fill="var(--color-bg-sidebar)" />
-            </svg>
-            <span
-              className="text-[1rem] font-[700] tracking-[-0.02em] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              HostelLo
-            </span>
-          </Link>
+          <Logo size="compact" />
         </div>
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4 px-3">
-          <SidebarNav collapsed={false} />
+          <SidebarNav />
         </div>
 
-        {/* Bottom — back to site link */}
         <div className="px-3 py-4 border-t border-[var(--color-border-subtle)] shrink-0">
           <Link
             href="/"
@@ -149,12 +120,8 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
 
       {/* -- Main content area ----------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:px-6 shrink-0">
-          <h1
-            className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-body)" }}
-          >
+          <h1 className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
             {pageTitle}
           </h1>
           <div className="flex items-center gap-1">
@@ -163,18 +130,15 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
           </div>
         </header>
 
-        {/* Page content */}
-        <main
-          className="flex-1 p-4 md:p-6 pb-20 md:pb-6"
-          id="main-content"
-        >
+        <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6" id="main-content">
           {children}
         </main>
       </div>
 
-      {/* -- Mobile bottom tab bar ------------------------------- */}
+      {/* -- Mobile bottom tab bar (first 4 nav items) ----------- */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Mobile owner navigation"
       >
         <div className="flex">

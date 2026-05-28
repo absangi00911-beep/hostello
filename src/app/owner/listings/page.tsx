@@ -111,7 +111,7 @@ function ListingCard({
           <div className="min-w-0">
             <h3
               className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
+
             >
               {hostel.name}
             </h3>
@@ -211,11 +211,10 @@ export default function OwnerListingsPage() {
         <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
           {listings.length} listing{listings.length !== 1 ? "s" : ""}
         </p>
-        {/* Amber brand button — per DESIGN.md, used only for owner CTAs */}
+        {/* Primary CTA — action green, consistent with all CTAs in the app */}
         <Link
           href="/owner/listings/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[500] transition-all duration-[var(--transition-base)] hover:-translate-y-px hover:shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-primary-deep)] focus-visible:outline-offset-2"
-          style={{ backgroundColor: "var(--color-primary)", color: "var(--color-text-heading)" }}
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] hover:-translate-y-px hover:shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
         >
           <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
           Add new listing
@@ -231,8 +230,7 @@ export default function OwnerListingsPage() {
           action={
             <Link
               href="/owner/listings/new"
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[500]"
-              style={{ backgroundColor: "var(--color-primary)", color: "var(--color-text-heading)" }}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
             >
               <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
               Add your first listing

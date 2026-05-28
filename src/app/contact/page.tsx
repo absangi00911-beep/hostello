@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 const SUBJECTS = [
   "General enquiry",
@@ -46,8 +46,8 @@ export default function ContactPage() {
       <div className="mx-auto max-w-[560px] px-4 py-12 md:py-16">
         <div className="mb-8">
           <h1
-            className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+
           >
             Contact us
           </h1>
@@ -59,7 +59,7 @@ export default function ContactPage() {
         {sent ? (
           <div className="rounded-[var(--radius-lg)] border border-[oklch(0.52_0.14_148_/_0.3)] bg-[var(--color-success-bg)] p-8 text-center space-y-3">
             <CheckCircle2 size={40} strokeWidth={1.5} className="text-[var(--color-success)] mx-auto" aria-hidden="true" />
-            <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]" style={{ fontFamily: "var(--font-body)" }}>
+            <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
               Message sent
             </h2>
             <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
