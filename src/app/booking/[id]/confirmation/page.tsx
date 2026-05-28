@@ -108,8 +108,8 @@ export default function ConfirmationPage() {
             </span>
           </div>
           <h1
-            className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
           >
             Booking cancelled
           </h1>
@@ -140,8 +140,8 @@ export default function ConfirmationPage() {
             aria-hidden="true"
           />
           <h1
-            className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
           >
             Confirming your payment…
           </h1>
@@ -199,8 +199,8 @@ export default function ConfirmationPage() {
 
           <div>
             <h1
-              className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
-              style={{ fontFamily: "var(--font-heading)" }}
+              className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
+
             >
               Booking confirmed
             </h1>
@@ -227,7 +227,7 @@ export default function ConfirmationPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-5">
           <h2
             className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] mb-4"
-            style={{ fontFamily: "var(--font-body)" }}
+
           >
             What happens next
           </h2>

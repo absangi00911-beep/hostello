@@ -132,7 +132,11 @@ describe("POST /api/reviews (Integration Template)", () => {
     const reviewData = { 
       hostelId, 
       rating: 5, 
-      comment: "This is a sufficiently long comment for validation." 
+      comment: "This is a sufficiently long comment for validation.",
+      cleanliness: 5,
+      location: 5,
+      value: 5,
+      safety: 5,
     };
 
     // Mock NO completed booking

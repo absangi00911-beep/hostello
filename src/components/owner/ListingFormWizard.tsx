@@ -14,7 +14,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { CITIES, AMENITIES } from "@hostello/shared";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 /* -- Types ------------------------------------------------- */
 export interface ListingFormData {
@@ -310,6 +310,14 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       const json = await res.json();
 
       if (!res.ok) {
+        // Handle quota exceeded error
+        if (json.code === "QUOTA_EXCEEDED") {
+          toast.error("You've reached your listing limit.", {
+            description: "Upgrade to Pro for unlimited listings.",
+            action: { label: "Upgrade", onClick: () => router.push("/owner/subscription") }
+          });
+          return;
+        }
         toast.error(json.error ?? "Submission failed.");
         return;
       }
@@ -337,7 +345,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 1: Basic info ----------------------- */}
       {step === 1 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Basic info</h2>
+          <h2 className={headingCls}>Basic info</h2>
 
           <div className="space-y-1.5">
             <label htmlFor="name" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Hostel name</label>
@@ -411,7 +419,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 2: Location ------------------------- */}
       {step === 2 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Location coordinates <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
+          <h2 className={headingCls}>Location coordinates <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] -mt-2">
             Adding coordinates shows your hostel on the map. Find them by searching your address on Google Maps and copying the coordinates from the URL.
           </p>
@@ -431,7 +439,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 3: Amenities ------------------------ */}
       {step === 3 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Amenities</h2>
+          <h2 className={headingCls}>Amenities</h2>
           <TagInput label="What does your hostel offer?" values={form.amenities} onChange={(v) => update("amenities", v)} placeholder="Type a custom amenity and press Enter" presets={AMENITY_PRESETS} />
         </div>
       )}
@@ -439,7 +447,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 4: Photos --------------------------- */}
       {step === 4 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Photos</h2>
+          <h2 className={headingCls}>Photos</h2>
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] -mt-2">
             At least one photo is required before submitting for review. First photo or the one you mark as "Cover" appears in search results.
           </p>
@@ -456,7 +464,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 5: Rules ---------------------------- */}
       {step === 5 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>House rules</h2>
+          <h2 className={headingCls}>House rules</h2>
           <TagInput label="Rules students must follow" values={form.rules} onChange={(v) => update("rules", v)} placeholder="e.g. No guests after 10pm" />
         </div>
       )}
@@ -464,7 +472,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 6: Review & submit ------------------- */}
       {step === 6 && (
         <div className={sectionCls}>
-          <h2 className={headingCls} style={{ fontFamily: "var(--font-body)" }}>Review and submit</h2>
+          <h2 className={headingCls}>Review and submit</h2>
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] divide-y divide-[var(--color-border-subtle)]">
             {[
               { label: "Name",       value: form.name || "—" },

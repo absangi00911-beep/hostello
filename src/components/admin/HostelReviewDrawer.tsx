@@ -58,14 +58,12 @@ export function HostelReviewDrawer({
   status,
   actionLoading,
 }: HostelReviewDrawerProps) {
-  // Lock scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Close on Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -87,10 +85,9 @@ export function HostelReviewDrawer({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — warm scrim matching Dialog/Sheet */}
       <div
-        className="fixed inset-0 z-[50]"
-        style={{ background: "rgba(26,18,10,0.45)" }}
+        className="fixed inset-0 z-[50] bg-[oklch(0.18_0.016_65_/_0.55)]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -100,33 +97,22 @@ export function HostelReviewDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={`Review listing: ${hostelName}`}
-        className="fixed right-0 top-0 z-[55] flex h-full w-full max-w-[520px] flex-col shadow-[var(--shadow-xl)]"
-        style={{
-          background: "var(--color-bg-card)",
-          borderLeft: "1px solid var(--color-border-subtle)",
-        }}
+        className="fixed right-0 top-0 z-[55] flex h-full w-full max-w-[520px] flex-col shadow-[var(--shadow-xl)] bg-[var(--color-bg-card)] border-l border-[var(--color-border-subtle)]"
       >
         {/* Drawer header */}
-        <div
-          className="flex shrink-0 items-center justify-between gap-3 px-5 py-4"
-          style={{ borderBottom: "1px solid var(--color-border-subtle)" }}
-        >
+        <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4 border-b border-[var(--color-border-subtle)]">
           <div className="min-w-0">
             <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mb-0.5">
               Reviewing listing
             </p>
-            <h2
-              className="truncate text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
+            <h2 className="truncate text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">
               {hostelName}
             </h2>
           </div>
           <button
             onClick={onClose}
             aria-label="Close review panel"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--color-bg-overlay)]"
-            style={{ color: "var(--color-text-muted)" }}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
           >
             <X size={16} strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -135,7 +121,7 @@ export function HostelReviewDrawer({
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">
           {isLoading && <PageSpinner label="Loading hostel details…" />}
-          {isError   && (
+          {isError && (
             <div className="p-5">
               <InlineError message="Couldn't load hostel details. Try closing and reopening." />
             </div>
@@ -160,10 +146,7 @@ export function HostelReviewDrawer({
                         sizes="140px"
                       />
                       {i === 0 && hostel.coverImage === src && (
-                        <span
-                          className="absolute left-1 top-1 rounded-sm px-1 text-[9px] font-[700] leading-4"
-                          style={{ background: "var(--color-primary)", color: "#fff" }}
-                        >
+                        <span className="absolute left-1 top-1 rounded-sm px-1 text-[9px] font-[700] leading-4 bg-[var(--color-primary)] text-white">
                           Cover
                         </span>
                       )}
@@ -171,12 +154,8 @@ export function HostelReviewDrawer({
                   ))}
                   {hostel.images.length > 6 && (
                     <div
-                      className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--text-caption)] text-[var(--color-text-muted)]"
-                      style={{
-                        width: 140, height: 96,
-                        background: "var(--color-bg-overlay)",
-                        border: "1px solid var(--color-border-subtle)",
-                      }}
+                      className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--text-caption)] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-[var(--color-border-subtle)]"
+                      style={{ width: 140, height: 96 }}
                     >
                       +{hostel.images.length - 6} more
                     </div>
@@ -184,20 +163,15 @@ export function HostelReviewDrawer({
                 </div>
               ) : (
                 <div
-                  className="mx-4 mt-4 flex items-center justify-center rounded-[var(--radius-md)] text-[var(--text-body-sm)] text-[var(--color-text-muted)]"
-                  style={{
-                    height: 96,
-                    background: "var(--color-bg-overlay)",
-                    border: "1px dashed var(--color-border-default)",
-                  }}
+                  className="mx-4 mt-4 flex items-center justify-center rounded-[var(--radius-md)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-dashed border-[var(--color-border-default)]"
+                  style={{ height: 96 }}
                 >
                   No photos uploaded
                 </div>
               )}
 
               {/* Key facts row */}
-              <div className="grid grid-cols-3 gap-px mt-4 mx-4 overflow-hidden rounded-[var(--radius-md)]"
-                   style={{ border: "1px solid var(--color-border-subtle)" }}>
+              <div className="grid grid-cols-3 gap-px mt-4 mx-4 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
                 {[
                   { label: "Price", value: `${formatPKR(hostel.pricePerMonth)}/mo` },
                   { label: "Rooms", value: `${hostel.rooms} rooms` },
@@ -205,8 +179,7 @@ export function HostelReviewDrawer({
                 ].map(({ label, value }) => (
                   <div
                     key={label}
-                    className="flex flex-col items-center py-3 px-2 text-center"
-                    style={{ background: "var(--color-bg-sidebar)" }}
+                    className="flex flex-col items-center py-3 px-2 text-center bg-[var(--color-bg-sidebar)]"
                   >
                     <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
                       {value}
@@ -231,11 +204,7 @@ export function HostelReviewDrawer({
                     { label: "Beds",    icon: <BedDouble size={13} />, value: `${hostel.capacity} total` },
                   ].map(({ label, icon, value }) => (
                     <div key={label} className="flex gap-2 items-start">
-                      <span
-                        className="mt-0.5 shrink-0"
-                        style={{ color: "var(--color-text-muted)" }}
-                        aria-hidden="true"
-                      >
+                      <span className="mt-0.5 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true">
                         {icon}
                       </span>
                       <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
@@ -252,7 +221,7 @@ export function HostelReviewDrawer({
                   Description
                 </h3>
                 <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed whitespace-pre-wrap">
-                  {hostel.description || <em style={{ color: "var(--color-text-muted)" }}>No description provided.</em>}
+                  {hostel.description || <em className="text-[var(--color-text-muted)]">No description provided.</em>}
                 </p>
               </section>
 
@@ -266,12 +235,7 @@ export function HostelReviewDrawer({
                     {hostel.amenities.map((a) => (
                       <span
                         key={a}
-                        className="inline-flex h-6 items-center px-2.5 rounded-full text-[var(--text-caption)] font-[500]"
-                        style={{
-                          background:  "var(--color-primary-faint)",
-                          color:       "var(--color-primary-deep)",
-                          border:      "1px solid var(--color-primary-light)",
-                        }}
+                        className="inline-flex h-6 items-center px-2.5 rounded-full text-[var(--text-caption)] font-[500] bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)] border border-[var(--color-primary-light)]"
                       >
                         {a}
                       </span>
@@ -288,11 +252,8 @@ export function HostelReviewDrawer({
                   </h3>
                   <ul className="space-y-1">
                     {hostel.rules.map((r) => (
-                      <li
-                        key={r}
-                        className="flex gap-2 text-[var(--text-body-sm)] text-[var(--color-text-body)]"
-                      >
-                        <span style={{ color: "var(--color-text-muted)" }} aria-hidden="true">·</span>
+                      <li key={r} className="flex gap-2 text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                        <span className="text-[var(--color-text-muted)]" aria-hidden="true">·</span>
                         {r}
                       </li>
                     ))}
@@ -305,15 +266,12 @@ export function HostelReviewDrawer({
                 <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
                   Owner
                 </h3>
-                <div
-                  className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5"
-                  style={{ background: "var(--color-bg-sidebar)", border: "1px solid var(--color-border-subtle)" }}
-                >
+                <div className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)]">
                   <div className="flex-1 min-w-0">
                     <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] flex items-center gap-1.5">
                       {hostel.owner.name}
                       {hostel.verified && (
-                        <ShieldCheck size={13} className="text-[var(--color-primary)]" aria-label="Verified owner" />
+                        <ShieldCheck size={13} className="text-[var(--color-success)]" aria-label="Verified owner" />
                       )}
                     </p>
                     <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate">
@@ -323,16 +281,14 @@ export function HostelReviewDrawer({
                       {hostel.owner._count.hostels} listing{hostel.owner._count.hostels !== 1 ? "s" : ""} total
                     </p>
                   </div>
-                  <Star size={15} strokeWidth={1.5} className="shrink-0" style={{ color: "var(--color-text-muted)" }} aria-hidden="true" />
+                  <Star size={15} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-muted)]" aria-hidden="true" />
                 </div>
 
-                {/* Open full listing in new tab */}
                 <Link
                   href={`/hostels/${hostel.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] hover:underline"
-                  style={{ color: "var(--color-primary-deep)" }}
+                  className="inline-flex items-center gap-1.5 text-[var(--text-caption)] font-[500] text-[var(--color-primary-deep)] transition-colors duration-[var(--transition-fast)] hover:underline"
                 >
                   <ExternalLink size={11} strokeWidth={1.5} aria-hidden="true" />
                   Open full listing page
@@ -344,38 +300,22 @@ export function HostelReviewDrawer({
 
         {/* Footer actions */}
         {status === "PENDING_REVIEW" && (
-          <div
-            className="flex shrink-0 items-center gap-2 px-5 py-4"
-            style={{ borderTop: "1px solid var(--color-border-subtle)" }}
-          >
+          <div className="flex shrink-0 items-center gap-2 px-5 py-4 border-t border-[var(--color-border-subtle)]">
+            {/* Destructive — outline variant that fills on hover via Tailwind */}
             <button
               onClick={onSuspend}
               disabled={actionLoading}
-              className="flex-1 h-9 rounded-[var(--radius-md)] border text-[var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
-              style={{
-                borderColor: "var(--color-error)",
-                color:       "var(--color-error)",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = "var(--color-error)";
-                e.currentTarget.style.color = "#fff";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "var(--color-error)";
-              }}
+              className="flex-1 h-9 rounded-[var(--radius-md)] border border-[var(--color-error)] text-[var(--text-body-sm)] font-[600] text-[var(--color-error)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 hover:bg-[var(--color-error)] hover:text-white"
             >
-              Reject & suspend
+              Reject &amp; suspend
             </button>
+            {/* Primary action — action green */}
             <button
               onClick={onApprove}
               disabled={actionLoading}
-              className="flex-1 h-9 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white transition-colors duration-[var(--transition-base)] disabled:opacity-50"
-              style={{ background: "var(--color-action)" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "var(--color-action-dark)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "var(--color-action)")}
+              className="flex-1 h-9 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white bg-[var(--color-action)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 hover:bg-[var(--color-action-dark)]"
             >
-              Approve & publish
+              Approve &amp; publish
             </button>
           </div>
         )}

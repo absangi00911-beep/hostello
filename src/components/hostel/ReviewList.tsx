@@ -200,7 +200,7 @@ export function ReviewList({
           <div className="flex flex-col items-center justify-center shrink-0 sm:pr-5 sm:border-r sm:border-[var(--color-border-subtle)]">
             <span
               className="text-[3rem] font-[800] leading-none text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-heading)" }}
+
             >
               {overallRating.toFixed(1)}
             </span>

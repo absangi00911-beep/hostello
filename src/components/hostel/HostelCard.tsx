@@ -4,7 +4,6 @@ import Image from "next/image";
 import { ShieldCheck, Star, Mars, Venus, Equal } from "lucide-react";
 import { formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
-import { CompareToggle } from "@/components/hostel/CompareToggle";
 
 export interface HostelCardData {
   id: string;
@@ -40,12 +39,9 @@ interface HostelCardProps {
   /** Compact horizontal layout — used in comparison, favorites list */
   compact?: boolean;
   priority?: boolean;
-  compareSelected?: boolean;
-  compareDisabled?: boolean;
-  onToggleCompare?: (e: React.MouseEvent) => void;
 }
 
-export function HostelCard({ hostel, compact = false, priority = false, compareSelected, compareDisabled, onToggleCompare }: HostelCardProps) {
+export function HostelCard({ hostel, compact = false, priority = false }: HostelCardProps) {
   const coverSrc = hostel.coverImage ?? hostel.images[0] ?? null;
   const GenderIcon = GENDER_LABELS[hostel.gender].icon;
   const genderLabel = GENDER_LABELS[hostel.gender].label;
@@ -83,7 +79,7 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
         {/* Details */}
         <div className="min-w-0 flex-1">
           <p className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
-             style={{ fontFamily: "var(--font-heading)" }}>
+>
             {hostel.name}
           </p>
           <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
@@ -127,9 +123,9 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
           className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent"
         />
 
-        {/* Verified badge — top-left */}
+        {/* Verified badge — top-left. Uses success green: trust ≠ brand */}
         {hostel.verified && (
-          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-[var(--color-primary-faint)] px-2 py-0.5 text-[10px] font-[600] text-[var(--color-primary-deep)]">
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-[var(--color-success-bg)] border border-[var(--color-success)/0.15] px-2 py-0.5 text-[10px] font-[600] text-[var(--color-success-text)]">
             <ShieldCheck size={11} strokeWidth={1.5} aria-hidden="true" />
             Verified
           </span>
@@ -148,7 +144,7 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
         {/* Name */}
         <h3
           className="truncate text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] leading-snug"
-          style={{ fontFamily: "var(--font-heading)" }}
+
         >
           {hostel.name}
         </h3>
@@ -183,7 +179,7 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
             <ShieldCheck
               size={13}
               strokeWidth={1.5}
-              className="text-[var(--color-primary)] shrink-0"
+              className="text-[var(--color-success)] shrink-0"
               aria-hidden="true"
             />
             <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
@@ -208,14 +204,6 @@ export function HostelCard({ hostel, compact = false, priority = false, compareS
         </div>
       </div>
     </Link>
-      {onToggleCompare && (
-        <CompareToggle
-          name={hostel.name}
-          isSelected={compareSelected ?? false}
-          isDisabled={compareDisabled ?? false}
-          onToggle={onToggleCompare}
-        />
-      )}
       <ShareButton
         url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"}/hostels/${hostel.slug}`}
         name={hostel.name}

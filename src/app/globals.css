@@ -1,6 +1,89 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-deep: var(--color-primary-deep);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-faint: var(--color-primary-faint);
+  --color-action: var(--color-action);
+  --color-action-dark: var(--color-action-dark);
+  --color-action-pressed: var(--color-action-pressed);
+  --color-action-light: var(--color-action-light);
+
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-sidebar: var(--color-bg-sidebar);
+  --color-bg-raised: var(--color-bg-raised);
+  --color-bg-overlay: var(--color-bg-overlay);
+
+  --color-text-heading: var(--color-text-heading);
+  --color-text-body: var(--color-text-body);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-placeholder: var(--color-text-placeholder);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-text-inverse: var(--color-text-inverse);
+  --color-text-link: var(--color-text-link);
+
+  --color-border-default: var(--color-border-default);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-error: var(--color-error);
+  --color-error-bg: var(--color-error-bg);
+  --color-error-text: var(--color-error-text);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-success-text: var(--color-success-text);
+  --color-warning: var(--color-warning);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-warning-text: var(--color-warning-text);
+  --color-info: var(--color-info);
+  --color-info-bg: var(--color-info-bg);
+  --color-info-text: var(--color-info-text);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-app-xs: var(--shadow-xs);
+  --shadow-app-sm: var(--shadow-sm);
+  --shadow-app-md: var(--shadow-md);
+  --shadow-app-lg: var(--shadow-lg);
+  --shadow-app-xl: var(--shadow-xl);
+}
 
 /* ============================================================
    HostelLo Design System — OKLCH Token Set
@@ -343,6 +426,11 @@
   .bg-raised  { background-color: var(--color-bg-raised); }
   .bg-overlay { background-color: var(--color-bg-overlay); }
 
+  /* Border color utilities */
+  .border-default { border-color: var(--color-border-default); }
+  .border-subtle  { border-color: var(--color-border-subtle); }
+  .border-strong  { border-color: var(--color-border-strong); }
+
   /* Shadow utilities */
   .shadow-app-xs { box-shadow: var(--shadow-xs); }
   .shadow-app-sm { box-shadow: var(--shadow-sm); }
@@ -350,11 +438,11 @@
   .shadow-app-lg { box-shadow: var(--shadow-lg); }
   .shadow-app-xl { box-shadow: var(--shadow-xl); }
 
-  /* Overline text */
+  /* Overline text — min 13px for uppercase legibility */
   .text-overline {
-    font-size: var(--text-caption);
+    font-size: var(--text-body-sm);
     font-weight: 600;
-    letter-spacing: 0.10em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 

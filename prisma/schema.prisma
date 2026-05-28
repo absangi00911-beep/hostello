@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -7,6 +8,25 @@ datasource db {
 }
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum VerificationStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OwnerPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
 
 enum Role {
   STUDENT
@@ -50,6 +70,7 @@ enum NotificationType {
   REVIEW_RECEIVED
   HOSTEL_APPROVED
   HOSTEL_REJECTED
+  PRICE_ALERT
 }
 
 // ─── Models ─────────────────────────────────────────────────────────────────
@@ -66,8 +87,14 @@ model User {
   role          Role      @default(STUDENT)
   bio           String?   @db.Text
   city          String?
-  tokenVersion       Int       @default(0)
-  emailNotifications Boolean   @default(true)
+  tokenVersion            Int                 @default(0)
+  emailNotifications      Boolean             @default(true)
+  studentVerified         Boolean             @default(false)
+  verificationStatus      VerificationStatus  @default(NONE)
+  verificationDocUrl      String?
+  verificationSubmittedAt DateTime?
+  plan                    OwnerPlan           @default(FREE)
+  subscription            Subscription?
 
   accounts      Account[]
   sessions      Session[]
@@ -82,6 +109,8 @@ model User {
   notifications  Notification[]
   deviceTokens   DeviceToken[]
   phoneVerificationTokens PhoneVerificationToken[]
+  roommmatePosts    RoommatePost[]
+  roommateReports  RoommateReport[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +130,21 @@ model DeviceToken {
 
   @@index([userId])
   @@map("device_tokens")
+}
+
+model Subscription {
+  id            String             @id @default(cuid())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String             @unique
+  plan          OwnerPlan
+  status        SubscriptionStatus @default(PENDING)
+  paymentRef    String?
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@map("subscriptions")
 }
 
 model Account {
@@ -207,6 +251,7 @@ model Hostel {
   priceAlerts PriceAlert[]
   notifications Notification[]
   blockedDates BlockedDate[]
+  roommmatePosts  RoommatePost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -477,4 +522,35 @@ model BlockedDate {
 
   @@index([hostelId])
   @@map("blocked_dates")
+}
+
+model RoommatePost {
+  id        String    @id @default(cuid())
+  hostel    Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId  String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  bio       String    @db.Text
+  budget    Int?      // PKR/month, optional
+  moveIn    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  reports   RoommateReport[]
+
+  @@unique([hostelId, userId])
+  @@index([hostelId, expiresAt])
+  @@map("roommate_posts")
+}
+
+model RoommateReport {
+  id         String       @id @default(cuid())
+  post       RoommatePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId     String
+  reporter   User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId String
+  reason     String
+  createdAt  DateTime     @default(now())
+
+  @@unique([postId, reporterId])
+  @@map("roommate_reports")
 }

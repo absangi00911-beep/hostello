@@ -6,7 +6,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section className="space-y-3">
       <h2
         className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
-        style={{ fontFamily: "var(--font-body)" }}
+
       >
         {title}
       </h2>
@@ -31,8 +31,8 @@ export default function PrivacyPage() {
         {/* Header */}
         <div className="mb-10">
           <h1
-            className="text-[var(--text-h1)] font-[700] text-[var(--color-text-heading)] tracking-[-0.025em] mb-3"
-            style={{ fontFamily: "var(--font-heading)" }}
+            className="font-heading text-[var(--text-h1)] font-[700] text-[var(--color-text-heading)] tracking-[-0.025em] mb-3"
+
           >
             Privacy policy
           </h1>

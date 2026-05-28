@@ -77,6 +77,7 @@ const updateSchema = z.object({
     .or(z.literal("")),
   bio:   z.string().max(500).optional(),
   city:  z.string().optional(),
+  avatar: z.string().url("Enter a valid profile photo URL").or(z.literal("")).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -95,20 +96,33 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const data: {
+      name?: string;
+      phone?: string | null;
+      bio?: string;
+      city?: string;
+      avatar?: string | null;
+    } = { ...parsed.data };
+
+    // Empty string clears the phone/avatar; omitted fields are left unchanged.
+    if ("phone" in parsed.data) {
+      data.phone = parsed.data.phone || null;
+    }
+    if ("avatar" in parsed.data) {
+      data.avatar = parsed.data.avatar || null;
+    }
+
     const updated = await db.user.update({
       where: { id: session.user.id },
-      data: {
-        ...parsed.data,
-        // Empty string clears the phone; null means not set.
-        phone: parsed.data.phone || null,
-      },
+      data,
       select: {
-        id:    true,
-        name:  true,
-        email: true,
-        phone: true,
-        bio:   true,
-        city:  true,
+        id:     true,
+        name:   true,
+        email:  true,
+        phone:  true,
+        bio:    true,
+        city:   true,
+        avatar: true,
       },
     });
 

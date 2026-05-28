@@ -55,7 +55,7 @@ export default function AdminSearchSyncPage() {
           <div>
             <h2
               className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
-              style={{ fontFamily: "var(--font-body)" }}
+
             >
               Rebuild search index
             </h2>

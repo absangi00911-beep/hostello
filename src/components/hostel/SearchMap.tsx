@@ -2,10 +2,10 @@
 // Path: src/components/hostel/SearchMap.tsx
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { MapPin, Star, ShieldCheck, AlertCircle } from "lucide-react";
+import { MapPin, AlertCircle } from "lucide-react";
 import { formatPKR } from "@/components/ui/shared";
 import type { HostelCardData } from "./HostelCard";
+import type { Map as LeafletMap, Marker } from "leaflet";
 
 interface SearchMapProps {
   hostels: HostelCardData[];
@@ -84,8 +84,8 @@ function buildPopupHtml(hostel: HostelCardData): string {
 /* ── Component ───────────────────────────────────────────── */
 export function SearchMap({ hostels, city }: SearchMapProps) {
   const mapRef        = useRef<HTMLDivElement>(null);
-  const mapInstance   = useRef<any>(null);
-  const markersRef    = useRef<any[]>([]);
+  const mapInstance   = useRef<LeafletMap | null>(null);
+  const markersRef    = useRef<Marker[]>([]);
   const [error, setError]       = useState(false);
   const [noCoords, setNoCoords] = useState(false);
 
@@ -105,9 +105,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
       try {
         const L = (await import("leaflet")).default;
 
-        // Fix webpack icon paths
-        // @ts-ignore
-        delete L.Icon.Default.prototype._getIconUrl;
+        delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
         const center = getCenter(hostels, city);
         const zoom   = mappable.length > 0 ? (mappable.length === 1 ? 15 : 13) : 12;
@@ -204,10 +202,10 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
   if (error) {
     return (
       <div
-        className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)]"
-        style={{ height: 520, background: "var(--color-bg-sidebar)" }}
+        className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
+        style={{ height: 520 }}
       >
-        <AlertCircle size={24} strokeWidth={1.5} style={{ color: "var(--color-text-muted)" }} aria-hidden="true" />
+        <AlertCircle size={24} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
         <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
           Map could not be loaded
         </p>
@@ -246,10 +244,9 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
       {/* No-coordinates notice overlay */}
       {noCoords && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] pointer-events-none"
-          style={{ background: "rgba(253,248,240,0.82)" }}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] pointer-events-none bg-[oklch(0.98_0.006_65_/_0.85)]"
         >
-          <MapPin size={28} strokeWidth={1.5} style={{ color: "var(--color-text-muted)" }} aria-hidden="true" />
+          <MapPin size={28} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] text-center max-w-[220px]">
             These listings don't have coordinates yet. Switch to list view to browse them.
           </p>

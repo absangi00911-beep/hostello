@@ -2,13 +2,23 @@
 
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { GET } from "@/app/api/bookings/route";
+import { GET, POST } from "@/app/api/bookings/route";
 import { db } from "@/lib/db";
 import * as authConfig from "@/lib/auth/config";
+import { createBooking } from "@/lib/booking-service";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Mock the auth module
 vi.mock("@/lib/auth/config", () => ({
   auth: vi.fn(),
+}));
+
+vi.mock("@/lib/booking-service", () => ({
+  createBooking: vi.fn(),
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: vi.fn(),
 }));
 
 // Mock the database
@@ -51,6 +61,50 @@ function mockRequest(options: {
       user: {
         id: userId,
         role: role || "STUDENT",
+        name: `User ${userId}`,
+        email: `${userId}@example.com`,
+      },
+    });
+  }
+
+  return request;
+}
+
+function mockPostRequest(options: {
+  role?: "STUDENT" | "OWNER" | "ADMIN";
+  userId?: string;
+  body?: Record<string, unknown>;
+  session?: unknown;
+}) {
+  const {
+    role = "STUDENT",
+    userId = "user1",
+    body = {
+      hostelId: "clh7x4xb80000qz0g0g0g0g0g",
+      roomId: "clh7x4xb80001qz0g0g0g0g0g",
+      checkIn: "2030-06-01T00:00:00.000Z",
+      checkOut: "2030-09-01T00:00:00.000Z",
+      guests: 1,
+      paymentMethod: "safepay",
+    },
+    session,
+  } = options;
+
+  const request = new NextRequest("http://localhost:3000/api/bookings", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const mockAuth = vi.mocked(authConfig.auth);
+
+  if (session === null) {
+    mockAuth.mockResolvedValueOnce(null);
+  } else {
+    mockAuth.mockResolvedValueOnce({
+      user: {
+        id: userId,
+        role,
         name: `User ${userId}`,
         email: `${userId}@example.com`,
       },
@@ -283,5 +337,45 @@ describe("GET /api/bookings", () => {
     expect(body.hasMore).toBe(true);
     expect(body.data.length).toBe(2);
     expect(body.total).toBe(5);
+  });
+});
+
+describe("POST /api/bookings", () => {
+  beforeAll(async () => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+  });
+
+  it("rejects owner booking attempts before creating a booking", async () => {
+    vi.mocked(rateLimit).mockResolvedValueOnce({ ok: true, remaining: 9, reset: Date.now() + 1000 });
+    vi.mocked(createBooking).mockResolvedValueOnce(
+      { id: "booking-1" } as unknown as Awaited<ReturnType<typeof createBooking>>,
+    );
+
+    const res = await POST(mockPostRequest({ role: "OWNER", userId: "owner-1" }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe("Only students can book hostels.");
+    expect(rateLimit).not.toHaveBeenCalled();
+    expect(createBooking).not.toHaveBeenCalled();
+  });
+
+  it("rejects admin booking attempts before creating a booking", async () => {
+    vi.mocked(rateLimit).mockResolvedValueOnce({ ok: true, remaining: 9, reset: Date.now() + 1000 });
+    vi.mocked(createBooking).mockResolvedValueOnce(
+      { id: "booking-1" } as unknown as Awaited<ReturnType<typeof createBooking>>,
+    );
+
+    const res = await POST(mockPostRequest({ role: "ADMIN", userId: "admin-1" }));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.error).toBe("Only students can book hostels.");
+    expect(rateLimit).not.toHaveBeenCalled();
+    expect(createBooking).not.toHaveBeenCalled();
   });
 });

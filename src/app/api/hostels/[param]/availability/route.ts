@@ -25,7 +25,6 @@ export async function GET(
     const windowStart = startOfMonth(months[0]);
     const windowEnd = endOfMonth(months[11]);
 
-    // Fetch bookings AND blocked dates in parallel
     const [bookings, blockedRanges] = await Promise.all([
       db.booking.findMany({
         where: {
@@ -53,9 +52,8 @@ export async function GET(
       });
 
       const dailyOccupancy = days.map((day) => {
-        // If the owner has blocked this day, treat it as fully occupied
         const isBlocked = blockedRanges.some(
-          (b) => b.startDate <= day && b.endDate >= day
+          (blocked) => blocked.startDate <= day && blocked.endDate >= day
         );
         if (isBlocked) return hostel.capacity;
 

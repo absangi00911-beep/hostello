@@ -1,329 +1,82 @@
-// Path: src/app/api/hostels/[param]/route.ts
+// Path: src/app/api/hostels/[param]/availability/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
-import { rulesSchema } from "@/lib/validations";
-import { getRequiredEnv, getOptionalEnv } from "@/lib/env-validation";
-import { z } from "zod";
-
-const updateSchema = z.object({
-  name: z.string().min(3).max(100).optional(),
-  description: z.string().min(50).max(2000).optional(),
-  city: z.string().optional(),
-  area: z.string().optional(),
-  address: z.string().min(10).optional(),
-  pricePerMonth: z.number().min(1000).max(100000).optional(),
-  rooms: z.number().int().min(1).optional(),
-  capacity: z.number().int().min(1).optional(),
-  gender: z.enum(["MALE", "FEMALE", "MIXED"]).optional(),
-  minStay: z.number().int().min(1).optional(),
-  maxStay: z.number().int().optional(),
-  amenities: z.array(z.string()).optional(),
-  rules: rulesSchema.optional(),
-  images: z.array(z.string().url()).optional(),
-  coverImage: z.string().url().optional(),
-  status: z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
-});
-
-function getAllowedImageOrigins(): string[] {
-  const origins: string[] = [];
-
-  // In production, R2_PUBLIC_URL is required for the image allowlist to function.
-  // getRequiredEnv will throw with a clear error message if it's missing.
-  if (process.env.NODE_ENV === "production") {
-    const r2PublicUrl = getRequiredEnv(
-      "R2_PUBLIC_URL",
-      "image allowlist initialization"
-    );
-    origins.push(r2PublicUrl.replace(/\/+$/, ""));
-  } else {
-    // In development, R2_PUBLIC_URL is optional.
-    // If not set, we allow Unsplash for testing.
-    const r2PublicUrl = getOptionalEnv("R2_PUBLIC_URL");
-    if (r2PublicUrl) {
-      origins.push(r2PublicUrl.replace(/\/+$/, ""));
-    }
-    // Always allow Unsplash in development for testing
-    origins.push("https://images.unsplash.com");
-  }
-
-  return origins;
-}
-
-function isImageUrlAllowed(url: string): boolean {
-  const allowed = getAllowedImageOrigins();
-
-  // This should never happen because getAllowedImageOrigins throws in production
-  // if R2_PUBLIC_URL is missing. But keep the check as a defensive measure.
-  if (allowed.length === 0) {
-    console.error(
-      "[security] Image allowlist is empty — check R2_PUBLIC_URL configuration"
-    );
-    return false;
-  }
-
-  return allowed.some((o) => url.startsWith(o + "/") || url === o);
-}
-
-// -- R2 cleanup -------------------------------------------------------------
-
-/**
- * Deletes R2 objects for images that were removed from a listing.
- * Fire-and-forget — a failure here is logged but never surfaces to the user.
- * Non-R2 URLs (Unsplash, etc.) are silently skipped.
- */
-async function purgeOrphanedImages(
-  previousUrls: string[],
-  updatedUrls: string[],
-): Promise<void> {
-  const removed = previousUrls.filter((url) => !updatedUrls.includes(url));
-  if (removed.length === 0) return;
-
-  const publicUrl = process.env.R2_PUBLIC_URL;
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKey = process.env.R2_ACCESS_KEY_ID;
-  const secretKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.R2_BUCKET_NAME;
-
-  if (!publicUrl || !accountId || !accessKey || !secretKey || !bucket) return;
-
-  const base = publicUrl.replace(/\/+$/, "");
-  const r2Keys = removed
-    .filter((url) => url.startsWith(base))
-    .map((url) => url.slice(base.length + 1));
-
-  if (r2Keys.length === 0) return;
-
-  try {
-    const { S3Client, DeleteObjectsCommand } = await import("@aws-sdk/client-s3");
-
-    const client = new S3Client({
-      region: "auto",
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
-    });
-
-    await client.send(
-      new DeleteObjectsCommand({
-        Bucket: bucket,
-        Delete: { Objects: r2Keys.map((Key) => ({ Key })) },
-      }),
-    );
-  } catch (err) {
-    // Non-critical — orphaned objects are a storage cost concern, not a
-    // data-integrity concern. Log and continue.
-    console.error("[R2] Failed to delete orphaned images:", err);
-  }
-}
-
-// NOTE: 'param' can be either an ID (CUID) or a slug.
-// We attempt lookup by ID first (if CUID-like), otherwise fallback to slug.
-async function findHostel(param: string) {
-  const isId = param.startsWith("c"); // Simple check, CUIDs start with 'c'
-  return await db.hostel.findFirst({
-    where: { [isId ? "id" : "slug"]: param },
-  });
-}
-
-export const runtime = 'nodejs';
-
-// -- Route handlers ---------------------------------------------------------
+import { startOfMonth, endOfMonth, addMonths, eachDayOfInterval } from "date-fns";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ param: string }> },
+  { params }: { params: Promise<{ param: string }> }
 ) {
   try {
     const { param } = await params;
 
-    const hostel = await db.hostel.findFirst({
-      where: { OR: [{ id: param }, { slug: param }] },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            createdAt: true,
-            _count: { select: { hostels: true } },
-          },
-        },
-        reviews: {
-          orderBy: { createdAt: "desc" },
-          take: 10,
-          include: {
-            user: { select: { id: true, name: true, avatar: true } },
-          },
-        },
-        rooms_rel: { orderBy: { pricePerMonth: "asc" } },
-        _count: { select: { favorites: true } },
-      },
-    });
-
-    if (!hostel) {
-      return NextResponse.json({ error: "Hostel not found" }, { status: 404 });
-    }
-
-    db.hostel
-      .update({ where: { id: hostel.id }, data: { viewCount: { increment: 1 } } })
-      .catch(() => {});
-
-    return NextResponse.json({ data: hostel });
-  } catch (err) {
-    console.error("[GET /api/hostels/[param]]", err);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
-  }
-}
-
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ param: string }> },
-) {
-  try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { param } = await params;
-
-    const hostel = await db.hostel.findFirst({
-      where: { OR: [{ id: param }, { slug: param }] },
-      select: { id: true, ownerId: true, images: true, status: true },
+    const hostel = await db.hostel.findUnique({
+      where: { slug: param },
+      select: { id: true, capacity: true },
     });
 
     if (!hostel) {
       return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
     }
-    if (hostel.ownerId !== session.user.id && session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "You don't own this hostel." },
-        { status: 403 },
-      );
-    }
 
-    const body = await req.json();
-    const parsed = updateSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed.", details: parsed.error.flatten() },
-        { status: 400 },
-      );
-    }
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, i) => addMonths(now, i));
 
-    const data = parsed.data;
+    const windowStart = startOfMonth(months[0]);
+    const windowEnd = endOfMonth(months[11]);
 
-    if (data.images) {
-      for (const imageUrl of data.images) {
-        if (!isImageUrlAllowed(imageUrl)) {
-          return NextResponse.json(
-            { error: "Image URLs must be from the authorised image storage." },
-            { status: 400 },
-          );
-        }
-      }
-    }
-    if (data.coverImage && !isImageUrlAllowed(data.coverImage)) {
-      return NextResponse.json(
-        { error: "Cover image URL must be from the authorised image storage." },
-        { status: 400 },
-      );
-    }
-
-    if (data.status === "PENDING_REVIEW") {
-      const effectiveImages = data.images ?? (hostel.images as string[]);
-      if (effectiveImages.length === 0) {
-        return NextResponse.json(
-          { error: "Add at least one photo before submitting for review." },
-          { status: 400 },
-        );
-      }
-    }
-
-    const updated = await db.hostel.update({
-      where: { id: hostel.id },
-      data,
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        status: true,
-        images: true,
-        coverImage: true,
-      },
-    });
-
-    // Sync to Typesense if hostel is ACTIVE
-    // Fire-and-forget to not block response
-    if (updated.status === "ACTIVE") {
-      void indexSingleHostel(updated.id).catch((err) =>
-        console.error(`[typesense] Failed to sync hostel ${updated.id}:`, err)
-      );
-    }
-
-    // Purge images removed from the listing.
-    // Fire-and-forget — the DB is already consistent; R2 cleanup is best-effort.
-    if (data.images) {
-      void purgeOrphanedImages(hostel.images as string[], data.images);
-    }
-
-    return NextResponse.json({ data: updated });
-  } catch (err) {
-    console.error("[PATCH /api/hostels/[param]]", err);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
-  }
-}
-
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ param: string }> },
-) {
-  try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { param } = await params;
-
-    const hostel = await db.hostel.findFirst({
-      where: { OR: [{ id: param }, { slug: param }] },
-      select: { id: true, ownerId: true, status: true },
-    });
-
-    if (!hostel) {
-      return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
-    }
-    if (hostel.ownerId !== session.user.id && session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "You don't own this hostel." },
-        { status: 403 },
-      );
-    }
-
-    await db.$transaction([
-      db.hostel.update({
-        where: { id: hostel.id },
-        data: { status: "SUSPENDED" },
-      }),
-      db.booking.updateMany({
+    const [bookings, blockedRanges] = await Promise.all([
+      db.booking.findMany({
         where: {
           hostelId: hostel.id,
           status: { in: ["PENDING", "CONFIRMED"] },
+          checkIn: { lte: windowEnd },
+          checkOut: { gte: windowStart },
         },
-        data: { status: "CANCELLED" },
+        select: { checkIn: true, checkOut: true, guests: true },
+      }),
+      db.blockedDate.findMany({
+        where: {
+          hostelId: hostel.id,
+          startDate: { lte: windowEnd },
+          endDate: { gte: windowStart },
+        },
+        select: { startDate: true, endDate: true },
       }),
     ]);
 
-    // Remove from Typesense index
-    void removeHostelIndex(hostel.id).catch((err) =>
-      console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err)
-    );
+    const calendar = months.map((month) => {
+      const days = eachDayOfInterval({
+        start: startOfMonth(month),
+        end: endOfMonth(month),
+      });
 
-    return NextResponse.json({ message: "Hostel removed from listings." });
+      const dailyOccupancy = days.map((day) => {
+        const isBlocked = blockedRanges.some(
+          (blocked) => blocked.startDate <= day && blocked.endDate >= day
+        );
+        if (isBlocked) return hostel.capacity;
+
+        const occupied = bookings
+          .filter((b) => b.checkIn <= day && b.checkOut > day)
+          .reduce((sum, b) => sum + b.guests, 0);
+        return Math.min(occupied, hostel.capacity);
+      });
+
+      const avgOccupied =
+        dailyOccupancy.reduce((a, b) => a + b, 0) / dailyOccupancy.length;
+      const rate = hostel.capacity > 0 ? avgOccupied / hostel.capacity : 0;
+
+      return {
+        month: month.toISOString().slice(0, 7),
+        occupancyRate: Math.round(rate * 100),
+        available: hostel.capacity - Math.round(avgOccupied),
+      };
+    });
+
+    return NextResponse.json({ data: calendar });
   } catch (err) {
-    console.error("[DELETE /api/hostels/[param]]", err);
+    console.error("[GET /api/hostels/[param]/availability]", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -17,6 +17,11 @@ import { rateLimit } from "@/lib/rate-limit";
 
 const MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
+type MobileJwtPayload = {
+  id?: unknown;
+  tokenVersion?: unknown;
+};
+
 export async function POST(req: NextRequest) {
   try {
     // -- 1. Extract bearer token --------------------------------------------
@@ -55,14 +60,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    if (!decoded?.id || typeof decoded.tokenVersion !== "number") {
+    const tokenPayload = decoded as MobileJwtPayload | null;
+    if (!tokenPayload?.id || typeof tokenPayload.tokenVersion !== "number") {
       return NextResponse.json(
         { error: "Invalid token payload" },
         { status: 401 }
       );
     }
 
-    const userId = decoded.id as string;
+    const userId = tokenPayload.id as string;
 
     // -- 3. Rate limit per user, not per IP ---------------------------------
     const rl = await rateLimit(`refresh:${userId}`, {
@@ -98,7 +104,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
-    if (user.tokenVersion !== (decoded.tokenVersion as number)) {
+    if (user.tokenVersion !== tokenPayload.tokenVersion) {
       return NextResponse.json(
         { error: "Token has been revoked" },
         { status: 401 }

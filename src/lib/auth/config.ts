@@ -129,6 +129,13 @@ const googleProvider =
 
 // -- NextAuth config --------------------------------------------------------
 
+if (!process.env.AUTH_SECRET) {
+  throw new Error(
+    "CRITICAL: AUTH_SECRET environment variable is not set. " +
+    "NextAuth v5 requires this for JWT signing and CSRF protection."
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // PrismaAdapter persists OAuth accounts and links them to users in the DB.
   // It does NOT change the session strategy — we stay on JWT.
@@ -136,6 +143,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // sign-ins bypass it (the authorize callback handles those directly).
   adapter: PrismaAdapter(db),
 
+  secret: process.env.AUTH_SECRET,
+  basePath: "/api/auth",
   session: { strategy: "jwt" },
   trustHost: true,
 

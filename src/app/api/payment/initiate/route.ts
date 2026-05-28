@@ -116,13 +116,9 @@ export async function POST(req: NextRequest) {
       customerEmail: booking.user.email,
       customerName:  booking.user.name,
       appUrl,
-      // For mobile, redirect to the custom app scheme so that
-    // expo-web-browser's openAuthSessionAsync can intercept the return URL
-    // and close the in-app browser automatically.  A plain https:// redirect
-    // would land in the system browser and strand the user outside the app.
-    ...(isMobile && {
+      ...(isMobile && {
         redirectPath: `hostello://payment/return?bookingId=${booking.id}&status=paid`,
-        cancelPath:   `hostello://payment/return?bookingId=${booking.id}&status=cancelled`,
+        cancelPath: `hostello://payment/return?bookingId=${booking.id}&status=cancelled`,
       }),
     });
 

@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { ListingFormWizard } from "@/components/owner/ListingFormWizard";
-import { BlockedDatesManager } from "@/components/owner/BlockedDatesManager";
 import type { Metadata } from "next";
 
 async function getHostel(id: string) {
@@ -85,8 +84,8 @@ export default async function EditListingPage({
     <div className="py-2">
       <div className="mb-8">
         <h1
-          className="text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
-          style={{ fontFamily: "var(--font-heading)" }}
+          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+
         >
           Edit listing
         </h1>
@@ -121,7 +120,6 @@ export default async function EditListingPage({
         hostelId={hostel.id}
         initialData={initialData}
       />
-      <BlockedDatesManager hostelId={hostel.id} />
     </div>
   );
 }

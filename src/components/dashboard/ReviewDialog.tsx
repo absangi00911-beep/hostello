@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { inputCls } from "@/components/auth/AuthCardLayout";
+import { inputCls } from "@/components/ui/input";
 
 interface ReviewDialogProps {
   hostelId: string;
@@ -125,7 +125,7 @@ export function ReviewDialog({
         <DialogHeader className="mb-5">
           <DialogTitle
             className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] text-left"
-            style={{ fontFamily: "var(--font-body)" }}
+
           >
             Review {hostelName}
           </DialogTitle>

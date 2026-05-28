@@ -214,21 +214,24 @@ type BadgeVariant =
   | "mixed";
 
 const BADGE_STYLES: Record<BadgeVariant, string> = {
-  pending:        "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
-  confirmed:      "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  cancelled:      "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  completed:      "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  active:         "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  draft:          "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)]",
-  pending_review: "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
-  suspended:      "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  paid:           "bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
-  refunded:       "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  failed:         "bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
-  verified:       "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]",
-  male:           "bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
-  female:         "bg-[oklch(0.97_0.02_340)] text-[oklch(0.45_0.12_340)]",
-  mixed:          "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)]",
+  // Semantic — map directly to design system palette
+  pending:        "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
+  confirmed:      "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  cancelled:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  completed:      "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
+  active:         "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  draft:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
+  pending_review: "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
+  suspended:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  paid:           "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  refunded:       "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
+  failed:         "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  // Trust signal — success green, NOT amber (amber is brand/price only)
+  verified:       "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  // Gender — neutral info, muted, sidebar tones
+  male:           "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.15]     text-[var(--color-info-text)]",
+  female:         "bg-[oklch(0.97_0.02_340)]     border border-[oklch(0.72_0.12_340/0.2)]   text-[oklch(0.45_0.12_340)]",
+  mixed:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
 };
 
 const BADGE_LABELS: Record<BadgeVariant, string> = {

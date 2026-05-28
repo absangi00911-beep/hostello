@@ -95,7 +95,7 @@ export function BookingSummaryCard({
         <div className="min-w-0 flex-1">
           <p
             className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
-            style={{ fontFamily: "var(--font-heading)" }}
+
           >
             {hostel.name}
           </p>
