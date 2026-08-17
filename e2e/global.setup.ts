@@ -9,10 +9,14 @@
 //   DATABASE_URL must point at a test DB (not production).
 //   bcryptjs must be a dependency (it already is — used by the auth routes).
 
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
+import { createE2EDb } from "./db";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const STATE_FILE = path.join(__dirname, ".test-state.json");
 export const TEST_PASSWORD = "E2eTestPwd123!";
@@ -22,7 +26,7 @@ const STUDENT_EMAIL = "e2e-student@hostello.test";
 const HOSTEL_SLUG   = "e2e-test-hostel";
 
 async function globalSetup() {
-  const db = new PrismaClient();
+  const db = createE2EDb();
 
   try {
     // Guard: refuse to run against a production-looking DB.

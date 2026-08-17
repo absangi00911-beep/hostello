@@ -13,16 +13,26 @@ import { router } from 'expo-router';
 import { colors, fontSize, fontWeight, radius, spacing } from '../../../src/theme';
 import { apiRequest } from '../../../src/services/api';
 
+interface HostelSummary {
+  id: string;
+  name: string;
+  slug: string;
+  city: string;
+  pricePerMonth: number;
+  coverImage?: string | null;
+}
+
 export default function HostelListScreen() {
-  const [hostels, setHostels] = useState<any[]>([]);
+  const [hostels, setHostels] = useState<HostelSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [city, setCity] = useState('');
 
   const fetchHostels = async (filterCity = '') => {
     setLoading(true);
     try {
-      const query = filterCity ? `?city=${filterCity}` : '';
-      const data = await apiRequest<any[]>(`/hostels${query}`);
+      const trimmedCity = filterCity.trim();
+      const query = trimmedCity ? `?city=${encodeURIComponent(trimmedCity)}` : '';
+      const data = await apiRequest<HostelSummary[]>(`/hostels${query}`);
       setHostels(data);
     } catch (err) {
       console.error(err);
@@ -61,7 +71,11 @@ export default function HostelListScreen() {
               }
             >
               {item.coverImage && (
-                <Image source={{ uri: item.coverImage }} style={styles.image} />
+                <Image
+                  source={{ uri: item.coverImage }}
+                  style={styles.image}
+                  alt={`${item.name} hostel photo`}
+                />
               )}
               <Text style={styles.name}>{item.name}</Text>
               <Text>

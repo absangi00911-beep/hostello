@@ -4,6 +4,8 @@
 import { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 
+type LeafletMap = import("leaflet").Map;
+
 interface HostelMapProps {
   latitude: number;
   longitude: number;
@@ -13,7 +15,7 @@ interface HostelMapProps {
 
 export function HostelMap({ latitude, longitude, hostelName, address }: HostelMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -24,7 +26,7 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
         const L = (await import("leaflet")).default;
 
         // Fix default icon paths broken by webpack
-        // @ts-ignore
+        // @ts-expect-error Leaflet keeps this private helper on the default icon prototype.
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -45,12 +47,12 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
           maxZoom: 19,
         }).addTo(map);
 
-        // Amber-styled marker using a custom div icon
-        const amberIcon = L.divIcon({
+        // Coral-styled marker using a custom div icon
+        const brandIcon = L.divIcon({
           html: `
             <div style="
               width: 28px; height: 28px;
-              background: oklch(0.62 0.17 65);
+              background: var(--color-primary);
               border: 3px solid white;
               border-radius: 50% 50% 50% 0;
               transform: rotate(-45deg);
@@ -63,7 +65,7 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
           popupAnchor: [0, -32],
         });
 
-        L.marker([latitude, longitude], { icon: amberIcon })
+        L.marker([latitude, longitude], { icon: brandIcon })
           .addTo(map)
           .bindPopup(
             `<strong style="font-family:sans-serif;font-size:13px">${hostelName}</strong><br/><span style="font-size:12px;color:#666">${address}</span>`,

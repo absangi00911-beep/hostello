@@ -63,7 +63,11 @@ function FavoriteCard({ hostel }: { hostel: FavoriteHostel }) {
       accessibilityLabel={`View ${hostel.name} in ${hostel.city}`}
     >
       {hostel.coverImage ? (
-        <Image source={{ uri: hostel.coverImage }} style={styles.cardImage} />
+        <Image
+          source={{ uri: hostel.coverImage }}
+          style={styles.cardImage}
+          alt={`${hostel.name} hostel photo`}
+        />
       ) : (
         <View style={[styles.cardImage, styles.cardImagePlaceholder]} />
       )}
@@ -170,7 +174,7 @@ export default function FavoritesScreen() {
         </View>
         <View style={styles.emptyState}>
           <View style={styles.iconRing}>
-            <Ionicons name="heart-outline" size={38} color={colors.primaryDeep} aria-hidden="true" />
+            <Ionicons name="heart-outline" size={38} color={colors.primaryDeep} aria-hidden={true} />
           </View>
           <View style={styles.textBlock}>
             <Text style={styles.emptyTitle}>Nothing saved yet</Text>

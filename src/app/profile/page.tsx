@@ -4,10 +4,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  User, Shield, Bell, AlertTriangle,
+  User, Shield, AlertTriangle,
   Eye, EyeOff, Loader2, ShieldCheck,
   CheckCircle2, Upload,
 } from "lucide-react";
@@ -418,7 +418,7 @@ function MiniNav({ active }: { active: string }) {
 export default function ProfileSettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState("personal");
+  const [activeSection] = useState("personal");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login?callbackUrl=/profile/settings");

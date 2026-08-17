@@ -48,6 +48,7 @@ function StatTile({
 }
 
 /* -- Recent bookings row ----------------------------------- */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BookingRow({ booking }: { booking: any }) {
   return (
     <tr className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]">

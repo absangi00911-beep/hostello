@@ -35,7 +35,7 @@ function PlanCard({
   return (
     <div className={`relative flex flex-col rounded-[var(--radius-xl)] border p-6 transition-shadow
       ${active
-        ? "border-[var(--color-primary)] shadow-[0_0_0_3px_oklch(0.62_0.17_65_/_0.15)]"
+        ? "border-[var(--color-primary)] shadow-[0_0_0_3px_#ae2f3426]"
         : "border-[var(--color-border-subtle)]"}`}>
 
       {isPro && (

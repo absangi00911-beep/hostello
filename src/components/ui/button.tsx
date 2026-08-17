@@ -19,12 +19,12 @@ const buttonVariants = cva(
         // Subtle secondary — supporting actions alongside a primary
         secondary:
           "bg-[var(--color-bg-sidebar)] text-[var(--color-text-body)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)] active:scale-[0.97] focus-visible:outline-[var(--color-primary)]",
-        // Tertiary — low-emphasis, no fill
+        // Tertiary / "Secondary" per design spec — transparent, 2px Deep Navy border + text
         outline:
-          "bg-transparent text-[var(--color-text-body)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)] active:scale-[0.97] focus-visible:outline-[var(--color-primary)]",
-        // Ghost — icon buttons, nav links
+          "bg-transparent text-[var(--color-secondary-brand)] border-2 border-[var(--color-secondary-brand)] rounded-[var(--radius-md)] hover:bg-[var(--color-secondary-brand)]/8 active:scale-[0.97] focus-visible:outline-[var(--color-primary)]",
+        // Ghost — icon buttons, nav links. Spec: "Deep Navy text, no background"
         ghost:
-          "bg-transparent text-[var(--color-text-muted)] rounded-[var(--radius-md)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)] focus-visible:outline-[var(--color-primary)]",
+          "bg-transparent text-[var(--color-secondary-brand)] rounded-[var(--radius-md)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)] focus-visible:outline-[var(--color-primary)]",
         // Destructive — irreversible actions only (delete, cancel)
         destructive:
           "bg-[var(--color-error)] text-[var(--color-text-inverse)] rounded-[var(--radius-md)] hover:bg-[oklch(0.45_0.16_22)] active:bg-[oklch(0.40_0.15_22)] active:scale-[0.97] focus-visible:outline-[var(--color-error)] shadow-[var(--shadow-xs)]",
@@ -33,7 +33,7 @@ const buttonVariants = cva(
           "bg-transparent text-[var(--color-text-link)] underline-offset-4 hover:underline focus-visible:outline-[var(--color-primary)] p-0 h-auto",
       },
       size: {
-        default: "h-10 px-4 text-[var(--text-body-sm)] [&_svg]:size-4",
+        default: "h-10 px-6 text-[var(--text-body-sm)] [&_svg]:size-4",
         sm:      "h-8  px-3 text-[var(--text-caption)]  [&_svg]:size-3.5",
         lg:      "h-11 px-6 text-[var(--text-body)]      [&_svg]:size-4",
         icon:    "h-9  w-9                                [&_svg]:size-4",
@@ -66,13 +66,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading ? "true" : undefined}
         {...props}
       >
-        {loading && (
-          <Loader2
-            className="animate-spin"
-            aria-hidden="true"
-          />
+        {asChild ? (
+          // Slot requires exactly one element child — no extra siblings,
+          // even falsy ones. The consumer's own child renders as-is.
+          children
+        ) : (
+          <>
+            {loading && (
+              <Loader2
+                className="animate-spin"
+                aria-hidden="true"
+              />
+            )}
+            {children}
+          </>
         )}
-        {children}
       </Comp>
     )
   }

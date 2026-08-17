@@ -186,7 +186,6 @@ describe("verifyCsrfOrigin", () => {
 
 describe("rateLimit — in-memory path (no Redis env vars)", () => {
   let rateLimit: typeof import("./rate-limit").rateLimit;
-  let getIp:     typeof import("./rate-limit").getIp;
 
   beforeEach(async () => {
     // Remove Redis env vars so the module takes the in-memory path
@@ -199,7 +198,6 @@ describe("rateLimit — in-memory path (no Redis env vars)", () => {
     vi.resetModules();
     const mod = await import("./rate-limit");
     rateLimit  = mod.rateLimit;
-    getIp      = mod.getIp;
   });
 
   afterEach(() => {

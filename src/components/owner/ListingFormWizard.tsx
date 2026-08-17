@@ -3,6 +3,8 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
   ChevronLeft,
@@ -11,10 +13,13 @@ import {
   X,
   Upload,
   Loader2,
-  Image as ImageIcon,
+  Check,
 } from "lucide-react";
 import { CITIES, AMENITIES } from "@hostello/shared";
 import { inputCls } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ListingLocationPicker } from "./ListingLocationPicker";
+import { ListingLivePreview } from "./ListingLivePreview";
 
 /* -- Types ------------------------------------------------- */
 export interface ListingFormData {
@@ -47,24 +52,59 @@ const DEFAULT_FORM: ListingFormData = {
 
 const AMENITY_PRESETS = AMENITIES.map((a) => a.label);
 
+const RULE_PRESETS = [
+  "No smoking indoors",
+  "No overnight guests",
+  "No loud music after 10pm",
+  "Curfew after 11pm",
+  "No outside visitors in rooms",
+];
+
 /* -- Step indicator ---------------------------------------- */
 const STEPS = ["Basic info","Location","Amenities","Photos","Rules","Review"];
 
 function StepProgress({ step }: { step: number }) {
-  const pct = Math.round((step / STEPS.length) * 100);
   return (
-    <div className="mb-8">
-      <div className="h-1 w-full rounded-full bg-[var(--color-border-subtle)] mb-3">
-        <div
-          className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-[var(--transition-slow)]"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-        Step {step} of {STEPS.length} —{" "}
-        <span className="font-[500] text-[var(--color-text-body)]">{STEPS[step - 1]}</span>
-      </p>
-    </div>
+    <ol className="mb-8 flex items-start">
+      {STEPS.map((label, i) => {
+        const stepNum = i + 1;
+        const isComplete = stepNum < step;
+        const isActive = stepNum === step;
+        const isLast = i === STEPS.length - 1;
+        return (
+          <li key={label} className={`flex items-center ${isLast ? "" : "flex-1"}`}>
+            <div className="flex flex-col items-center gap-1.5">
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-[700] transition-colors duration-[var(--transition-base)] ${
+                  isComplete
+                    ? "bg-[var(--color-primary)] text-white"
+                    : isActive
+                    ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary-faint)]"
+                    : "bg-[var(--color-bg-overlay)] text-[var(--color-text-muted)]"
+                }`}
+              >
+                {isComplete ? <Check size={15} strokeWidth={2.5} aria-hidden="true" /> : stepNum}
+              </div>
+              <span
+                className={`hidden text-center text-[var(--text-caption)] font-[500] sm:block ${
+                  isActive ? "text-[var(--color-text-heading)]" : "text-[var(--color-text-muted)]"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+            {!isLast && (
+              <div
+                className={`mx-2 h-0.5 flex-1 rounded-full transition-colors duration-[var(--transition-base)] ${
+                  isComplete ? "bg-[var(--color-primary)]" : "bg-[var(--color-border-subtle)]"
+                }`}
+                aria-hidden="true"
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -264,6 +304,7 @@ interface ListingFormWizardProps {
 
 export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWizardProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<ListingFormData>({ ...DEFAULT_FORM, ...initialData });
   const [submitting, setSubmitting] = useState(false);
@@ -322,12 +363,16 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         return;
       }
 
-      toast.success(
-        mode === "create"
-          ? "Listing submitted for review!"
-          : "Listing updated and submitted for review."
-      );
-      router.push("/owner/listings");
+      if (mode === "create") {
+        const createdSlug: string | undefined = json?.data?.slug ?? json?.slug ?? undefined;
+        const params = new URLSearchParams();
+        if (createdSlug) params.set("slug", createdSlug);
+        if (form.name.trim()) params.set("name", form.name.trim());
+        router.push(`/owner/listings/success${params.toString() ? `?${params.toString()}` : ""}`);
+      } else {
+        toast.success("Listing updated and submitted for review.");
+        router.push("/owner/listings");
+      }
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -335,12 +380,29 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
     }
   }
 
-  const sectionCls = "space-y-5";
+  const sectionCls = "space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-8";
   const headingCls = "text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-5";
 
   return (
-    <div className="mx-auto max-w-[640px]">
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-5 flex items-center justify-between">
+        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] sm:hidden">
+          Step {step} of {STEPS.length} — <span className="font-[500] text-[var(--color-text-body)]">{STEPS[step - 1]}</span>
+        </p>
+        <div className="hidden sm:block" />
+        <Link
+          href="/owner/listings"
+          className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:text-[var(--color-text-body)]"
+        >
+          <X size={15} strokeWidth={2} aria-hidden="true" />
+          Exit
+        </Link>
+      </div>
+
       <StepProgress step={step} />
+
+      <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+        <div className="max-w-[640px]">
 
       {/* -- Step 1: Basic info ----------------------- */}
       {step === 1 && (
@@ -419,20 +481,31 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 2: Location ------------------------- */}
       {step === 2 && (
         <div className={sectionCls}>
-          <h2 className={headingCls}>Location coordinates <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
+          <h2 className={headingCls}>Pin your location <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] -mt-2">
-            Adding coordinates shows your hostel on the map. Find them by searching your address on Google Maps and copying the coordinates from the URL.
+            Pinning your hostel helps students judge the commute to their university before they book.
           </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label htmlFor="lat" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Latitude</label>
-              <input id="lat" type="number" step="any" value={form.latitude} onChange={(e) => update("latitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 31.5204" className={inputCls} />
+          <ListingLocationPicker
+            latitude={form.latitude}
+            longitude={form.longitude}
+            onChange={(lat, lng) => { update("latitude", lat); update("longitude", lng); }}
+          />
+          <details className="group">
+            <summary className="flex list-none items-center gap-1 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-body)] cursor-pointer">
+              <ChevronRight size={14} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-open:rotate-90" aria-hidden="true" />
+              Enter coordinates manually instead
+            </summary>
+            <div className="mt-3 grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="lat" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Latitude</label>
+                <input id="lat" type="number" step="any" value={form.latitude} onChange={(e) => update("latitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 31.5204" className={inputCls} />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="lng" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Longitude</label>
+                <input id="lng" type="number" step="any" value={form.longitude} onChange={(e) => update("longitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 74.3587" className={inputCls} />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label htmlFor="lng" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Longitude</label>
-              <input id="lng" type="number" step="any" value={form.longitude} onChange={(e) => update("longitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 74.3587" className={inputCls} />
-            </div>
-          </div>
+          </details>
         </div>
       )}
 
@@ -465,7 +538,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {step === 5 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>House rules</h2>
-          <TagInput label="Rules students must follow" values={form.rules} onChange={(v) => update("rules", v)} placeholder="e.g. No guests after 10pm" />
+          <TagInput label="Rules students must follow" values={form.rules} onChange={(v) => update("rules", v)} placeholder="Type a custom rule and press Enter" presets={RULE_PRESETS} />
         </div>
       )}
 
@@ -492,7 +565,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
           </div>
 
           {form.images.length === 0 && (
-            <div className="rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-[oklch(0.68_0.15_72_/_0.25)] px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
+            <div className="rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-[var(--color-warning)]/25 px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
               ⚠ Add at least one photo before submitting.
             </div>
           )}
@@ -506,34 +579,38 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Navigation buttons ----------------------- */}
       <div className="flex gap-3 mt-8 pt-6 border-t border-[var(--color-border-subtle)]">
         {step > 1 && (
-          <button
-            type="button" onClick={back}
-            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-          >
+          <Button type="button" variant="outline" onClick={back}>
             <ChevronLeft size={16} strokeWidth={1.5} aria-hidden="true" />
             Back
-          </button>
+          </Button>
         )}
         <div className="flex-1" />
         {step < STEPS.length ? (
-          <button
-            type="button" onClick={next}
-            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-          >
+          <Button type="button" onClick={next}>
             Continue
             <ChevronRight size={16} strokeWidth={1.5} aria-hidden="true" />
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             type="button"
             onClick={handleSubmit}
             disabled={submitting || form.images.length === 0}
-            className="inline-flex items-center gap-2 h-10 px-6 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={submitting}
           >
-            {submitting && <Loader2 size={15} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
-            {submitting ? "Submitting…" : mode === "create" ? "Submit for review" : "Save changes"}
-          </button>
+            {mode === "create" ? "Submit for review" : "Save changes"}
+          </Button>
         )}
+      </div>
+        </div>
+
+        {/* Live preview — updates as the form fills in, hidden below lg since there's no room for it */}
+        <div className="hidden lg:block">
+          <ListingLivePreview
+            form={form}
+            ownerName={session?.user?.name ?? "You"}
+            ownerAvatar={session?.user?.image}
+          />
+        </div>
       </div>
     </div>
   );

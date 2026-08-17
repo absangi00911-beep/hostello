@@ -2,6 +2,8 @@
 
 Date: 2026-05-24
 
+Current status: Phase 1 of this optimization has been implemented in the current repo as of the June 1, 2026 audit. This spec remains the broader design reference; see `docs/superpowers/plans/2026-05-24-hostello-web-ui-ux-phase-1.md` for the implemented slice and `WEB_APP_PROGRESS.md` for current project status.
+
 ## Purpose
 
 HostelLo should be optimized as a trust-led booking product for students and a calm operations product for owners and admins. The current visual identity from `DESIGN.md` is the right foundation for this market: warm amber as the brand signal, deep green for primary actions, restrained typography, practical layouts, and trust-focused copy. This pass should refine that system rather than rebrand it.

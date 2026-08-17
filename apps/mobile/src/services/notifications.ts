@@ -1,6 +1,5 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 /**
@@ -8,24 +7,22 @@ import { Platform } from "react-native";
  * push token (FCM on Android, APNs on iOS).
  *
  * Returns null when:
- *  - Running on a simulator (tokens don't work there)
+ *  - Running on a simulator, where push tokens do not work
  *  - User denies permission
- *  - Any unexpected error
+ *  - Any unexpected error occurs
  *
- * iOS note: Firebase Admin handles APNs tokens if you've uploaded your
- * APNs Auth Key in the Firebase console (Project Settings → Cloud Messaging).
+ * iOS note: Firebase Admin handles APNs tokens if the APNs Auth Key has been
+ * uploaded in Firebase console under Project Settings > Cloud Messaging.
  */
 export async function registerForPushNotifications(): Promise<{
   token: string;
   platform: "ios" | "android";
 } | null> {
-  // Push tokens only work on physical devices
   if (!Device.isDevice) {
-    console.log("[push] Skipping — simulator detected");
+    console.warn("[push] Skipping - simulator detected");
     return null;
   }
 
-  // Request / check permissions
   const { status: existing } = await Notifications.getPermissionsAsync();
   let finalStatus = existing;
 
@@ -35,11 +32,10 @@ export async function registerForPushNotifications(): Promise<{
   }
 
   if (finalStatus !== "granted") {
-    console.log("[push] Permission denied");
+    console.warn("[push] Permission denied");
     return null;
   }
 
-  // Android channel setup (required for Android 8+)
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
       name: "Default",
@@ -48,7 +44,6 @@ export async function registerForPushNotifications(): Promise<{
     });
   }
 
-  // Get the native device token (FCM on Android, APNs on iOS)
   try {
     const { data: token } = await Notifications.getDevicePushTokenAsync();
     return { token, platform: Platform.OS as "ios" | "android" };

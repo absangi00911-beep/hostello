@@ -1,5 +1,3 @@
-import { execSync } from 'child_process';
-
 // These are the database updates we need to make to the _prisma_migrations table
 // We'll use Prisma's prisma db execute command or similar
 

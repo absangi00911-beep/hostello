@@ -1,7 +1,17 @@
 // Path: src/app/api/hostels/mine/route.ts
 import { type NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@/generated/client";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+
+const HOSTEL_STATUSES = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"] as const;
+const HOSTEL_STATUS_VALUES: readonly string[] = HOSTEL_STATUSES;
+
+type HostelStatusFilter = (typeof HOSTEL_STATUSES)[number];
+
+function isHostelStatus(value: string): value is HostelStatusFilter {
+  return HOSTEL_STATUS_VALUES.includes(value);
+}
 
 /**
  * GET /api/hostels/mine
@@ -35,24 +45,26 @@ export async function GET(req: NextRequest) {
     }
 
     const url    = new URL(req.url);
-    const status = url.searchParams.get("status") ?? undefined;
+    const statusParam = url.searchParams.get("status") ?? undefined;
     const page   = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
     const limit  = Math.min(100, parseInt(url.searchParams.get("limit") ?? "50", 10) || 50);
     const skip   = (page - 1) * limit;
 
-    // Validate status if provided
-    const validStatuses = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"];
-    if (status && !validStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: "Invalid status value." },
-        { status: 400 }
-      );
+    let status: HostelStatusFilter | undefined;
+    if (statusParam) {
+      if (!isHostelStatus(statusParam)) {
+        return NextResponse.json(
+          { error: "Invalid status value." },
+          { status: 400 }
+        );
+      }
+      status = statusParam;
     }
 
-    const where = {
+    const where: Prisma.HostelWhereInput = {
       // OWNER: scoped to their own hostels. ADMIN: all hostels.
       ...(session.user.role === "OWNER" && { ownerId: session.user.id }),
-      ...(status && { status: status as any }),
+      ...(status && { status }),
     };
 
     const [hostels, total] = await Promise.all([

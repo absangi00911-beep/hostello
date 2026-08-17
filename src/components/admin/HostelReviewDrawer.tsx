@@ -7,6 +7,7 @@ import { X, MapPin, Users, BedDouble, Star, ShieldCheck, ExternalLink } from "lu
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageSpinner, InlineError } from "@/components/ui/shared";
+import { computeListingCompleteness, FLAGGED_THRESHOLD } from "@/lib/listingCompleteness";
 
 interface HostelDetail {
   id: string;
@@ -87,7 +88,7 @@ export function HostelReviewDrawer({
     <>
       {/* Backdrop — warm scrim matching Dialog/Sheet */}
       <div
-        className="fixed inset-0 z-[50] bg-[oklch(0.18_0.016_65_/_0.55)]"
+        className="fixed inset-0 z-[50] bg-[#191c1d]/55"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -191,6 +192,41 @@ export function HostelReviewDrawer({
                 ))}
               </div>
 
+              {/* Section: Completeness */}
+              {(() => {
+                const { score, factors } = computeListingCompleteness(hostel);
+                const isFlagged = score < FLAGGED_THRESHOLD;
+                return (
+                  <section className="px-4 pt-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                        Listing completeness
+                      </h3>
+                      <span
+                        className={`text-[var(--text-body-sm)] font-[700] ${isFlagged ? "text-[var(--color-error)]" : "text-[var(--color-success)]"}`}
+                      >
+                        {score}%
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-3">
+                      {factors.map((f) => (
+                        <div key={f.label} className="flex items-center justify-between gap-3">
+                          <span className="text-[var(--text-caption)] text-[var(--color-text-body)]">{f.label}</span>
+                          <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                            {f.hint} · {f.points}/{f.max}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {isFlagged && (
+                      <p className="text-[var(--text-caption)] text-[var(--color-error)]">
+                        Below {FLAGGED_THRESHOLD}% — consider requesting more detail before publishing.
+                      </p>
+                    )}
+                  </section>
+                );
+              })()}
+
               {/* Section: Details */}
               <section className="px-4 pt-4 space-y-3">
                 <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
@@ -271,7 +307,7 @@ export function HostelReviewDrawer({
                     <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] flex items-center gap-1.5">
                       {hostel.owner.name}
                       {hostel.verified && (
-                        <ShieldCheck size={13} className="text-[var(--color-success)]" aria-label="Verified owner" />
+                        <ShieldCheck size={13} className="text-[var(--color-success)]" aria-label="Verified listing" />
                       )}
                     </p>
                     <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate">

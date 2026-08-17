@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { SlidersHorizontal, ChevronDown } from "lucide-react";
 import {
   Sheet,
   SheetContent,

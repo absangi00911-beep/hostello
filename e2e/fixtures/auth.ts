@@ -16,6 +16,7 @@
 import { test as base, expect, type Page, type BrowserContext } from "@playwright/test";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import { STATE_FILE } from "../global.setup";
 
 export interface TestState {
@@ -41,6 +42,8 @@ export async function loadState(): Promise<TestState> {
 // Cached storage states per role — avoids re-logging-in for every test file
 // within the same Playwright worker process.
 const storageStateCache: Partial<Record<"student" | "owner", string>> = {};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const STORAGE_DIR = path.join(__dirname, "..", ".auth");
 
 async function getStorageStatePath(role: "student" | "owner"): Promise<string> {
@@ -97,13 +100,13 @@ type AuthFixtures = {
 
 export const test = base.extend<AuthFixtures>({
   // Expose the shared test state to every test
-  state: async ({}, use) => {
+  state: async ({}, applyFixture) => {
     const state = await loadState();
-    await use(state);
+    await applyFixture(state);
   },
 
   // A Page already signed in as the student
-  studentPage: async ({ browser, baseURL }, use) => {
+  studentPage: async ({ browser, baseURL }, applyFixture) => {
     const state = await loadState();
     const statePath = await getStorageStatePath("student");
     const exists = await fs.access(statePath).then(() => true).catch(() => false);
@@ -117,12 +120,12 @@ export const test = base.extend<AuthFixtures>({
       await ensureLoggedIn(context, page, "student", state.student, baseURL!);
     }
 
-    await use(page);
+    await applyFixture(page);
     await context.close();
   },
 
   // A Page already signed in as the owner
-  ownerPage: async ({ browser, baseURL }, use) => {
+  ownerPage: async ({ browser, baseURL }, applyFixture) => {
     const state = await loadState();
     const statePath = await getStorageStatePath("owner");
     const exists = await fs.access(statePath).then(() => true).catch(() => false);
@@ -136,7 +139,7 @@ export const test = base.extend<AuthFixtures>({
       await ensureLoggedIn(context, page, "owner", state.owner, baseURL!);
     }
 
-    await use(page);
+    await applyFixture(page);
     await context.close();
   },
 });

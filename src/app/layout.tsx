@@ -1,42 +1,61 @@
-// Path: src/app/dashboard/layout.tsx
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/config";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { DashboardTabs } from "./dashboard/DashboardTabs";
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import "./globals.css";
+import { Providers } from "@/components/Providers";
 
-export default async function DashboardLayout({
+// Design system swap (WanderStay spec): Plus Jakarta Sans for headings,
+// Be Vietnam Pro for body/labels — referenced in globals.css as
+// --font-heading / --font-body. next/font self-hosts the files at build
+// time: no external request from the browser, no layout shift.
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin"],
+  variable: "--font-be-vietnam-pro",
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  weight: ["400", "500"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"),
+  title: {
+    default: "HostelLo | Find verified student hostels",
+    template: "%s | HostelLo",
+  },
+  description:
+    "Find verified student hostels in Pakistan, compare monthly prices, and book with confidence.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f8f9fa",
+};
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login?callbackUrl=/dashboard/bookings");
-  if (session.user.role === "OWNER") redirect("/owner/dashboard");
-  if (session.user.role === "ADMIN") redirect("/admin");
-
   return (
-    <PublicLayout noFooter>
-      {/* Constrained to 1024px per spec */}
-      <div className="mx-auto w-full max-w-[1024px] px-4 md:px-6 py-6 pb-24 md:pb-10">
-        {/* Page heading */}
-        <div className="mb-6">
-          <h1
-            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
-
-          >
-            My account
-          </h1>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] mt-1">
-            Manage your bookings, saved hostels, and messages.
-          </p>
-        </div>
-
-        {/* Tab navigation */}
-        <DashboardTabs />
-
-        {/* Tab content */}
-        <div className="mt-6">{children}</div>
-      </div>
-    </PublicLayout>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${plusJakartaSans.variable} ${beVietnamPro.variable} ${jetbrainsMono.variable}`}
+    >
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }

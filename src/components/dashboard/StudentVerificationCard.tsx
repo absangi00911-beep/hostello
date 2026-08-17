@@ -74,7 +74,7 @@ export function StudentVerificationCard({ currentStatus }: Props) {
       if (!subRes.ok) throw new Error("Submission failed");
 
       setStatus("PENDING");
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setUploading(false);

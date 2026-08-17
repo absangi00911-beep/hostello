@@ -26,7 +26,7 @@ function TabIcon({ focused, outlineIcon, solidIcon, label }: TabIconProps) {
         name={focused ? solidIcon : outlineIcon}
         size={22}
         color={focused ? colors.primary : colors.textMuted}
-        aria-hidden="true"
+        aria-hidden={true}
       />
 
       <Text

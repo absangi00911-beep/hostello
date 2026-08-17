@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;

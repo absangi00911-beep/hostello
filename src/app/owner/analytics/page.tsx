@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BarChart2, Eye, TrendingUp, Banknote } from "lucide-react";
+import { Eye, TrendingUp, Banknote } from "lucide-react";
 import { formatPKR, PageSpinner } from "@/components/ui/shared";
 
 interface AnalyticsData {

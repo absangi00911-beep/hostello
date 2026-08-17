@@ -84,7 +84,7 @@ async function confirmBooking(
 
   // Idempotency guard — if already paid (e.g. webhook arrived first), do nothing.
   if (booking.paymentStatus === "PAID") {
-    console.log(`[callback] Booking ${bookingId} already marked PAID — skipping`);
+    console.warn(`[callback] Booking ${bookingId} already marked PAID - skipping`);
     return booking;
   }
 

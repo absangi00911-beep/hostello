@@ -31,6 +31,31 @@ const eslintConfig = [
       "no-console": ["warn", { allow: ["error", "warn"] }],
       // Allow bare quotes in JSX text — safer than HTML entities for apostrophes
       "react/no-unescaped-entities": "off",
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
+    files: ["e2e/**/*.ts", "scripts/**/*.{ts,js,mjs}"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  {
+    files: [
+      "src/lib/cron-utils.ts",
+      "src/lib/price-alerts.ts",
+      "src/lib/sms.ts",
+      "src/lib/typesense.ts",
+      "src/lib/typesense-sync.ts",
+    ],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  {
+    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ];

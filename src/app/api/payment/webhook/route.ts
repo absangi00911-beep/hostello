@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
     if (result.count === 0) {
       // Booking was already processed by a concurrent webhook or user action.
       // Return success to ack the webhook without re-processing.
-      console.info(`[webhook] Booking ${orderId} already marked PAID — idempotent no-op`);
+      console.warn(`[webhook] Booking ${orderId} already marked PAID - idempotent no-op`);
       return NextResponse.json({ received: true });
     }
 

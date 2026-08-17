@@ -67,7 +67,7 @@ export function RejectReasonModal({
     <>
       {/* Backdrop — warm scrim */}
       <div
-        className="fixed inset-0 z-[60] bg-[oklch(0.18_0.016_65_/_0.6)]"
+        className="fixed inset-0 z-[60] bg-[#191c1d]/60"
         onClick={() => { if (!loading) onCancel(); }}
         aria-hidden="true"
       />

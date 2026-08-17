@@ -166,6 +166,8 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
  * @throws Error if a required production variable is missing
  */
 export function validateEnvironment(): void {
+  if (process.env.HOSTELLO_E2E === "1") return;
+
   const isProduction = process.env.NODE_ENV === "production";
   const errors: string[] = [];
   const warnings: string[] = [];

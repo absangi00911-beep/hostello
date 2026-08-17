@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../node_modules/.prisma/client"
+  output   = "../src/generated"
 }
 
 datasource db {
@@ -54,6 +54,12 @@ enum PaymentStatus {
   FAILED
 }
 
+enum PayoutStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 enum HostelStatus {
   DRAFT
   PENDING_REVIEW
@@ -66,6 +72,7 @@ enum NotificationType {
   BOOKING_CONFIRMED
   BOOKING_CANCELLED
   BOOKING_COMPLETED
+  BOOKING_REFUNDED
   MESSAGE_RECEIVED
   REVIEW_RECEIVED
   HOSTEL_APPROVED
@@ -93,13 +100,19 @@ model User {
   verificationStatus      VerificationStatus  @default(NONE)
   verificationDocUrl      String?
   verificationSubmittedAt DateTime?
+  verificationDecidedAt   DateTime?
+  verifiedById            String?             // Admin userId who approved/rejected this verification.
   plan                    OwnerPlan           @default(FREE)
   subscription            Subscription?
+  bankAccountTitle        String?
+  bankAccountNumber       String?
+  bankName                String?
 
   accounts      Account[]
   sessions      Session[]
   hostels       Hostel[]
   bookings      Booking[]
+  payouts       Payout[]
   reviews       Review[]
   favorites     Favorite[]
   messages      Message[]
@@ -145,6 +158,24 @@ model Subscription {
   updatedAt     DateTime           @updatedAt
 
   @@map("subscriptions")
+}
+
+model Payout {
+  id        String       @id @default(cuid())
+  owner     User         @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  amount    Int          // Whole-integer PKR, sum of included bookings' totals.
+  status    PayoutStatus @default(PENDING)
+  reference String?      // Bank/JazzCash transfer reference, filled in when marked paid.
+  bookings  Booking[]
+  createdAt DateTime     @default(now())
+  createdBy String       // Admin userId who generated the batch.
+  paidAt    DateTime?
+  paidBy    String?      // Admin userId who marked it paid.
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("payouts")
 }
 
 model Account {
@@ -302,14 +333,19 @@ model Booking {
   checkOut DateTime
   months   Int
   guests   Int      @default(1)
-  total    Int      // Store in paise (1 PKR = 100 paise) or whole PKR. Never use Float for currency.
+  total    Int      // Whole-integer PKR. Never use Float for currency — see formatPrice (packages/shared/src/utils).
 
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod String?
   transactionId String?       @unique
+  refundedAt    DateTime?
+  refundedBy    String?       // Admin userId who processed the refund.
 
   status BookingStatus @default(PENDING)
   notes  String?       @db.Text
+
+  payout   Payout? @relation(fields: [payoutId], references: [id])
+  payoutId String?
 
   notifications Notification[]
 
@@ -320,6 +356,7 @@ model Booking {
   @@index([userId])
   @@index([status])
   @@index([checkIn, checkOut])
+  @@index([payoutId])
   @@map("bookings")
 }
 
@@ -339,6 +376,8 @@ model Review {
   location    Int @default(0)
   value       Int @default(0)
   safety      Int @default(0)
+
+  wouldRecommend Boolean?
 
   ownerReply  String?  @db.Text
   repliedAt   DateTime?

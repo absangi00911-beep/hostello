@@ -12,6 +12,7 @@ import {
   RefreshCw,
   ShieldCheck,
   ChevronLeft,
+  Wallet,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/admin/listings",     label: "Listings",     icon: Building2 },
   { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/bookings",     label: "All bookings", icon: CalendarDays },
+  { href: "/admin/payouts",      label: "Payouts",      icon: Wallet },
   { href: "/admin/reviews",      label: "Reviews",      icon: Star },
   { href: "/admin/search",       label: "Sync search",  icon: RefreshCw },
 ];

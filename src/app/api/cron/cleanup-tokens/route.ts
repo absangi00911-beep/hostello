@@ -1,11 +1,11 @@
 // Path: src/app/api/cron/cleanup-tokens/route.ts
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
 
-export async function POST(req: Request) {
-  const verificationError = await verifyUpstashRequest(req as any);
+export async function POST(req: NextRequest) {
+  const verificationError = await verifyUpstashRequest(req);
   if (verificationError !== true) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

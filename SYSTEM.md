@@ -1,782 +1,401 @@
-# System Design Document — HostelLo
+# System Design Document - HostelLo
 
-**Version:** 1.4 | **Date:** May 12, 2026 | **Last Updated:** May 23, 2026 (Doc/Code Sync Audit: stale warnings cleared, undocumented routes added, mobile status updated) | **Author:** Engineering Team
-
----
-
-## 1. Project Overview
-
-HostelLo is a student hostel marketplace for Pakistan. Students use it to find verified accommodation near their university. Hostel owners use it to list rooms, manage booking requests, and reply to reviews — all without a phone call.
-
-The problem it solves is specific: finding a hostel in Pakistan currently means calling phone numbers from a WhatsApp group, visiting in person, or trusting word of mouth. There is no reliable source of truth for prices, amenities, or safety. HostelLo puts that information in one place with photos, verified listings, direct messaging, and online booking.
-
-Target users fall into three groups. Students (ages 17–25) who need accommodation near one of Pakistan's major universities. Hostel owners (typically individuals managing 10–100 beds) who want online visibility and a booking system. Admins who review new listings and moderate the platform.
-
-Success means a student in Lahore can find, compare, message the owner of, and book a verified hostel in under 10 minutes. For owners, it means receiving a booking request without picking up the phone.
+**Version:** 1.5 | **Last updated:** June 1, 2026 | **Status:** Current repo audit
 
 ---
 
-## 2. Scope and Boundaries
+## 1. Overview
 
-**In scope:**
-- Hostel discovery with full-text search, filtering, and sorting
-- Student account creation, login, and profile management
-- Hostel listing creation and management by owners
-- Booking requests with online payment (Safepay initially)
-- In-app messaging between students and hostel owners
-- Reviews (only after a completed stay)
-- Price alerts when a hostel drops below a target price
-- Admin moderation: approve, suspend, or activate listings
-- Transactional emails and in-app notifications
+HostelLo is a Pakistan-focused student hostel marketplace. Students discover, compare, save, message, and book verified hostel accommodation. Owners manage listings, availability, bookings, messages, reviews, subscriptions, and analytics. Admins moderate listings, reviews, search sync, bookings, and student verification.
 
-**Out of scope (deliberate):**
-- International expansion (Pakistan only for now; changing this requires backend, payment, and data-residency work)
-- Property management features beyond booking (lease agreements, maintenance requests)
-- Aggregating hostel data from external sources
-- Revenue sharing or commission tracking for owners
-- Customer support chat
-
-**Assumptions:**
-- All users have a Pakistani phone number and email address
-- Payments are in PKR only
-- The platform does not verify student enrollment
-- Hostel owners self-certify their listings; admin spot-checks before approval
+The product is implemented as a Next.js monolith with route handlers for API endpoints and an Expo mobile app that uses the same backend.
 
 ---
 
-## 3. Stakeholders and Roles
+## 2. Scope
 
-**Student (STUDENT role)**
-Can browse and search hostels without an account. With an account, they can save favorites, send messages, submit booking requests, leave reviews after a completed stay, and set price alerts. Cannot see other students' data.
+In scope:
 
-**Hostel Owner (OWNER role)**
-Can list hostels, upload photos, manage room inventory, respond to booking requests (confirm or decline), reply to reviews, and message students. Can only manage their own hostels.
+- Hostel discovery, filters, city/university landing pages, detail pages, maps, comparison, and favorites.
+- Student signup/login, email verification, password reset, phone OTP, profile, account deletion, and optional student verification.
+- Owner listing creation/editing, blocked dates, booking management, messages, reviews, analytics, settings, and subscription surface.
+- Booking flow with Safepay as primary payment and JazzCash/EasyPaisa infrastructure available but disabled for mobile.
+- Messaging, reviews, owner replies, price alerts, notifications, FCM push backend, cron jobs, and admin moderation.
+- Expo mobile app using the same backend APIs.
 
-**Admin (ADMIN role)**
-Can approve, suspend, or activate any listing. Can read and delete any review. Can trigger a full Typesense re-index. Has access to all booking data. Receives email when a new listing is submitted for review.
+Out of scope for current MVP:
 
-**Unauthenticated visitors**
-Can browse hostels, read reviews, and see availability. Cannot book, message, or save.
-
----
-
-## 4. Functional Requirements
-
-### Must-have
-
-- User registration with email/password; phone number optional at signup, verifiable via OTP later
-- Email verification before full account access
-- Password reset via time-limited email link (30 minutes)
-- Hostel search by city, gender, price range, and amenities with Typesense full-text search
-- Hostel detail pages with photos, amenities, rules, room types, reviews, and a map
-- Booking request flow: choose dates, guests, payment method → confirm → pay online
-- Safepay card payment integration with webhook-based confirmation
-- In-app messaging between student and owner per hostel
-- Review submission gated on a completed booking (status = COMPLETED)
-- Owner reply to reviews
-- Admin approval workflow for new listings
-- In-app notification bell with unread count
-- Price alert: notify by email when a hostel drops below a user-set target price
-- Account deletion with full data removal (GDPR Article 17 compliance)
-
-### Should-have
-
-- Phone number OTP verification (Twilio)
-- Hostel comparison (up to 3 hostels side-by-side)
-- Saved favorites list
-- JazzCash and EasyPaisa payment (currently disabled, infrastructure ready)
-- Availability calendar per hostel based on bookings
-- Typesense search with automatic Prisma fallback
-
-### Nice-to-have
-
-- Push notifications (no current implementation)
-- University-specific landing pages
-- Owner analytics dashboard (view counts, booking conversion rate)
-
-### Edge cases documented
-
-- Two students booking the same room simultaneously: optimistic locking on `Room.version` prevents double-booking; second request receives 409
-- Webhook arriving twice for the same payment: idempotency guard using `paymentStatus: { not: "PAID" }` in `updateMany`
-- Payment amount mismatch in webhook: booking held, not confirmed, error logged for manual review
-- Owner deletes account while active bookings exist: bookings cancelled, hostels deleted in batch
+- Separate backend services.
+- International expansion or multi-currency.
+- Native owner/admin mobile dashboards.
+- Offline search.
+- Video reviews.
+- Apple Pay / Google Pay until Safepay support is confirmed.
 
 ---
 
-## 5. Non-Functional Requirements
+## 3. Architecture
 
-**Availability:** 99.5% uptime. Acceptable for a consumer marketplace at this stage.
+| Layer | Implementation |
+|---|---|
+| Web framework | Next.js 16 App Router |
+| API | Next.js Route Handlers under `src/app/api` |
+| Mobile | Expo 54 / React Native 0.81 under `apps/mobile` |
+| Database | Neon PostgreSQL via Prisma 7 |
+| Auth | NextAuth v5 JWT strategy plus mobile Bearer bridge in `src/proxy.ts` |
+| Search | Typesense with Prisma fallback |
+| Cache/rate limits | Upstash Redis |
+| Cron | Upstash QStash calling secured route handlers |
+| Storage | Cloudflare R2 for uploads |
+| Email | Resend |
+| SMS | Twilio |
+| Push | Firebase Admin + `DeviceToken` records |
+| Payments | Safepay primary; JazzCash/EasyPaisa infrastructure present |
+| Error tracking | Sentry configs for client/server/edge |
+| Tests | Vitest and Playwright |
 
-**Latency:** Search results under 300ms p95 when Typesense is available. Hostel detail pages under 500ms. API routes under 200ms for authenticated actions (booking, messaging).
-
-**Throughput:** Designed for hundreds of concurrent users, not thousands. No horizontal scaling automation in place yet.
-
-**Scalability:** The architecture is stateless (serverless functions on Vercel), so adding capacity is a platform concern, not an application concern. Redis handles rate limiting across instances.
-
-**Data integrity:** Booking totals are integers (PKR). No floats for currency. Review counts and ratings are denormalized on the hostel row and recomputed transactionally on every write.
-
-**Search degradation:** If Typesense is unreachable, search falls back to Prisma with full filter support. Users see results; they may be slightly slower.
-
----
-
-## 6. System Architecture
-
-HostelLo is a Next.js monolith deployed on Vercel. This is not a microservices architecture, and that was intentional. At this stage, the overhead of service boundaries (inter-service auth, distributed tracing, independent deploys) adds complexity without meaningful benefit. A single codebase with clear module separation is easier to reason about, debug, and ship quickly.
-
-**Components:**
-
-- **Next.js App Router** — handles both the UI (React Server Components) and the API (Route Handlers). No separate backend process.
-- **Neon PostgreSQL** — primary database, accessed via Prisma ORM. Neon provides serverless connection pooling, which matters on Vercel where each invocation gets a fresh process.
-- **Upstash Redis** — rate limiting and token version cache. Accessed via REST API (Upstash Redis), which works in serverless environments without persistent TCP connections.
-- **Typesense** — full-text search engine. Separate process (cloud-hosted). The app syncs hostels to Typesense on write operations; reads go directly to Typesense. On failure, Prisma handles the query.
-- **Cloudflare R2** — object storage for hostel photos. S3-compatible API. Images are served from a public CDN URL.
-- **Resend** — transactional email delivery.
-- **Twilio** — SMS OTP delivery.
-- **Safepay, JazzCash, EasyPaisa** — payment gateways. Safepay uses a redirect flow with HMAC-signed webhook callbacks. JazzCash and EasyPaisa use signed form POST flows.
-- **Upstash QStash** — cron job scheduling. Posts to three endpoint crons daily/every 5 minutes/every 6 hours.
+The application is intentionally not microservices. The API, web UI, database schema, and most business logic ship together, which keeps versioning and operational complexity low.
 
 ---
 
-## 7. Technology Stack
+## 4. Current Repo Metrics
 
-| Layer | Choice | Why |
-|---|---|---|
-| Framework | Next.js 16 (App Router) | Co-located API and UI, RSCs for faster page loads, mature ecosystem |
-| Language | TypeScript | Catches shape errors at build time; essential when Prisma types flow through the whole app |
-| Database | Neon PostgreSQL | Serverless-friendly connection pooling, branching for dev environments |
-| ORM | Prisma | Type-safe queries, migration tooling, schema-as-code |
-| Auth | NextAuth v5 (Credentials) | JWT strategy, token version checking for cross-instance session revocation |
-| Search | Typesense | Faster than Postgres full-text for faceted search, self-hostable, open-source |
-| Cache / Rate limit | Upstash Redis | REST-based, works in serverless, no persistent connection needed |
-| Storage | Cloudflare R2 | S3-compatible, cheaper egress than AWS S3, global CDN |
-| Email | Resend | Clean API, good deliverability, React Email compatible |
-| SMS | Twilio | Industry standard, Pakistani numbers supported |
-| Payments | Safepay (primary) | Pakistani gateway, cleaner API than JazzCash |
-| Cron | Upstash QStash | Vercel doesn't support persistent background jobs; QStash POSTs to API routes on a schedule |
-| Styling | Tailwind CSS v4 | Utility-first, no CSS-in-JS runtime overhead |
-| Deployment | Vercel | Zero-config Next.js deploys, edge network, preview environments |
-| Validation | Zod | Runtime schema validation that produces TypeScript types |
-| Animation | Framer Motion | Declarative, well-documented, React-native |
+As of the June 1, 2026 audit:
+
+| Area | Count |
+|---|---:|
+| Web `page.tsx` routes | 44 |
+| API route files | 57 |
+| Prisma models | 22 |
+| Prisma migrations | 15 |
+| Project test/spec files | 34 |
+| Playwright E2E specs | 5 |
+| Mobile screen/layout files | 15 |
 
 ---
 
-## 8. Data Design
+## 5. Data Model
 
-The schema lives in `prisma/schema.prisma`. Key entities:
+The Prisma schema lives in `prisma/schema.prisma`.
 
-**User** — `id`, `email` (unique), `emailVerified`, `password` (bcrypt hash), `name`, `phone`, `phoneVerified`, `avatar`, `role` (STUDENT/OWNER/ADMIN), `bio`, `city`, `tokenVersion`, `emailNotifications` (boolean, default true — controls whether transactional emails are sent). The `tokenVersion` integer is incremented on password change; sessions with a stale version are invalidated.
+Core models:
 
-**Hostel** — `id`, `slug` (unique), `name`, `description`, `status` (DRAFT/PENDING_REVIEW/ACTIVE/SUSPENDED), `city`, `area`, `address`, `latitude`, `longitude`, `pricePerMonth` (integer PKR), `rooms`, `capacity`, `gender` (MALE/FEMALE/MIXED), `amenities` (string array), `rules` (string array), `images` (string array), `coverImage`, `verified`, `featured`, `viewCount`, `rating` (denormalized float), `reviewCount` (denormalized int), `ownerId`.
+- `User`: auth/profile fields, role, token version, email notifications, student verification fields, owner plan, subscription relation.
+- `DeviceToken`: FCM/APNs token per mobile installation.
+- `Subscription`: owner plan/status/payment reference.
+- `Account`, `Session`, `VerificationToken`, `PasswordResetToken`, `PhoneVerificationToken`: auth support.
+- `Hostel`: listing, ownership, status, location, pricing, amenities, images, ratings, and relations.
+- `Room`: room availability and optimistic-lock version.
+- `Booking`: stay dates, guests, amount, booking status, payment status/method, transaction ID.
+- `Review`: rating breakdown, comment, owner reply.
+- `Favorite`: saved hostels.
+- `Conversation`, `ConversationParticipant`, `Message`: messaging.
+- `PriceAlert`: target price, last known price, active flag, unsubscribe token.
+- `Notification`: in-app notification rows and optional booking/review/hostel links.
+- `CronLog`: last run/status/duration/error for scheduled jobs.
+- `BlockedDate`: owner-managed unavailable date ranges.
+- `RoommatePost`, `RoommateReport`: roommate finder data and moderation reports.
 
-The `rating` and `reviewCount` fields are denormalized for read performance. Every review write recomputes them in a transaction. Scripts exist to fix drift if it occurs.
-
-**Room** — belongs to a hostel, tracks `available` (remaining spots) and `version` (optimistic lock counter). When a booking is created for a specific room, `available` decrements and `version` increments atomically.
-
-**Booking** — `hostelId`, `roomId` (nullable), `userId`, `checkIn`, `checkOut`, `months`, `guests`, `total` (integer PKR), `paymentStatus` (PENDING/PAID/REFUNDED/FAILED), `paymentMethod`, `transactionId` (unique), `status` (PENDING/CONFIRMED/CANCELLED/COMPLETED).
-
-**Review** — unique per `(hostelId, userId)`. Fields: `rating` (1–5), `title`, `comment`, `cleanliness`, `location`, `value`, `safety` (each 0–5), `ownerReply`, `repliedAt`.
-
-**Conversation + Message** — a conversation ties two participants (student + owner) to a hostel. Messages belong to a conversation. Unread count is computed via a filtered count query.
-
-**PriceAlert** — `userId`, `hostelId` (unique together), `targetPrice`, `lastKnownPrice`, `active`, `lastAlertAt`, `unsubscribeToken` (unique cuid, used for one-click unsubscribe links in price alert emails).
-
-**Notification** — `userId`, `type` (enum), `title`, `message`, optional foreign keys to `bookingId`, `reviewId`, `hostelId`. `read` boolean, `readAt` timestamp.
-
-**DeviceToken** — `userId`, `token` (unique FCM token), `platform` ("ios" | "android"). Upserted on login from mobile; deleted on logout or when FCM returns `UNREGISTERED`.
-
-**CronLog** — `name` (unique — one row per cron job), `ranAt`, `status` ("success" | "error"), `durationMs`, `error` (nullable). Updated on each cron execution as an upsert. Surfaced via `GET /api/health/crons` for observability.
-
-**VerificationToken, PasswordResetToken, PhoneVerificationToken** — short-lived tokens for auth flows.
-
-**Key indexes:** `Hostel` on `(city)`, `(slug)`, `(ownerId)`, `(status, featured)`, `(gender)`, `(pricePerMonth)`. `Booking` on `(hostelId)`, `(userId)`, `(status)`, `(checkIn, checkOut)`. `Review` on `(hostelId)`, `(userId)`. `Notification` on `(userId)`, `(read)`, `(createdAt)`.
+Money is stored as integer PKR. Review counts and ratings are denormalized on `Hostel` and maintained transactionally, with repair scripts available.
 
 ---
 
-## 9. API Design
+## 6. API Surface
 
-All API routes live under `/api/`. They return JSON with this envelope:
+All API routes live under `/api`. There are 57 route files. Responses generally use:
 
 ```json
-{ "data": ..., "message": "...", "error": "..." }
+{ "data": {}, "message": "...", "error": "..." }
 ```
 
-Errors always include a human-readable `error` string. Validation errors may include a `details` object from Zod's `.flatten()`.
+Route categories:
 
-HTTP status codes follow standard conventions: 200 for success, 201 for created, 400 for validation failure, 401 for unauthenticated, 403 for forbidden, 404 for not found, 409 for conflict (double booking, duplicate email), 429 for rate limit, 500 for internal error.
+- Auth: signup, NextAuth, email verification, resend verification, forgot/reset password, delete account, phone OTP, mobile login, mobile refresh.
+- Profile: profile update and password change.
+- Hostels: search/list/create, mine, detail/update/delete, favorite, availability, view count, roommate posts.
+- Bookings: create/list/detail/status changes.
+- Payments: initiate, Safepay webhook, JazzCash/EasyPaisa callback.
+- Conversations: list/start/get messages/send messages.
+- Reviews: create/list/mine/edit/delete/reply.
+- Notifications: list/read/delete plus device-token registration routes.
+- Price alerts: list/create/update/delete plus unsubscribe.
+- Owner: analytics, subscription, blocked dates.
+- Admin: hostels/listings/search sync/verifications.
+- Cron: mark completed stays, cancel abandoned payments, check price alerts, cleanup tokens.
+- Operations/support: upload, contact, report, cron health.
 
-**Key routes (46 total):**
+Current device-token route convention:
 
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/auth/signup` | Create account |
-| POST | `/api/auth/forgot-password` | Request password reset link |
-| POST | `/api/auth/reset-password` | Set new password using token |
-| GET | `/api/auth/verify-email` | Confirm email via token link |
-| POST | `/api/auth/resend-verification` | Re-send email verification |
-| POST | `/api/auth/delete-account` | Permanently delete account |
-| POST | `/api/auth/phone/request-otp` | Send SMS OTP |
-| POST | `/api/auth/phone/verify-otp` | Verify phone number |
-| POST | `/api/auth/mobile/login` | Mobile: email+password login, returns JWT in response body |
-| PATCH | `/api/profile` | Update name, phone, bio, city |
-| POST | `/api/profile/change-password` | Change password (authenticated) |
-| GET | `/api/hostels` | Search hostels (paginated) |
-| POST | `/api/hostels` | Create hostel listing |
-| GET | `/api/hostels/mine` | Owner's own listings |
-| GET | `/api/hostels/[slug]` | Hostel detail |
-| PATCH | `/api/hostels/[id]` | Update hostel (owner or admin) |
-| DELETE | `/api/hostels/[id]` | Suspend hostel + cancel bookings |
-| POST | `/api/hostels/[slug]/favorite` | Save hostel |
-| DELETE | `/api/hostels/[slug]/favorite` | Unsave hostel |
-| POST | `/api/hostels/[slug]/view` | Increment view count |
-| GET | `/api/hostels/[slug]/availability` | 12-month occupancy calendar |
-| GET | `/api/favorites` | List current user's saved hostels |
-| POST | `/api/bookings` | Create booking request |
-| GET | `/api/bookings` | List current user's bookings |
-| GET | `/api/bookings/[id]` | Booking detail |
-| PATCH | `/api/bookings/[id]` | Cancel / confirm / decline booking |
-| POST | `/api/payment/initiate` | Start payment session (Safepay redirect or JazzCash/EasyPaisa form) |
-| POST | `/api/payment/webhook` | Safepay payment confirmation webhook |
-| POST,GET | `/api/payment/callback` | JazzCash / EasyPaisa browser redirect callback |
-| POST | `/api/reviews` | Submit or update review |
-| GET | `/api/reviews` | List reviews for a hostel |
-| GET | `/api/reviews/mine` | Current user's submitted reviews |
-| PUT | `/api/reviews/[id]` | Edit own review |
-| DELETE | `/api/reviews/[id]` | Delete own review |
-| PATCH | `/api/reviews/[id]/reply` | Owner reply to review |
-| DELETE | `/api/reviews/[id]/reply` | Remove owner reply |
-| GET | `/api/conversations` | List user's conversations |
-| POST | `/api/conversations` | Start conversation with hostel owner |
-| GET | `/api/conversations/[id]` | Get messages (marks unread as read) |
-| POST | `/api/conversations/[id]` | Send message |
-| GET | `/api/notifications` | List notifications (paginated) |
-| PUT | `/api/notifications` | Mark all as read |
-| PUT | `/api/notifications/[id]` | Mark one as read |
-| DELETE | `/api/notifications/[id]` | Delete notification |
-| POST | `/api/notifications/device-token` | Register FCM device token (mobile) |
-| DELETE | `/api/notifications/device-token` | Deregister FCM device token (logout) |
-| GET | `/api/price-alerts` | List user's price alerts |
-| POST | `/api/price-alerts` | Create price alert |
-| PATCH | `/api/price-alerts/[id]` | Update or toggle alert |
-| DELETE | `/api/price-alerts/[id]` | Delete alert |
-| GET | `/api/email/unsubscribe` | One-click unsubscribe from price alerts via token |
-| POST | `/api/upload` | Upload image to R2 |
-| PATCH | `/api/admin/hostels` | Admin: verify, suspend, activate |
-| GET,PATCH | `/api/admin/listings` | Admin: listing management |
-| POST | `/api/admin/search/sync` | Admin: sync Typesense |
-| POST | `/api/report` | Submit issue report |
-| POST | `/api/contact` | Contact support |
-| GET | `/api/health/crons` | Cron job health status (last run time, status per job) |
-| POST | `/api/cron/mark-completed-stays` | Cron: CONFIRMED → COMPLETED after checkout |
-| POST | `/api/cron/cancel-abandoned-payments` | Cron: cancel PENDING bookings after 30 min |
-| POST | `/api/cron/check-price-alerts` | Cron: check and send price alert emails |
-| POST | `/api/cron/cleanup-tokens` | Cron: purge expired verification and password reset tokens |
-
-There is no API versioning currently. The app is a monolith; API and frontend ship together, so version drift is not possible. If the API is ever exposed externally, versioning via URL prefix (`/api/v2/`) would be the approach.
+- `/api/device-tokens` is canonical for mobile push-token registration.
+- `/api/notifications/device-token` remains as a compatibility export for older clients.
 
 ---
 
-## 10. Authentication and Authorization
+## 7. Authentication And Authorization
 
-**Login mechanism:** Email + password via NextAuth v5 Credentials provider. JWT strategy (no database sessions). Tokens stored in HTTP-only cookies.
+Web:
 
-**Token structure:** JWT contains `id`, `role`, `emailVerified`, `tokenVersion`. The `tokenVersion` field mirrors the `User.tokenVersion` database column. On every authenticated request, the session callback checks the JWT's `tokenVersion` against the value in Redis (or the database on cache miss). If they don't match, the session is treated as invalid. This is how a password change revokes all active sessions across all Vercel instances.
+- NextAuth v5 Credentials provider.
+- JWT session strategy.
+- HTTP-only cookies for browser sessions.
+- `tokenVersion` is checked to revoke sessions after password changes.
 
-**Password reset:** A `PasswordResetToken` record with a 30-minute expiry links to the user. Single-use: `usedAt` is set on first use. After reset, `tokenVersion` is incremented and the Redis cache key is deleted.
+Mobile:
 
-**Email verification:** Signup creates a `VerificationToken` (24-hour expiry). The user clicks a link; the API marks `emailVerified` and deletes the token. Unverified users can log in but certain actions (messaging, booking) are gated on verified status.
+- `POST /api/auth/mobile/login` returns a NextAuth-compatible JWT and user payload.
+- Mobile stores token/user in `expo-secure-store`.
+- Requests include `Authorization: Bearer <token>` and `X-Client: mobile`.
+- `src/proxy.ts` injects the Bearer token into NextAuth-compatible cookie names.
+- `POST /api/auth/mobile/refresh` issues a fresh token after validating signature and `tokenVersion`.
+- Mobile API wrapper retries once after refresh, then clears auth on failure.
 
-**Role-based access:**
+Authorization is role/ownership based:
 
-| Action | STUDENT | OWNER | ADMIN |
-|---|---|---|---|
-| Browse hostels | ✓ | ✓ | ✓ |
-| Book hostel | ✓ | — | ✓ |
-| Create listing | — | ✓ | ✓ |
-| Manage own listing | — | ✓ | ✓ |
-| Confirm/decline booking | — | ✓ (own hostels) | ✓ |
-| Approve/suspend listing | — | — | ✓ |
-| Delete any review | — | — | ✓ |
-
-Owner actions on bookings check `booking.hostel.ownerId === session.user.id`. Admin bypasses ownership checks. Students can only access their own bookings and reviews.
-
----
-
-## 11. Security Design
-
-**Transport:** HTTPS everywhere. HSTS header with 2-year max-age, `includeSubDomains`, `preload`.
-
-**Content Security Policy:** Configured in `next.config.ts`. In production, `unsafe-eval` is removed (development only, needed for Next.js HMR). `unsafe-inline` remains for Next.js hydration scripts. Image sources are allowlisted to R2, Unsplash, and a few OAuth CDNs. Payment gateways are in `connect-src` and `form-action`.
-
-**CSRF protection:** Middleware validates the `Origin` header on all state-mutating API routes. Payment gateway callbacks (which POST from external servers) and NextAuth internals are explicitly exempted. Missing `Origin` is allowed in development, rejected in production.
-
-**Rate limiting:** Upstash Redis sliding window. Falls back to in-process in-memory limiting if Redis is unavailable (rather than dropping all limits). Key limits: signup 5/hour, login via NextAuth's built-in, search 60/minute, booking 10/hour, upload 5/10 minutes, messaging 30/minute, OTP 5/24 hours.
-
-**Input validation:** Zod schemas on every API route. Strings that go into HTML emails are passed through `escapeHtml()`. User-submitted text in hostel descriptions and review comments is sanitized via `sanitizeString()` which strips HTML tags without decoding entities (prevents the entity-decode bypass).
-
-**Payment security:** Safepay webhooks verified via HMAC-SHA256 using `timingSafeEqual`. Amount verified against `booking.total` with ±1 PKR tolerance. JazzCash callbacks verified via computed HMAC. EasyPaisa callbacks verified by `orderRefNum` matching the booking ID, plus amount cross-check in the caller. Optional IP allowlisting for gateway IPs via `GATEWAY_IPS` env var.
-
-**Image URL allowlisting:** Images submitted in hostel update payloads must start with the configured R2 public URL. In development, Unsplash is also allowed. This prevents owners from injecting arbitrary URLs.
-
-**Secret management:** All secrets in environment variables, never committed. `.env` files are in `.gitignore`. Production secrets live in Vercel environment configuration.
-
-**Audit logging:** Admin actions on bookings (cancel/confirm/decline) log the admin's user ID, action, booking ID, hostel name, and student email to the application logger.
-
-**Password hashing:** bcrypt with cost factor 12.
+- Students can access their own bookings, reviews, favorites, alerts, messages, and profile.
+- Owners can manage their own hostels and related bookings/messages/reviews.
+- Admins can moderate listings, reviews, verifications, and search sync.
 
 ---
 
-## 12. Infrastructure and Deployment
+## 8. Security Design
 
-**Hosting:** Vercel. Next.js deploys as serverless functions (individual Route Handlers) plus a static CDN layer for assets.
+Implemented:
 
-**Database:** Neon PostgreSQL. Neon handles connection pooling via its serverless driver; Prisma connects to the pooled endpoint. Neon supports branching for preview environments.
+- HTTPS-only deployment target.
+- Content Security Policy in `next.config.ts`.
+- CSRF Origin checks for browser state-mutating API routes.
+- Bearer-authenticated mobile requests skip browser Origin checks.
+- Zod validation on API payloads.
+- Upstash-backed rate limiting with in-memory fallback.
+- User-keyed rate limits on high-risk authenticated routes.
+- Payment webhook/callback signature checks.
+- R2 URL allowlisting for submitted image URLs.
+- Password reset and verification tokens are short-lived and single-use.
+- Account deletion removes associated user data.
 
-**Redis:** Upstash Redis. REST API access, no TCP connection management needed.
+Open / needs verification:
 
-**Search:** Typesense Cloud (or self-hosted via Docker). The application connects to a single Typesense node; if that node is unreachable, the Prisma fallback activates.
-
-**Storage:** Cloudflare R2. S3-compatible, served via a public CDN URL. Uploaded objects are immutable (name includes a timestamp and 8 random bytes); old images are cleaned up via `purgeOrphanedImages()` when an owner removes them from a listing.
-
-**Cron jobs:** Upstash QStash sends POST requests to three API endpoints on a schedule. The endpoints verify the request with either an HMAC signature (QStash signing key) or a Bearer token (CRON_SECRET), whichever is present.
-
-**Environment strategy:**
-- `development` — local Next.js dev server, local or shared Neon branch, Typesense on Docker or skipped (Prisma fallback), Resend skipped (emails logged to console), Twilio skipped (OTP logged to console), R2 optional (Unsplash placeholder URLs used)
-- `production` — Vercel production deployment, Neon production branch, Typesense Cloud, Resend, Twilio, Safepay live credentials
-
-**CI/CD:** Vercel handles this automatically on push to `main`. Preview deployments are created for every pull request. `npm run build` runs `prisma generate` then `next build` then a post-build script that patches the routes manifest for `next start` compatibility.
-
----
-
-## 13. Scalability and Performance
-
-**Caching strategy:**
-- Hostel listings page: `next: { revalidate: 30 }` on fetch calls (30-second ISR)
-- Hostel detail pages: `HOSTEL_REVALIDATE = 3600` (1 hour)
-- Search results: `SEARCH_REVALIDATE = 300` (5 minutes)
-- Token versions: Upstash Redis with 5-minute TTL, reducing database round-trips on auth checks
-
-**Denormalized fields:** `Hostel.rating` and `Hostel.reviewCount` are computed once on review write and stored on the hostel row. This avoids a `COUNT` + `AVG` aggregate on every listing render. The trade-off is occasional drift, managed by maintenance scripts.
-
-**Database indexing:** See Section 8. Queries against `Hostel` filter on `status`, `city`, `gender`, and `pricePerMonth` — all indexed.
-
-**Search:** Typesense handles full-text queries with sub-100ms response times at moderate scale. The Prisma fallback uses the same indexed columns.
-
-**Image delivery:** R2 with Cloudflare CDN. Images are immutable (content-addressed by timestamp + random bytes) and served with `Cache-Control: public, max-age=31536000, immutable`.
-
-**Rate limiting:** Sliding window via Upstash prevents any single IP from overloading the API.
-
-**No horizontal database scaling currently.** Neon scales vertically. If read throughput becomes a problem, Neon supports read replicas. The application code does not currently route reads and writes separately.
+- Confirm Neon PITR/backup retention for production.
+- Add structured logging if production traffic warrants it.
+- Verify Sentry/log scrubbing for Authorization headers and secrets.
+- Complete physical-device QA for mobile deep links and push notifications.
 
 ---
 
-## 14. Third-Party Integrations
+## 9. Payments
 
-**Neon (PostgreSQL)**
-What: Primary database. How: Prisma ORM, serverless connection pooling. Failure mode: All API routes return 500. No retry logic at the application layer; Neon handles reconnection.
+Safepay:
 
-**Upstash Redis**
-What: Rate limiting and token version cache. How: REST API via `@upstash/redis` and `@upstash/ratelimit`. Failure mode: Rate limiting falls back to per-process in-memory map. Token version checks fall back to database query.
+- Primary payment method.
+- `POST /api/payment/initiate` creates a checkout session.
+- `POST /api/payment/webhook` is the server-to-server source of truth.
+- Webhook updates payment/booking state idempotently.
+- Mobile clients send `X-Client: mobile` and receive `hostello://payment/return?...` return paths.
 
-**Typesense**
-What: Full-text search. How: `typesense` npm client, HTTPS to Typesense Cloud. Failure mode: All search falls back to Prisma queries. `isSearchDegraded: true` flag is returned in the API response so the frontend can show a notice if desired.
+JazzCash and EasyPaisa:
 
-**Cloudflare R2**
-What: Image storage. How: `@aws-sdk/client-s3` with Cloudflare endpoint. Failure mode: Upload returns 500. Images already stored remain available via CDN.
+- Infrastructure exists for signed form-post flows.
+- Kept disabled for mobile MVP because their callback model needs a separate mobile design spike.
 
-**Resend**
-What: Transactional email. How: `resend` npm package. Failure mode: Emails are fire-and-forget in most flows. A failed welcome email does not block account creation. A failed booking confirmation email is logged but does not fail the booking.
+Abandoned payments:
 
-**Twilio**
-What: SMS OTP. How: Raw fetch to Twilio REST API (deliberate — avoids the `twilio` SDK dependency). Failure mode: OTP request returns 500. In development without credentials, OTP is logged to console.
-
-**Safepay**
-What: Card payments. How: REST API to create a checkout session; browser redirected to Safepay; HMAC-signed webhook confirms payment. Failure mode: If the webhook fails or is never delivered, the booking stays PENDING and is cancelled by the abandoned payments cron after 30 minutes.
-
-**JazzCash / EasyPaisa**
-What: Mobile wallet payments (disabled). Infrastructure is implemented but `enabled: false` in `PAYMENT_METHODS`. Failure mode: If enabled and callback fails, same abandoned booking cron applies.
-
-**Upstash QStash**
-What: Cron job scheduling. How: QStash POSTs to API endpoints; endpoints verify the Bearer token or QStash signature. Failure mode: If an endpoint returns 5xx, QStash retries (configured in QStash dashboard). If QStash itself is down, cron jobs don't run; missed runs of `mark-completed-stays` would delay review eligibility by up to 24 hours.
+- Cron cancels stale pending payments/bookings and restores availability after the configured timeout.
 
 ---
 
-## 15. Error Handling and Fault Tolerance
+## 10. Notifications
 
-Every API route is wrapped in a try/catch that returns `{ error: "Something went wrong." }` with status 500 and logs the full error server-side. User-facing errors are always strings, never stack traces.
+In-app notifications:
 
-**Validation errors:** Zod's `safeParse` is used, never `parse`. If validation fails, a 400 is returned with the first error message. The `details` field includes the full flatten output for debugging.
+- Written to the `Notification` table.
+- Exposed through notification routes and dashboard/mobile surfaces.
 
-**Payment webhook idempotency:** The Safepay webhook uses `updateMany` with `paymentStatus: { not: "PAID" }`. If the webhook fires twice, the second invocation updates zero rows and returns 200 without re-processing.
+Push notifications:
 
-**Room double-booking:** Optimistic locking on `Room.version`. If two requests read the same version and both try to update, only one succeeds (Prisma P2025 error on the other); the loser gets a 409.
+- `DeviceToken` stores mobile tokens.
+- Firebase Admin sends multicast notifications from `createNotification()`.
+- Invalid/stale tokens are deleted when FCM returns invalid-registration errors.
 
-**Search degradation:** If Typesense throws, the error is caught, `isSearchDegraded` is set to true, and Prisma handles the query. No error is surfaced to the user.
+Remaining before mobile beta:
 
-**Email failures:** Booking-related emails (owner notification, student confirmation) are sent with `void Promise.all([...])` and no error propagation. A failed email does not roll back the booking.
-
-**Cron job failures:** Each cron endpoint catches all errors and returns a structured 500 with details. QStash retries on non-2xx responses. The `mark-completed-stays` cron runs daily; a single failed run means some bookings stay CONFIRMED for up to 48 hours, delaying review eligibility.
-
-**R2 image cleanup failures:** `purgeOrphanedImages` is called as a fire-and-forget promise. A failure is logged but does not affect the hostel update response. Orphaned objects cost storage but cause no data integrity issues.
-
----
-
-## 16. Logging, Monitoring, and Observability
-
-**Application logging:** `console.error` for unexpected errors (caught in try/catch blocks). `console.warn` for expected non-critical conditions (rate limit fallback, unauthorized webhook, CSRF header missing in development). No `console.log` in production — the ESLint rule `"no-console": ["warn", { allow: ["error", "warn"] }]` enforces this.
-
-**What gets logged:**
-- All 500-level errors with the request path and the raw error object
-- Admin actions on bookings (user ID, action, booking ID, hostel, student)
-- Payment webhook signature failures and amount mismatches
-- Cron job execution results (count of updated records)
-- Typesense sync failures (per-hostel, as fire-and-forget errors)
-- Email send failures
-
-**What is not currently implemented:**
-- Structured logging (JSON format for log aggregation tools)
-- Distributed tracing (no OpenTelemetry)
-- Custom metrics or dashboards
-- Alerting (Vercel provides basic error alerting via the dashboard)
-
-**Recommendation:** For production monitoring beyond Vercel's built-in logs, integrate Axiom or Better Uptime. Axiom natively integrates with Vercel's log drain.
+- Verify token registration/deletion on physical devices.
+- Verify foreground/background/killed-state notification behavior.
+- Verify notification tap deep-link routing.
 
 ---
 
-## 17. Data Flow — Key User Journeys
+## 11. Search
 
-**Student books a hostel:**
-1. Student searches for hostels (`GET /api/hostels`) → Typesense returns IDs → Prisma fetches details
-2. Student views hostel detail (`GET /api/hostels/[slug]`) → view count incremented via fire-and-forget POST
-3. Student submits booking form (`POST /api/bookings`) → rate limit check → session check → hostel lookup → stay duration validation → room availability check with optimistic lock → booking record created → emails sent (fire-and-forget) → in-app notification to owner → booking ID returned
-4. Student initiates payment (`POST /api/payment/initiate`) → Safepay session created → redirect URL returned to client
-5. Student completes payment on Safepay → Safepay posts webhook (`POST /api/payment/webhook`) → HMAC verified → amount verified → booking updated to PAID/CONFIRMED → confirmation email sent to student
-6. After checkout date, daily cron (`POST /api/cron/mark-completed-stays`) transitions booking to COMPLETED
-7. Student can now submit a review (`POST /api/reviews`)
+Typesense is the preferred search path. Prisma fallback is used when Typesense is unavailable or not configured.
 
-**Owner approves a booking (manual, without online payment):**
-1. Owner receives in-app notification + email of new booking request
-2. Owner visits dashboard, clicks confirm → `PATCH /api/bookings/[id]` with `{ action: "confirm" }` → ownership verified → status updated to CONFIRMED → confirmation email sent to student → in-app notification to student
+Search supports:
 
-**Admin approves a listing:**
-1. Owner submits listing (`POST /api/hostels`) → status set to PENDING_REVIEW → admin notification email sent
-2. Admin visits admin panel, clicks verify → `PATCH /api/admin/hostels` with `{ action: "verify" }` → status set to ACTIVE, verified = true → hostel synced to Typesense → owner receives approval email
+- text query,
+- city/area/university surfaces,
+- gender,
+- price,
+- amenities,
+- rating/sorting,
+- pagination.
+
+Search degradation should be visible enough for debugging without breaking user discovery.
 
 ---
 
-## 18. Background Jobs and Async Processing
+## 12. Cron And Background Jobs
 
-Four scheduled cron jobs run via Upstash QStash:
+Cron endpoints:
 
-**mark-completed-stays** — Daily at 00:00 UTC. Finds all CONFIRMED bookings where `checkOut < now` and transitions them to COMPLETED. This is the prerequisite for review eligibility. A single `updateMany` call handles the transition; no per-record processing.
+- `POST /api/cron/mark-completed-stays`
+- `POST /api/cron/cancel-abandoned-payments`
+- `POST /api/cron/check-price-alerts`
+- `POST /api/cron/cleanup-tokens`
 
-**cancel-abandoned-payments** — Every 5 minutes. Finds PENDING bookings created more than 30 minutes ago with PENDING payment status. Cancels them and restores room availability. Uses a transaction to atomically cancel the booking and restore the `Room.available` counter.
+Cron security:
 
-**check-price-alerts** — Every 6 hours. Loads all active price alerts with hostel current prices. For each alert where `hostel.pricePerMonth < targetPrice`, sends a price drop email (with unsubscribe link using `PriceAlert.unsubscribeToken`) and deactivates the alert. Also updates `lastKnownPrice` for all remaining alerts.
+- QStash signing key and/or `CRON_SECRET` Bearer verification.
 
-**cleanup-tokens** — Daily. Purges expired `VerificationToken`, `PasswordResetToken`, and `PhoneVerificationToken` rows. Prevents unbounded table growth from tokens that were never used.
+Observability:
 
-All four endpoints require either a QStash HMAC signature or a Bearer token matching `CRON_SECRET`. Unauthorized requests receive 401. Each cron job upserts a row in `CronLog` on completion, viewable via `GET /api/health/crons`.
+- `CronLog` rows track last run/status/duration/error.
+- `GET /api/health/crons` surfaces cron health.
 
----
+Scripts:
 
-## 19. File and Media Handling
-
-**Upload flow:** Client POSTs multipart/form-data to `POST /api/upload`. The endpoint:
-1. Checks authentication
-2. Rate limits to 5 uploads per user per 10 minutes
-3. Validates content type (JPEG, PNG, WebP only)
-4. Validates file size (5MB max)
-5. If `hostelId` is provided, checks ownership and current image count (15 max per hostel)
-6. Uploads to R2 with key format `hostels/{timestamp}-{8 random hex bytes}-{sanitized filename}`
-7. Sets `Cache-Control: public, max-age=31536000, immutable`
-8. Returns the public R2 URL
-
-**Storage:** Cloudflare R2 bucket. Objects are never mutated after upload (immutable naming scheme). Old images are deleted from R2 when an owner removes them from a listing, via `purgeOrphanedImages`.
-
-**CDN delivery:** R2 public URL serves images through Cloudflare's CDN with the immutable cache header.
-
-**Next.js image optimization:** The `next/image` component is configured with R2, Unsplash, Google, and GitHub as allowed remote patterns.
-
-**No virus scanning** is currently implemented. File type validation is based on MIME type, which can be spoofed. If this becomes a concern, Cloudflare R2 can be configured to run ClamAV on uploads via a Worker.
+- `scripts/schedule-cron-jobs.ts`
+- `scripts/check-price-alerts.ts`
+- `scripts/setup-typesense.ts`
+- `scripts/verify-typesense-fallback.ts`
 
 ---
 
-## 20. Notifications and Communication
+## 13. Migrations
 
-**Email** via Resend. All templates are HTML strings assembled in TypeScript template functions in `src/lib/email-templates/`. The `escapeHtml()` utility sanitizes all user-supplied values before interpolation. Templates are inline-styled (email clients don't support external CSS). A shared `emailLayout()` function wraps all templates with the logo, card, and footer.
+Migration workflow is enforced.
 
-Templates: verification, welcome, password reset, booking notification (to owner), booking confirmation (to student), booking status (confirmed/cancelled to student), listing approved, listing suspended, new listing (to admin), price alert, account deleted.
+- New migrations: `npm run migrate:new`.
+- Production/build: `prisma migrate deploy && prisma generate && next build`.
+- Pre-commit hook blocks staged `prisma/schema.prisma` changes without staged migration files.
+- Migration ledger is in `prisma/MIGRATIONS.md`.
 
-**SMS** via Twilio. Used only for phone number OTP verification. The message is a fixed template: "Your HostelLo verification code is: XXXXXX\n\nValid for 10 minutes."
+Current migration count: 15.
 
-**In-app notifications** stored in the `Notification` table. Created by `createNotification()` which is fire-and-forget (errors are caught and logged, never thrown). The notification bell polls `GET /api/notifications` with an unread count. Users can mark individual or all notifications as read.
-
-**No push notifications** currently. The infrastructure for in-app notifications is in place, but there is no web push (Service Worker, VAPID keys) or mobile push (FCM, APNs).
-
----
-
-## 21. Testing Strategy
-
-**Test Framework:** Vitest (v4.1.5) — configured in `vitest.config.ts` with globals enabled and Node environment. Run via `npm run test`.
-
-**E2E Test Framework:** Playwright — configured in `playwright.config.ts`. Run via `npm run e2e`. Three spec files exist in `e2e/`: `auth.spec.ts`, `homepage.spec.ts`, `search.spec.ts`. Coverage is currently thin (UI render checks, not full flow tests).
-
-**Unit Tests:**
-- `src/lib/validations.test.ts`: Tests `sanitizeString` with 20+ test cases including XSS vectors, encoded entities, Unicode, emoji, and edge cases.
-- `src/lib/bookings.test.ts`: Tests booking-related logic.
-- `apps/mobile/src/services/api.test.ts`: Tests mobile API integration.
-
-**Integration Tests:**
-- `src/lib/reviews.integration.test.ts`: Integration tests for review API operations.
-
-**Manual QA process:** Documented in the implementation plan. Includes browser checks at desktop (1280px) and mobile (375px), network panel verification of request payloads, and validation error walkthroughs.
-
-**Test Coverage Gaps:**
-- E2E specs exist but cover only shallow UI renders — no full flow tests (signup → search → book → payment).
-- Integration test coverage is limited; most API routes lack dedicated test cases.
-- No test coverage for auth flows (NextAuth login/logout/session/password reset).
-- No test coverage for payment webhook handlers (Safepay, JazzCash, EasyPaisa).
-- No load testing configured for high-concurrency scenarios.
-
-**Recommended Additions:**
-- Expand Playwright E2E tests for the full student booking flow and owner confirmation flow.
-- Expand integration tests to cover all 46 API routes.
-- Add auth flow tests (login, signup, password reset, phone OTP verification, session revocation).
-- Add payment webhook handler tests with idempotency verification.
-- Add `k6` load tests for `/api/hostels` search endpoint (simulated high concurrency).
+Never edit SQL for a migration that has been applied to any shared or production database. Create a corrective migration instead.
 
 ---
 
-## 22. Migration and Versioning Strategy
+## 14. Mobile System Notes
 
-**Database Migrations:** Prisma handles schema changes. Two modes are available:
+Mobile app status:
 
-1. **Development:** `npm run db:push` (script runs `prisma db push`) — pushes schema changes directly without generating migration files. Fast iteration, no history.
-2. **Production:** Build script runs `prisma migrate deploy` — applies migration files from `prisma/migrations/` directory. **Requires migration files to exist.**
+- Expo Router app exists.
+- Auth screens and main tabs exist.
+- SecureStore auth, token refresh, and route guard exist.
+- Hostel detail, booking, conversation, favorites, bookings, messages, and profile screens exist.
+- Custom scheme and associated/app links are configured.
 
-**Current Workflow (as of May 12, 2026):**
-- Development uses `db push` for rapid iteration (documented in `MASTER_PLAN.md`).
-- Build process expects migration files (runs `prisma migrate deploy` before generating client).
-- **Gap:** When new schema changes are made in development via `db push`, they must be captured as migration files before committing to version control. Use `prisma migrate dev` to generate migration files with a name.
-- **Risk:** Pushing schema changes to production without a corresponding migration file in `prisma/migrations/` will cause the build to fail or corrupt the schema.
+Current mobile risks:
 
-**Migration File Locations:** `prisma/migrations/` contains timestamped folders:
-- `0_init/` — initial schema
-- `1_currency_int/` — currency field type changes
-- `2_add_notifications/` — notification model addition
-- `20260426075853_add_conversation_participants_table/` — recent changes
-- And others...
-
-**Data Migrations:** When computed fields (like `rating`) need to be recalculated, maintenance scripts in `scripts/` handle this (`reset-review-stats.ts`, `fix-phantom-reviews.ts`). These run manually via `npx tsx scripts/...ts`.
-
-**Slug Collisions:** Hostel slug generation includes a collision retry loop (up to 10 attempts with incrementing suffixes, then timestamp fallback).
-
-**API Versioning:** No versioning currently. The API is private to the co-located frontend. If public API access is ever introduced, URL-prefix versioning (`/api/v2/`) is the intended approach.
-
-**Backward Compatibility:** Not formally tracked. Since API and frontend ship together, breaking changes don't create client compatibility issues.
+- Safepay return and push delivery need physical-device QA.
+- EAS profiles exist; signing credentials, first preview build, and mobile Sentry should be confirmed before external beta.
 
 ---
 
-## 23. Compliance and Regulatory Considerations
+## 15. Testing
 
-**GDPR Article 17 (Right to Erasure):** `DELETE /api/auth/delete-account` performs an explicit, sequential delete of all user-associated data: notifications, conversation participants, messages, favorites, price alerts, reviews, bookings, password reset tokens, phone verification tokens, sessions, OAuth accounts, and the user record itself. For owner accounts, hostel-related data (bookings, reviews) is deleted and then the hostels are deleted in a batch operation. A confirmation email is sent.
+Current coverage:
 
-**Data retention:** No formal retention policy beyond active use. Deleted account data is removed immediately. There is no soft-delete pattern.
+- 34 project test/spec files.
+- 5 Playwright specs.
+- Unit/integration coverage for validations, booking/search/review services, CSRF/rate limits, payment initiation, hostels, notifications, profile, UI primitives, layouts/components, and mobile API wrapper.
 
-**User consent:** No cookie consent banner is implemented. The app uses HTTP-only authentication cookies (necessary cookies). If analytics or tracking is added, a consent mechanism will be required.
+Key commands:
 
-**Data residency:** Not specified. Neon and Vercel are US-based by default. If Pakistani data residency is required, this needs to be addressed at the infrastructure level.
-
-**PECA compliance (Pakistan Electronic Crimes Act):** The platform collects name, email, phone, and booking history. No specific PECA data handling procedures are documented beyond the deletion capability.
-
-**Email unsubscribe:** Transactional emails do not include an unsubscribe link. This is acceptable for strictly transactional emails (booking confirmations, password resets) but would need to be added for marketing emails if any are introduced.
-
----
-
-## 24. Disaster Recovery and Backup
-
-**Database backups:** Neon provides automated daily backups and point-in-time recovery (PITR) with a configurable retention window (7 days on the free plan, longer on paid). No application-level backup process is implemented.
-
-**Recovery Time Objective (RTO):** Approximately 1–4 hours. Restoring a Neon database from backup and redeploying Vercel functions is the main recovery path. No hot standby exists.
-
-**Recovery Point Objective (RPO):** Up to 24 hours for a full-day backup restore, or minutes for PITR recovery if Neon PITR is enabled.
-
-**R2 storage:** Cloudflare R2 provides redundancy within its infrastructure. No cross-region replication is configured. Deleted objects cannot be recovered.
-
-**Redis (Upstash):** Rate limit data and token version cache. Loss of Redis data on Upstash failure is tolerable: rate limits fall back to in-memory, token version checks fall back to the database. No backup needed.
-
-**Typesense:** The index can be rebuilt from the database at any time via `POST /api/admin/search/sync` (admin-only) or the `scripts/setup-typesense.ts` script.
-
-**Recovery steps for a full outage:**
-1. Restore Neon database from backup or PITR
-2. Verify environment variables in Vercel are intact
-3. Trigger a Vercel redeploy (or it will automatically redeploy on the next push)
-4. Run `npx tsx scripts/setup-typesense.ts` to rebuild the search index
-5. Verify cron jobs are still scheduled in Upstash QStash dashboard
-6. Smoke test: signup, search, booking, payment
-
----
-
-## 25. Open Issues, Risks, and Decisions Pending
-
-**Risk: Database migration file workflow not fully enforced (P1).** The build process uses `prisma migrate deploy`, expecting migration files in `prisma/migrations/`. However, development uses `db push` which doesn't generate files. When developers push schema changes to main without committing migration files, the CI build will fail. **Decision needed:** Enforce `prisma migrate dev` in the development workflow. A `migrate:new` script already exists (`npm run migrate:new`). Add a git hook to prevent pushing without migration files.
-
-**Risk: Mobile JWT stored in unencrypted AsyncStorage (P1 — security).** The mobile app stores JWTs in `AsyncStorage` (unencrypted on Android, accessible on jailbroken iOS). `expo-secure-store` is the correct solution but is not installed. **Fix needed:** Add `expo-secure-store` to `apps/mobile/package.json`, replace all `AsyncStorage` calls in `src/services/api.ts` and `src/context/AuthContext.tsx`.
-
-**Risk: Mobile JWT has no refresh mechanism (P2).** Mobile clients store a long-lived JWT. When it expires, the app clears the token and redirects to login — no silent refresh. For a booking app, this is a UX regression. **Decision needed:** Implement a token refresh endpoint (`POST /api/auth/mobile/refresh`) and add refresh logic to the `apiRequest` wrapper.
-
-**Risk: Middleware file naming (P2 — potential bug).** The actual middleware is `src/proxy.ts`. PROJECT_STRUCTURE.md incorrectly lists it as `src/middleware.ts`. Next.js auto-discovers middleware by filename — confirm `next.config.ts` correctly references `src/proxy.ts`, or rename to `src/middleware.ts` to use the convention.
-
-**Risk: Single Typesense node.** If Typesense Cloud goes down, all searches degrade to Prisma. Prisma full-text search is not indexed for text (only for filter fields). A long Typesense outage would degrade search quality noticeably. **Option:** Add a secondary Typesense node or accept the Prisma fallback as sufficient for the current user base.
-
-**Decision pending: Push notifications for mobile (P2).** FCM infrastructure is now implemented (DeviceToken table, firebase-admin integration, `sendPushNotification()` in `notifications.ts`). The remaining work is on the mobile client: call `POST /api/notifications/device-token` on login and `DELETE` on logout, handle deep links from FCM notification taps.
-
-**Decision pending: Safepay deep linking for mobile payments.** The backend webhook flow is unchanged. The missing piece is Universal Links (iOS) and App Links (Android) configuration so Safepay's redirect URL opens the app instead of a browser tab. This requires domain verification files and a deep link handler in the Expo app.
-
-**Trade-off made: Denormalized rating fields.** Faster reads at the cost of potential drift. Maintenance scripts exist to fix drift.
-
-**Trade-off made: Fire-and-forget emails.** A failed booking email does not block the booking.
-
-**Known gap: No structured logging.** `console.error` goes to Vercel's log drain but is not structured JSON. Recommend Axiom or Logtail integration.
-
-**Known gap: No PITR confirmation.** Neon PITR availability depends on the plan. The team should confirm PITR is enabled for the production Neon database.
-
-**Known gap: E2E test coverage is shallow.** Playwright is configured and 3 spec files exist, but they test only that pages render and buttons are visible. Full flow tests (signup → search → book → payment) do not exist yet.
-
----
-
-## 26. Current Build Status and Technical Audit (May 12, 2026)
-
-**Build Command Chain:**
 ```bash
-prisma migrate deploy  # Apply migration files to database
-prisma generate       # Generate Prisma client types
-next build           # Build Next.js application
-npm run postbuild    # patch-routes-manifest.mjs fixes build artifacts
+npm run lint
+npm run test
+npm run build
+npm run e2e
+npm --prefix apps/mobile run typecheck
 ```
 
-**Build Status:**
-- **TypeScript Compilation:** ✅ PASSING (0 errors, 0 warnings)
-- **Prisma Schema Validation:** ✅ PASSING (all models, relations, enums validated)
-- **Route Generation:** ✅ 41+ API routes successfully generated
-- **Component Exports:** ✅ All UI components (shadcn/ui, 50+) compile without errors
-- **Build Artifacts:** ✅ `.next/` directory generated, ready for deployment
+Latest command verification on June 1, 2026:
 
-**Database Requirements:**
-- **Needed for Build:** Yes. Build process runs `prisma migrate deploy` which requires database connectivity.
-- **Connection Details:** Neon serverless PostgreSQL at `ep-raspy-bread-ao5h6cl7-pooler.c-2.ap-southeast-1.aws.neon.tech`
-- **Recovery:** If database is unreachable:
-  1. Check Neon console at https://console.neon.tech
-  2. Verify DATABASE_URL environment variable in `.env.local`
-  3. For development: Use `npm run db:push` after restoring connection
-  4. For CI/production: Ensure migration files in `prisma/migrations/` match schema before deployment
+- `npx next build`: pass.
+- `npm run test`: pass, 29 test files and 228 tests.
+- `npm run lint`: pass with 0 errors and 54 existing warnings.
+- `npm --prefix apps/mobile run typecheck`: pass.
+- `npm run e2e`: blocked before tests because `DATABASE_URL` is not a local/test database; the Playwright global setup refused to seed it. Local runs can provide `.env.e2e`.
 
-**Test Status:**
-- **Test Framework:** Vitest 4.1.5 (not Jest)
-- **Test Files:** 4 files present (validations, bookings, reviews integration, mobile API)
-- **Execution:** `npm run test` runs all tests
-- **Coverage:** Basic (unit tests only; integration and E2E gaps remain)
-
-**API Routes Implemented:** 41 total, including:
-- Authentication: signup, login, verify-email, password reset, OTP, delete-account, mobile
-- Hostels: list, search, create, update, images, admin approval
-- Bookings: create, list, cancel, confirm
-- Reviews: create, list, reply, delete
-- Payments: webhook handlers for Safepay, JazzCash, EasyPaisa
-- Profile: get, update, change password
-- Price Alerts: create, list, delete
-- Admin: hostel moderation, search sync, cron health check
-
-**Component Library:**
-- **UI Components:** 20+ shadcn/ui primitives (Button, Card, Dialog, Form, Input, Select, etc.)
-- **Feature Components:** 50+ custom components (HostelCard, BookingDialog, Dashboard, etc.)
-- **State:** React Query for server-state, Zustand available, React Hook Form for validation
-
-**Known Open Issues (as of May 23, 2026):**
-
-| Issue | Severity | Component | Status | Fix |
-|-------|----------|-----------|--------|----|
-| Migration File Workflow | P1 | Database schema | `db push` used in dev, `migrate deploy` in prod | Enforce `npm run migrate:new` for all schema changes |
-| Mobile JWT in AsyncStorage | P1 | `apps/mobile/src/services/api.ts` | Unencrypted token storage | Install `expo-secure-store`, replace AsyncStorage |
-| Mobile Token Refresh | P2 | Mobile auth flow | No refresh mechanism | Add `POST /api/auth/mobile/refresh` endpoint |
-| Middleware Filename | P2 | `src/proxy.ts` | PROJECT_STRUCTURE.md says `middleware.ts` | Confirm Next.js config references `proxy.ts` correctly |
-| E2E Test Coverage | P2 | `e2e/` specs | Shallow render checks only | Expand to full booking journey flow tests |
-| Safepay Deep Link (Mobile) | P2 | Mobile payments | No Universal Links / App Links | Configure domain verification + deep link handler |
-| Structured Logging | P3 | Infrastructure | `console.error` only | Integrate Axiom or Logtail |
-| PITR Confirmation | P3 | Disaster Recovery | Not verified on production | Confirm PITR enabled in Neon console |
-
-**Previously Fixed (now resolved):**
-- ✅ CSS design tokens: `globals.css` now uses the full OKLCH system from DESIGN.md; feature components use `var(--color-*)` throughout
-- ✅ Email unsubscribe: `PriceAlert.unsubscribeToken` in schema, email template includes unsubscribe link, `GET /api/email/unsubscribe` endpoint implemented
-- ✅ Push notifications backend: `DeviceToken` model in schema, Firebase Admin SDK integrated, `sendPushNotification()` fires on every `createNotification()` call
-- ✅ Bearer token auth for mobile: implemented in `src/proxy.ts`
-- ✅ CSRF exemption for mobile: Bearer token presence skips CSRF check in `src/proxy.ts`
-- ✅ E2E test framework: Playwright configured, 3 spec files in `e2e/`
-- ✅ Mobile login endpoint: `POST /api/auth/mobile/login` returns NextAuth-compatible JWT in response body
-- ✅ Added missing `phoneVerificationTokens` relation to User model in Prisma schema
-- ✅ Exported `cn()` utility function from utils.ts
-- ✅ Implemented missing `profileSchema` and `passwordSchema` in validations
-- ✅ Removed unsupported Calendar component props (initialFocus, invalid classNames)
-- ✅ Changed Firebase and Typesense to `requiredInProduction: false` (have fallbacks)
-- ✅ Wrapped useSearchParams() in Suspense boundary for Next.js 16 requirement
-
-**Environment Configuration Status:**
-- ✅ DATABASE_URL: Requires Neon connection
-- ✅ AUTH_SECRET: Required, should be generated with `openssl rand -base64 32`
-- ✅ R2_* (Cloudflare): Required for image uploads, or images will fail silently
-- ✅ UPSTASH_REDIS_*: Required for rate limiting and token caching
-- ✅ RESEND_API_KEY: Optional (logs to console if missing)
-- ✅ TWILIO_*: Optional (logs OTP codes to console if missing)
-- ✅ TYPESENSE_*: Optional (falls back to Prisma search if missing)
-- ✅ Payment gateway keys: Optional (payments disabled if missing)
-
-**Git Status (as of latest push):**
-- Commit: `dea2a58` — 357 files changed, 82,519 insertions, 8,026 deletions
-- Branch: main (synchronized with origin/main)
-- No uncommitted changes
-- Build passed, all tests written, ready for review
+Run E2E only with a disposable local/test Postgres database. The guard is intentional and should not be bypassed for production or shared remote databases.
+For local runs, create `.env.e2e` from `.env.e2e.example`; it is loaded before `.env` and ignored by git.
 
 ---
 
-## 27. Glossary
+## 16. Open Issues And Decisions
 
-**Booking status lifecycle:** PENDING → CONFIRMED or CANCELLED. CONFIRMED → COMPLETED (by cron after checkout) or CANCELLED (by student or owner). COMPLETED enables review submission.
-
-**Denormalization:** Storing computed values (`rating`, `reviewCount`) directly on the hostel row to avoid expensive aggregate queries on every read. Updated transactionally on review write.
-
-**ISR (Incremental Static Regeneration):** Next.js feature that serves a cached static page and regenerates it in the background after a specified interval (`revalidate`).
-
-**Optimistic locking:** A concurrency control pattern where a record includes a version counter. An update specifies the expected version; if the version has changed (another process updated the record), the update fails (Prisma P2025). Used on `Room` to prevent double-booking.
-
-**OTP (One-Time Password):** A 6-digit code sent via SMS, valid for 10 minutes, used to verify a phone number.
-
-**PKR:** Pakistani Rupee. All monetary values in the system are stored as integers representing PKR (not paisa).
-
-**PITR (Point-in-Time Recovery):** A database backup feature that allows restoring the database to any specific moment within the retention window.
-
-**QStash:** Upstash's HTTP message queue and scheduler service, used here to trigger cron API endpoints on a schedule.
-
-**R2:** Cloudflare's object storage product, S3-compatible.
-
-**RSC (React Server Component):** A React component that renders on the server. Can fetch data directly without an API route.
-
-**Slug:** A URL-friendly string derived from a hostel name (`green-valley-boys-hostel`). Unique. Used in hostel URLs instead of database IDs.
-
-**Typesense:** An open-source, typo-tolerant search engine. Used for full-text hostel search. Distinct from the Prisma database.
-
-**tokenVersion:** An integer field on the User record. Incremented on password change. The JWT stores the version at login time; if the stored version doesn't match the current version, the session is revoked.
-
-**HMAC (Hash-based Message Authentication Code):** A cryptographic authentication code computed over a message using a shared secret key. Used to verify payment webhook authenticity.
-
-**Idempotency:** The property that performing an operation multiple times produces the same result as performing it once. The Safepay webhook handler is idempotent: a duplicate webhook does not double-confirm a booking.
-
----
-
-## 28. Revision History
-
-| Version | Date | Author | Summary |
+| Item | Severity | Status | Next action |
 |---|---|---|---|
-| 1.4 | 2026-05-23 | Engineering Team + AI Audit | Doc/code sync audit: 7 stale warnings cleared, 9 undocumented routes and models added to API table and data design, mobile scope officially added, 4th cron job documented, CronLog model documented, User.emailNotifications documented, open issues list updated with accurate current state |
-| 1.3 | 2026-05-17 | Engineering Team | Vercel deploy pipeline, mobile setup, infrastructure complete |
-| 1.1 | 2026-05-12 | Engineering Team + AI Audit | Comprehensive technical audit: vitest confirmed, CSS design token gap documented, migration workflow clarified, build status verified (all 41 routes passing, TypeScript 0 errors), new P1 issues identified, incomplete features catalogued, all recent fixes documented, open issues prioritized |
-| 1.0 | 2026-05-05 | Engineering Team | Initial system design document, derived from codebase analysis |
+| Owner payout/settlement system | P0 | Open | No `Payout` model, ledger, or admin "mark paid out" action exists. Design + implement before real transaction volume. |
+| Booking refund flow | P0 | Open | `PATCH /api/bookings/[id]` never updates `paymentStatus` or calls a gateway refund. Decide policy, then build the transition + gateway call. |
+| Physical-device Safepay QA | P1 for mobile beta | Open | Test paid/cancelled/failed/abandoned flows on iOS/Android. |
+| Physical-device push QA | P1 for mobile beta | Open | Test registration, delivery, tap routing, stale cleanup. |
+| Neon PITR confirmation | P2 | Open | Confirm production recovery window. |
+| Business mobile gate | P1 for launch | Open | Confirm booking volume, support capacity, budget. |
+| JazzCash/EasyPaisa mobile callback flow | P1 for launch | Open | Redirect model doesn't map cleanly onto the mobile deep-link pattern Safepay uses; needs a design spike. |
+| Roommate finder test coverage | P2 | Open | Zero automated coverage on a public posting + moderation surface. |
+| Admin route test coverage | P2 | Open | Zero coverage across `admin/listings`, `admin/hostels`, `admin/verifications`, `admin/search/sync`. |
+| Mobile notifications/price-alerts parity | P2 | Open | Web dashboard has both; mobile's 5 tabs have neither. Needs a deliberate fold-in-vs-add-screen decision. |
+| Structured logging | P3 | Open | Add when production traffic/log volume justifies it. |
+
+---
+
+## 17. Environment Notes
+
+Required/important variables include:
+
+- `DATABASE_URL`
+- `HOSTELLO_E2E` for production-server E2E runs; Playwright sets this automatically for `npm run e2e`
+- `AUTH_SECRET`
+- `AUTH_URL`
+- `R2_*`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `SAFEPAY_SECRET`
+- `SAFEPAY_WEBHOOK_SECRET`
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `CRON_SECRET`
+- `QSTASH_CURRENT_SIGNING_KEY`
+- `TYPESENSE_*` (optional fallback to Prisma)
+- `FIREBASE_SERVICE_ACCOUNT_JSON` (optional; push gracefully disables if absent)
+
+Mobile also needs:
+
+- `EXPO_PUBLIC_API_URL`
+
+---
+
+## 18. Glossary
+
+**Bearer bridge:** The `src/proxy.ts` logic that maps mobile `Authorization: Bearer` tokens into NextAuth-compatible cookies for route handlers.
+
+**Device token:** FCM/APNs token identifying one mobile app installation.
+
+**PITR:** Point-in-time recovery for the production database.
+
+**QStash:** Upstash scheduler used to call cron endpoints.
+
+**R2:** Cloudflare object storage for uploaded images.
+
+**tokenVersion:** Integer on `User`; incrementing it revokes older JWTs.
+
+---
+
+## 19. Revision History
+
+| Version | Date | Summary |
+|---|---|---|
+| 1.4 | May 23, 2026 | Previous doc/code sync audit. |
+| 1.5 | June 1, 2026 | Refreshed against current repo; cleared resolved mobile blockers; added current mobile/API/operations risks. |
+| 1.6 | July 1, 2026 | Verified this doc's claims against the actual code (route count was stale: 53 → 57, fixed here and in `PROJECT_STRUCTURE.md`). Logged the P0 payout/refund gaps and P2 coverage/parity gaps found on inspection as open issues. |

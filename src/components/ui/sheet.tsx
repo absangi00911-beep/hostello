@@ -19,7 +19,7 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     className={cn(
       // Warm scrim — consistent with DialogOverlay
-      "fixed inset-0 z-50 bg-[oklch(0.18_0.016_65_/_0.55)] backdrop-blur-[1px]",
+      "fixed inset-0 z-50 bg-[#191c1d]/55 backdrop-blur-[1px]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className

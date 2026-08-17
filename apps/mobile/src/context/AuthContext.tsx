@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { router, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { getAuthToken, setAuthToken, clearAuthToken, apiRequest } from '../services/api';
+import { getAuthToken, setAuthToken, clearAuthToken, apiRequest, buildApiUrl } from '../services/api';
 import { registerForPushNotifications } from '../services/notifications';
 
 // ---------------------------------------------------------------------------
@@ -35,8 +35,6 @@ const USER_STORAGE_KEY = 'auth_user';
 const REFRESH_THRESHOLD_DAYS = 5;
 const REFRESH_THRESHOLD_SECONDS = REFRESH_THRESHOLD_DAYS * 24 * 60 * 60;
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -68,7 +66,7 @@ function getJwtClaims(token: string): { iat: number; exp: number } | null {
  */
 async function proactiveRefresh(currentToken: string): Promise<string | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/mobile/refresh`, {
+    const response = await fetch(buildApiUrl('/auth/mobile/refresh'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -176,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     registerForPushNotifications()
       .then((result) => {
         if (!result) return;
-        return apiRequest('/api/device-tokens', {
+        return apiRequest('/device-tokens', {
           method: 'POST',
           body: JSON.stringify(result),
         });
@@ -189,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const pushResult = await registerForPushNotifications();
       if (pushResult) {
-        await apiRequest('/api/device-tokens', {
+        await apiRequest('/device-tokens', {
           method: 'DELETE',
           body: JSON.stringify({ token: pushResult.token }),
         }).catch(() => {});   // best-effort — don't block sign-out

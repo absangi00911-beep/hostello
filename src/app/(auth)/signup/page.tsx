@@ -48,7 +48,7 @@ export default function SignupPage() {
         const error = await res.json();
         toast.error(error.message || 'Failed to create account');
       }
-    } catch (err) {
+    } catch {
       toast.error('An unexpected error occurred');
     }
   };
@@ -114,7 +114,7 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-[#2A6545] hover:bg-[#1F5035]">Create account</Button>
+              <Button type="submit" className="w-full">Create account</Button>
             </form>
           </Form>
         </CardContent>

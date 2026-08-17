@@ -1,6 +1,6 @@
 // Path: src/types/index.ts
 
-import type { Hostel as PrismaHostel, User as PrismaUser, Review as PrismaReview, Booking as PrismaBooking, Room } from "@prisma/client";
+import type { Hostel as PrismaHostel, User as PrismaUser, Review as PrismaReview, Booking as PrismaBooking, Room } from "@/generated/client";
 import type { 
   UserRole, 
   HostelFilters, 

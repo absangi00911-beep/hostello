@@ -1,75 +1,141 @@
-// Path: src/app/api/reviews/mine/route.ts
+// Path: src/app/api/reviews/route.ts
 import { type NextRequest, NextResponse } from "next/server";
+import { reviewSchema } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
+import { indexSingleHostel } from "@/lib/typesense-sync";
 
-/**
- * GET /api/reviews/mine
- *
- * Returns all reviews across every hostel owned by the authenticated user.
- * Used by the owner dashboard Reviews tab.
- *
- * ADMIN: returns all reviews on the platform (no ownership filter).
- *
- * Query params:
- *   page  - 1-indexed (default: 1)
- *   limit - per page, max 50 (default: 20)
- *
- * Response:
- *   { data: Review[], total: number, page: number, limit: number }
- */
 export async function GET(req: NextRequest) {
   try {
+    const url = new URL(req.url);
+    const hostelId = url.searchParams.get("hostelId");
+    if (!hostelId) return NextResponse.json({ error: "hostelId is required." }, { status: 400 });
+
+    const reviews = await db.review.findMany({
+      where: { hostelId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+      },
+    });
+
+    return NextResponse.json({ data: reviews });
+  } catch (err) {
+    console.error("[GET /api/reviews]", err);
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const hostelId = typeof body?.hostelId === "string" ? body.hostelId : "";
+    const parsed = reviewSchema.safeParse(body);
+
+    if (!hostelId || !parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed.", details: parsed.success ? undefined : parsed.error.flatten() },
+        { status: 400 },
+      );
     }
 
-    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const completedBooking = await db.booking.findFirst({
+      where: {
+        userId: session.user.id,
+        hostelId,
+        status: "COMPLETED",
+      },
+      select: { id: true },
+    });
+
+    if (!completedBooking) {
+      return NextResponse.json(
+        { error: "You can only review hostels where you have completed a stay." },
+        { status: 403 },
+      );
     }
 
-    const url   = new URL(req.url);
-    const page  = Math.max(1, parseInt(url.searchParams.get("page")  ?? "1",  10) || 1);
-    const limit = Math.min(50, parseInt(url.searchParams.get("limit") ?? "20", 10) || 20);
-    const skip  = (page - 1) * limit;
+    const review = await db.$transaction(async (tx) => {
+      // wouldRecommend isn't in reviewSchema (from @hostello/shared, not
+      // present in this snapshot to extend) — read it straight off the raw
+      // body instead of parsed.data so it doesn't get silently dropped.
+      const wouldRecommend = typeof body?.wouldRecommend === "boolean" ? body.wouldRecommend : undefined;
 
-    // Build where clause: owner sees reviews on their hostels; admin sees all
-    const where =
-      session.user.role === "OWNER"
-        ? { hostel: { ownerId: session.user.id } }
-        : {};
-
-    const [reviews, total] = await Promise.all([
-      db.review.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
-        include: {
-          user: {
-            select: { id: true, name: true, avatar: true },
-          },
-          hostel: {
-            select: { id: true, name: true, slug: true },
+      const savedReview = await tx.review.upsert({
+        where: {
+          hostelId_userId: {
+            hostelId,
+            userId: session.user.id,
           },
         },
-      }),
-      db.review.count({ where }),
-    ]);
+        create: {
+          ...parsed.data,
+          wouldRecommend,
+          hostelId,
+          userId: session.user.id,
+          verified: true,
+        },
+        update: {
+          ...parsed.data,
+          wouldRecommend,
+          verified: true,
+        },
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+        },
+      });
 
-    return NextResponse.json({
-      data:    reviews,
-      total,
-      page,
-      limit,
-      hasMore: skip + reviews.length < total,
+      const aggregate = await tx.review.aggregate({
+        where: { hostelId },
+        _avg: { rating: true },
+        _count: { rating: true },
+      });
+
+      const reviewCount =
+        typeof aggregate._count === "number"
+          ? aggregate._count
+          : aggregate._count.rating;
+
+      await tx.hostel.update({
+        where: { id: hostelId },
+        data: {
+          rating: aggregate._avg.rating ?? 0,
+          reviewCount,
+        },
+      });
+
+      return savedReview;
     });
-  } catch (err) {
-    console.error("[GET /api/reviews/mine]", err);
+
+    const hostel = await db.hostel.findUnique({
+      where: { id: hostelId },
+      select: { id: true, ownerId: true, name: true },
+    });
+
+    if (hostel) {
+      void createNotification({
+        userId: hostel.ownerId,
+        type: "REVIEW_RECEIVED",
+        title: "New Review",
+        message: `${session.user.name ?? "A student"} reviewed ${hostel.name}.`,
+        reviewId: review.id,
+        hostelId,
+      });
+      void indexSingleHostel(hostelId).catch((err) => {
+        console.warn("[POST /api/reviews] Typesense sync failed:", err);
+      });
+    }
+
     return NextResponse.json(
-      { error: "Something went wrong." },
-      { status: 500 }
+      { data: review, message: "Review submitted." },
+      { status: 201 },
     );
+  } catch (err) {
+    console.error("[POST /api/reviews]", err);
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -28,6 +28,22 @@ interface BookingSummaryCardProps {
   showPaymentHint?: boolean;
 }
 
+const STATUS_BADGE_VARIANTS = [
+  "pending",
+  "confirmed",
+  "cancelled",
+  "completed",
+] as const;
+
+type BookingStatusBadgeVariant = (typeof STATUS_BADGE_VARIANTS)[number];
+
+function toBookingStatusBadgeVariant(status: string): BookingStatusBadgeVariant {
+  const normalized = status.toLowerCase();
+  return STATUS_BADGE_VARIANTS.includes(normalized as BookingStatusBadgeVariant)
+    ? (normalized as BookingStatusBadgeVariant)
+    : "pending";
+}
+
 function paymentHint(paymentStatus: string) {
   switch (paymentStatus.toUpperCase()) {
     case "PAID":
@@ -106,7 +122,7 @@ export function BookingSummaryCard({
 
         {showStatus && (
           <StatusBadge
-            variant={booking.status.toLowerCase() as any}
+            variant={toBookingStatusBadgeVariant(booking.status)}
           />
         )}
       </div>

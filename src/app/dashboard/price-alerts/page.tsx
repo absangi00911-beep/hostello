@@ -185,7 +185,7 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
                 value={searchQ}
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Type a hostel name…"
-                className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-9 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)] transition-all duration-[var(--transition-base)]"
+                className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-9 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
               />
               {searching && <Loader2 size={14} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--color-text-muted)]" aria-hidden="true" />}
             </div>
@@ -236,7 +236,7 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
               placeholder="e.g. 8000"
               min={1000}
               required
-              className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)] transition-all duration-[var(--transition-base)]"
+              className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
             />
           </div>
 
