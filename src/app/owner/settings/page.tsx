@@ -17,8 +17,6 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  CheckCircle2,
-  Upload,
 } from "lucide-react";
 import { inputCls } from "@/components/ui/input";
 

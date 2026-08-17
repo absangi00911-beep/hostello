@@ -3,12 +3,12 @@
 // Runs once after all test suites complete.  Deletes every record created by
 // global.setup.ts in the correct FK order so no orphans are left behind.
 
-import { PrismaClient } from "@prisma/client";
 import fs from "fs/promises";
 import { STATE_FILE } from "./global.setup";
+import { createE2EDb } from "./db";
 
 async function globalTeardown() {
-  const db = new PrismaClient();
+  const db = createE2EDb();
 
   try {
     const raw   = await fs.readFile(STATE_FILE, "utf-8").catch(() => null);

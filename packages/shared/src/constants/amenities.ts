@@ -51,6 +51,21 @@ export const CITIES = [
   "Peshawar",
   "Rawalpindi",
   "Quetta",
+  "Bahawalpur",
+  "Sialkot",
+  "Sukkur",
+  "Gujranwala",
+  "Hyderabad",
+  "Sargodha",
+  "Sheikhupura",
+  "Jhang",
+  "Rahim Yar Khan",
+  "Mardan",
+  "Okara",
+  "Dera Ghazi Khan",
+  "Wah Cantt",
+  "Chakwal",
+  "Jhelum",
 ] as const;
 
 export type City = (typeof CITIES)[number];

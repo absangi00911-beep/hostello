@@ -13,6 +13,11 @@
   --color-action-pressed: var(--color-action-pressed);
   --color-action-light: var(--color-action-light);
 
+  --color-secondary-brand: var(--color-secondary-brand);
+  --color-secondary-brand-container: var(--color-secondary-brand-container);
+  --color-tertiary-brand: var(--color-tertiary-brand);
+  --color-tertiary-brand-container: var(--color-tertiary-brand-container);
+
   --color-bg-page: var(--color-bg-page);
   --color-bg-card: var(--color-bg-card);
   --color-bg-sidebar: var(--color-bg-sidebar);
@@ -71,6 +76,7 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-brand: var(--radius-brand);
   --radius-full: var(--radius-full);
 
   --shadow-xs: var(--shadow-xs);
@@ -86,83 +92,109 @@
 }
 
 /* ============================================================
-   HostelLo Design System — OKLCH Token Set
-   Source: DESIGN.md § 13
-   Replaces the generic shadcn HSL defaults.
+   HostelLo Design System — WanderStay Token Set
+   Source: DESIGN (3).md (Material 3 export) + style-tile image
+   Replaces the amber/forest-green OKLCH set with the coral /
+   deep-teal / mint palette. Same variable names throughout, so
+   every component that already reads var(--color-*) re-themes
+   automatically — nothing downstream needs to change.
+
+   Mapping note: the M3 export's "primary" (#ae2f34) — not
+   "primary-container" (#ff6b6b) — is used as the actual button
+   fill/icon/link color. White text on #ff6b6b only measures
+   2.78:1 (fails WCAG AA); white on #ae2f34 measures 6.45:1.
+   #ff6b6b (the brighter "vibrant coral" swatch) is kept as
+   --color-primary-light for badges/tints, paired with dark text,
+   which is how M3 pairs primary-container with on-primary-container
+   in the first place.
    ============================================================ */
 
 @layer base {
   :root {
-    /* ── Brand Colors ─────────────────────────────────────── */
-    --color-primary:       oklch(0.62 0.17 65);   /* #C28B1A */
-    --color-primary-dark:  oklch(0.52 0.16 65);   /* #9E6F0E */
-    --color-primary-deep:  oklch(0.42 0.13 65);   /* #7A5308 */
-    --color-primary-light: oklch(0.90 0.08 65);   /* #F5DFA3 */
-    --color-primary-faint: oklch(0.96 0.04 65);   /* #FDF3DC */
+    /* ── Brand Colors (M3 "primary" family — coral/brick-red) ── */
+    --color-primary:       #ae2f34;   /* M3 primary — buttons, icons, links, focus rings */
+    --color-primary-dark:  #8c1520;   /* M3 on-primary-fixed-variant — hover */
+    --color-primary-deep:  #6d0010;   /* M3 on-primary-container — max-contrast text */
+    --color-primary-light: #ff6b6b;   /* M3 primary-container — "vibrant coral" accent/tint, pair with dark text */
+    --color-primary-faint: #ffdad8;   /* M3 primary-fixed — palest badge background */
 
     /* ── Action / CTA ─────────────────────────────────────── */
-    --color-action:         oklch(0.45 0.14 148);  /* #2A6545 */
-    --color-action-dark:    oklch(0.37 0.12 148);  /* #1F5035 */
-    --color-action-pressed: oklch(0.30 0.10 148);  /* #173D28 */
-    --color-action-light:   oklch(0.92 0.06 148);  /* #D3EDE1 */
+    /* WanderStay uses one CTA color (coral), not a separate accent
+       color like the old amber+green split — action mirrors primary. */
+    --color-action:         #ae2f34;
+    --color-action-dark:    #8c1520;
+    --color-action-pressed: #6d0010;
+    --color-action-light:   #ffdad8;
 
-    /* ── Backgrounds ──────────────────────────────────────── */
-    --color-bg-page:    oklch(0.98 0.006 65);  /* #FDF8F0 */
-    --color-bg-card:    oklch(0.995 0.003 65); /* #FEFCF8 */
-    --color-bg-sidebar: oklch(0.96 0.009 65);  /* #F5EFE3 */
-    --color-bg-raised:  oklch(0.975 0.005 65); /* #FAF5EC */
-    --color-bg-overlay: oklch(0.965 0.007 65); /* #F3EBD9 */
+    /* ── Secondary / Tertiary (M3 roles, for reference & charts) ── */
+    --color-secondary-brand:           #30666f;  /* Deep Navy/teal — structural text, icons */
+    --color-secondary-brand-container: #b3e9f3;
+    --color-tertiary-brand:            #006a65;  /* Mint — sparing accents, price highlights */
+    --color-tertiary-brand-container:  #1eada5;
+
+    /* ── Backgrounds (M3 surface family) ──────────────────── */
+    --color-bg-page:    #f8f9fa;  /* surface / background */
+    --color-bg-card:    #ffffff;  /* surface-container-lowest */
+    --color-bg-sidebar: #f3f4f5;  /* surface-container-low */
+    --color-bg-raised:  #edeeef;  /* surface-container */
+    --color-bg-overlay: #e7e8e9;  /* surface-container-high */
 
     /* ── Text ─────────────────────────────────────────────── */
-    --color-text-heading:     oklch(0.18 0.016 65);  /* #2A2318 */
-    --color-text-body:        oklch(0.30 0.014 65);  /* #4A3C2C */
-    --color-text-muted:       oklch(0.52 0.010 65);  /* #857060 */
-    --color-text-placeholder: oklch(0.68 0.008 65);  /* #B0A090 */
-    --color-text-disabled:    oklch(0.78 0.006 65);  /* #CABFB0 */
-    --color-text-inverse:     oklch(0.97 0.004 65);  /* #F9F5EE */
-    --color-text-link:        oklch(0.42 0.13 65);   /* #7A5308 */
+    --color-text-heading:     #191c1d;  /* on-surface */
+    --color-text-body:        #191c1d;  /* on-surface — same ink as heading; hierarchy via weight/size */
+    --color-text-muted:       #584140;  /* on-surface-variant */
+    --color-text-placeholder: #8c706f;  /* outline */
+    --color-text-disabled:    #c8bcbb;  /* lightened outline, meets ~3:1 vs card so it's still legibly "disabled" */
+    --color-text-inverse:     #ffffff;  /* on-primary */
+    --color-text-link:        #ae2f34;  /* primary */
 
     /* ── Borders ──────────────────────────────────────────── */
-    --color-border-default: oklch(0.88 0.012 65); /* #E0D4C0 */
-    --color-border-strong:  oklch(0.74 0.015 65); /* #BEA888 */
-    --color-border-subtle:  oklch(0.93 0.007 65); /* #EDE6D9 */
+    /* Spec: "1px border in a lightened Navy tint (5% opacity)" for cards */
+    --color-border-default: #d8d6d6;  /* ~5% on-surface over surface, neutral */
+    --color-border-strong:  #8c706f;  /* outline — form inputs, stronger dividers */
+    --color-border-subtle:  #e7e3e3;  /* ~2.5% on-surface over surface */
 
     /* ── Semantic ─────────────────────────────────────────── */
-    --color-success:      oklch(0.52 0.14 148);  /* #2A7A50 */
-    --color-success-bg:   oklch(0.96 0.03 148);  /* #E8F5EF */
-    --color-success-text: oklch(0.35 0.12 148);
+    /* Error: taken directly from the M3 export's error role */
+    --color-error:      #ba1a1a;
+    --color-error-bg:   #ffdad6;
+    --color-error-text: #93000a;
 
-    --color-warning:      oklch(0.68 0.15 72);   /* #C4900A */
-    --color-warning-bg:   oklch(0.97 0.035 72);  /* #FEF6E0 */
-    --color-warning-text: oklch(0.48 0.14 72);
+    /* Success: spec explicitly assigns this job to Tertiary (Mint) */
+    --color-success:      #006a65;
+    --color-success-bg:   #d8f6f0;
+    --color-success-text: #003a37;
 
-    --color-error:        oklch(0.52 0.18 22);   /* #C43B28 */
-    --color-error-bg:     oklch(0.97 0.02 22);   /* #FEEEED */
-    --color-error-text:   oklch(0.45 0.16 22);
+    /* Warning / Info: not defined by the new system — kept as
+       clearly-non-brand hues so they never get mistaken for primary. */
+    --color-warning:      #8a5a00;
+    --color-warning-bg:   #fdedd3;
+    --color-warning-text: #6b4500;
 
-    --color-info:         oklch(0.52 0.09 245);  /* #3B6E9E */
-    --color-info-bg:      oklch(0.97 0.02 245);  /* #EEF3FB */
-    --color-info-text:    oklch(0.42 0.09 245);
+    --color-info:         #3b6e9e;
+    --color-info-bg:      #eef3fb;
+    --color-info-text:    #2c5478;
 
     /* ── Typography ───────────────────────────────────────── */
-    --font-heading: 'Bricolage Grotesque', 'Arial Black', system-ui, sans-serif;
-    --font-body:    'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    --font-mono:    'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+    --font-heading: var(--font-plus-jakarta-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-body:    var(--font-be-vietnam-pro), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono:    var(--font-jetbrains-mono), 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
 
-    --text-display:  3.5rem;    /* 56px */
-    --text-h1:       2.5rem;    /* 40px */
-    --text-h2:       2rem;      /* 32px */
-    --text-h3:       1.5rem;    /* 24px */
-    --text-h4:       1.25rem;   /* 20px */
-    --text-h5:       1.0625rem; /* 17px */
-    --text-h6:       0.875rem;  /* 14px */
-    --text-body-lg:  1.125rem;  /* 18px */
-    --text-body:     0.9375rem; /* 15px */
-    --text-body-sm:  0.8125rem; /* 13px */
-    --text-label:    0.8125rem; /* 13px */
-    --text-caption:  0.6875rem; /* 11px */
+    --text-display:  3.5rem;    /* 56px — beyond the defined scale, for one-off hero moments */
+    --text-h1:       3rem;      /* 48px — headline-xl */
+    --text-h2:       2rem;      /* 32px — headline-lg (28px on mobile, see .text-h2 below) */
+    --text-h3:       1.5rem;    /* 24px — headline-md */
+    --text-h4:       1.25rem;   /* 20px — interpolated (no spec value between md and body-lg) */
+    --text-h5:       1.125rem;  /* 18px — aligned to body-lg */
+    --text-h6:       0.875rem;  /* 14px — aligned to label-bold */
+    --text-body-lg:  1.125rem;  /* 18px — body-lg */
+    --text-body:     1rem;      /* 16px — body-md */
+    --text-body-sm:  0.875rem;  /* 14px — body-sm */
+    --text-label:    0.875rem;  /* 14px — label-bold */
+    --text-caption:  0.75rem;   /* 12px — label-sm */
 
     /* ── Spacing ──────────────────────────────────────────── */
+    /* Spec's 4px baseline; lg/xl kept as the "breathable" block increments it calls for. */
     --space-1:  4px;
     --space-2:  8px;
     --space-3:  12px;
@@ -177,23 +209,22 @@
     --space-24: 96px;
     --space-32: 128px;
 
-    /* ── Border Radius ────────────────────────────────────── */
-    --radius-sm:   6px;
-    --radius-md:   10px;
-    --radius-lg:   16px;
-    --radius-xl:   24px;
-    --radius-full: 9999px;
+    /* ── Border Radius ─────────────────────────────────────── */
+    /* Spec: sm 4px / DEFAULT 8px / md 12px / lg 16px / xl 24px / full */
+    --radius-sm:    4px;
+    --radius-md:    8px;   /* buttons, inputs, chips — spec's "standard" 0.5rem */
+    --radius-lg:    12px;  /* cards, standard containers */
+    --radius-xl:    16px;  /* larger containers, "Hero cards" per spec */
+    --radius-brand: 24px;  /* biggest brand moments — spec's outer xl */
+    --radius-full:  9999px;
 
-    /* ── Shadows (warm amber-hued) ────────────────────────── */
-    --shadow-xs: 0 1px 2px oklch(0.18 0.016 65 / 0.06);
-    --shadow-sm: 0 1px 4px oklch(0.18 0.016 65 / 0.08),
-                 0 1px 2px oklch(0.18 0.016 65 / 0.04);
-    --shadow-md: 0 4px 12px oklch(0.18 0.016 65 / 0.10),
-                 0 2px 4px  oklch(0.18 0.016 65 / 0.05);
-    --shadow-lg: 0 12px 32px oklch(0.18 0.016 65 / 0.12),
-                 0 4px 8px   oklch(0.18 0.016 65 / 0.06);
-    --shadow-xl: 0 24px 48px oklch(0.18 0.016 65 / 0.14),
-                 0 8px 16px  oklch(0.18 0.016 65 / 0.07);
+    /* ── Shadows ("Organic Elevation" — soft, Navy-tinted, no pure black) ── */
+    --shadow-xs: 0 1px 2px rgb(25 28 29 / 0.06);
+    --shadow-sm: 0 1px 4px rgb(25 28 29 / 0.08),
+                 0 1px 2px rgb(25 28 29 / 0.04);
+    --shadow-md: 0 4px 20px rgb(25 28 29 / 0.15);   /* spec Level 1: 20px blur, 4px Y, 15% Navy */
+    --shadow-lg: 0 8px 40px rgb(25 28 29 / 0.18);    /* spec Level 2: 40px blur, 8px Y */
+    --shadow-xl: 0 16px 48px rgb(25 28 29 / 0.22);
 
     /* ── Transitions ──────────────────────────────────────── */
     --transition-fast:   100ms;
@@ -208,6 +239,7 @@
     --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1);
 
     /* ── Layout ───────────────────────────────────────────── */
+    /* Spec: 12-col desktop grid, max-width 1280px, 24px gutters */
     --container-max:  1280px;
     --sidebar-width:  240px;
     --breakpoint-sm:  640px;
@@ -216,82 +248,108 @@
     --breakpoint-xl:  1440px;
 
     /* ── shadcn/ui Compatibility Layer ────────────────────── 
-       Maps shadcn token names to our OKLCH values so existing
+       Maps shadcn token names to our values so existing
        shadcn/ui primitives render correctly.
     ──────────────────────────────────────────────────────── */
-    --background:          oklch(0.98 0.006 65);
-    --foreground:          oklch(0.18 0.016 65);
-    --card:                oklch(0.995 0.003 65);
-    --card-foreground:     oklch(0.18 0.016 65);
-    --popover:             oklch(0.975 0.005 65);
-    --popover-foreground:  oklch(0.18 0.016 65);
-    --primary:             oklch(0.45 0.14 148);
-    --primary-foreground:  oklch(0.97 0.004 65);
-    --secondary:           oklch(0.96 0.009 65);
-    --secondary-foreground:oklch(0.30 0.014 65);
-    --muted:               oklch(0.96 0.009 65);
-    --muted-foreground:    oklch(0.52 0.010 65);
-    --accent:              oklch(0.96 0.04 65);
-    --accent-foreground:   oklch(0.42 0.13 65);
-    --destructive:         oklch(0.52 0.18 22);
-    --destructive-foreground: oklch(0.97 0.004 65);
-    --border:              oklch(0.88 0.012 65);
-    --input:               oklch(0.88 0.012 65);
-    --ring:                oklch(0.62 0.17 65);
-    --radius:              10px;
+    --background:          #f8f9fa;
+    --foreground:          #191c1d;
+    --card:                #ffffff;
+    --card-foreground:     #191c1d;
+    --popover:             #edeeef;
+    --popover-foreground:  #191c1d;
+    --primary:             #ae2f34;
+    --primary-foreground:  #ffffff;
+    --secondary:           #f3f4f5;
+    --secondary-foreground:#191c1d;
+    --muted:               #f3f4f5;
+    --muted-foreground:    #584140;
+    --accent:              #ffdad8;
+    --accent-foreground:   #6d0010;
+    --destructive:         #ba1a1a;
+    --destructive-foreground: #ffffff;
+    --border:              #d8d6d6;
+    --input:               #d8d6d6;
+    --ring:                #ae2f34;
+    --radius:              8px;
   }
 
   /* ── Dark Mode ────────────────────────────────────────── */
+  /* Not covered by the source design system (light-mode only export) —
+     derived here following the same M3 tonal logic the app already used:
+     brighten accents, invert the text scale, near-black tinted surfaces.
+     "inverse-primary" (#ffb3b0) from the M3 export is exactly the token
+     M3 designs for this — used directly rather than re-deriving it. */
   .dark {
-    --color-primary:       oklch(0.68 0.17 65);   /* brighter for dark bg */
-    --color-primary-dark:  oklch(0.58 0.16 65);
-    --color-primary-deep:  oklch(0.50 0.14 65);
-    --color-primary-light: oklch(0.25 0.05 65);
-    --color-primary-faint: oklch(0.20 0.03 65);   /* #2E2416 */
+    --color-primary:       #ffb3b0;   /* M3 inverse-primary */
+    --color-primary-dark:  #ff8f8c;
+    --color-primary-deep:  #ffdad8;
+    --color-primary-light: #6d1f22;
+    --color-primary-faint: #481216;
 
-    --color-action:         oklch(0.52 0.14 148);  /* #38885E */
-    --color-action-dark:    oklch(0.44 0.12 148);
-    --color-action-pressed: oklch(0.37 0.10 148);
-    --color-action-light:   oklch(0.22 0.05 148);
+    --color-action:         #ffb3b0;
+    --color-action-dark:    #ff8f8c;
+    --color-action-pressed: #ffdad8;
+    --color-action-light:   #481216;
 
-    --color-bg-page:    oklch(0.14 0.016 65);  /* #1C1710 */
-    --color-bg-card:    oklch(0.18 0.013 65);  /* #241E14 */
-    --color-bg-sidebar: oklch(0.13 0.014 65);  /* #1A1510 */
-    --color-bg-raised:  oklch(0.21 0.012 65);  /* #2C2519 */
-    --color-bg-overlay: oklch(0.23 0.011 65);
+    --color-secondary-brand:           #9acfda;
+    --color-secondary-brand-container: #134e57;
+    --color-tertiary-brand:            #5dd9d0;
+    --color-tertiary-brand-container:  #00504c;
 
-    --color-text-heading:     oklch(0.92 0.010 65);  /* #EDE5D8 */
-    --color-text-body:        oklch(0.78 0.010 65);  /* #C8BAA8 */
-    --color-text-muted:       oklch(0.55 0.008 65);  /* #8A7B6A */
-    --color-text-placeholder: oklch(0.40 0.006 65);
-    --color-text-disabled:    oklch(0.32 0.005 65);
-    --color-text-inverse:     oklch(0.18 0.016 65);
-    --color-text-link:        oklch(0.68 0.17 65);
+    --color-bg-page:    #151819;
+    --color-bg-card:    #181b1c;
+    --color-bg-sidebar: #0f1112;
+    --color-bg-raised:  #272a2b;
+    --color-bg-overlay: #303334;
 
-    --color-border-default: oklch(0.28 0.012 65);  /* #3A3025 */
-    --color-border-strong:  oklch(0.38 0.014 65);
-    --color-border-subtle:  oklch(0.22 0.010 65);
+    --color-text-heading:     #fafbfc;
+    --color-text-body:        #e4e6e7;
+    --color-text-muted:       #c9b8b6;
+    --color-text-placeholder: #7a716f;
+    --color-text-disabled:    #55504e;
+    --color-text-inverse:     #151819;
+    --color-text-link:        #ffb3b0;
+
+    --color-border-default: #35393a;
+    --color-border-strong:  #474c4d;
+    --color-border-subtle:  #232627;
+
+    --color-error:      #ffb4ab;
+    --color-error-bg:   #690005;
+    --color-error-text: #ffdad6;
+
+    --color-success:      #5dd9d0;
+    --color-success-bg:   #00504c;
+    --color-success-text: #d8f6f0;
+
+    --color-warning:      #f0c26a;
+    --color-warning-bg:   #4a3400;
+    --color-warning-text: #fdedd3;
+
+    --color-info:         #a8c8e8;
+    --color-info-bg:      #1c3552;
+    --color-info-text:    #eef3fb;
 
     /* shadcn dark overrides */
-    --background:          oklch(0.14 0.016 65);
-    --foreground:          oklch(0.92 0.010 65);
-    --card:                oklch(0.18 0.013 65);
-    --card-foreground:     oklch(0.92 0.010 65);
-    --popover:             oklch(0.21 0.012 65);
-    --popover-foreground:  oklch(0.92 0.010 65);
-    --primary:             oklch(0.52 0.14 148);
-    --primary-foreground:  oklch(0.97 0.004 65);
-    --secondary:           oklch(0.21 0.012 65);
-    --secondary-foreground:oklch(0.78 0.010 65);
-    --muted:               oklch(0.21 0.012 65);
-    --muted-foreground:    oklch(0.55 0.008 65);
-    --accent:              oklch(0.20 0.03 65);
-    --accent-foreground:   oklch(0.68 0.17 65);
-    --destructive:         oklch(0.52 0.18 22);
-    --destructive-foreground: oklch(0.97 0.004 65);
-    --border:              oklch(0.28 0.012 65);
-    --input:               oklch(0.28 0.012 65);
-    --ring:                oklch(0.68 0.17 65);
+    --background:          #151819;
+    --foreground:          #fafbfc;
+    --card:                #181b1c;
+    --card-foreground:     #fafbfc;
+    --popover:             #272a2b;
+    --popover-foreground:  #fafbfc;
+    --primary:             #ffb3b0;
+    --primary-foreground:  #481216;
+    --secondary:           #272a2b;
+    --secondary-foreground:#e4e6e7;
+    --muted:               #272a2b;
+    --muted-foreground:    #c9b8b6;
+    --accent:              #481216;
+    --accent-foreground:   #ffdad8;
+    --destructive:         #ffb4ab;
+    --destructive-foreground: #690005;
+    --border:              #35393a;
+    --input:               #35393a;
+    --ring:                #ffb3b0;
   }
 
   /* ── Base element styles ──────────────────────────────── */
@@ -311,29 +369,30 @@
     color: var(--color-text-body);
     font-family: var(--font-body);
     font-size: var(--text-body);
-    line-height: 1.65;
+    line-height: 1.5; /* spec: "generous line heights (1.5x or greater)" for body copy */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100dvh;
   }
 
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     color: var(--color-text-heading);
-    line-height: 1.15;
+    line-height: 1.2;
   }
 
-  h4, h5, h6 {
-    font-family: var(--font-body);
-    color: var(--color-text-heading);
-  }
-
-  h1 { font-size: var(--text-h1); font-weight: 700; letter-spacing: -0.025em; }
-  h2 { font-size: var(--text-h2); font-weight: 700; letter-spacing: -0.02em; }
-  h3 { font-size: var(--text-h3); font-weight: 600; letter-spacing: -0.015em; }
-  h4 { font-size: var(--text-h4); font-weight: 600; letter-spacing: -0.01em; }
+  h1 { font-size: var(--text-h1); font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: var(--text-h2); font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: var(--text-h3); font-weight: 700; }
+  h4 { font-size: var(--text-h4); font-weight: 700; }
   h5 { font-size: var(--text-h5); font-weight: 600; }
   h6 { font-size: var(--text-h6); font-weight: 600; letter-spacing: 0.01em; }
+
+  /* headline-lg is 28px on mobile per spec, 32px from sm up */
+  h2 { font-size: 1.75rem; }
+  @media (min-width: 640px) {
+    h2 { font-size: var(--text-h2); }
+  }
 
   a {
     color: var(--color-text-link);
@@ -441,7 +500,7 @@
   /* Overline text — min 13px for uppercase legibility */
   .text-overline {
     font-size: var(--text-body-sm);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -449,13 +508,13 @@
   /* Prose — cap line length */
   .prose-body { max-width: 68ch; }
 
-  /* Skeleton animation */
+  /* Skeleton animation — neutral gray, intentionally brand-independent */
   .skeleton {
     background: linear-gradient(
       90deg,
-      #E8DFCE 0%,
-      #F0E8D8 50%,
-      #E8DFCE 100%
+      #e7e8e9 0%,
+      #f3f4f5 50%,
+      #e7e8e9 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.6s ease-in-out infinite;
@@ -465,9 +524,9 @@
   .dark .skeleton {
     background: linear-gradient(
       90deg,
-      #2C2519 0%,
-      #352D1F 50%,
-      #2C2519 100%
+      #272a2b 0%,
+      #303334 50%,
+      #272a2b 100%
     );
     background-size: 200% 100%;
   }
@@ -493,10 +552,10 @@
 @media (prefers-reduced-motion: reduce) {
   .skeleton {
     animation: none;
-    background: #E8DFCE;
+    background: #e7e8e9;
   }
   .dark .skeleton {
-    background: #2C2519;
+    background: #272a2b;
   }
   *,
   *::before,

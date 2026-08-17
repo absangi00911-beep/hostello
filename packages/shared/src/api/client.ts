@@ -6,7 +6,7 @@ export interface RequestOptions extends RequestInit {
 
 export interface ApiError extends Error {
   status?: number;
-  details?: any;
+  details?: unknown;
 }
 
 export async function request<T>(

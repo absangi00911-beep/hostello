@@ -8,13 +8,14 @@
 // in afterAll so no orphan records are left.
 
 import { test, expect, loadState } from "./fixtures/auth";
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
+import { createE2EDb } from "./db";
 
 let db: PrismaClient;
 let testBookingId: string;
 
 test.beforeAll(async () => {
-  db = new PrismaClient();
+  db = createE2EDb();
   const state = await loadState();
 
   // Fetch the room created by global.setup so we have an ID to attach

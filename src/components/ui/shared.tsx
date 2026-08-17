@@ -1,5 +1,6 @@
 // Path: src/components/ui/shared.tsx
 
+import { forwardRef, type HTMLAttributes } from "react";
 import { LucideIcon, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -252,20 +253,86 @@ const BADGE_LABELS: Record<BadgeVariant, string> = {
   mixed:          "Mixed",
 };
 
+const BADGE_DOT_COLORS: Record<BadgeVariant, string> = {
+  pending:        "var(--color-warning-text)",
+  confirmed:      "var(--color-success-text)",
+  cancelled:      "var(--color-error-text)",
+  completed:      "var(--color-info-text)",
+  active:         "var(--color-success-text)",
+  draft:          "var(--color-text-muted)",
+  pending_review: "var(--color-warning-text)",
+  suspended:      "var(--color-error-text)",
+  paid:           "var(--color-success-text)",
+  refunded:       "var(--color-info-text)",
+  failed:         "var(--color-error-text)",
+  verified:       "var(--color-success-text)",
+  male:           "var(--color-info-text)",
+  female:         "oklch(0.45 0.12 340)",
+  mixed:          "var(--color-text-muted)",
+};
+
 interface StatusBadgeProps {
   variant: BadgeVariant;
   label?: string;
+  /**
+   * "pill" (default) is the filled badge — use on brand-facing surfaces where
+   * status is a featured piece of information (hostel detail, booking cards).
+   * "dot" is a plain colored dot + text, no fill or border — use on dense
+   * tool surfaces (admin/owner tables) where a row of pill badges reads as
+   * more decoration than information. See docs/superpowers/specs/2026-07-11-design-foundations.md.
+   */
+  tone?: "pill" | "dot";
 }
 
-export function StatusBadge({ variant, label }: StatusBadgeProps) {
+export function StatusBadge({ variant, label, tone = "pill" }: StatusBadgeProps) {
+  const text = label ?? BADGE_LABELS[variant];
+
+  if (tone === "dot") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] shrink-0">
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full shrink-0"
+          style={{ backgroundColor: BADGE_DOT_COLORS[variant] }}
+          aria-hidden="true"
+        />
+        {text}
+      </span>
+    );
+  }
+
   return (
     <span
       className={`inline-flex items-center h-5 px-2 rounded-full text-[11px] font-[600] shrink-0 ${BADGE_STYLES[variant]}`}
     >
-      {label ?? BADGE_LABELS[variant]}
+      {text}
     </span>
   );
 }
+
+/* ── ListRow ──────────────────────────────────────────────
+ * A dense list row for tool surfaces — bordered top/bottom, no card
+ * wrapper, no shadow. Use for anything that's fundamentally a list of many
+ * similar rows (bookings, payouts, verification queues); reserve Card for a
+ * genuinely bounded single object (a hostel listing, a receipt).
+ * Pairs with StatusBadge tone="dot".
+ */
+export const ListRowGroup = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className = "", ...props }, ref) => (
+    <div ref={ref} className={`border-t border-[var(--color-border-default)] ${className}`} {...props} />
+  ),
+);
+ListRowGroup.displayName = "ListRowGroup";
+
+export const ListRow = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className = "", ...props }, ref) => (
+    <div
+      ref={ref}
+      className={`flex items-center justify-between gap-4 py-3.5 border-b border-[var(--color-border-subtle)] last:border-b-0 ${className}`}
+      {...props}
+    />
+  ),
+);
+ListRow.displayName = "ListRow";
 
 /* ── SkeletonLine / SkeletonCard ─────────────────────────── */
 export function SkeletonLine({ width = "100%", height = "16px" }: { width?: string; height?: string }) {

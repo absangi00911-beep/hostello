@@ -1,12 +1,21 @@
 // Path: src/app/admin/listings/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Building2, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
+import {
+  Building2,
+  Loader2,
+  ExternalLink,
+  ShieldCheck,
+  ClipboardList,
+  AlertTriangle,
+  Sparkles,
+  Search,
+} from "lucide-react";
 import {
   EmptyState,
   PageSpinner,
@@ -16,8 +25,10 @@ import {
 import { Pagination } from "@/components/hostel/Pagination";
 import { RejectReasonModal } from "@/components/admin/RejectReasonModal";
 import { HostelReviewDrawer } from "@/components/admin/HostelReviewDrawer";
+import { FLAGGED_THRESHOLD } from "@/lib/listingCompleteness";
 
 type StatusTab = "PENDING_REVIEW" | "ACTIVE" | "SUSPENDED";
+type HostelStatusBadgeVariant = "pending_review" | "active" | "suspended";
 
 const TABS: { value: StatusTab; label: string }[] = [
   { value: "PENDING_REVIEW", label: "Pending review" },
@@ -27,15 +38,30 @@ const TABS: { value: StatusTab; label: string }[] = [
 
 const PAGE_SIZE = 20;
 
+const HOSTEL_STATUS_BADGES: Record<StatusTab, HostelStatusBadgeVariant> = {
+  PENDING_REVIEW: "pending_review",
+  ACTIVE: "active",
+  SUSPENDED: "suspended",
+};
+
 interface AdminHostel {
   id: string;
   name: string;
   slug: string;
-  status: string;
+  status: StatusTab;
   city: string;
   verified: boolean;
   createdAt: string;
+  completeness: number;
   owner: { name: string; email: string };
+}
+
+interface ListingStats {
+  totalListings: number;
+  pendingApproval: number;
+  flaggedCount: number;
+  newlyPublished: number;
+  newlyPublishedWindowDays: number;
 }
 
 type PendingAction = {
@@ -43,6 +69,24 @@ type PendingAction = {
   hostelName: string;
   action: "suspend" | "activate";
 } | null;
+
+/* -- Completeness bar --------------------------------------- */
+function CompletenessBar({ score }: { score: number }) {
+  const color = score >= 70 ? "var(--color-success)" : score >= FLAGGED_THRESHOLD ? "var(--color-warning)" : "var(--color-error)";
+  return (
+    <div className="flex items-center gap-2 w-[110px]">
+      <div className="h-1.5 flex-1 rounded-full bg-[var(--color-bg-overlay)] overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-[var(--transition-base)]"
+          style={{ width: `${score}%`, backgroundColor: color }}
+        />
+      </div>
+      <span className="text-[var(--text-caption)] font-[600] text-[var(--color-text-body)] w-8 text-right">
+        {score}%
+      </span>
+    </div>
+  );
+}
 
 /* -- Inline action buttons --------------------------------- */
 function AdminActions({
@@ -88,7 +132,7 @@ function AdminActions({
         {btn(
           "Approve",
           () => onApprove(hostel.id),
-          "border-[oklch(0.45_0.14_148_/_0.4)] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
+          "border-[var(--color-action)]/40 text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
         )}
         {btn(
           "Reject",
@@ -111,7 +155,7 @@ function AdminActions({
     return btn(
       "Reactivate",
       () => onActivate(hostel.id, hostel.name),
-      "border-[oklch(0.45_0.14_148_/_0.4)] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
+      "border-[var(--color-action)]/40 text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
     );
   }
 
@@ -125,24 +169,38 @@ export default function AdminListingsPage() {
   const [tab,  setTab]  = useState<StatusTab>("PENDING_REVIEW");
   const [page, setPage] = useState(1);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
 
   // Reason modal state — null means closed
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
+  // Debounce search input -> search (avoid a request per keystroke)
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 350);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const { data: stats } = useQuery<{ data: ListingStats }>({
+    queryKey: ["admin-listings-stats"],
+    queryFn: () => fetch("/api/admin/listings/stats").then((r) => r.json()),
+  });
+
   // Review drawer state
   const [reviewDrawer, setReviewDrawer] = useState<{
-    id: string; name: string; status: string;
+    id: string; name: string; status: StatusTab;
   } | null>(null);
 
   const { data, isLoading, isError } = useQuery<{
     data: AdminHostel[]; total: number;
   }>({
-    queryKey: ["admin-listings", tab, page],
+    queryKey: ["admin-listings", tab, page, search],
     queryFn: async () => {
       const params = new URLSearchParams({
         status: tab,
         page:   String(page),
         limit:  String(PAGE_SIZE),
+        ...(search ? { search } : {}),
       });
       const res = await fetch(`/api/admin/listings?${params}`);
       if (!res.ok) throw new Error("Failed to load listings");
@@ -218,6 +276,75 @@ export default function AdminListingsPage() {
   return (
     <>
       <div className="space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-[var(--text-h1)] font-[800] text-[var(--color-text-heading)]">
+              Hostel Moderation
+            </h1>
+            <p className="mt-1 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Pending Reviews ({stats?.data.pendingApproval ?? "…"})
+            </p>
+          </div>
+          <div className="relative w-full max-w-[320px]">
+            <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search hostels or owner IDs…"
+              aria-label="Search hostels or owner IDs"
+              className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-9 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
+            />
+          </div>
+        </div>
+
+        {stats && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+              <div className="flex items-start justify-between">
+                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Total Listings</p>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary-brand-container)]">
+                  <Building2 size={16} strokeWidth={1.5} className="text-[var(--color-secondary-brand)]" aria-hidden="true" />
+                </div>
+              </div>
+              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">{stats.data.totalListings.toLocaleString()}</p>
+            </div>
+
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+              <div className="flex items-start justify-between">
+                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Pending Approval</p>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
+                  <ClipboardList size={16} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
+                </div>
+              </div>
+              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">{stats.data.pendingApproval}</p>
+            </div>
+
+            <div className="rounded-[var(--radius-lg)] border-l-[3px] border-l-[var(--color-error)] border-y border-r border-y-[var(--color-border-subtle)] border-r-[var(--color-border-subtle)] bg-[var(--color-error-bg)] p-5">
+              <div className="flex items-start justify-between">
+                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-error-text)]">Flagged for Review</p>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-card)]">
+                  <AlertTriangle size={16} strokeWidth={1.5} className="text-[var(--color-error)]" aria-hidden="true" />
+                </div>
+              </div>
+              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-error)]">{stats.data.flaggedCount}</p>
+              <p className="mt-0.5 text-[var(--text-caption)] text-[var(--color-error-text)]">pending, under {FLAGGED_THRESHOLD}% complete</p>
+            </div>
+
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+              <div className="flex items-start justify-between">
+                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Newly Published</p>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-bg)]">
+                  <Sparkles size={16} strokeWidth={1.5} className="text-[var(--color-success-text)]" aria-hidden="true" />
+                </div>
+              </div>
+              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">
+                +{stats.data.newlyPublished} <span className="text-[1rem] font-[500] text-[var(--color-text-muted)]">last {stats.data.newlyPublishedWindowDays}d</span>
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Status tabs */}
         <div className="flex border-b border-[var(--color-border-subtle)]">
           {TABS.map(({ value, label }) => (
@@ -258,10 +385,10 @@ export default function AdminListingsPage() {
           <>
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[680px]" aria-label="Hostel listings">
+                <table className="w-full min-w-[820px]" aria-label="Hostel listings">
                   <thead>
                     <tr className="border-b border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)]">
-                      {["Hostel","Owner","City","Submitted","Status","Actions"].map((h) => (
+                      {["Hostel","Owner","City","Submitted","Status","Completeness","Actions"].map((h) => (
                         <th
                           key={h}
                           className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap"
@@ -310,7 +437,11 @@ export default function AdminListingsPage() {
                         </td>
 
                         <td className="px-4 py-3.5">
-                          <StatusBadge variant={hostel.status.toLowerCase() as any} />
+                          <StatusBadge variant={HOSTEL_STATUS_BADGES[hostel.status]} />
+                        </td>
+
+                        <td className="px-4 py-3.5">
+                          <CompletenessBar score={hostel.completeness} />
                         </td>
 
                         <td className="px-4 py-3.5">

@@ -18,13 +18,7 @@ import DateTimePicker, {
 import { useLocalSearchParams, router, Stack } from "expo-router";
 import { apiRequest } from "../../../../src/services/api";
 import type { HostelWithDetails } from "@hostello/shared";
-import {
-  colors,
-  fontSize,
-  fontWeight,
-  radius,
-  spacing,
-} from "../../../../src/theme";
+import { colors } from "../../../../src/theme";
 
 /* -- Types ------------------------------------------------ */
 interface Room {
@@ -233,7 +227,7 @@ export default function BookingScreen() {
     apiRequest<HostelWithDetails & { rooms_rel?: Room[] }>(`/hostels/${id}`)
       .then((res) => {
         setHostel(res);
-        const available = (res.rooms_rel ?? []).filter((r) => r.available > 0);
+        const available = (res.rooms_rel ?? []).filter((r: Room) => r.available > 0);
         setRooms(available);
         if (available.length > 0) setSelectedRoom(available[0]);
       })

@@ -11,7 +11,6 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import {
   AuthCardLayout,
   FormField,
-  OrDivider,
   inputCls,
   primaryBtnCls,
 } from "@/components/auth/AuthCardLayout";

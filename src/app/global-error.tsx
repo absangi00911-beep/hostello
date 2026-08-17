@@ -2,7 +2,7 @@
 "use client";
 
 export default function GlobalError({
-  error,
+  error: _error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -14,7 +14,7 @@ export default function GlobalError({
         style={{
           margin:          0,
           minHeight:       "100dvh",
-          background:      "#FDF8F0",
+          background:      "#f8f9fa",
           fontFamily:      "system-ui, -apple-system, sans-serif",
           display:         "flex",
           flexDirection:   "column",
@@ -28,7 +28,7 @@ export default function GlobalError({
           style={{
             fontSize:    "clamp(60px, 14vw, 96px)",
             fontWeight:  800,
-            color:       "#F5DFA3",
+            color:       "#ff6b6b",
             lineHeight:  1,
             marginBottom: "1.5rem",
             letterSpacing: "-0.04em",
@@ -42,7 +42,7 @@ export default function GlobalError({
           style={{
             fontSize:    "1.5rem",
             fontWeight:  600,
-            color:       "#2A2318",
+            color:       "#191c1d",
             marginBottom: "0.75rem",
           }}
         >
@@ -52,7 +52,7 @@ export default function GlobalError({
         <p
           style={{
             fontSize:   "0.9375rem",
-            color:      "#857060",
+            color:      "#584140",
             maxWidth:   "36ch",
             lineHeight: 1.65,
             marginBottom: "2rem",
@@ -66,10 +66,10 @@ export default function GlobalError({
           style={{
             height:        "2.75rem",
             padding:       "0 1.5rem",
-            borderRadius:  "10px",
+            borderRadius:  "8px",
             border:        "none",
-            background:    "#2A6545",
-            color:         "#F9F5EE",
+            background:    "#ae2f34",
+            color:         "#ffffff",
             fontSize:      "0.9375rem",
             fontWeight:    500,
             cursor:        "pointer",

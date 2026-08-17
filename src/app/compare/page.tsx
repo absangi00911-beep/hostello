@@ -121,7 +121,7 @@ export default async function ComparePage({
               {/* Price */}
               <tr>
                 <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Price/mo</td>
-                {hostels.map((h, i) => (
+                {hostels.map((h) => (
                   <Cell key={h.id} highlight={isDiff(h.pricePerMonth, prices)}>
                     <span className="font-[700] text-[var(--color-primary-deep)]">
                       {formatPKR(h.pricePerMonth)}
@@ -143,7 +143,7 @@ export default async function ComparePage({
               {/* Rating */}
               <tr>
                 <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Rating</td>
-                {hostels.map((h, i) => (
+                {hostels.map((h) => (
                   <Cell key={h.id} highlight={isDiff(h.rating, ratings)}>
                     {h.reviewCount > 0 ? (
                       <span className="inline-flex items-center gap-1 justify-center">

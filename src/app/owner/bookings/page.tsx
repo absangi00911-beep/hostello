@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { CalendarDays, ChevronDown, Loader2 } from "lucide-react";
 import {
   PageSpinner,
   InlineError,
@@ -14,9 +14,6 @@ import {
   EmptyState,
 } from "@/components/ui/shared";
 import { Pagination } from "@/components/hostel/Pagination";
-import { CalendarDays } from "lucide-react";
-
-type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: "",          label: "All statuses" },
@@ -28,14 +25,42 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 
 const PAGE_SIZE = 20;
 
+type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+type BookingStatusBadgeVariant = "pending" | "confirmed" | "completed" | "cancelled";
+type OwnerBookingAction = "confirm" | "decline" | "cancel";
+
+interface BookingRow {
+  id: string;
+  status: BookingStatus;
+  checkIn: string;
+  checkOut: string;
+  months: number;
+  guests: number;
+  total: number;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+  } | null;
+  hostel?: {
+    name?: string | null;
+  } | null;
+}
+
+const BOOKING_STATUS_BADGES: Record<BookingStatus, BookingStatusBadgeVariant> = {
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+};
+
 /* -- Inline action buttons --------------------------------- */
 function BookingActions({
   booking,
   onAction,
   actingId,
 }: {
-  booking: any;
-  onAction: (id: string, action: "confirm" | "decline" | "cancel") => void;
+  booking: BookingRow;
+  onAction: (id: string, action: OwnerBookingAction) => void;
   actingId: string | null;
 }) {
   const loading = actingId === booking.id;
@@ -54,7 +79,7 @@ function BookingActions({
       <button
         onClick={() => onAction(booking.id, "confirm")}
         disabled={loading}
-        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-success-bg)] border border-[oklch(0.52_0.14_148_/_0.3)] text-[var(--text-caption)] font-[600] text-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-white transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-success-bg)] border border-[var(--color-success)]/30 text-[var(--text-caption)] font-[600] text-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-white transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
       >
         {loading ? <Loader2 size={10} className="animate-spin" aria-hidden="true" /> : null}
         Confirm
@@ -77,7 +102,7 @@ export default function OwnerBookingsPage() {
   const [actingId, setActingId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery<{
-    data: any[]; total: number; page: number; limit: number;
+    data: BookingRow[]; total: number; page: number; limit: number;
   }>({
     queryKey: ["owner-bookings", status, page],
     queryFn: async () => {
@@ -162,7 +187,7 @@ export default function OwnerBookingsPage() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b: any) => (
+                {bookings.map((b) => (
                   <tr
                     key={b.id}
                     className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
@@ -194,7 +219,7 @@ export default function OwnerBookingsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <StatusBadge variant={b.status.toLowerCase() as any} />
+                      <StatusBadge variant={BOOKING_STATUS_BADGES[b.status]} />
                     </td>
                     <td className="px-4 py-3.5">
                       <BookingActions

@@ -1,432 +1,250 @@
-# Hostello Project File Structure
+# Hostello Project Structure
 
-A comprehensive hostel booking platform built with Next.js, React, TypeScript, Prisma ORM, and supporting mobile app in React Native.
+**Last updated:** June 1, 2026
+**Verification source:** file-system audit of the current workspace
+**Status:** Synchronized with the active Next.js web app, Expo mobile app, shared package, Prisma schema, migrations, scripts, and docs.
 
-**Last Updated:** May 17, 2026 | Current state reflects all active documentation, migrations, and mobile app structure
-**Verification Status:** ✓ All documents synchronized - includes all nested documentation files
-**Version:** Fully synchronized with actual workspace structure
+---
 
-```
-hostello/
-│
-├── 📄 Configuration & Build Files
-├── package.json                          # Project dependencies, scripts, npm config
-├── package-lock.json                     # Locked npm dependency versions
-├── tsconfig.json                         # TypeScript compiler configuration
-├── next.config.ts                        # Next.js build & optimization config
-├── postcss.config.js                     # PostCSS for Tailwind CSS
-├── tailwind.config.js                    # Tailwind CSS theme & configuration
-├── eslint.config.mjs                     # ESLint rules for JS/TS linting
-├── vitest.config.ts                      # Vitest test runner configuration
-├── components.json                       # shadcn/ui components config
-├── vercel.json                           # Vercel deployment configuration
-├── prisma.config.ts                      # Prisma ORM configuration
-├── next-env.d.ts                         # Generated Next.js types
-├── tsconfig.tsbuildinfo                  # TypeScript build cache
-├── skills-lock.json                      # Agent customization lock file
-│
-├── 📋 Environment & Setup
-├── .env                                  # Local environment variables (git-ignored)
-├── .env.example                          # Environment variables template
-├── .env.production.local                 # Production env vars (git-ignored)
-├── .env.sentry.example                   # Sentry config example
-├── .gitignore                            # Git ignore rules
-├── .gitattributes                        # Git attributes (line endings)
-├── .graphifyignore                       # Files to exclude from graphify
-│
-├── 📊 Instrumentation & Monitoring
-├── instrumentation.ts                    # Application monitoring setup
-├── sentry.client.config.ts               # Sentry client-side error tracking
-├── sentry.edge.config.ts                 # Sentry Edge functions config
-├── sentry.server.config.ts               # Sentry server-side config
-│
-├── 📚 Documentation
-├── WEB_APP_PROGRESS.md                   # Web app development progress tracking
-├── Mobile_Dev_Plan.md                    # Mobile app development plan
-├── SYSTEM.md                             # System architecture & design
-├── DESIGN.md                             # Frontend design guidelines
-├── DESIGN_MOBILE.md                      # Mobile app design specs
-├── MOBILE_APP_STRATEGY.md                # Mobile app development strategy
-├── MOBILE_ALIGNMENT.md                   # Web & mobile alignment
-├── PROJECT_STRUCTURE.md                  # This file - project structure overview
-├── SENTRY_SETUP.md                       # Sentry setup guide
-│
-├── 🛠️ Tool Configuration Directories
-├── .github/
-│   ├── code-review-graph.instruction.md
-│   └── workflows/                        # GitHub Actions CI/CD
-├── .code-review-graph/                   # Code review graph cache
-├── .mcp.json                             # Model Context Protocol config
-│
-├── 🔧 Build & Cache Directories (git-ignored)
-├── .next/                                # Next.js build output
-├── node_modules/                         # NPM dependencies
-├── .git/                                 # Git version control
-│
-├── 📂 MAIN APPLICATION - src/
-├── src/
-│   │
-│   ├── 📍 Root Application Setup
-│   ├── middleware.ts                     # Next.js middleware (auth, redirects)
-│   │
-│   ├── 📄 App Router (Next.js 13+)
-│   └── app/
-│       │
-│       ├── 📑 Root Level Pages
-│       ├── layout.tsx                    # Root layout with global providers
-│       ├── page.tsx                      # Home page
-│       ├── error.tsx                     # Error boundary component
-│       ├── global-error.tsx              # Global error handler
-│       ├── globals.css                   # Global CSS styles
-│       │
-│       ├── 🔐 Authentication Pages Group
-│       └── (auth)/
-│           ├── signup/                   # User signup flows
-│           ├── login/
-│           │   └── page.tsx              # Login page
-│           ├── register/
-│           │   └── page.tsx              # Registration page
-│           ├── forgot-password/
-│           │   └── page.tsx              # Password reset request
-│           ├── reset-password/
-│           │   └── page.tsx              # Password reset confirmation
-│           └── verify-email-sent/
-│               └── page.tsx              # Email verification status
-│       │
-│       ├── 🔌 API Routes
-│       └── api/
-│           ├── auth/                     # NextAuth.js endpoints
-│           ├── admin/                    # Admin panel APIs
-│           ├── bookings/                 # Booking management APIs
-│           ├── contact/                  # Contact form endpoints
-│           ├── conversations/            # Messaging APIs
-│           ├── cron/                     # Background job triggers
-│           ├── hostels/                  # Hostel data APIs
-│           ├── notifications/            # Notification delivery
-│           ├── payment/                  # Payment processing
-│           ├── price-alerts/             # Price alert endpoints
-│           ├── profile/                  # User profile APIs
-│           ├── report/                   # Analytics & reporting
-│           ├── reviews/                  # Review management
-│           └── upload/                   # File upload handlers
-│       │
-│       ├── 📊 Feature Pages
-│       ├── admin/                        # Admin dashboard pages
-│       ├── owner/                        # Hostel owner management
-│       ├── dashboard/                    # User dashboard
-│       ├── booking/                      # Booking flow
-│       └── hostels/                      # Hostel listings & details
-│
-│   ├── 🎨 React Components - components/
-│   └── components/
-│       │
-│       ├── 🏗️ Layout Components
-│       ├── Navbar.tsx                    # Main navigation bar
-│       ├── Footer.tsx                    # Footer component
-│       ├── Providers.tsx                 # Global React Query, Theme, etc.
-│       ├── AccountMenu.tsx               # User account dropdown
-│       ├── NotificationBell.tsx          # Notification bell icon
-│       ├── booking-dialog.tsx            # Booking modal dialog
-│       ├── index.ts                      # Component exports
-│       └── layout/                       # Layout wrapper components
-│       │
-│       ├── 🔐 Authentication Components
-│       ├── auth/
-│       │   └── AuthCardLayout.tsx        # Auth page card layout
-│       │
-│       ├── 🎯 Feature Components
-│       ├── landing/                      # Landing page components
-│       ├── booking/                      # Booking flow components
-│       ├── dashboard/                    # Dashboard-specific UI
-│       ├── hostel/                       # Hostel listing & details
-│       ├── owner/                        # Owner management UI
-│       │
-│       ├── 🎨 UI Component Library (Radix + Tailwind)
-│       └── ui/                           # Reusable UI components
-│           ├── avatar.tsx                # Avatar display
-│           ├── badge.tsx                 # Badge/tag component
-│           ├── button.tsx                # Button variants
-│           ├── calendar.tsx              # Date picker
-│           ├── card.tsx                  # Card container
-│           ├── dialog.tsx                # Modal dialog
-│           ├── dropdown-menu.tsx         # Dropdown menu
-│           ├── form.tsx                  # Form wrapper
-│           ├── input.tsx                 # Text input
-│           ├── label.tsx                 # Form label
-│           ├── navigation-menu.tsx       # Navigation menu
-│           ├── popover.tsx               # Popover tooltip
-│           ├── radio-group.tsx           # Radio buttons
-│           ├── select.tsx                # Dropdown select
-│           ├── separator.tsx             # Divider
-│           ├── shared.tsx                # Shared UI utilities
-│           ├── skeleton.tsx              # Loading skeleton
-│           ├── table.tsx                 # Table component
-│           ├── tabs.tsx                  # Tab navigation
-│           ├── textarea.tsx              # Text area input
-│           ├── toast.tsx                 # Toast notification
-│           └── toaster.tsx               # Toast container
-│
-│   ├── 🪝 React Hooks - hooks/
-│   └── hooks/
-│       └── use-toast.ts                  # Toast notification hook
-│
-│   ├── 🔧 Library Services & Utilities - lib/
-│   └── lib/
-│       │
-│       ├── 💾 Core Database & Config
-│       ├── db.ts                         # Prisma client instance
-│       ├── app-url.ts                    # App URL utilities
-│       ├── env-validation.ts             # Environment validation
-│       ├── csrf.ts                       # CSRF token validation
-│       │
-│       ├── 🔐 Authentication Services
-│       ├── auth/
-│       │   ├── config.ts                 # NextAuth.js config
-│       │   ├── session.ts                # Session management
-│       │   └── token-version-cache.ts    # Token versioning cache
-│       │
-│       ├── 📖 Feature Services
-│       ├── booking-service.ts            # Booking logic & operations
-│       ├── hostel-service.ts             # Hostel data management
-│       ├── hostel-search.ts              # Hostel search & filtering
-│       ├── price-alerts.ts               # Price alert notifications
-│       │
-│       ├── 💳 Payment Integration
-│       ├── payment-methods.ts            # Payment configuration
-│       ├── easypaisa.ts                  # EasyPaisa gateway
-│       ├── jazzcash.ts                   # JazzCash gateway
-│       └── safepay.ts                    # SafePay gateway
-│       │
-│       ├── 📧 External Services
-│       ├── firebase-admin.ts             # Firebase Admin SDK
-│       ├── email.ts                      # Email sending service
-│       ├── email-templates/              # HTML email templates
-│       ├── sms.ts                        # SMS notifications
-│       ├── notifications.ts              # Push notifications
-│       ├── typesense.ts                  # Typesense search client
-│       └── typesense-sync.ts             # Search index sync
-│       │
-│       ├── 🔒 Infrastructure & Security
-│       ├── gateway-ip-allowlist.ts       # IP whitelist for gateways
-│       ├── rate-limit.ts                 # Rate limiting config
-│       ├── verify-upstash.ts             # Upstash Redis verify
-│       ├── routes-manifest.ts            # Route manifest patching
-│       │
-│       ├── 🛠️ General Utilities
-│       ├── utils.ts                      # General utilities
-│       ├── validations.ts                # Data validation schemas
-│       └── support.ts                    # Support utilities
-│       │
-│       ├── ✅ Test Files
-│       ├── bookings.test.ts              # Booking service tests
-│       ├── reviews.integration.test.ts   # Reviews integration tests
-│       └── validations.test.ts           # Validation tests
-│
-│   ├── ⚙️ Configuration - config/
-│   └── config/
-│       └── constants.ts                  # App-wide constants
-│
-│   └── 📘 TypeScript Types - types/
-│       └── types/
-│           └── index.ts                  # Centralized type exports
-│
-├── 📱 MOBILE APP - apps/mobile/
-├── apps/
-│   └── mobile/
-│       │
-│       ├── 🎯 Mobile App Root
-│       ├── App.tsx                       # Root React Native component
-│       ├── app.json                      # Expo app configuration
-│       ├── index.ts                      # App entry point
-│       ├── package.json                  # Mobile dependencies
-│       └── tsconfig.json                 # Mobile TypeScript config
-│       │
-│       ├── 📱 Mobile App Structure
-│       ├── app/                          # Mobile screens & navigation
-│       ├── src/                          # Mobile source code (components, hooks)
-│       └── assets/                       # Images, fonts, static files
-│
-├── 📦 SHARED MONOREPO PACKAGE - packages/shared/
-├── packages/
-│   └── shared/
-│       │
-│       ├── package.json                  # Shared package config
-│       │
-│       └── src/                          # Shared source code
-│           ├── api/                      # Shared API utilities
-│           ├── types/                    # Shared TypeScript types
-│           ├── constants/                # Shared constants│           │   ├── amenities.ts         # Hostel amenities config
-│           │   └── universities.ts      # University listings│           ├── utils/                    # Shared utility functions
-│           ├── validations/              # Shared validation schemas
-│           └── index.ts                  # Main export file
-│
-├── 🗄️ DATABASE - prisma/
-├── prisma/
-│   │
-│   ├── 📊 Schema & Configuration
-│   ├── schema.prisma                     # Prisma ORM schema definition
-│   ├── client.ts                         # Prisma client config
-│   ├── seed.ts                           # Database seeding script
-│   ├── MIGRATION_RENAME_RUNBOOK.md       # Migration naming and process documentation
-│   │
-│   └── 🔄 Database Migrations
-│       └── migrations/
-│           ├── migration_lock.toml       # Migration lock file
-│           ├── 20260101000000_init/
-│           │   └── migration.sql         # Initial database schema
-│           ├── 20260115000000_currency_int/
-│           │   └── migration.sql         # Currency data type migration
-│           ├── 20260201000000_add_notifications/
-│           │   └── migration.sql         # Notifications table
-│           ├── 20260215000000_add_phone_verification/
-│           │   └── migration.sql         # Phone verification table
-│           ├── 20260301000000_add_last_known_price/
-│           │   └── migration.sql         # Price tracking schema
-│           ├── 20260426075853_add_conversation_participants_table/
-│           │   └── migration.sql         # Conversation participants table
-│           └── 20260510065319_add_device_token/
-│               └── migration.sql         # Device token storage for notifications
-│
-├── 🔨 BUILD & AUTOMATION SCRIPTS - scripts/
-├── scripts/
-│   ├── patch-routes-manifest.mjs         # Patch Next.js routes manifest post-build
-│   ├── schedule-cron-jobs.ts             # Setup background job scheduling
-│   ├── check-price-alerts.ts             # Price alert checker/trigger
-│   ├── reset-review-stats.ts             # Review stats reset utility
-│   ├── fix-phantom-reviews.ts            # Fix corrupted review data
-│   ├── setup-typesense.ts                # Typesense index initialization
-│   ├── verify-typesense-fallback.ts      # Typesense fallback verification
-│   ├── Check-Gitignore.ps1               # PowerShell gitignore validator
-│   └── One-Time-Migration.ps1            # PowerShell migration utility
-│
-├── 🌐 PUBLIC ASSETS - public/
-├── public/
-│   └── .well-known/                      # Well-known config files (ACME challenges)
-│
-├── 📊 CODE ANALYSIS OUTPUT - graphify-out/
-├── graphify-out/
-│   │
-│   ├── 📈 Analysis Artifacts
-│   ├── graph.json                        # Code dependency graph (JSON)
-│   ├── graph.html                        # Visualized dependency graph
-│   ├── hostello-callflow.html            # Call flow visualization
-│   ├── GRAPH_REPORT.md                   # Analysis report & findings
-│   ├── cost.json                         # Analysis cost metrics
-│   │
-│   ├── 🐍 Analysis Scripts
-│   ├── detect_summary.py                 # Change detection summary
-│   ├── step2_detect.py                   # Change detection script
-│   ├── step3a_ast.py                     # Abstract Syntax Tree generation
-│   ├── step3c_merge.py                   # Graph merge logic
-│   ├── step4_build_graph.py              # Graph builder script
-│   ├── step5_label_communities.py        # Community detection
-│   ├── step9_cleanup.py                  # Cleanup operations
-│   │
-│   └── cache/                            # AST & analysis cache
-│       └── ast/                          # AST cache files
-│
-├── ✅ ROOT LEVEL UTILITIES
-├── test.py                               # Python test utility script
-│
-└── 📊 PROJECT METADATA (hidden/git)
-    ├── .git/                             # Git version control
-    ├── .gitignore                        # Git ignore patterns
-    ├── .github/                          # GitHub config
-    └── node_modules/                     # NPM packages (git-ignored)
+## Repository Overview
+
+Hostello is a monorepo-style hostel booking platform:
+
+- `src/` contains the Next.js 16 web app, API route handlers, services, UI components, and tests.
+- `apps/mobile/` contains the Expo 54 / React Native 0.81 mobile app.
+- `packages/shared/` contains shared constants, schemas, types, API helpers, and utilities used by web/mobile.
+- `prisma/` contains the Prisma 7 schema, client, seed, migration workflow docs, and 15 committed migrations.
+- `e2e/` contains Playwright tests for auth, homepage, search, owner, and booking flows.
+- `docs/superpowers/` contains the UI/UX design spec and implementation plan artifacts.
+
+Current counts from the audit:
+
+| Area | Count |
+|---|---:|
+| Web `page.tsx` routes | 44 |
+| API route files | 57 |
+| Prisma models | 22 |
+| Prisma migrations | 15 |
+| Project test/spec files | 34 |
+| Playwright E2E specs | 5 |
+| Mobile Expo screen/layout files | 15 |
+
+---
+
+## Root Files
+
+| Path | Purpose |
+|---|---|
+| `package.json` / `package-lock.json` | Root dependency graph and scripts for web, tests, migrations, build, and hooks. |
+| `next.config.ts` | Next.js build/security configuration. |
+| `tsconfig.json` | TypeScript config for the web app. |
+| `vitest.config.ts` | Vitest config for unit/integration tests. |
+| `playwright.config.ts` | Playwright E2E config. |
+| `eslint.config.mjs` | ESLint rules. |
+| `tailwind.config.js`, `postcss.config.js`, `components.json` | Tailwind/shadcn-style UI configuration. |
+| `prisma.config.ts` | Prisma config. |
+| `vercel.json` | Vercel deployment config. |
+| `instrumentation.ts`, `sentry.*.config.ts` | Sentry initialization for server, client, and edge runtime. |
+| `.env.example`, `.env.sentry.example` | Environment variable templates. |
+| `skills-lock.json` | Agent/skill lock metadata. |
+
+---
+
+## Documentation
+
+| Path | Purpose |
+|---|---|
+| `README.md` | Root orientation — what this is, how to run it, where to look next. Added July 1, 2026. |
+| `WEB_APP_PROGRESS.md` | Current implementation progress and open risks. Recreated July 1, 2026 (see below). |
+| `SYSTEM.md` | System architecture, data model, APIs, operations, and current technical audit. |
+| `DESIGN.md` | Web design system and product UX rules. **Confirmed gone, not yet recreated.** |
+| `DESIGN_MOBILE.md` | Native mobile design system and UX rules. **Confirmed gone, not yet recreated.** |
+| `MOBILE_APP_STRATEGY.md` | Native mobile product/engineering strategy. **Confirmed gone, not yet recreated.** |
+| `MOBILE_ALIGNMENT.md` | Web/mobile alignment audit and current gaps. **Confirmed gone, not yet recreated.** |
+| `Mobile_Dev_Plan.md` | Solo-founder mobile execution plan. **Confirmed gone, not yet recreated.** |
+| `SENTRY_SETUP.md` | Sentry setup guide. Recreated July 1, 2026 from the actual config files. |
+| `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
+| `.github/VERCEL_SETUP.md` | GitHub Actions/Vercel deployment setup. |
+| `docs/superpowers/specs/` | UI/UX optimization design spec. |
+| `docs/superpowers/plans/` | UI/UX implementation plan artifact. |
+
+Five docs above are confirmed gone as of the July 1, 2026 audit — not on another branch or machine, per the founder. `WEB_APP_PROGRESS.md` and `SENTRY_SETUP.md` were recreated the same day since both were reconstructable from the codebase without guesswork; the remaining five need either deeper code archaeology (`DESIGN.md`, `DESIGN_MOBILE.md`, `MOBILE_ALIGNMENT.md`) or founder input on strategy/planning content that can't be inferred from code (`MOBILE_APP_STRATEGY.md`, `Mobile_Dev_Plan.md`).
+
+---
+
+## Web App (`src/`)
+
+### App Router
+
+`src/app/` contains public pages, authenticated dashboards, owner/admin surfaces, and route handlers.
+
+Key page groups:
+
+- Public: `/`, `/hostels`, `/hostels/in/[city]`, `/hostels/[slug]`, `/compare`, `/university/[slug]`, `/contact`, `/privacy`, `/terms`, `/report`.
+- Auth: `/login`, `/register`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email-sent`.
+- Student dashboard: `/dashboard`, `/dashboard/bookings`, `/dashboard/messages`, `/dashboard/notifications`, `/dashboard/price-alerts`, `/dashboard/saved`.
+- Owner: `/owner`, `/owner/dashboard`, `/owner/listings`, `/owner/listings/new`, `/owner/listings/[id]/edit`, `/owner/bookings`, `/owner/messages`, `/owner/reviews`, `/owner/analytics`, `/owner/subscription`, `/owner/settings`.
+- Admin: `/admin`, `/admin/listings`, `/admin/bookings`, `/admin/reviews`, `/admin/search`, `/admin/verifications`.
+- Booking: `/booking/[id]/payment`, `/booking/[id]/confirmation`, `/booking/[id]/review`.
+
+### API Routes
+
+`src/app/api/` currently has 57 route files covering:
+
+- Auth: NextAuth, signup, email verification, password reset, mobile login/refresh, phone OTP, account deletion.
+- Hostels: search/list, mine, detail/update/delete, availability, favorite, view tracking, roommate posts.
+- Bookings: create/list/detail/status changes.
+- Payments: initiate, webhook, gateway callback.
+- Conversations/messages.
+- Reviews and owner replies.
+- Notifications and device-token registration.
+- Price alerts and unsubscribe.
+- Profile and password changes.
+- Uploads.
+- Owner analytics, subscription, and blocked dates.
+- Admin listings/hostels/search/verifications.
+- Cron endpoints and cron health.
+- Contact and reports.
+
+### Components
+
+`src/components/` contains:
+
+- `ui/`: reusable primitives such as button, card, dialog, form, input, tabs, slider, sheet, and shared state/empty/recovery primitives.
+- `layout/`: public/admin/owner layouts, account menu, notification bell, city selector.
+- `hostel/`: hostel cards, filters, booking panel, maps, comparison, gallery, reviews, roommate board, trust summary.
+- `booking/`: booking step layout and summary card.
+- `dashboard/`: student verification card and review dialog.
+- `owner/`: listing wizard and blocked dates manager.
+- `admin/`: review drawer, verification client, rejection modal.
+- `landing/`: hero search.
+- `auth/`: auth card layout.
+
+### Services And Utilities
+
+`src/lib/` contains database, auth, CSRF, rate limiting, search, bookings, hostels, payments, notifications, email/SMS, Firebase Admin, environment validation, and support utilities.
+
+Notable files:
+
+- `src/proxy.ts` is the active Next.js proxy/middleware entry. It handles environment validation, mobile Bearer token cookie injection, and CSRF origin checks.
+- `src/lib/auth/config.ts`, `session.ts`, `token-version-cache.ts` contain NextAuth and revocation logic.
+- `src/lib/notifications.ts` writes in-app notifications and dispatches FCM push notifications.
+- `src/lib/price-alerts.ts` powers scheduled price-drop alerts.
+- `src/lib/payment-methods.ts`, `safepay.ts`, `jazzcash.ts`, `easypaisa.ts` power gateway integrations.
+
+---
+
+## Mobile App (`apps/mobile/`)
+
+The mobile app uses Expo Router with SecureStore-backed authentication.
+
+Key files:
+
+| Path | Purpose |
+|---|---|
+| `apps/mobile/app.json` | Expo config, app scheme, bundle IDs, associated domains, Android app links, notification plugin. |
+| `apps/mobile/package.json` | Mobile dependencies and scripts. |
+| `apps/mobile/app/_layout.tsx` | Root mobile layout. |
+| `apps/mobile/app/(auth)/` | Login, register, forgot-password screens. |
+| `apps/mobile/app/(app)/(tabs)/` | Main tabs: home/search, bookings, favorites, messages, profile. |
+| `apps/mobile/app/(app)/hostel/[slug].tsx` | Hostel detail screen. |
+| `apps/mobile/app/(app)/booking/[id]/index.tsx` | Mobile booking/payment flow. |
+| `apps/mobile/app/(app)/conversation/[id].tsx` | Conversation thread screen. |
+| `apps/mobile/src/services/api.ts` | Fetch wrapper with Bearer token headers, refresh retry, SecureStore token helpers. |
+| `apps/mobile/src/context/AuthContext.tsx` | Auth state, proactive refresh, route guard, push token registration. |
+| `apps/mobile/src/services/notifications.ts` | Push permission and native device token helper. |
+| `apps/mobile/src/theme.ts` | Mobile theme tokens. |
+
+Current mobile follow-up:
+
+- Normalize `EXPO_PUBLIC_API_URL` and endpoint path conventions.
+- Consolidate duplicate device-token API routes.
+- Verify push and Safepay deep links on physical devices.
+
+---
+
+## Shared Package (`packages/shared/`)
+
+| Path | Purpose |
+|---|---|
+| `packages/shared/src/constants/` | Shared amenities, university list, and config values. |
+| `packages/shared/src/types/` | Shared TypeScript types. |
+| `packages/shared/src/validations/` | Shared Zod validation schemas. |
+| `packages/shared/src/utils/` | Currency, date, and string helpers. |
+| `packages/shared/src/api/client.ts` | Shared API client helper. |
+| `packages/shared/src/index.ts` | Package exports. |
+
+---
+
+## Database (`prisma/`)
+
+| Path | Purpose |
+|---|---|
+| `prisma/schema.prisma` | Data model with 22 models. |
+| `prisma/client.ts` | Prisma client setup. |
+| `prisma/seed.ts` | Local seed script. |
+| `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
+| `prisma/migrations/` | 15 committed migration folders plus migration lock. |
+
+Current schema areas include users/auth, hostels, rooms, bookings, reviews, favorites, conversations, price alerts, notifications, device tokens, cron logs, blocked dates, subscriptions, student verification fields, and roommate finder posts/reports.
+
+---
+
+## Scripts
+
+| Path | Purpose |
+|---|---|
+| `scripts/check-price-alerts.ts` | Scheduled/manual price-alert checks. |
+| `scripts/schedule-cron-jobs.ts` | QStash cron registration. |
+| `scripts/setup-typesense.ts` | Typesense collection/index setup. |
+| `scripts/verify-typesense-fallback.ts` | Search fallback verification. |
+| `scripts/reset-review-stats.ts` | Review aggregate maintenance. |
+| `scripts/fix-phantom-reviews.ts` | Review data repair. |
+| `scripts/migrate-rename-fix.ts`, `scripts/show-migration-sql.ts`, `scripts/fix-migration-names.sql`, `scripts/One-Time-Migration.ps1` | Migration repair/inspection helpers. |
+| `scripts/patch-routes-manifest.mjs` | Post-build Next.js route manifest patch. |
+
+---
+
+## Tests
+
+| Area | Files |
+|---|---|
+| Unit/integration | `src/**/*.test.ts`, `src/**/*.test.tsx`, and `apps/mobile/src/services/api.test.ts`. |
+| E2E | `e2e/auth.spec.ts`, `e2e/homepage.spec.ts`, `e2e/search.spec.ts`, `e2e/owner-flow.spec.ts`, `e2e/booking-flow.spec.ts`. |
+| Setup | `e2e/global.setup.ts`, `e2e/global.teardown.ts`, `e2e/fixtures/auth.ts`. |
+
+Primary commands:
+
+```bash
+npm run test
+npm run e2e
+npm --prefix apps/mobile run typecheck
 ```
 
 ---
 
-## Directory Hierarchy Summary
+## Deployment And Operations
 
-### **Tier 1: Project Root**
-Configuration files, environment setup, documentation, and monitoring at the top level.
-- Core config: `package.json`, `tsconfig.json`, `next.config.ts`, etc.
-- Documentation: Design specs, strategy docs, and setup guides
-- Monitoring: Sentry configuration for error tracking
-- Instrumentation: Application monitoring setup
-
-### **Tier 2: Application Source** (`/src`)
-- **app/**: Next.js pages (grouped by feature), API routes, layouts
-- **components/**: React component library (UI components, feature components)
-- **hooks/**: Custom React hooks
-- **lib/**: Business logic, services, external integrations
-- **config/**: Constants and configuration
-- **types/**: TypeScript definitions
-
-### **Tier 3: Mobile App** (`/apps/mobile`)
-React Native + Expo separate mobile application.
-
-### **Tier 4: Shared Code** (`/packages/shared`)
-Monorepo shared utilities for web and mobile.
-
-### **Tier 5: Database** (`/prisma`)
-Schema definition and 7 migration versions (init, currency, notifications, phone verification, price tracking, conversation participants, device tokens).
-
-### **Tier 6: Build & Analysis**
-- `/scripts`: Automation and build helpers
-- `/graphify-out`: Code analysis outputs
-- `/public`: Static assets
-- `/.next`, `/node_modules`: Build artifacts (git-ignored)
+| Path | Purpose |
+|---|---|
+| `.github/workflows/ci.yml` | Pull request checks. |
+| `.github/workflows/production.yml` | Production deployment workflow. |
+| `.github/workflows/audit.yml` | Audit workflow. |
+| `.github/VERCEL_SETUP.md` | Required Vercel secrets and branch protection setup. |
+| `public/.well-known/apple-app-site-association` | iOS Universal Link association file. |
+| `public/.well-known/assetlinks.json` | Android App Link association file. |
+| `graphify-out/` | Generated code graph/report artifacts. |
 
 ---
 
-## Key File Organization Principles
+## Git-Ignored Or Generated Areas
 
-| Principle | Implementation |
-|-----------|---|
-| **Separation of Concerns** | Pages, Components, Services in separate directories |
-| **Feature Grouping** | Related UI in `/components/{feature}`, APIs in `/api/{feature}` |
-| **Reusable UI** | All UI components in `/components/ui/` with Radix + Tailwind |
-| **Business Logic** | Services in `/lib/{feature}.ts` or `/lib/{feature}/` |
-| **Authentication** | Centralized in `/lib/auth/` with NextAuth config |
-| **External Services** | Payment, Email, SMS, Search each in dedicated files |
-| **Database** | Single `/prisma` with schema and migrations |
-| **Monorepo** | Shared package at `/packages/shared/` |
+These exist locally but are not source-of-truth implementation docs:
 
----
-
-## Tech Stack by Directory
-
-| Layer | Technology | Location |
-|-------|-----------|----------|
-| **Framework** | Next.js 16 | `/src/app`, `next.config.ts` |
-| **UI Library** | React + Radix UI + Tailwind | `/src/components/ui` |
-| **Language** | TypeScript | Throughout `**/*.ts(x)` |
-| **Database** | PostgreSQL + Prisma ORM | `/prisma/**` |
-| **Authentication** | NextAuth.js | `/src/lib/auth/` |
-| **Search** | Typesense | `/src/lib/typesense*` |
-| **Payments** | EasyPaisa, JazzCash, SafePay | `/src/lib/*paisa.ts`, `jazzcash.ts`, `safepay.ts` |
-| **Notifications** | Firebase, Push, SMS | `/src/lib/notifications.ts` |
-| **Error Tracking** | Sentry | `sentry.*.config.ts` |
-| **Mobile** | React Native + Expo | `/apps/mobile/**` |
-| **State Management** | React Query | `package.json` |
-| **Code Analysis** | Graphify | `/graphify-out/**` |
-
----
-
-## File Naming Conventions
-
-- **Pages**: `page.tsx` (Next.js convention)
-- **Layouts**: `layout.tsx`
-- **Components**: PascalCase (e.g., `Navbar.tsx`)
-- **Utilities**: camelCase (e.g., `db.ts`, `utils.ts`)
-- **Types**: `index.ts` for exports
-- **Tests**: `*.test.ts` or `*.integration.test.ts`
-- **Config**: `*.config.ts` or `*.config.js`
-
----
-
-## Development Workflow
-
-```
-Root Files → Environment Setup → src/ → Database → Build
-   ↓              ↓                ↓        ↓        ↓
-Config    .env Config      App Logic   Schema   Scripts
-          Secrets          & UI        & Migrations
-```
-
----
-
-*Last Updated: 2026-05-14*
-*Project: Hostello - Hostel Booking Platform*
+- `.next/`
+- `node_modules/`
+- `apps/mobile/node_modules/`
+- `test-results/`
+- `.code-review-graph/`
+- `graphify-out/cache/`
+- `tsconfig.tsbuildinfo`

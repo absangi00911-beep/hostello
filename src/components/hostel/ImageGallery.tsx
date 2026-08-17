@@ -55,7 +55,7 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
       role="dialog"
       aria-modal="true"
       aria-label={`Photo gallery for ${hostelName}`}
-      className="fixed inset-0 z-[100] flex flex-col bg-[oklch(0.10_0.012_65_/_0.97)]"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#0d0e0f]/97"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0 border-b border-white/[0.08]">
@@ -295,7 +295,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
                   />
                   {isLastVisible && (
                     <div
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[oklch(0.10_0.012_65_/_0.62)]"
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0d0e0f]/62"
                     >
                       <Grid2x2 size={22} strokeWidth={1.5} className="text-white" aria-hidden="true" />
                       <span style={{

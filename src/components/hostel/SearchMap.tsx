@@ -53,27 +53,27 @@ function buildPopupHtml(hostel: HostelCardData): string {
     ? `<img src="${hostel.coverImage}" alt="${hostel.name}" style="width:100%;height:90px;object-fit:cover;border-radius:6px 6px 0 0;display:block;margin:0 0 8px;">`
     : "";
   const verified = hostel.verified
-    ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:oklch(0.52 0.14 80);background:oklch(0.95 0.05 80);padding:1px 6px;border-radius:20px;">✓ Verified</span>`
+    ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--color-success-text);background:var(--color-success-bg);padding:1px 6px;border-radius:20px;">✓ Verified</span>`
     : "";
   const rating = hostel.reviewCount > 0
-    ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#555;">★ ${hostel.rating.toFixed(1)} (${hostel.reviewCount})</span>`
+    ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--color-text-muted);">★ ${hostel.rating.toFixed(1)} (${hostel.reviewCount})</span>`
     : "";
 
   return `
     <div style="width:200px;font-family:sans-serif;line-height:1.4;">
       ${img}
       <div style="padding: ${img ? "0 8px 8px" : "8px"}">
-        <a href="/hostels/${hostel.slug}" style="font-size:13px;font-weight:700;color:#1a120a;text-decoration:none;display:block;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        <a href="/hostels/${hostel.slug}" style="font-size:13px;font-weight:700;color:var(--color-text-heading);text-decoration:none;display:block;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
           ${hostel.name}
         </a>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">
           ${verified}
           ${rating}
         </div>
-        <div style="font-size:14px;font-weight:700;color:oklch(0.48 0.12 68);">
-          ${formatPKR(hostel.pricePerMonth)}<span style="font-size:11px;font-weight:400;color:#888;">/mo</span>
+        <div style="font-size:14px;font-weight:700;color:var(--color-primary);">
+          ${formatPKR(hostel.pricePerMonth)}<span style="font-size:11px;font-weight:400;color:var(--color-text-muted);">/mo</span>
         </div>
-        <a href="/hostels/${hostel.slug}" style="display:block;margin-top:8px;text-align:center;background:oklch(0.62 0.17 65);color:#fff;font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-decoration:none;">
+        <a href="/hostels/${hostel.slug}" style="display:block;margin-top:8px;text-align:center;background:var(--color-primary);color:#fff;font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-decoration:none;">
           View details
         </a>
       </div>
@@ -137,7 +137,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
             html: `
               <div style="
                 display:inline-flex;align-items:center;gap:3px;
-                background:${isVerified ? "oklch(0.62 0.17 65)" : "oklch(0.35 0.05 50)"};
+                background:${isVerified ? "var(--color-primary)" : "var(--color-text-muted)"};
                 color:#fff;
                 font-size:11px;font-weight:700;
                 padding:3px 7px;
@@ -244,7 +244,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
       {/* No-coordinates notice overlay */}
       {noCoords && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] pointer-events-none bg-[oklch(0.98_0.006_65_/_0.85)]"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] pointer-events-none bg-[var(--color-bg-page)]/85"
         >
           <MapPin size={28} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] text-center max-w-[220px]">
@@ -268,7 +268,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
             <span
               style={{
                 display:"inline-block",width:10,height:10,
-                borderRadius:"50%",background:"oklch(0.62 0.17 65)",
+                borderRadius:"50%",background:"var(--color-primary)",
               }}
             />
             Verified
@@ -277,7 +277,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
             <span
               style={{
                 display:"inline-block",width:10,height:10,
-                borderRadius:"50%",background:"oklch(0.35 0.05 50)",
+                borderRadius:"50%",background:"var(--color-text-muted)",
               }}
             />
             Unverified

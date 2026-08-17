@@ -1,7 +1,7 @@
 // Path: src/lib/notifications.ts
 
 import { db } from "@/lib/db";
-import { NotificationType } from "@prisma/client";
+import { NotificationType } from "@/generated/enums";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 interface CreateNotificationInput {

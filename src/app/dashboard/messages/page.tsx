@@ -1,30 +1,44 @@
 // Path: src/app/dashboard/messages/page.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import Link from "next/link";
 import {
   Send,
   MessageCircle,
   ChevronLeft,
-  Building2,
   Loader2,
+  Search,
+  Check,
+  CheckCheck,
+  ExternalLink,
 } from "lucide-react";
 import { PageSpinner, InlineError, EmptyState } from "@/components/ui/shared";
+import { StudentBadge } from "@/components/ui/StudentBadge";
 
 /* -- Types ------------------------------------------------- */
+interface ParticipantUser {
+  id: string;
+  name: string;
+  avatar?: string | null;
+  role?: "STUDENT" | "OWNER" | "ADMIN";
+  studentVerified?: boolean;
+}
+
 interface Conversation {
   id: string;
   hostelName: string;
   hostelId: string;
   updatedAt: string;
-  participants: { userId: string; user: { id: string; name: string; avatar?: string | null } }[];
+  hostel?: { name: string; slug: string; coverImage?: string | null } | null;
+  participants: { userId: string; user: ParticipantUser }[];
   messages: { content: string; senderId: string; read: boolean; createdAt: string }[];
+  unreadCount?: number;
 }
 
 interface Message {
@@ -34,6 +48,13 @@ interface Message {
   content: string;
   read: boolean;
   createdAt: string;
+}
+
+interface BookingContext {
+  checkIn: string;
+  checkOut: string;
+  months: number;
+  status: string;
 }
 
 /* -- User avatar ------------------------------------------- */
@@ -68,10 +89,10 @@ function ConversationItem({
   isActive: boolean;
   onClick: () => void;
 }) {
-  const lastMsg    = convo.messages[convo.messages.length - 1];
-  const hasUnread  = convo.messages.some((m) => !m.read && m.senderId !== currentUserId);
-  const otherUser  = convo.participants.find((p) => p.userId !== currentUserId)?.user;
-  const timeAgo    = formatDistanceToNow(new Date(convo.updatedAt), { addSuffix: false });
+  const lastMsg   = convo.messages[convo.messages.length - 1];
+  const hasUnread = convo.messages.some((m) => !m.read && m.senderId !== currentUserId);
+  const otherUser = convo.participants?.find((p) => p.userId !== currentUserId)?.user;
+  const timeAgo   = formatDistanceToNow(new Date(convo.updatedAt), { addSuffix: false });
 
   return (
     <button
@@ -88,13 +109,13 @@ function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2 mb-0.5">
           <p className={`truncate text-[var(--text-body-sm)] ${hasUnread ? "font-[600] text-[var(--color-text-heading)]" : "font-[500] text-[var(--color-text-body)]"}`}>
-            {convo.hostelName}
+            {otherUser?.name ?? "Unknown user"}
           </p>
           <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] shrink-0">
             {timeAgo}
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mb-1">
           {lastMsg && (
             <p className={`truncate text-[var(--text-caption)] flex-1 ${hasUnread ? "text-[var(--color-text-body)]" : "text-[var(--color-text-muted)]"}`}>
               {lastMsg.senderId === currentUserId ? "You: " : ""}
@@ -105,6 +126,9 @@ function ConversationItem({
             <span className="flex h-2 w-2 shrink-0 rounded-full bg-[var(--color-action)]" aria-label="Unread message" />
           )}
         </div>
+        <p className="truncate text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          🛏 {convo.hostel?.name ?? convo.hostelName}
+        </p>
       </div>
     </button>
   );
@@ -123,18 +147,64 @@ function MessageBubble({
       <div
         className={`max-w-[75%] rounded-[var(--radius-lg)] px-4 py-2.5 ${
           isMine
-            ? "bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] rounded-br-[var(--radius-sm)]"
-            : "bg-[var(--color-bg-sidebar)] text-[var(--color-text-body)] rounded-bl-[var(--radius-sm)]"
+            ? "bg-[var(--color-primary)] text-white rounded-br-[var(--radius-sm)]"
+            : "bg-[var(--color-bg-card)] border border-[var(--color-border-default)] text-[var(--color-text-body)] rounded-bl-[var(--radius-sm)]"
         }`}
       >
         <p className="text-[var(--text-body-sm)] leading-relaxed whitespace-pre-wrap break-words">
           {message.content}
         </p>
-        <p className={`text-[var(--text-caption)] mt-1 ${isMine ? "text-[var(--color-primary-deep)]/60 text-right" : "text-[var(--color-text-muted)]"}`}>
-          {format(new Date(message.createdAt), "h:mm a")}
-        </p>
+        <div className={`flex items-center gap-1 mt-1 ${isMine ? "justify-end text-white/75" : "text-[var(--color-text-muted)]"}`}>
+          <p className="text-[var(--text-caption)]">
+            {format(new Date(message.createdAt), "h:mm a")}
+          </p>
+          {isMine && (
+            message.read
+              ? <CheckCheck size={13} strokeWidth={2} aria-label="Read" />
+              : <Check size={13} strokeWidth={2} aria-label="Sent" />
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+/* -- Booking context card ----------------------------------- */
+function BookingContextCard({
+  hostel,
+  booking,
+}: {
+  hostel: { name: string; slug: string; coverImage?: string | null };
+  booking: BookingContext;
+}) {
+  const checkIn  = new Date(booking.checkIn);
+  const checkOut = new Date(booking.checkOut);
+  return (
+    <Link
+      href={`/hostels/${hostel.slug}`}
+      className="hidden sm:flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] px-3 py-2 transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)]"
+    >
+      {hostel.coverImage ? (
+        <img
+          src={hostel.coverImage}
+          alt=""
+          className="h-10 w-10 shrink-0 rounded-[var(--radius-sm)] object-cover"
+        />
+      ) : (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]">
+          <MessageCircle size={16} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+          {hostel.name}
+        </p>
+        <p className="truncate text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          {format(checkIn, "MMM d")} – {format(checkOut, "MMM d")} · {booking.months} {booking.months === 1 ? "month" : "months"}
+        </p>
+      </div>
+      <ExternalLink size={13} strokeWidth={2} className="shrink-0 text-[var(--color-text-muted)]" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -153,7 +223,14 @@ function MessageThread({
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
 
-  const { data, isLoading } = useQuery<{ data: { messages: Message[]; participants: any[] } }>({
+  const { data, isLoading } = useQuery<{
+    data: {
+      messages: Message[];
+      participants: { userId: string; user: ParticipantUser }[];
+      hostel?: { name: string; slug: string; coverImage?: string | null } | null;
+      booking?: BookingContext | null;
+    };
+  }>({
     queryKey: ["conversation", conversationId],
     queryFn: async () => {
       const res = await fetch(`/api/conversations/${conversationId}`);
@@ -204,7 +281,10 @@ function MessageThread({
   }
 
   const messages   = data?.data?.messages ?? [];
-  const otherUser  = data?.data?.participants?.find((p: any) => p.userId !== currentUserId)?.user;
+  const otherUser  = data?.data?.participants?.find((p) => p.userId !== currentUserId)?.user;
+  const hostel     = data?.data?.hostel;
+  const booking    = data?.data?.booking;
+  const isVerifiedStudent = otherUser?.role === "STUDENT" && otherUser?.studentVerified;
 
   return (
     <div className="flex flex-col h-full">
@@ -212,20 +292,24 @@ function MessageThread({
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-border-subtle)] shrink-0">
         <button
           onClick={onBack}
-          className="lg:hidden flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
+          className="lg:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
           aria-label="Back to conversations"
         >
           <ChevronLeft size={18} strokeWidth={1.5} aria-hidden="true" />
         </button>
         {otherUser && <Avatar name={otherUser.name} avatar={otherUser.avatar} size={36} />}
-        <div className="min-w-0">
-          <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] truncate">
-            {otherUser?.name ?? "Owner"}
-          </p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] truncate">
+              {otherUser?.name ?? "Loading…"}
+            </p>
+            {isVerifiedStudent && <StudentBadge />}
+          </div>
           <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-            Hostel owner
+            {otherUser?.role === "OWNER" ? "Hostel owner" : otherUser?.role === "STUDENT" ? "Student" : "\u00A0"}
           </p>
         </div>
+        {hostel && booking && <BookingContextCard hostel={hostel} booking={booking} />}
       </div>
 
       {/* Messages */}
@@ -264,7 +348,7 @@ function MessageThread({
             placeholder="Type a message…"
             rows={1}
             aria-label="Message text"
-            className="flex-1 min-h-[40px] max-h-32 resize-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 py-2.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[oklch(0.62_0.17_65_/_0.15)]"
+            className="flex-1 min-h-[40px] max-h-32 resize-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 py-2.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
             style={{ fieldSizing: "content" } as React.CSSProperties}
           />
           <button
@@ -296,6 +380,8 @@ export default function MessagesPage() {
 
   const [activeId,   setActiveId]   = useState<string | null>(initialConvoId);
   const [showThread, setShowThread] = useState(!!initialConvoId);
+  const [query,      setQuery]      = useState("");
+  const [tab,        setTab]        = useState<"all" | "unread">("all");
 
   const currentUserId = session?.user?.id ?? "";
 
@@ -310,6 +396,21 @@ export default function MessagesPage() {
   });
 
   const conversations = data?.data ?? [];
+
+  const filtered = useMemo(() => {
+    return conversations.filter((convo) => {
+      if (tab === "unread") {
+        const hasUnread = convo.messages.some((m) => !m.read && m.senderId !== currentUserId);
+        if (!hasUnread) return false;
+      }
+      if (query.trim()) {
+        const otherUser = convo.participants?.find((p) => p.userId !== currentUserId)?.user;
+        const haystack = `${otherUser?.name ?? ""} ${convo.hostel?.name ?? convo.hostelName}`.toLowerCase();
+        if (!haystack.includes(query.trim().toLowerCase())) return false;
+      }
+      return true;
+    });
+  }, [conversations, tab, query, currentUserId]);
 
   function selectConversation(id: string) {
     setActiveId(id);
@@ -339,26 +440,60 @@ export default function MessagesPage() {
         <div
           className={`flex flex-col border-r border-[var(--color-border-subtle)] shrink-0 ${
             showThread ? "hidden lg:flex" : "flex w-full"
-          } lg:w-[280px]`}
+          } lg:w-[300px]`}
           role="list"
           aria-label="Conversations"
         >
-          <div className="px-4 py-3 border-b border-[var(--color-border-subtle)] shrink-0">
-            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
-              Conversations
-            </p>
+          <div className="px-3 py-3 border-b border-[var(--color-border-subtle)] shrink-0 space-y-2.5">
+            <div className="relative">
+              <Search
+                size={14}
+                strokeWidth={2}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search messages…"
+                aria-label="Search conversations"
+                className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] py-1.5 pl-8 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-colors duration-[var(--transition-fast)] focus:outline-none focus:border-[var(--color-primary)] focus:bg-[var(--color-bg-card)]"
+              />
+            </div>
+            <div className="flex gap-1.5">
+              {(["all", "unread"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`rounded-full px-3 py-1 text-[var(--text-caption)] font-[600] capitalize transition-colors duration-[var(--transition-fast)] ${
+                    tab === t
+                      ? "bg-[var(--color-text-heading)] text-white"
+                      : "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)]"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {conversations.map((convo) => (
-              <div key={convo.id} role="listitem">
-                <ConversationItem
-                  convo={convo}
-                  currentUserId={currentUserId}
-                  isActive={activeId === convo.id}
-                  onClick={() => selectConversation(convo.id)}
-                />
-              </div>
-            ))}
+            {filtered.length === 0 ? (
+              <p className="px-4 py-6 text-center text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                No conversations match.
+              </p>
+            ) : (
+              filtered.map((convo) => (
+                <div key={convo.id} role="listitem">
+                  <ConversationItem
+                    convo={convo}
+                    currentUserId={currentUserId}
+                    isActive={activeId === convo.id}
+                    onClick={() => selectConversation(convo.id)}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
 

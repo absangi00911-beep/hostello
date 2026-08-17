@@ -57,7 +57,7 @@ export default function ContactPage() {
         </div>
 
         {sent ? (
-          <div className="rounded-[var(--radius-lg)] border border-[oklch(0.52_0.14_148_/_0.3)] bg-[var(--color-success-bg)] p-8 text-center space-y-3">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center space-y-3">
             <CheckCircle2 size={40} strokeWidth={1.5} className="text-[var(--color-success)] mx-auto" aria-hidden="true" />
             <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
               Message sent

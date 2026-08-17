@@ -1,6 +1,8 @@
 // Path: src/lib/typesense.ts
 
 import { Client as TypesenseClient } from "typesense";
+import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
+import type { SearchParams } from "typesense/lib/Typesense/Documents";
 
 let typesenseClient: TypesenseClient | null = null;
 
@@ -114,6 +116,15 @@ export interface TypesenseSearchResult<T = HostelDocument> {
   search_cutoff?: boolean;
 }
 
+function getHttpStatus(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null || !("httpStatus" in error)) {
+    return undefined;
+  }
+
+  const { httpStatus } = error as { httpStatus?: unknown };
+  return typeof httpStatus === "number" ? httpStatus : undefined;
+}
+
 /**
  * Initialize the Typesense collection schema
  * Call this once during setup or when needed
@@ -125,11 +136,11 @@ export async function initializeHostelCollection() {
     console.log(`✓ Collection "${HOSTEL_COLLECTION_NAME}" already exists`);
     return;
   } catch (error: unknown) {
-    if (error instanceof Error && 'httpStatus' in error && (error as any).httpStatus === 404) {
+    if (error instanceof Error && getHttpStatus(error) === 404) {
       // Collection doesn't exist, create it
       console.log(`Creating collection "${HOSTEL_COLLECTION_NAME}"...`);
 
-      const schema = {
+      const schema: CollectionCreateSchema = {
         name: HOSTEL_COLLECTION_NAME,
         fields: [
           { name: "id", type: "string", facet: false },
@@ -164,7 +175,7 @@ export async function initializeHostelCollection() {
         default_sorting_field: "createdAt",
       };
 
-      await getClient().collections().create(schema as any);
+      await getClient().collections().create(schema);
       console.log(`✓ Collection "${HOSTEL_COLLECTION_NAME}" created successfully`);
     } else {
       throw error;
@@ -191,11 +202,11 @@ export async function indexHostel(document: HostelDocument) {
 export async function indexHostelsBatch(documents: HostelDocument[]) {
   try {
     const results = await getClient()
-      .collections(HOSTEL_COLLECTION_NAME)
+      .collections<HostelDocument>(HOSTEL_COLLECTION_NAME)
       .documents()
       .import(documents, { action: "upsert" });
 
-    const failed = results.filter((r: any) => !r.success);
+    const failed = results.filter((result) => !result.success);
     if (failed.length > 0) {
       console.warn(`⚠ Failed to index ${failed.length}/${documents.length} documents`);
     } else {
@@ -293,7 +304,7 @@ export async function searchHostels(
     newest: "createdAt:desc",
   }[sort] || "createdAt:desc";
 
-  const searchParams = {
+  const searchParams: SearchParams<HostelDocument> = {
     q: q || "*", // Use * for wildcard search
     query_by: "searchText,name,description,city,area,address",
     filter_by: filterBy,
@@ -304,8 +315,11 @@ export async function searchHostels(
   };
 
   try {
-    const results = await getClient().collections(HOSTEL_COLLECTION_NAME).documents().search(searchParams as any);
-    return results as TypesenseSearchResult<HostelDocument>;
+    const results = await getClient()
+      .collections<HostelDocument>(HOSTEL_COLLECTION_NAME)
+      .documents()
+      .search(searchParams);
+    return results as unknown as TypesenseSearchResult<HostelDocument>;
   } catch (error) {
     console.error("✗ Search failed:", error);
     throw error;
@@ -336,7 +350,7 @@ export async function getCollectionStats() {
       .retrieve();
     return {
       name: collection.name,
-      documentCount: (collection as any).num_documents,
+      documentCount: collection.num_documents,
     };
   } catch (error) {
     console.error("✗ Failed to get collection stats:", error);

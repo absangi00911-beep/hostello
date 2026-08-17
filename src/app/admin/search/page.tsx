@@ -81,7 +81,7 @@ export default function AdminSearchSyncPage() {
 
       {/* Status feedback */}
       {state === "success" && (
-        <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[oklch(0.52_0.14_148_/_0.3)] bg-[var(--color-success-bg)] px-5 py-4">
+        <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-[var(--color-success)]/30 bg-[var(--color-success-bg)] px-5 py-4">
           <CheckCircle2
             size={18}
             strokeWidth={1.5}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow, format, isPast } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import {
-  Users, Plus, Trash2, MessageCircle, Flag,
-  Loader2, ShieldCheck, CalendarDays, Banknote,
+  Plus, Trash2, MessageCircle, Flag,
+  Loader2, CalendarDays, Banknote,
 } from "lucide-react";
 import { StudentBadge } from "@/components/ui/StudentBadge";
 import { formatPKR } from "@/components/ui/shared";
@@ -42,6 +43,11 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
   const [formError, setFormError] = useState<string | null>(null);
   const [reported, setReported]   = useState<Set<string>>(new Set());
   const [messaging, setMessaging] = useState<string | null>(null);
+  const [expiringThreshold] = useState(() => {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() + 3);
+    return threshold;
+  });
 
   const { data, isLoading } = useQuery<{ data: Post[] }>({
     queryKey: ["roommates", hostelId],
@@ -245,7 +251,7 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
             const isOwn      = post.userId === currentUserId;
             const isReported = reported.has(post.id);
             const expiresIn  = formatDistanceToNow(new Date(post.expiresAt), { addSuffix: true });
-            const isExpiring = new Date(post.expiresAt) < new Date(Date.now() + 3 * 86_400_000);
+            const isExpiring = new Date(post.expiresAt) < expiringThreshold;
 
             return (
               <div
@@ -258,7 +264,15 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
                   {/* Avatar */}
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)] font-[600] text-[13px]" aria-hidden="true">
                     {post.user.avatar
-                      ? <img src={post.user.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
+                      ? (
+                          <Image
+                            src={post.user.avatar}
+                            alt=""
+                            width={36}
+                            height={36}
+                            className="h-9 w-9 rounded-full object-cover"
+                          />
+                        )
                       : post.user.name.charAt(0).toUpperCase()}
                   </div>
 

@@ -30,7 +30,7 @@ const Slider = React.forwardRef<
         "border-2 border-[var(--color-primary)] bg-[var(--color-bg-card)]",
         "shadow-[var(--shadow-sm)] transition-all duration-[var(--transition-fast)]",
         "hover:scale-110 hover:border-[var(--color-primary-deep)]",
-        "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[oklch(0.62_0.17_65_/_0.25)]",
+        "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--color-primary)]/25",
         "disabled:pointer-events-none disabled:opacity-50"
       )}
     />

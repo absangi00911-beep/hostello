@@ -25,16 +25,72 @@ const STATUS_OPTIONS = [
 
 const PAGE_SIZE = 20;
 
+type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+type PaymentStatus = "PENDING" | "PAID" | "REFUNDED" | "FAILED";
+type BookingStatusBadgeVariant = "pending" | "confirmed" | "completed" | "cancelled";
+type PaymentStatusBadgeVariant = "pending" | "paid" | "refunded" | "failed";
+type AdminBookingAction = "confirm" | "cancel";
+
+interface BookingRow {
+  id: string;
+  status: BookingStatus;
+  paymentStatus: PaymentStatus;
+  checkIn: string;
+  checkOut: string;
+  months: number;
+  total: number;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+  } | null;
+  hostel?: {
+    name?: string | null;
+    city?: string | null;
+  } | null;
+}
+
+const BOOKING_STATUS_BADGES: Record<BookingStatus, BookingStatusBadgeVariant> = {
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+};
+
+const PAYMENT_STATUS_BADGES: Record<PaymentStatus, PaymentStatusBadgeVariant> = {
+  PENDING: "pending",
+  PAID: "paid",
+  REFUNDED: "refunded",
+  FAILED: "failed",
+};
+
 /* -- Admin inline actions ---------------------------------- */
 function AdminBookingActions({
   booking,
   onAction,
+  onRefund,
   loading,
+  refunding,
 }: {
-  booking: any;
-  onAction: (id: string, action: string) => void;
+  booking: BookingRow;
+  onAction: (id: string, action: AdminBookingAction) => void;
+  onRefund: (id: string) => void;
   loading: boolean;
+  refunding: boolean;
 }) {
+  if (booking.status === "CANCELLED" && booking.paymentStatus === "PAID") {
+    return (
+      <button
+        onClick={() => onRefund(booking.id)}
+        disabled={refunding}
+        title="This booking was paid and then cancelled — process the refund."
+        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.68_0.15_72_/_0.4)] text-[var(--text-caption)] font-[600] text-[var(--color-warning-text)] hover:bg-[var(--color-warning)] hover:text-white hover:border-[var(--color-warning)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+      >
+        {refunding && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
+        Process refund
+      </button>
+    );
+  }
+
   if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
     return (
       <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] italic">
@@ -49,7 +105,7 @@ function AdminBookingActions({
         <button
           onClick={() => onAction(booking.id, "confirm")}
           disabled={loading}
-          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.45_0.14_148_/_0.4)] text-[var(--text-caption)] font-[600] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[var(--text-caption)] font-[600] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
         >
           {loading && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
           Confirm
@@ -74,7 +130,7 @@ export default function AdminBookingsPage() {
   const [actingId, setActingId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery<{
-    data: any[]; total: number;
+    data: BookingRow[]; total: number;
   }>({
     queryKey: ["admin-bookings", status, page],
     queryFn: async () => {
@@ -108,6 +164,30 @@ export default function AdminBookingsPage() {
     },
     onError: (e: Error) => toast.error(e.message),
     onSettled: () => setActingId(null),
+  });
+
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const refundMutation = useMutation({
+    mutationFn: async (id: string) => {
+      setRefundingId(id);
+      const res = await fetch(`/api/admin/bookings/${id}/refund`, { method: "PATCH" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Refund failed");
+      return json as { data: unknown; automatic: boolean };
+    },
+    onSuccess: ({ automatic }) => {
+      if (automatic) {
+        toast.success("Refund processed automatically through Safepay.");
+      } else {
+        toast.warning(
+          "Refund recorded on our side — the automatic Safepay call didn't go through. Complete it manually in the Safepay dashboard.",
+          { duration: 10000 },
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+    onSettled: () => setRefundingId(null),
   });
 
   const bookings   = data?.data ?? [];
@@ -159,7 +239,7 @@ export default function AdminBookingsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map((b: any) => (
+                  {bookings.map((b) => (
                     <tr
                       key={b.id}
                       className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
@@ -187,13 +267,18 @@ export default function AdminBookingsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
-                        <StatusBadge variant={b.status.toLowerCase() as any} />
+                        <div className="flex flex-col gap-1 items-start">
+                          <StatusBadge variant={BOOKING_STATUS_BADGES[b.status]} />
+                          <StatusBadge variant={PAYMENT_STATUS_BADGES[b.paymentStatus]} />
+                        </div>
                       </td>
                       <td className="px-4 py-3.5">
                         <AdminBookingActions
                           booking={b}
                           onAction={(id, action) => actionMutation.mutate({ id, action })}
+                          onRefund={(id) => refundMutation.mutate(id)}
                           loading={actingId === b.id}
+                          refunding={refundingId === b.id}
                         />
                       </td>
                     </tr>

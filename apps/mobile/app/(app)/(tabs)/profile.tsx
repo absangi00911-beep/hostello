@@ -64,7 +64,7 @@ function SettingsRow({
               name={icon}
               size={18}
               color={destructive ? colors.error : colors.primaryDeep}
-              aria-hidden="true"
+              aria-hidden={true}
             />
           </View>
           <Text
@@ -80,7 +80,7 @@ function SettingsRow({
           name="chevron-forward"
           size={16}
           color={colors.textMuted}
-          aria-hidden="true"
+          aria-hidden={true}
         />
       </TouchableOpacity>
       {showDivider && <View style={styles.rowDivider} />}
@@ -157,7 +157,7 @@ export default function ProfileScreen() {
                 name="alert-circle-outline"
                 size={13}
                 color={colors.warningText}
-                aria-hidden="true"
+                aria-hidden={true}
               />
               <Text style={styles.unverifiedText}>Email not verified</Text>
             </View>

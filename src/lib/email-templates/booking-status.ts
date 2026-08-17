@@ -64,3 +64,45 @@ export function bookingStatusEmail({
     html: emailLayout(content),
   };
 }
+
+interface BookingRefundedEmailProps {
+  studentName:  string;
+  studentEmail: string;
+  hostelName:   string;
+  bookingId:    string;
+  amount:       number;
+}
+
+/**
+ * Sent to the student once an admin processes a refund for a cancelled,
+ * previously-paid booking. See src/lib/refunds.ts.
+ */
+export function bookingRefundedEmail({
+  studentName, studentEmail, hostelName, bookingId, amount,
+}: BookingRefundedEmailProps) {
+  const firstName = escapeHtml(studentName.split(" ")[0]);
+  const shortId = bookingId.slice(-8).toUpperCase();
+  const escapedHostelName = escapeHtml(hostelName);
+  const formattedAmount = `PKR ${Math.round(amount).toLocaleString("en-PK")}`;
+
+  const content = `
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#1A1209;">
+      Your refund has been processed
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
+      Hi ${firstName}, your refund of <strong>${formattedAmount}</strong> for the cancelled booking
+      at <strong>${escapedHostelName}</strong> (ref <strong>#${shortId}</strong>) has been processed.
+    </p>
+    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+      It can take a few business days to appear back in your original payment method, depending on
+      your bank. If you don't see it after a week, reply to this email and we'll look into it.
+    </p>
+    ${emailButton("View booking", `${APP_URL}/bookings/${bookingId}`)}
+  `;
+
+  return {
+    to: studentEmail,
+    subject: `Refund processed — ${escapedHostelName} (#${shortId})`,
+    html: emailLayout(content),
+  };
+}

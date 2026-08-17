@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { Star, Trash2, Loader2, AlertTriangle } from "lucide-react";
+import { Star, Trash2, Loader2 } from "lucide-react";
 import {
   EmptyState,
   PageSpinner,

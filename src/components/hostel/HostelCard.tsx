@@ -78,7 +78,7 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
 
         {/* Details */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
+          <p className="truncate font-heading text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
 >
             {hostel.name}
           </p>
@@ -97,7 +97,7 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
     <div className="relative group">
       <Link
         href={`/hostels/${hostel.slug}`}
-        className="flex flex-col rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden transition-all duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+        className="flex flex-col rounded-[var(--radius-brand)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden transition-all duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
         aria-label={`${hostel.name} — ${formatPKR(hostel.pricePerMonth)} per month`}
       >
       {/* Image */}
@@ -140,19 +140,18 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 p-4 bg-[var(--color-primary-faint)]">
         {/* Name */}
         <h3
-          className="truncate text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] leading-snug"
-
+          className="truncate font-heading text-[var(--text-h5)] font-[500] text-[var(--color-text-heading)] leading-snug"
         >
           {hostel.name}
         </h3>
 
         {/* Price */}
-        <p className="text-[1.25rem] font-[700] leading-none text-[var(--color-primary-deep)]">
+        <p className="font-heading text-[1.375rem] font-[500] leading-none text-[var(--color-primary-deep)]">
           {formatPKR(hostel.pricePerMonth)}
-          <span className="text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]"> /mo</span>
+          <span className="font-body text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]"> /mo</span>
         </p>
 
         {/* Rating — one star + number + count. NEVER a five-star row. */}

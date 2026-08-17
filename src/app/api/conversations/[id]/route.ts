@@ -29,8 +29,14 @@ export async function GET(
     const conversation = await db.conversation.findUnique({
       where: { id },
       include: {
+        hostel: { select: { name: true, slug: true, coverImage: true } },
         participants: {
-          select: { userId: true },
+          select: {
+            userId: true,
+            user: {
+              select: { id: true, name: true, avatar: true, role: true, studentVerified: true },
+            },
+          },
         },
         messages: {
           orderBy: { createdAt: "asc" },
@@ -50,6 +56,23 @@ export async function GET(
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
 
+    // Most relevant booking between these two people at this hostel, for the
+    // context card in the thread header. Best-effort: a conversation can
+    // exist without a booking (e.g. a pre-booking question), so this is
+    // allowed to come back null rather than failing the whole request.
+    const otherUserId = userIds.find((uid) => uid !== session.user.id);
+    const booking = otherUserId
+      ? await db.booking.findFirst({
+          where: {
+            hostelId: conversation.hostelId,
+            userId: otherUserId,
+            status: { not: "CANCELLED" },
+          },
+          orderBy: { createdAt: "desc" },
+          select: { checkIn: true, checkOut: true, months: true, status: true },
+        })
+      : null;
+
     // Mark unread messages from other participants as read
     await db.message.updateMany({
       where: {
@@ -60,7 +83,7 @@ export async function GET(
       data: { read: true },
     });
 
-    return NextResponse.json({ data: conversation });
+    return NextResponse.json({ data: { ...conversation, booking } });
   } catch (err) {
     console.error("[GET /api/conversations/[id]]", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
@@ -178,4 +201,4 @@ export async function POST(
     console.error("[POST /api/conversations/[id]]", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
-}
+}

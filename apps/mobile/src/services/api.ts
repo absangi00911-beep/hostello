@@ -1,10 +1,27 @@
 import * as SecureStore from 'expo-secure-store';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-if (!API_BASE_URL) {
+const rawApiBaseUrl = process.env.EXPO_PUBLIC_API_URL;
+if (!rawApiBaseUrl) {
   throw new Error('EXPO_PUBLIC_API_URL is not set. Add it to your .env file.');
 }
 const TOKEN_KEY = 'auth_token';
+
+export function normalizeApiBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
+
+export function normalizeApiEndpoint(endpoint: string): string {
+  const withLeadingSlash = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (withLeadingSlash === '/api') return '';
+  return withLeadingSlash.replace(/^\/api(?=\/)/, '');
+}
+
+const API_BASE_URL = normalizeApiBaseUrl(rawApiBaseUrl);
+
+export function buildApiUrl(endpoint: string): string {
+  return `${API_BASE_URL}${normalizeApiEndpoint(endpoint)}`;
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -35,7 +52,7 @@ async function attemptTokenRefresh(): Promise<string | null> {
   if (!currentToken) return null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/mobile/refresh`, {
+    const response = await fetch(buildApiUrl('/auth/mobile/refresh'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +98,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const headers = await getAuthHeaders();
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(buildApiUrl(endpoint), {
     ...options,
     headers: { ...headers, ...options.headers },
   });

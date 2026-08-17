@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript, Tailwind CSS tokens, lucide-react, Vitest, Playwright.
 
+**Current status (June 1, 2026 audit):** Implemented in the current repo. The referenced shared primitives, homepage/search trust cues, hostel card/detail trust components, booking summary updates, and related tests/specs are present. This file is retained as the implementation plan artifact; use `WEB_APP_PROGRESS.md` for current project status.
+
 ---
 
 ## Scope Check

@@ -77,6 +77,10 @@ This command is defined in `package.json` `"build"` and referenced explicitly in
 
 ## Existing migrations (do not touch)
 
+**Last audited:** June 1, 2026. The repository currently has 15 migration
+folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
+migration is committed.
+
 | Timestamp | Name |
 |---|---|
 | 20260101000000 | init |
@@ -89,5 +93,12 @@ This command is defined in `package.json` `"build"` and referenced explicitly in
 | 20260517000000 | add_cron_logs |
 | 20260517120000 | add_price_alert_unsubscribe_token |
 | 20260521113857 | add_email_notifications_to_user |
+| 20260523145851 | add_blocked_dates |
+| 20260524023823 | add_price_alert_notification_type |
+| 20260524030942 | add_student_verification |
+| 20260524031336 | add_owner_subscriptions |
+| 20260524182830 | add_roommate_finder |
 
-All ten files have been applied to production. Their SQL must never be edited.
+Applied-production status must be confirmed per environment before release.
+Once a migration has been applied to any shared or production database, its SQL
+must never be edited; create a corrective migration instead.

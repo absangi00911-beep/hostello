@@ -7,7 +7,7 @@ import { Logo } from "./Logo";
 
 const NAV_LINKS = [
   { label: "Find hostels", href: "/hostels" },
-  { label: "List your hostel", href: "/register?role=OWNER" },
+  { label: "List your hostel", href: "/list-your-hostel" },
   { label: "How it works", href: "/#how-it-works" },
 ];
 
@@ -25,12 +25,12 @@ export function Footer() {
     session?.user.role === "STUDENT" ||
     session?.user.role === "ADMIN";
   const ownerListingHref =
-    session?.user.role === "OWNER" ? "/owner/listings/new" : "/register?role=OWNER";
+    session?.user.role === "OWNER" ? "/owner/listings/new" : "/list-your-hostel";
   const navLinks =
     hideOwnerLinks
-      ? NAV_LINKS.filter((link) => link.href !== "/register?role=OWNER")
+      ? NAV_LINKS.filter((link) => link.href !== "/list-your-hostel")
       : NAV_LINKS.map((link) =>
-          link.href === "/register?role=OWNER"
+          link.href === "/list-your-hostel"
             ? { ...link, href: ownerListingHref }
             : link,
         );

@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   BarChart2,
   Zap,
+  Wallet,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: "/owner/messages",     label: "Messages",    icon: MessageCircle },
   { href: "/owner/reviews",      label: "Reviews",     icon: Star },
   { href: "/owner/analytics",    label: "Analytics",   icon: BarChart2 },
+  { href: "/owner/earnings",     label: "Earnings",    icon: Wallet },
   { href: "/owner/subscription", label: "Subscription", icon: Zap },
   { href: "/owner/settings",     label: "Settings",    icon: Settings },
 ];

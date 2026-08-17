@@ -97,6 +97,73 @@ export async function createCheckoutSession({
 
 const HEX_RE = /^[0-9a-f]+$/i;
 
+export interface SafepayRefundResult {
+  success: true;
+  raw: unknown;
+}
+
+/**
+ * Attempts a refund against Safepay for a previously-paid transaction.
+ *
+ * Endpoint sourced from the official @sfpy/node-core SDK
+ * (github.com/getsafepay/node-core, src/resources/Order/Cancel.ts) on
+ * 2026-08-06, after apidocs.getsafepay.com again proved unreachable from
+ * outside a real browser session. The SDK's Cancel resource defines
+ * refund/reverse/void as POST requests to
+ * /order/payments/v3/{tracker}/refund|reversal|void — a different API
+ * generation (v3) than the v1 endpoint createCheckoutSession uses above,
+ * with the tracker passed as a URL path segment rather than a body field.
+ * (The sibling `reverse` and `void` actions exist too; semantics vs. refund
+ * aren't confirmed, so they're not used here.)
+ *
+ * Not yet confirmed: the exact body schema beyond amount/currency. The SDK
+ * types request bodies generically rather than per-method, so `reason`
+ * below is a best guess, not a confirmed field. This is far stronger than
+ * the previous /order/v1/refund guess, but still run one real refund
+ * against the Safepay sandbox before fully trusting this in production.
+ *
+ * Callers must not treat a thrown error here as proof the money wasn't
+ * refunded, and must not treat a resolved promise as proof it was — always
+ * pair this with a manual-confirmation path. See processRefund in
+ * src/lib/refunds.ts, which does exactly that.
+ */
+export async function refundPayment({
+  transactionId,
+  amount,
+  reason = "Booking cancelled",
+}: {
+  transactionId: string;
+  amount: number;
+  reason?: string;
+}): Promise<SafepayRefundResult> {
+  const baseUrl = getSafepayBaseUrl();
+  const secret = getSafepaySecret();
+
+  const res = await fetch(
+    `${baseUrl}/order/payments/v3/${encodeURIComponent(transactionId)}/refund`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-SFPY-MERCHANT-SECRET": secret,
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount),
+        currency: "PKR",
+        reason,
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Safepay refund failed: ${text}`);
+  }
+
+  const data = await res.json();
+  return { success: true, raw: data };
+}
+
 /**
  * Verify the HMAC-SHA256 signature Safepay sends on webhook calls.
  *

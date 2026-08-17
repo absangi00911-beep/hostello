@@ -90,7 +90,11 @@ function BookingCard({ booking }: { booking: Booking }) {
       accessibilityLabel={`Booking at ${booking.hostel.name}, status ${cfg.label}`}
     >
       {booking.hostel.coverImage ? (
-        <Image source={{ uri: booking.hostel.coverImage }} style={styles.cardImage} />
+        <Image
+          source={{ uri: booking.hostel.coverImage }}
+          style={styles.cardImage}
+          alt={`${booking.hostel.name} hostel photo`}
+        />
       ) : (
         <View style={[styles.cardImage, styles.cardImagePlaceholder]} />
       )}
@@ -192,7 +196,7 @@ export default function BookingsScreen() {
         </View>
         <View style={styles.emptyState}>
           <View style={styles.iconRing}>
-            <Ionicons name="calendar-outline" size={38} color={colors.primaryDeep} aria-hidden="true" />
+            <Ionicons name="calendar-outline" size={38} color={colors.primaryDeep} aria-hidden={true} />
           </View>
           <View style={styles.textBlock}>
             <Text style={styles.emptyTitle}>No bookings yet</Text>

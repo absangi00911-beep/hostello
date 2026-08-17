@@ -37,12 +37,16 @@ export async function POST(req: NextRequest) {
 /**
  * DELETE /api/device-tokens
  * Unregister a token on sign-out so the user stops receiving notifications.
+ * Accepts a JSON body for the canonical route and a token query parameter for
+ * compatibility with the older /api/notifications/device-token route.
  */
 export async function DELETE(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { token } = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => ({}));
+  const queryToken = new URL(req.url).searchParams.get("token");
+  const token = typeof body.token === "string" ? body.token : queryToken;
   if (!token) return NextResponse.json({ error: "token is required" }, { status: 400 });
 
   // Only delete if it belongs to this user

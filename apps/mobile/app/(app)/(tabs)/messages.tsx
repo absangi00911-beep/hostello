@@ -177,7 +177,7 @@ export default function MessagesScreen() {
         </View>
         <View style={styles.emptyState}>
           <View style={styles.iconRing}>
-            <Ionicons name="chatbubble-outline" size={38} color={colors.primaryDeep} aria-hidden="true" />
+            <Ionicons name="chatbubble-outline" size={38} color={colors.primaryDeep} aria-hidden={true} />
           </View>
           <View style={styles.textBlock}>
             <Text style={styles.emptyTitle}>No conversations yet.</Text>

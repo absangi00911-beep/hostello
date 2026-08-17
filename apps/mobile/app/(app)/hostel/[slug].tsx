@@ -75,7 +75,11 @@ export default function HostelDetailScreen() {
       <Stack.Screen options={{ title: hostel.name, headerBackTitle: 'Back' }} />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {hostel.coverImage ? (
-          <Image source={{ uri: hostel.coverImage }} style={styles.image} />
+          <Image
+            source={{ uri: hostel.coverImage }}
+            style={styles.image}
+            alt={`${hostel.name} hostel photo`}
+          />
         ) : (
           <View style={[styles.image, styles.imagePlaceholder]} />
         )}

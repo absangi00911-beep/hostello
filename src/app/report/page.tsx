@@ -79,7 +79,7 @@ export default function ReportPage() {
         </div>
 
         {sent ? (
-          <div className="rounded-[var(--radius-lg)] border border-[oklch(0.52_0.14_148_/_0.3)] bg-[var(--color-success-bg)] p-8 text-center space-y-3">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center space-y-3">
             <CheckCircle2
               size={40}
               strokeWidth={1.5}

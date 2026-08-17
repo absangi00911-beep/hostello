@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Gender, HostelStatus } from "@prisma/client";
+import { Gender, HostelStatus } from "../src/generated/enums";
 import { hash } from "bcryptjs";
 import { db } from "../src/lib/db";
 

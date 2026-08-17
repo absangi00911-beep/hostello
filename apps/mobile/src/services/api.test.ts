@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apiRequest, clearAuthToken } from './api';
+import { apiRequest, buildApiUrl, normalizeApiBaseUrl, normalizeApiEndpoint } from './api';
 
 // Mock expo-secure-store (the real storage layer after SecureStore migration)
 vi.mock('expo-secure-store', () => ({
@@ -82,5 +82,25 @@ describe('apiRequest', () => {
 
     const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1];
     expect(callArgs.headers).not.toHaveProperty('Authorization');
+  });
+});
+
+describe('mobile API URL normalization', () => {
+  it('accepts an app-root base URL by appending /api', () => {
+    expect(normalizeApiBaseUrl('http://localhost:3000')).toBe('http://localhost:3000/api');
+  });
+
+  it('leaves an /api base URL unchanged', () => {
+    expect(normalizeApiBaseUrl('https://hostello.pk/api/')).toBe('https://hostello.pk/api');
+  });
+
+  it('keeps endpoint strings relative to the API base', () => {
+    expect(normalizeApiEndpoint('/auth/mobile/login')).toBe('/auth/mobile/login');
+    expect(normalizeApiEndpoint('hostels')).toBe('/hostels');
+  });
+
+  it('tolerates legacy endpoint strings that include /api', () => {
+    expect(normalizeApiEndpoint('/api/device-tokens')).toBe('/device-tokens');
+    expect(buildApiUrl('/api/device-tokens')).toBe('http://localhost:3000/api/device-tokens');
   });
 });

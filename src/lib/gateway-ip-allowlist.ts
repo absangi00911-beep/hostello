@@ -54,6 +54,13 @@ function parseGatewayIps(): Map<string, Set<string>> {
 
 const ALLOWED_GATEWAY_IPS = parseGatewayIps();
 
+interface RequestWithIp {
+  headers?: {
+    get(name: string): string | null;
+  };
+  ip?: string | null;
+}
+
 /**
  * Get the client's real IP address from the request, accounting for proxies.
  *
@@ -66,7 +73,7 @@ const ALLOWED_GATEWAY_IPS = parseGatewayIps();
  * @param req NextRequest object
  * @returns Client IP address or null if unable to determine
  */
-function getClientIp(req: any): string | null {
+function getClientIp(req: RequestWithIp): string | null {
   // Cloudflare
   const cfIp = req.headers?.get?.("cf-connecting-ip");
   if (cfIp) return cfIp;
@@ -97,7 +104,7 @@ function getClientIp(req: any): string | null {
  * @param gateway Gateway name (e.g., 'jazzcash', 'easypaisa')
  * @returns Error message if IP is not allowed; null if allowed or no allowlist
  */
-export function verifyGatewayIp(req: any, gateway: string): string | null {
+export function verifyGatewayIp(req: RequestWithIp, gateway: string): string | null {
   // If no allowlist is configured, skip IP verification
   const allowedIps = ALLOWED_GATEWAY_IPS.get(gateway.toLowerCase());
   if (!allowedIps) return null;
