@@ -1,6 +1,7 @@
 // Path: src/lib/firebase-admin.ts
 
 import * as admin from "firebase-admin";
+import { cert } from "firebase-admin/app";
 
 /**
  * Initializes the Firebase Admin SDK for FCM push notifications.
@@ -25,14 +26,14 @@ export function getFirebaseAdmin() {
 
   try {
     // If already initialized, return the existing app
-    if (admin.apps.length > 0) {
+    if (admin.getApps().length > 0) {
       return admin;
     }
 
     const serviceAccount = JSON.parse(serviceAccountJson);
 
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: cert(serviceAccount),
     });
 
     return admin;

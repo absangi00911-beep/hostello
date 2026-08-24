@@ -22,8 +22,8 @@ vi.mock("@/lib/utils", async (importOriginal) => {
 });
 
 import { createBooking } from "./booking-service";
-import { db } from "@/lib/db";
-import { createNotification } from "@/lib/notifications";
+import { db } from "../lib/db";
+import { createNotification } from "../lib/notifications";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -33,8 +33,8 @@ const ROOM_ID   = "rm_00000000000000000000001";
 const OWNER_ID  = "usr_0000000000000000000002";
 const BOOKING_ID = "bkg_0000000000000000000001";
 
-const CHECK_IN  = "2026-06-01T00:00:00.000Z";
-const CHECK_OUT = "2026-09-01T00:00:00.000Z"; // 3 months
+const CHECK_IN  = new Date("2026-06-01T00:00:00.000Z");
+const CHECK_OUT = new Date("2026-09-01T00:00:00.000Z"); // 3 months
 
 function makeHostel(overrides = {}) {
   return {
@@ -462,8 +462,8 @@ describe("createBooking — month calculation edge cases", () => {
     const tx = makeTx();
     // Same month → calculateMonths returns 1
     await createBooking(USER_ID, baseInput({
-      checkIn:  "2026-06-01T00:00:00.000Z",
-      checkOut: "2026-06-28T00:00:00.000Z",
+      checkIn:  new Date("2026-06-01T00:00:00.000Z"),
+      checkOut: new Date("2026-06-28T00:00:00.000Z"),
     }));
 
     const createArg = tx.booking.create.mock.calls[0][0].data;
@@ -474,8 +474,8 @@ describe("createBooking — month calculation edge cases", () => {
   it("calculates 6 months correctly", async () => {
     const tx = makeTx();
     await createBooking(USER_ID, baseInput({
-      checkIn:  "2026-01-01T00:00:00.000Z",
-      checkOut: "2026-07-01T00:00:00.000Z",
+      checkIn:  new Date("2026-01-01T00:00:00.000Z"),
+      checkOut: new Date("2026-07-01T00:00:00.000Z"),
     }));
 
     const createArg = tx.booking.create.mock.calls[0][0].data;

@@ -18,8 +18,8 @@ vi.mock("@/lib/typesense", () => ({
 }));
 
 import { searchHostelsWithFallback, type SearchParams } from "./hostel-search";
-import { searchHostels } from "@/lib/typesense";
-import { db } from "@/lib/db";
+import { searchHostels } from "../lib/typesense";
+import { db } from "../lib/db";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 

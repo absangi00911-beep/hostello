@@ -1,6 +1,6 @@
 import { config } from "dotenv";
-import { initializeHostelCollection } from "@/lib/typesense";
-import { syncAllHostelsToTypesense } from "@/lib/typesense-sync";
+import { initializeHostelCollection } from "../src/lib/typesense";
+import { syncAllHostelsToTypesense } from "../src/lib/typesense-sync";
 
 // Load environment variables from .env.local
 config({ path: ".env.local" });

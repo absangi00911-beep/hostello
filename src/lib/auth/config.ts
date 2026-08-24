@@ -7,6 +7,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import {
   getTokenVersion,
   setTokenVersion,
@@ -85,6 +86,16 @@ const credentialsProvider = Credentials({
     if (!parsed.success) return null;
 
     const { email, password } = parsed.data;
+
+    // Brute-force protection. This authorize() signature only receives
+    // credentials, not the request, so this is keyed by the submitted email
+    // rather than IP — that still stops the most common pattern (many
+    // passwords tried against one account) without changing the signature
+    // on a security-critical path based on an unverified API assumption.
+    const rl = await rateLimit(`login:${email}`, { limit: 5, windowMs: 15 * 60 * 1000 });
+    if (!rl.ok) {
+      throw new Error("Too many login attempts. Please wait a few minutes and try again.");
+    }
 
     try {
       const user = await db.user.findUnique({ where: { email } });
@@ -219,4 +230,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-});
+});

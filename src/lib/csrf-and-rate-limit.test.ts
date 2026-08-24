@@ -28,7 +28,7 @@ vi.mock("@upstash/ratelimit", () => ({
 }));
 
 import { verifyCsrfOrigin } from "./csrf";
-import { getAppUrl } from "@/lib/app-url";
+import { getAppUrl } from "../lib/app-url";
 import { Ratelimit } from "@upstash/ratelimit";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

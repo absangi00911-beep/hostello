@@ -42,7 +42,9 @@ describe("OwnerRootLayout role guard", () => {
   });
 
   it("renders the owner interface for owners", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("OWNER"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("OWNER") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     const markup = renderToStaticMarkup(
       await OwnerRootLayout({ children: <p>Owner content</p> }),
@@ -53,7 +55,9 @@ describe("OwnerRootLayout role guard", () => {
   });
 
   it("redirects admins to the admin interface", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("ADMIN"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("ADMIN") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     await expect(
       OwnerRootLayout({ children: <p>Owner content</p> }),
@@ -61,7 +65,9 @@ describe("OwnerRootLayout role guard", () => {
   });
 
   it("redirects students away from the owner interface", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("STUDENT"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("STUDENT") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     await expect(
       OwnerRootLayout({ children: <p>Owner content</p> }),

@@ -239,6 +239,7 @@ export const HostelScalarFieldEnum = {
   viewCount: 'viewCount',
   rating: 'rating',
   reviewCount: 'reviewCount',
+  safetyScore: 'safetyScore',
   ownerId: 'ownerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

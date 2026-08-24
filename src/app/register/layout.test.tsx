@@ -36,7 +36,7 @@ describe("RegisterLayout role guard", () => {
   });
 
   it("renders registration for guests", async () => {
-    mockedAuth.mockResolvedValue(null);
+    mockedAuth.mockResolvedValue(null as any);
 
     const markup = renderToStaticMarkup(
       await RegisterLayout({ children: <p>Create account</p> }),
@@ -47,7 +47,7 @@ describe("RegisterLayout role guard", () => {
   });
 
   it("redirects signed-in students away from owner registration", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("STUDENT"));
+    mockedAuth.mockResolvedValue(sessionFor("STUDENT") as any);
 
     await expect(
       RegisterLayout({ children: <p>Hostel owner</p> }),
@@ -55,7 +55,7 @@ describe("RegisterLayout role guard", () => {
   });
 
   it("redirects signed-in owners to their dashboard", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("OWNER"));
+    mockedAuth.mockResolvedValue(sessionFor("OWNER") as any);
 
     await expect(
       RegisterLayout({ children: <p>Hostel owner</p> }),
@@ -63,7 +63,7 @@ describe("RegisterLayout role guard", () => {
   });
 
   it("redirects signed-in admins to the admin dashboard", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("ADMIN"));
+    mockedAuth.mockResolvedValue(sessionFor("ADMIN") as any);
 
     await expect(
       RegisterLayout({ children: <p>Hostel owner</p> }),

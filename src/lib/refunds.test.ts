@@ -29,10 +29,10 @@ vi.mock("@/lib/email-templates/booking-status", () => ({
 }));
 
 import { processRefund } from "./refunds";
-import { db } from "@/lib/db";
-import { refundPayment } from "@/lib/safepay";
-import { createNotification } from "@/lib/notifications";
-import { sendEmail } from "@/lib/email";
+import { db } from "../lib/db";
+import { refundPayment } from "../lib/safepay";
+import { createNotification } from "../lib/notifications";
+import { sendEmail } from "../lib/email";
 
 const BOOKING_ID = "bkg_0000000000000000000001";
 const ADMIN_ID = "usr_admin_0000000000000001";

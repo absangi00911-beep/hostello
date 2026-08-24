@@ -10,8 +10,8 @@
  * 2. Direct fallback path with mock failure
  */
 
-import { searchHostelsWithFallback } from "@/lib/hostel-search";
-import { db } from "@/lib/db";
+import { searchHostelsWithFallback } from "../src/lib/hostel-search";
+import { db } from "../src/lib/db";
 
 async function verifyFallbackFiltering() {
   console.log("🧪 Typesense Fallback Verification Test\n");

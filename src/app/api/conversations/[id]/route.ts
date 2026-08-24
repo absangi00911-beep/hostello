@@ -145,7 +145,7 @@ export async function POST(
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message ?? "Invalid message." },
+        { error: parsed.error.issues[0]?.message ?? "Invalid message." },
         { status: 400 }
       );
     }
@@ -201,4 +201,4 @@ export async function POST(
     console.error("[POST /api/conversations/[id]]", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
-}
+}
