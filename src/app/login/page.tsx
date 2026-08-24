@@ -78,7 +78,7 @@ function LoginForm() {
         {error && (
           <div
             role="alert"
-            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]"
+            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[var(--color-error)]/20 px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]"
           >
             {error}
           </div>

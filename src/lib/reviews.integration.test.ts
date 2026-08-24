@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
-import { POST } from "@/app/api/reviews/route";
-import { db } from "@/lib/db";
-import * as authConfig from "@/lib/auth/config";
+import { POST } from "../app/api/reviews/route";
+import { db } from "../lib/db";
+import * as authConfig from "../lib/auth/config";
 
 // --- Mocks -------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ function mockRequest(options: {
   const mockAuth = vi.mocked(authConfig.auth);
   
   if (session === null) {
-    mockAuth.mockResolvedValueOnce(null);
+    mockAuth.mockResolvedValueOnce(null as any);
   } else {
     mockAuth.mockResolvedValueOnce({
       user: {
@@ -61,7 +61,7 @@ function mockRequest(options: {
         name: `User ${userId}`,
         email: `${userId}@example.com`,
       },
-    });
+    } as any);
   }
 
   return request;
@@ -70,7 +70,7 @@ function mockRequest(options: {
 // --- Tests --------------------------------------------------------------------
 
 describe("POST /api/reviews (Integration Template)", () => {
-  const mockDb = vi.mocked(db);
+  const mockDb = vi.mocked(db, { deep: true });
 
   beforeAll(() => {
     vi.clearAllMocks();

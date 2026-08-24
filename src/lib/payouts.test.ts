@@ -27,7 +27,7 @@ import {
   markPayoutPaid,
   getPendingBalance,
 } from "./payouts";
-import { db } from "@/lib/db";
+import { db } from "../lib/db";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 

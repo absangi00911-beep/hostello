@@ -270,6 +270,7 @@ model Hostel {
   viewCount   Int   @default(0)
   rating      Float @default(0)
   reviewCount Int   @default(0)
+  safetyScore  Int   @default(0) // 0–100, calculated from reviews and reports
 
   // Relations
   owner     User      @relation(fields: [ownerId], references: [id])

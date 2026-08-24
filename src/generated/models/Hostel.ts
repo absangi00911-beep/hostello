@@ -37,6 +37,7 @@ export type HostelAvgAggregateOutputType = {
   viewCount: number | null
   rating: number | null
   reviewCount: number | null
+  safetyScore: number | null
 }
 
 export type HostelSumAggregateOutputType = {
@@ -50,6 +51,7 @@ export type HostelSumAggregateOutputType = {
   viewCount: number | null
   rating: number | null
   reviewCount: number | null
+  safetyScore: number | null
 }
 
 export type HostelMinAggregateOutputType = {
@@ -75,6 +77,7 @@ export type HostelMinAggregateOutputType = {
   viewCount: number | null
   rating: number | null
   reviewCount: number | null
+  safetyScore: number | null
   ownerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -103,6 +106,7 @@ export type HostelMaxAggregateOutputType = {
   viewCount: number | null
   rating: number | null
   reviewCount: number | null
+  safetyScore: number | null
   ownerId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -134,6 +138,7 @@ export type HostelCountAggregateOutputType = {
   viewCount: number
   rating: number
   reviewCount: number
+  safetyScore: number
   ownerId: number
   createdAt: number
   updatedAt: number
@@ -152,6 +157,7 @@ export type HostelAvgAggregateInputType = {
   viewCount?: true
   rating?: true
   reviewCount?: true
+  safetyScore?: true
 }
 
 export type HostelSumAggregateInputType = {
@@ -165,6 +171,7 @@ export type HostelSumAggregateInputType = {
   viewCount?: true
   rating?: true
   reviewCount?: true
+  safetyScore?: true
 }
 
 export type HostelMinAggregateInputType = {
@@ -190,6 +197,7 @@ export type HostelMinAggregateInputType = {
   viewCount?: true
   rating?: true
   reviewCount?: true
+  safetyScore?: true
   ownerId?: true
   createdAt?: true
   updatedAt?: true
@@ -218,6 +226,7 @@ export type HostelMaxAggregateInputType = {
   viewCount?: true
   rating?: true
   reviewCount?: true
+  safetyScore?: true
   ownerId?: true
   createdAt?: true
   updatedAt?: true
@@ -249,6 +258,7 @@ export type HostelCountAggregateInputType = {
   viewCount?: true
   rating?: true
   reviewCount?: true
+  safetyScore?: true
   ownerId?: true
   createdAt?: true
   updatedAt?: true
@@ -367,6 +377,7 @@ export type HostelGroupByOutputType = {
   viewCount: number
   rating: number
   reviewCount: number
+  safetyScore: number
   ownerId: string
   createdAt: Date
   updatedAt: Date
@@ -421,6 +432,7 @@ export type HostelWhereInput = {
   viewCount?: Prisma.IntFilter<"Hostel"> | number
   rating?: Prisma.FloatFilter<"Hostel"> | number
   reviewCount?: Prisma.IntFilter<"Hostel"> | number
+  safetyScore?: Prisma.IntFilter<"Hostel"> | number
   ownerId?: Prisma.StringFilter<"Hostel"> | string
   createdAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
@@ -462,6 +474,7 @@ export type HostelOrderByWithRelationInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -506,6 +519,7 @@ export type HostelWhereUniqueInput = Prisma.AtLeast<{
   viewCount?: Prisma.IntFilter<"Hostel"> | number
   rating?: Prisma.FloatFilter<"Hostel"> | number
   reviewCount?: Prisma.IntFilter<"Hostel"> | number
+  safetyScore?: Prisma.IntFilter<"Hostel"> | number
   ownerId?: Prisma.StringFilter<"Hostel"> | string
   createdAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
@@ -547,6 +561,7 @@ export type HostelOrderByWithAggregationInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -586,6 +601,7 @@ export type HostelScalarWhereWithAggregatesInput = {
   viewCount?: Prisma.IntWithAggregatesFilter<"Hostel"> | number
   rating?: Prisma.FloatWithAggregatesFilter<"Hostel"> | number
   reviewCount?: Prisma.IntWithAggregatesFilter<"Hostel"> | number
+  safetyScore?: Prisma.IntWithAggregatesFilter<"Hostel"> | number
   ownerId?: Prisma.StringWithAggregatesFilter<"Hostel"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Hostel"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Hostel"> | Date | string
@@ -617,6 +633,7 @@ export type HostelCreateInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -657,6 +674,7 @@ export type HostelUncheckedCreateInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -697,6 +715,7 @@ export type HostelUpdateInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -737,6 +756,7 @@ export type HostelUncheckedUpdateInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -777,6 +797,7 @@ export type HostelCreateManyInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -808,6 +829,7 @@ export type HostelUpdateManyMutationInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -838,6 +860,7 @@ export type HostelUncheckedUpdateManyInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -887,6 +910,7 @@ export type HostelCountOrderByAggregateInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -903,6 +927,7 @@ export type HostelAvgOrderByAggregateInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
 }
 
 export type HostelMaxOrderByAggregateInput = {
@@ -928,6 +953,7 @@ export type HostelMaxOrderByAggregateInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -956,6 +982,7 @@ export type HostelMinOrderByAggregateInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -972,6 +999,7 @@ export type HostelSumOrderByAggregateInput = {
   viewCount?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   reviewCount?: Prisma.SortOrder
+  safetyScore?: Prisma.SortOrder
 }
 
 export type HostelScalarRelationFilter = {
@@ -1231,6 +1259,7 @@ export type HostelCreateWithoutOwnerInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   rooms_rel?: Prisma.RoomCreateNestedManyWithoutHostelInput
@@ -1270,6 +1299,7 @@ export type HostelUncheckedCreateWithoutOwnerInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   rooms_rel?: Prisma.RoomUncheckedCreateNestedManyWithoutHostelInput
@@ -1338,6 +1368,7 @@ export type HostelScalarWhereInput = {
   viewCount?: Prisma.IntFilter<"Hostel"> | number
   rating?: Prisma.FloatFilter<"Hostel"> | number
   reviewCount?: Prisma.IntFilter<"Hostel"> | number
+  safetyScore?: Prisma.IntFilter<"Hostel"> | number
   ownerId?: Prisma.StringFilter<"Hostel"> | string
   createdAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Hostel"> | Date | string
@@ -1369,6 +1400,7 @@ export type HostelCreateWithoutRooms_relInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -1408,6 +1440,7 @@ export type HostelUncheckedCreateWithoutRooms_relInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1463,6 +1496,7 @@ export type HostelUpdateWithoutRooms_relInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -1502,6 +1536,7 @@ export type HostelUncheckedUpdateWithoutRooms_relInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1541,6 +1576,7 @@ export type HostelCreateWithoutBookingsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -1580,6 +1616,7 @@ export type HostelUncheckedCreateWithoutBookingsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1635,6 +1672,7 @@ export type HostelUpdateWithoutBookingsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -1674,6 +1712,7 @@ export type HostelUncheckedUpdateWithoutBookingsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1713,6 +1752,7 @@ export type HostelCreateWithoutReviewsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -1752,6 +1792,7 @@ export type HostelUncheckedCreateWithoutReviewsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1807,6 +1848,7 @@ export type HostelUpdateWithoutReviewsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -1846,6 +1888,7 @@ export type HostelUncheckedUpdateWithoutReviewsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1885,6 +1928,7 @@ export type HostelCreateWithoutFavoritesInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -1924,6 +1968,7 @@ export type HostelUncheckedCreateWithoutFavoritesInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1979,6 +2024,7 @@ export type HostelUpdateWithoutFavoritesInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2018,6 +2064,7 @@ export type HostelUncheckedUpdateWithoutFavoritesInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2057,6 +2104,7 @@ export type HostelCreateWithoutConversationsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -2096,6 +2144,7 @@ export type HostelUncheckedCreateWithoutConversationsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2151,6 +2200,7 @@ export type HostelUpdateWithoutConversationsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2190,6 +2240,7 @@ export type HostelUncheckedUpdateWithoutConversationsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2229,6 +2280,7 @@ export type HostelCreateWithoutPriceAlertsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -2268,6 +2320,7 @@ export type HostelUncheckedCreateWithoutPriceAlertsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2323,6 +2376,7 @@ export type HostelUpdateWithoutPriceAlertsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2362,6 +2416,7 @@ export type HostelUncheckedUpdateWithoutPriceAlertsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2401,6 +2456,7 @@ export type HostelCreateWithoutNotificationsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -2440,6 +2496,7 @@ export type HostelUncheckedCreateWithoutNotificationsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2495,6 +2552,7 @@ export type HostelUpdateWithoutNotificationsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2534,6 +2592,7 @@ export type HostelUncheckedUpdateWithoutNotificationsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2573,6 +2632,7 @@ export type HostelCreateWithoutBlockedDatesInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -2612,6 +2672,7 @@ export type HostelUncheckedCreateWithoutBlockedDatesInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2667,6 +2728,7 @@ export type HostelUpdateWithoutBlockedDatesInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2706,6 +2768,7 @@ export type HostelUncheckedUpdateWithoutBlockedDatesInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2745,6 +2808,7 @@ export type HostelCreateWithoutRoommmatePostsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutHostelsInput
@@ -2784,6 +2848,7 @@ export type HostelUncheckedCreateWithoutRoommmatePostsInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   ownerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2839,6 +2904,7 @@ export type HostelUpdateWithoutRoommmatePostsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
@@ -2878,6 +2944,7 @@ export type HostelUncheckedUpdateWithoutRoommmatePostsInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2917,6 +2984,7 @@ export type HostelCreateManyOwnerInput = {
   viewCount?: number
   rating?: number
   reviewCount?: number
+  safetyScore?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -2947,6 +3015,7 @@ export type HostelUpdateWithoutOwnerInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rooms_rel?: Prisma.RoomUpdateManyWithoutHostelNestedInput
@@ -2986,6 +3055,7 @@ export type HostelUncheckedUpdateWithoutOwnerInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rooms_rel?: Prisma.RoomUncheckedUpdateManyWithoutHostelNestedInput
@@ -3025,6 +3095,7 @@ export type HostelUncheckedUpdateManyWithoutOwnerInput = {
   viewCount?: Prisma.IntFieldUpdateOperationsInput | number
   rating?: Prisma.FloatFieldUpdateOperationsInput | number
   reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3158,6 +3229,7 @@ export type HostelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   viewCount?: boolean
   rating?: boolean
   reviewCount?: boolean
+  safetyScore?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -3200,6 +3272,7 @@ export type HostelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   viewCount?: boolean
   rating?: boolean
   reviewCount?: boolean
+  safetyScore?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -3232,6 +3305,7 @@ export type HostelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   viewCount?: boolean
   rating?: boolean
   reviewCount?: boolean
+  safetyScore?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -3264,12 +3338,13 @@ export type HostelSelectScalar = {
   viewCount?: boolean
   rating?: boolean
   reviewCount?: boolean
+  safetyScore?: boolean
   ownerId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type HostelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "status" | "city" | "area" | "address" | "latitude" | "longitude" | "pricePerMonth" | "rooms" | "capacity" | "gender" | "minStay" | "maxStay" | "amenities" | "rules" | "images" | "coverImage" | "verified" | "featured" | "viewCount" | "rating" | "reviewCount" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["hostel"]>
+export type HostelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "status" | "city" | "area" | "address" | "latitude" | "longitude" | "pricePerMonth" | "rooms" | "capacity" | "gender" | "minStay" | "maxStay" | "amenities" | "rules" | "images" | "coverImage" | "verified" | "featured" | "viewCount" | "rating" | "reviewCount" | "safetyScore" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["hostel"]>
 export type HostelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   rooms_rel?: boolean | Prisma.Hostel$rooms_relArgs<ExtArgs>
@@ -3330,6 +3405,7 @@ export type $HostelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     viewCount: number
     rating: number
     reviewCount: number
+    safetyScore: number
     ownerId: string
     createdAt: Date
     updatedAt: Date
@@ -3791,6 +3867,7 @@ export interface HostelFieldRefs {
   readonly viewCount: Prisma.FieldRef<"Hostel", 'Int'>
   readonly rating: Prisma.FieldRef<"Hostel", 'Float'>
   readonly reviewCount: Prisma.FieldRef<"Hostel", 'Int'>
+  readonly safetyScore: Prisma.FieldRef<"Hostel", 'Int'>
   readonly ownerId: Prisma.FieldRef<"Hostel", 'String'>
   readonly createdAt: Prisma.FieldRef<"Hostel", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Hostel", 'DateTime'>

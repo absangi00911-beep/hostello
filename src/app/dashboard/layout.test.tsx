@@ -46,7 +46,9 @@ describe("DashboardLayout role guard", () => {
   });
 
   it("renders the student dashboard for students", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("STUDENT"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("STUDENT") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     const markup = renderToStaticMarkup(
       await DashboardLayout({ children: <p>Student content</p> }),
@@ -58,7 +60,9 @@ describe("DashboardLayout role guard", () => {
   });
 
   it("redirects owners away from student dashboard routes", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("OWNER"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("OWNER") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     await expect(
       DashboardLayout({ children: <p>Student content</p> }),
@@ -66,7 +70,9 @@ describe("DashboardLayout role guard", () => {
   });
 
   it("redirects admins away from student dashboard routes", async () => {
-    mockedAuth.mockResolvedValue(sessionFor("ADMIN"));
+    mockedAuth.mockResolvedValue(
+      sessionFor("ADMIN") as unknown as Awaited<ReturnType<typeof auth>>,
+    );
 
     await expect(
       DashboardLayout({ children: <p>Student content</p> }),

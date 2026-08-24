@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { NotificationType } from "@/generated/enums";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
+import { getMessaging } from "firebase-admin/messaging";
 
 interface CreateNotificationInput {
   userId: string;
@@ -95,7 +96,7 @@ async function sendPushNotification(
     };
 
     // 3. Send via FCM
-    const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await getMessaging().sendEachForMulticast(message);
 
     // 4. Handle stale tokens (UNREGISTERED)
     if (response.failureCount > 0) {
