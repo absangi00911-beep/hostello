@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "858526237195",
+    "project_id": "hostello-b4597",
+    "storage_bucket": "hostello-b4597.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:858526237195:android:26c9f6b5c92ca96642fd0e",
+        "android_client_info": {
+          "package_name": "com.hostello.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY8Yv0xYBh1zG6kJrN8b4n_cX90PDrN4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
