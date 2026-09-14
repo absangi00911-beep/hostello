@@ -30,8 +30,10 @@ const TYPE_CONFIG: Record<
   BOOKING_COMPLETED: { icon: CheckCircle2,  color: "text-[var(--color-info)]",     bg: "bg-[var(--color-info-bg)]" },
   MESSAGE_RECEIVED:  { icon: MessageCircle, color: "text-[var(--color-primary)]",  bg: "bg-[var(--color-primary-faint)]" },
   REVIEW_RECEIVED:   { icon: Star,          color: "text-[var(--color-warning)]",  bg: "bg-[var(--color-warning-bg)]" },
-  HOSTEL_APPROVED:   { icon: Building2,     color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
-  HOSTEL_REJECTED:   { icon: Building2,     color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
+  HOSTEL_APPROVED:                    { icon: Building2,     color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
+  HOSTEL_REJECTED:                    { icon: Building2,     color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
+  STUDENT_VERIFICATION_APPROVED:      { icon: CheckCircle2,  color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
+  STUDENT_VERIFICATION_REJECTED:      { icon: XCircle,      color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
 };
 
 const DEFAULT_TYPE = { icon: Bell, color: "text-[var(--color-primary)]", bg: "bg-[var(--color-primary-faint)]" };

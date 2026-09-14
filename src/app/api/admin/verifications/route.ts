@@ -93,7 +93,7 @@ export async function PUT(req: NextRequest) {
 
     void createNotification({
       userId,
-      type: action === "approve" ? "HOSTEL_APPROVED" : "HOSTEL_REJECTED",
+      type: action === "approve" ? "STUDENT_VERIFICATION_APPROVED" : "STUDENT_VERIFICATION_REJECTED",
       title: action === "approve" ? "Student verification approved" : "Student verification rejected",
       message:
         action === "approve"
