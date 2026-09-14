@@ -109,7 +109,7 @@ describe("PUT /api/admin/verifications", () => {
     expect(res.status).toBe(400);
   });
 
-  it("approve: sets APPROVED + studentVerified true, notifies with HOSTEL_APPROVED (reused type)", async () => {
+  it("approve: sets APPROVED + studentVerified true, notifies with STUDENT_VERIFICATION_APPROVED", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(db.user.update).mockResolvedValue({} as any);
 
@@ -129,12 +129,12 @@ describe("PUT /api/admin/verifications", () => {
       }),
     );
     expect(createNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: "usr_1", type: "HOSTEL_APPROVED" }),
+      expect.objectContaining({ userId: "usr_1", type: "STUDENT_VERIFICATION_APPROVED" }),
     );
     expect(res.status).toBe(200);
   });
 
-  it("reject: sets REJECTED + studentVerified false, clears the doc URL, notifies with HOSTEL_REJECTED", async () => {
+  it("reject: sets REJECTED + studentVerified false, clears the doc URL, notifies with STUDENT_VERIFICATION_REJECTED", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(db.user.update).mockResolvedValue({} as any);
 
@@ -154,7 +154,7 @@ describe("PUT /api/admin/verifications", () => {
       }),
     );
     expect(createNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "HOSTEL_REJECTED" }),
+      expect.objectContaining({ type: "STUDENT_VERIFICATION_REJECTED" }),
     );
   });
 
