@@ -85,7 +85,11 @@ function BookingActions({
         Confirm
       </button>
       <button
-        onClick={() => onAction(booking.id, "decline")}
+        onClick={() => {
+          if (window.confirm("Decline this booking request?")) {
+            onAction(booking.id, "decline");
+          }
+        }}
         disabled={loading}
         className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.3)] text-[var(--text-caption)] font-[600] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
       >

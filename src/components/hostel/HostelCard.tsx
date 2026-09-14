@@ -57,7 +57,7 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
     return (
       <Link
         href={`/hostels/${hostel.slug}`}
-        className="group flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-3 transition-shadow duration-[var(--transition-base)] hover:shadow-[var(--shadow-sm)]"
+        className="hostel-card-link group flex gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-3 no-underline transition-shadow duration-[var(--transition-base)] hover:no-underline hover:shadow-[var(--shadow-sm)]"
       >
         {/* Thumbnail */}
         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-md)]">
@@ -97,7 +97,7 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
     <div className="relative group">
       <Link
         href={`/hostels/${hostel.slug}`}
-        className="flex flex-col rounded-[var(--radius-brand)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden transition-all duration-[180ms] ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+        className="hostel-card-link flex flex-col rounded-[var(--radius-brand)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden no-underline transition-all duration-[180ms] ease-out hover:no-underline hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
         aria-label={`${hostel.name} — ${formatPKR(hostel.pricePerMonth)} per month`}
       >
       {/* Image */}
@@ -140,10 +140,10 @@ export function HostelCard({ hostel, compact = false, priority = false }: Hostel
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-2 p-4 bg-[var(--color-primary-faint)]">
+      <div className="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4">
         {/* Name */}
         <h3
-          className="truncate font-heading text-[var(--text-h5)] font-[500] text-[var(--color-text-heading)] leading-snug"
+          className="hostel-card-title truncate font-heading text-[var(--text-h5)] font-[500] text-[var(--color-text-heading)] leading-snug"
         >
           {hostel.name}
         </h3>

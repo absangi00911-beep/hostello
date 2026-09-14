@@ -51,14 +51,18 @@ export function CitySelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-2 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2">
+        <button
+          type="button"
+          aria-label={`Choose city, currently ${city}`}
+          className="flex w-full items-center justify-between gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-2 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 sm:w-auto sm:justify-start"
+        >
           <MapPin
             size={14}
             strokeWidth={1.5}
             className="text-[var(--color-primary)] shrink-0"
             aria-hidden="true"
           />
-          <span className="max-w-[100px] truncate hidden sm:block">{city}</span>
+          <span className="max-w-[100px] truncate">{city}</span>
           <ChevronDown
             size={12}
             strokeWidth={1.5}

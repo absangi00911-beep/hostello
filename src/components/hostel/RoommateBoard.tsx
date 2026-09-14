@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { formatDistanceToNow, format } from "date-fns";
 import {
   Plus, Trash2, MessageCircle, Flag,
-  Loader2, CalendarDays, Banknote,
+  Loader2, CalendarDays, Banknote, Users,
 } from "lucide-react";
 import { StudentBadge } from "@/components/ui/StudentBadge";
 import { formatPKR } from "@/components/ui/shared";
@@ -28,11 +28,12 @@ interface Props {
   hostelId: string;
   hostelName: string;
   currentUserId: string | null;
+  currentUserRole: "STUDENT" | "OWNER" | "ADMIN" | null;
 }
 
 const MAX_BIO = 200;
 
-export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
+export function RoommateBoard({ hostelId, hostelName, currentUserId, currentUserRole }: Props) {
   const qc = useQueryClient();
   const router = useRouter();
 
@@ -56,6 +57,7 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
 
   const posts = data?.data ?? [];
   const myPost = posts.find((p) => p.userId === currentUserId);
+  const canPost = currentUserRole === "STUDENT";
 
   const postMutation = useMutation({
     mutationFn: () =>
@@ -122,18 +124,24 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
     <div className="space-y-5">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-            {posts.length > 0
-              ? `${posts.length} student${posts.length !== 1 ? "s" : ""} looking for a roommate`
-              : "No posts yet — be the first to post."}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h3 className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
+            Find a roommate for this hostel
+          </h3>
+          <p className="mt-1 max-w-[48ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
+            Connect with students planning to live here. Posts expire automatically, and you choose when to start a conversation.
           </p>
+          {posts.length > 0 && (
+            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              {posts.length} student{posts.length !== 1 ? "s" : ""} looking for a roommate
+            </p>
+          )}
         </div>
-        {currentUserId && !showForm && (
+        {canPost && currentUserId && !showForm && (
           <button
             onClick={() => { setShowForm(true); if (myPost) { setBio(myPost.bio); setBudget(myPost.budget?.toString() ?? ""); } }}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)] transition-colors"
+            className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)] sm:w-auto"
           >
             <Plus size={13} strokeWidth={2} aria-hidden="true" />
             {myPost ? "Edit my post" : "I'm looking for a roommate"}
@@ -141,11 +149,28 @@ export function RoommateBoard({ hostelId, hostelName, currentUserId }: Props) {
         )}
       </div>
 
+      {!isLoading && posts.length === 0 && (
+        <div className="flex flex-col items-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border-default)] bg-[var(--color-bg-overlay)] px-5 py-8 text-center sm:px-8">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]">
+            <Users size={18} strokeWidth={1.7} aria-hidden="true" />
+          </div>
+          <h4 className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+            Be the first to post
+          </h4>
+          <p className="mt-1 max-w-[42ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
+            Share your budget and move-in date with signed-in students. Posts expire after 30 days, and conversations stay inside HostelLo.
+          </p>
+        </div>
+      )}
+
       {/* Post form */}
-      {showForm && currentUserId && (
+      {showForm && canPost && currentUserId && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-primary)] bg-[var(--color-primary-faint)] p-4 space-y-3">
           <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
             {myPost ? "Update your post" : "Post a roommate request"}
+          </p>
+          <p className="text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+            Share only what you are comfortable making visible to other signed-in students. You can edit or remove this post later.
           </p>
 
           <div>

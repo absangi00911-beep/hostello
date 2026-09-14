@@ -1,14 +1,17 @@
 // Path: src/app/hostels/[slug]/page.tsx
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ShieldCheck,
   Star,
-  Users,
+  BedDouble,
   CheckCircle2,
   XCircle,
   User,
+  Users,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ImageGallery } from "@/components/hostel/ImageGallery";
@@ -20,15 +23,16 @@ import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
 import { TrustSummary } from "@/components/hostel/TrustSummary";
 import { db } from "@/lib/db";
+import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /* ── Data fetch — direct Prisma, no self-HTTP ───────────── */
-async function getHostel(slug: string) {
+const getHostel = cache(async (slug: string) => {
   try {
     const hostel = await db.hostel.findFirst({
-      where: { OR: [{ slug }, { id: slug }], status: "ACTIVE" },
+      where: { ...hostelIdOrSlugWhere(slug), status: "ACTIVE" },
       include: {
         owner: { 
           select: { 
@@ -55,7 +59,7 @@ async function getHostel(slug: string) {
   } catch {
     return null;
   }
-}
+});
 
 /* ── Metadata ────────────────────────────────────────────── */
 export async function generateMetadata({
@@ -113,6 +117,9 @@ export default async function HostelDetailPage({
   const { slug } = await params;
   const session = await auth();
   const currentUserId = session?.user.id ?? null;
+  const currentUserRole = session?.user.role ?? null;
+  const canViewRoommates = currentUserRole === "STUDENT";
+  const canRequestBooking = !session || currentUserRole === "STUDENT";
   const hostel = await getHostel(slug);
 
   if (!hostel) notFound();
@@ -164,7 +171,7 @@ export default async function HostelDetailPage({
 
               {/* Hostel name — H2 */}
               <h1
-                className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em] mb-2"
+                className="hostel-detail-title mb-2 font-heading font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em]"
 
               >
                 {hostel.name}
@@ -241,11 +248,11 @@ export default async function HostelDetailPage({
 
             {/* Tabs: Details / Rooms / Reviews / Roommates / Location */}
             <Tabs defaultValue="details">
-              <TabsList className="flex w-full border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto">
+              <TabsList className="flex w-max min-w-full max-w-full justify-start overflow-x-auto border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <TabsTrigger
                   value="details"
                   className="
-                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
                     text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
                     capitalize transition-all duration-[var(--transition-fast)]
                     data-[state=active]:border-[var(--color-primary)]
@@ -260,7 +267,7 @@ export default async function HostelDetailPage({
                 <TabsTrigger
                   value="rooms"
                   className="
-                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
                     text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
                     capitalize transition-all duration-[var(--transition-fast)]
                     data-[state=active]:border-[var(--color-primary)]
@@ -275,7 +282,7 @@ export default async function HostelDetailPage({
                 <TabsTrigger
                   value="reviews"
                   className="
-                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
                     text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
                     capitalize transition-all duration-[var(--transition-fast)]
                     data-[state=active]:border-[var(--color-primary)]
@@ -292,26 +299,28 @@ export default async function HostelDetailPage({
                     </span>
                   )}
                 </TabsTrigger>
-                <TabsTrigger
-                  value="roommates"
-                  className="
-                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
-                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                    capitalize transition-all duration-[var(--transition-fast)]
-                    data-[state=active]:border-[var(--color-primary)]
-                    data-[state=active]:text-[var(--color-text-heading)]
-                    data-[state=active]:font-[600]
-                    hover:text-[var(--color-text-body)]
-                    focus-visible:outline-none
-                  "
-                >
-                  <Users size={14} strokeWidth={1.5} aria-hidden="true" />
-                  Roommates
-                </TabsTrigger>
+                {canViewRoommates && (
+                  <TabsTrigger
+                    value="roommates"
+                    className="
+                      shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
+                      text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
+                      capitalize transition-all duration-[var(--transition-fast)]
+                      data-[state=active]:border-[var(--color-primary)]
+                      data-[state=active]:text-[var(--color-text-heading)]
+                      data-[state=active]:font-[600]
+                      hover:text-[var(--color-text-body)]
+                      focus-visible:outline-none
+                    "
+                  >
+                    <Users size={14} strokeWidth={1.5} aria-hidden="true" />
+                    Roommates
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="location"
                   className="
-                    flex-1 sm:flex-none h-11 px-4 rounded-none border-b-2 border-transparent
+                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
                     text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
                     capitalize transition-all duration-[var(--transition-fast)]
                     data-[state=active]:border-[var(--color-primary)]
@@ -389,72 +398,78 @@ export default async function HostelDetailPage({
                     No room details added yet.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 px-4">
-                    <table
-                      className="w-full min-w-[480px] border-collapse"
-                      aria-label="Room types and availability"
-                    >
-                      <thead>
-                        <tr className="border-b border-[var(--color-border-default)]">
-                          {["Room type", "Capacity", "Price / month", "Available", ""].map((h) => (
-                            <th
-                              key={h}
-                              className="py-3 pr-4 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap"
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rooms.map((room: any) => (
-                          <tr
-                            key={room.id}
-                            className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-                          >
-                            <td className="py-4 pr-4">
-                              <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)]">
+                  <div className="grid gap-4 sm:grid-cols-2" aria-label="Room types and availability">
+                    {rooms.map((room: any) => (
+                      <article
+                        key={room.id}
+                        className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-border-default)]"
+                      >
+                        <div className="relative aspect-[16/8] bg-[var(--color-bg-sidebar)]">
+                          {room.images?.[0] ? (
+                            <Image
+                              src={room.images[0]}
+                              alt={`${room.name} at ${hostel.name}`}
+                              fill
+                              sizes="(min-width: 640px) 50vw, 100vw"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-[var(--color-text-muted)]">
+                              <BedDouble size={28} strokeWidth={1.4} aria-hidden="true" />
+                              <span className="sr-only">No photo available</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">
                                 {room.name}
+                              </h3>
+                              <p className="mt-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                                {room.capacity} occupant{room.capacity !== 1 ? "s" : ""}
                               </p>
-                              {room.description && (
-                                <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
-                                  {room.description}
-                                </p>
-                              )}
-                            </td>
-                            <td className="py-4 pr-4">
-                              <div className="flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-body)]">
-                                <Users size={14} strokeWidth={1.5} aria-hidden="true" />
-                                {room.capacity}
-                              </div>
-                            </td>
-                            <td className="py-4 pr-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)] whitespace-nowrap">
-                              {formatPKR(room.pricePerMonth)}
-                            </td>
-                            <td className="py-4 pr-4">
-                              <span
-                                className={`text-[var(--text-body-sm)] font-[500] ${
-                                  room.available > 0
-                                    ? "text-[var(--color-success)]"
-                                    : "text-[var(--color-error)]"
-                                }`}
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="text-[var(--text-body)] font-[700] text-[var(--color-primary-deep)]">
+                                {formatPKR(room.pricePerMonth)}
+                              </p>
+                              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">per month</p>
+                            </div>
+                          </div>
+
+                          {room.description && (
+                            <p className="mt-3 text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-body)]">
+                              {room.description}
+                            </p>
+                          )}
+
+                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--color-border-subtle)] pt-3">
+                            <span
+                              className={`inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500] ${
+                                room.available > 0
+                                  ? "text-[var(--color-success)]"
+                                  : "text-[var(--color-error)]"
+                              }`}
+                            >
+                              <CheckCircle2 size={14} strokeWidth={1.7} aria-hidden="true" />
+                              {room.available > 0
+                                ? `${room.available} spot${room.available !== 1 ? "s" : ""} available`
+                                : "Currently full"}
+                            </span>
+                            {room.available > 0 && canRequestBooking && (
+                              <Link
+                                href={`/hostels/${hostel.slug}?room=${encodeURIComponent(room.id)}#booking-panel`}
+                                className="inline-flex h-8 items-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[var(--text-caption)] font-[600] text-white no-underline transition-colors hover:bg-[var(--color-action-dark)] hover:no-underline"
                               >
-                                {room.available > 0
-                                  ? `${room.available} spot${room.available !== 1 ? "s" : ""}`
-                                  : "Full"}
-                              </span>
-                            </td>
-                            <td className="py-4">
-                              {room.available > 0 && (
-                                <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
-                                  ↑ Use booking panel
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                Book this room
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    ))}
                   </div>
                 )}
               </TabsContent>
@@ -483,25 +498,30 @@ export default async function HostelDetailPage({
               </TabsContent>
 
               {/* ── Roommates tab ─────────────────────────── */}
-              <TabsContent value="roommates" className="mt-0">
-                <RoommateBoard
-                  hostelId={hostel.id}
-                  hostelName={hostel.name}
-                  currentUserId={currentUserId}
-                />
-              </TabsContent>
+              {canViewRoommates && (
+                <TabsContent value="roommates" className="mt-0">
+                  <RoommateBoard
+                    hostelId={hostel.id}
+                    hostelName={hostel.name}
+                    currentUserId={currentUserId}
+                    currentUserRole={currentUserRole}
+                  />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
 
           {/* ── RIGHT: sticky booking panel ────────────── */}
-          <BookingPanel
-            hostelId={hostel.id}
-            hostelSlug={hostel.slug}
-            hostelName={hostel.name}
-            ownerId={hostel.ownerId}
-            basePricePerMonth={hostel.pricePerMonth}
-            rooms={rooms}
-          />
+          {currentUserRole !== "ADMIN" && (
+            <BookingPanel
+              hostelId={hostel.id}
+              hostelSlug={hostel.slug}
+              hostelName={hostel.name}
+              ownerId={hostel.ownerId}
+              basePricePerMonth={hostel.pricePerMonth}
+              rooms={rooms}
+            />
+          )}
         </div>
       </div>
     </PublicLayout>

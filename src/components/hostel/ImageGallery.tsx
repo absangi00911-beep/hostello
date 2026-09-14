@@ -168,12 +168,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
   if (!images || images.length === 0) {
     return (
       <div
-        className="w-full flex flex-col items-center justify-center gap-3"
-        style={{
-          height: 320,
-          background: "var(--color-bg-sidebar)",
-          borderBottom: "1px solid var(--color-border-subtle)",
-        }}
+        className="flex h-[min(320px,60vw)] min-h-[220px] w-full flex-col items-center justify-center gap-3 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
         aria-label="No photos available"
       >
         <Images
@@ -208,8 +203,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
         {images.length === 1 && (
           <button
             onClick={() => setLightboxIndex(0)}
-            className="relative w-full block"
-            style={{ height: 480 }}
+            className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:h-[480px] lg:aspect-auto"
             aria-label={`Open photo of ${hostelName}`}
           >
             <Image
@@ -225,7 +219,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
 
         {/* 2 images side by side */}
         {images.length === 2 && (
-          <div className="grid grid-cols-2" style={{ height: 400 }}>
+          <div className="grid aspect-[4/3] grid-cols-2 sm:aspect-[2/1] lg:h-[400px] lg:aspect-auto">
             {images.map((src, i) => (
               <button
                 key={src}
@@ -245,9 +239,8 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
         {/* 3+ images — asymmetric grid */}
         {images.length >= 3 && (
           <div
-            className="grid"
+            className="grid aspect-[4/3] sm:aspect-[16/7] lg:h-[480px] lg:aspect-auto"
             style={{
-              height: 480,
               gridTemplateColumns: "1fr 1fr",
               gridTemplateRows: "1fr 1fr",
               gap: 3,

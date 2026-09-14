@@ -90,10 +90,17 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
       ? pathname === item.href
       : pathname.startsWith(item.href)
   );
-  const pageTitle = currentNav?.label ?? "Dashboard";
+  const pageTitle =
+    pathname === "/owner/listings/new"
+      ? "Add listing"
+      : pathname.endsWith("/edit")
+        ? "Edit listing"
+        : pathname === "/owner/listings/success"
+          ? "Listing submitted"
+          : currentNav?.label ?? "Dashboard";
 
   return (
-    <div className="flex min-h-dvh bg-[var(--color-bg-page)]">
+    <div className="owner-shell flex min-h-dvh bg-[var(--color-bg-page)]">
       {/* -- Sidebar (desktop) ---------------------------------- */}
       <aside
         className="hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
@@ -122,11 +129,11 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
 
       {/* -- Main content area ----------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:px-6 shrink-0">
-          <h1 className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
+          <h1 className="min-w-0 flex-1 truncate text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
             {pageTitle}
           </h1>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <NotificationBell />
             <AccountMenu />
           </div>
@@ -154,7 +161,7 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-1 flex-col items-center justify-center gap-1 py-3 text-[10px] font-[500] transition-colors duration-[var(--transition-fast)] ${
+                className={`flex flex-1 flex-col items-center justify-center gap-1 py-3 text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
                   isActive
                     ? "text-[var(--color-primary)]"
                     : "text-[var(--color-text-muted)]"

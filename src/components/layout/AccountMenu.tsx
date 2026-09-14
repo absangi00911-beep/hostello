@@ -24,6 +24,8 @@ import {
   MessageCircle,
   Star,
   BarChart2,
+  Wallet,
+  Zap,
   ShieldCheck,
   RefreshCw,
   TrendingDown,
@@ -54,6 +56,8 @@ const MENU_ITEMS_BY_ROLE: Record<Role, MenuItem[]> = {
     { href: "/owner/messages", label: "Messages", icon: MessageCircle },
     { href: "/owner/reviews", label: "Reviews", icon: Star },
     { href: "/owner/analytics", label: "Analytics", icon: BarChart2 },
+    { href: "/owner/earnings", label: "Earnings", icon: Wallet },
+    { href: "/owner/subscription", label: "Subscription", icon: Zap },
     { href: "/owner/settings", label: "Settings", icon: Settings },
   ],
   ADMIN: [
@@ -75,13 +79,13 @@ export function AccountMenu() {
       <div className="flex items-center gap-2">
         <Link
           href="/login"
-          className="hidden sm:inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)]"
+          className="hidden sm:inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
         >
           Sign in
         </Link>
         <Link
           href="/register"
-          className="inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] bg-[var(--color-action)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
+          className="inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] bg-[var(--color-action)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
         >
           Register
         </Link>
@@ -144,8 +148,17 @@ export function AccountMenu() {
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 
-        {menuItems.map(({ href, label, icon: Icon }) => (
-          <DropdownMenuItem key={href} asChild>
+        {menuItems.map(({ href, label, icon: Icon }) => {
+          const isMobileBottomNavRoute =
+            user.role === "STUDENT" &&
+            (href === "/dashboard/saved" || href === "/dashboard/messages");
+
+          return (
+          <DropdownMenuItem
+            key={href}
+            asChild
+            className={isMobileBottomNavRoute ? "hidden md:flex" : undefined}
+          >
             <Link
               href={href}
               className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
@@ -154,7 +167,8 @@ export function AccountMenu() {
               {label}
             </Link>
           </DropdownMenuItem>
-        ))}
+          );
+        })}
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 

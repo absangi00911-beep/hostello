@@ -1,6 +1,11 @@
 // Path: src/components/auth/AuthCardLayout.tsx
 import { Logo } from "@/components/Logo";
 import { inputCls } from "@/components/ui/input";
+import Image from "next/image";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+
+const AUTH_IMAGE =
+  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&q=80&auto=format&fit=crop";
 
 interface AuthCardLayoutProps {
   heading: string;
@@ -16,15 +21,39 @@ export function AuthCardLayout({
   children,
 }: AuthCardLayoutProps) {
   return (
-    <div className="min-h-dvh bg-[var(--color-bg-page)] flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-[440px]">
-        {/* Logo — centered above card */}
-        <div className="flex justify-center mb-8">
-          <Logo />
-        </div>
+    <div className="min-h-dvh bg-[var(--color-bg-page)] px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:py-12">
+      <div className="grid w-full max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center">
+        <aside className="relative hidden min-h-[600px] overflow-hidden rounded-[var(--radius-brand)] bg-[var(--color-text-heading)] lg:flex">
+          <Image
+            src={AUTH_IMAGE}
+            alt="Students walking together across a university campus"
+            fill
+            priority
+            sizes="(min-width: 1024px) 50vw, 0px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/20" aria-hidden="true" />
+          <div className="relative mt-auto p-10">
+            <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/70">
+              Welcome back
+            </p>
+            <p className="mt-3 max-w-md font-heading text-[2.25rem] leading-[1.05] font-[600] text-white">
+              Your next room is closer than you think.
+            </p>
+            <div className="mt-6 flex items-center gap-2 text-[var(--text-body-sm)] text-white/80">
+              <ShieldCheck size={16} strokeWidth={1.6} aria-hidden="true" />
+              Verified listings and clear monthly prices
+              <ArrowRight size={14} strokeWidth={1.6} aria-hidden="true" />
+            </div>
+          </div>
+        </aside>
 
-        {/* Card surface — p-8 maps to --space-8 (32px) on the token scale */}
-        <div className="rounded-[var(--radius-lg)] bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] shadow-[var(--shadow-md)] p-8">
+        <div className="w-full max-w-[440px] justify-self-center">
+          <div className="mb-7 flex justify-center">
+            <Logo />
+          </div>
+
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-md)] sm:p-8">
           {/* Heading */}
           <div className="text-center mb-7">
             <h1 className="font-heading text-[var(--text-h3)] font-[600] text-[var(--color-text-heading)] mb-1">
@@ -38,13 +67,14 @@ export function AuthCardLayout({
           </div>
 
           {children}
-        </div>
+          </div>
 
-        {footer && (
-          <p className="mt-5 text-center text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-            {footer}
-          </p>
-        )}
+          {footer && (
+            <p className="mt-5 text-center text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              {footer}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ export default async function DashboardLayout({
         {/* Page heading */}
         <div className="mb-6">
           <h1
-            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+            className="student-dashboard-title font-heading font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
 
           >
             My account

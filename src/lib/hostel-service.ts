@@ -80,3 +80,7 @@ export async function createHostelRecord(
 
   return hostel;
 }
+
+export function hostelIdOrSlugWhere(param: string) {
+  return { OR: [{ id: param }, { slug: param }] };
+}

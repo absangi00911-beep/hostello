@@ -129,7 +129,11 @@ function RegisterForm() {
   return (
     <AuthCardLayout
       heading="Create account"
-      subheading="Find your room. Not a phone number."
+      subheading={
+        role === "OWNER"
+          ? "List your rooms. Reach more students."
+          : "Find your room. Not a phone number."
+      }
       footer={
         <>
           Already have an account?{" "}
@@ -156,7 +160,7 @@ function RegisterForm() {
         {/* Role toggle — student vs owner */}
         <div>
           <p className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-2">
-            I am a
+            How will you use HostelLo?
           </p>
           <div
             className="grid grid-cols-2 gap-2"
@@ -165,14 +169,24 @@ function RegisterForm() {
           >
             {(
               [
-                { value: "STUDENT" as Role, label: "Student", icon: GraduationCap },
-                { value: "OWNER"   as Role, label: "Hostel owner", icon: Building2 },
+                {
+                  value: "STUDENT" as Role,
+                  label: "Student",
+                  description: "Find and compare rooms",
+                  icon: GraduationCap,
+                },
+                {
+                  value: "OWNER" as Role,
+                  label: "Hostel owner",
+                  description: "List and manage rooms",
+                  icon: Building2,
+                },
               ] as const
-            ).map(({ value, label, icon: Icon }) => (
+            ).map(({ value, label, description, icon: Icon }) => (
               <label
                 key={value}
                 className={`
-                  flex items-center gap-2.5 rounded-[var(--radius-md)] border-2 px-3 py-2.5 cursor-pointer
+                  flex items-start gap-2.5 rounded-[var(--radius-md)] border-2 px-3 py-2.5 cursor-pointer
                   transition-all duration-[var(--transition-base)]
                   ${
                     role === value
@@ -192,17 +206,24 @@ function RegisterForm() {
                 <Icon
                   size={16}
                   strokeWidth={1.5}
-                  className={role === value ? "text-[var(--color-action)]" : "text-[var(--color-text-muted)]"}
+                  className={`pointer-events-none ${
+                    role === value ? "text-[var(--color-action)]" : "text-[var(--color-text-muted)]"
+                  }`}
                   aria-hidden="true"
                 />
-                <span
-                  className={`text-[var(--text-body-sm)] font-[500] ${
-                    role === value
-                      ? "text-[var(--color-action-dark)]"
-                      : "text-[var(--color-text-body)]"
-                  }`}
-                >
-                  {label}
+                <span className="min-w-0">
+                  <span
+                    className={`block text-[var(--text-body-sm)] font-[500] ${
+                      role === value
+                        ? "text-[var(--color-action-dark)]"
+                        : "text-[var(--color-text-body)]"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                  <span className="mt-0.5 block text-[var(--text-caption)] leading-tight text-[var(--color-text-muted)]">
+                    {description}
+                  </span>
                 </span>
               </label>
             ))}
@@ -297,7 +318,11 @@ function RegisterForm() {
           {loading && (
             <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
           )}
-          {loading ? "Creating account…" : "Create account"}
+          {loading
+            ? "Creating account…"
+            : role === "OWNER"
+              ? "Create owner account"
+              : "Create student account"}
         </button>
       </form>
     </AuthCardLayout>

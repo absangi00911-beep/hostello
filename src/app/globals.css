@@ -1,3 +1,4 @@
+@import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -91,46 +92,29 @@
   --shadow-app-xl: var(--shadow-xl);
 }
 
-/* ============================================================
-   HostelLo Design System — WanderStay Token Set
-   Source: DESIGN (3).md (Material 3 export) + style-tile image
-   Replaces the amber/forest-green OKLCH set with the coral /
-   deep-teal / mint palette. Same variable names throughout, so
-   every component that already reads var(--color-*) re-themes
-   automatically — nothing downstream needs to change.
 
-   Mapping note: the M3 export's "primary" (#ae2f34) — not
-   "primary-container" (#ff6b6b) — is used as the actual button
-   fill/icon/link color. White text on #ff6b6b only measures
-   2.78:1 (fails WCAG AA); white on #ae2f34 measures 6.45:1.
-   #ff6b6b (the brighter "vibrant coral" swatch) is kept as
-   --color-primary-light for badges/tints, paired with dark text,
-   which is how M3 pairs primary-container with on-primary-container
-   in the first place.
-   ============================================================ */
 
 @layer base {
   :root {
-    /* ── Brand Colors (M3 "primary" family — coral/brick-red) ── */
-    --color-primary:       #ae2f34;   /* M3 primary — buttons, icons, links, focus rings */
-    --color-primary-dark:  #8c1520;   /* M3 on-primary-fixed-variant — hover */
-    --color-primary-deep:  #6d0010;   /* M3 on-primary-container — max-contrast text */
-    --color-primary-light: #ff6b6b;   /* M3 primary-container — "vibrant coral" accent/tint, pair with dark text */
-    --color-primary-faint: #ffdad8;   /* M3 primary-fixed — palest badge background */
+    /* ── Brand Colors: terracotta accent, ink, and deep teal trust ── */
+    --color-primary:       #b54a3a;   /* buttons, icons, links, focus rings */
+    --color-primary-dark:  #923a2d;   /* hover */
+    --color-primary-deep:  #6f2c24;   /* high-contrast accent text */
+    --color-primary-light: #f2a08f;   /* hero accent and light-on-dark emphasis */
+    --color-primary-faint: #f8ddd7;   /* pale accent surface */
 
     /* ── Action / CTA ─────────────────────────────────────── */
-    /* WanderStay uses one CTA color (coral), not a separate accent
-       color like the old amber+green split — action mirrors primary. */
-    --color-action:         #ae2f34;
-    --color-action-dark:    #8c1520;
-    --color-action-pressed: #6d0010;
-    --color-action-light:   #ffdad8;
+     /* Keep one clear action color across search, booking, and owner flows. */
+     --color-action:         #b54a3a;
+     --color-action-dark:    #923a2d;
+     --color-action-pressed: #6f2c24;
+     --color-action-light:   #f8ddd7;
 
     /* ── Secondary / Tertiary (M3 roles, for reference & charts) ── */
-    --color-secondary-brand:           #30666f;  /* Deep Navy/teal — structural text, icons */
-    --color-secondary-brand-container: #b3e9f3;
-    --color-tertiary-brand:            #006a65;  /* Mint — sparing accents, price highlights */
-    --color-tertiary-brand-container:  #1eada5;
+    --color-secondary-brand:           #245b5a;  /* Deep teal — trust and structural accents */
+    --color-secondary-brand-container: #bfe3df;
+    --color-tertiary-brand:            #2b806e;  /* Green-teal — success and price highlights */
+    --color-tertiary-brand-container:  #8fd4c4;
 
     /* ── Backgrounds (M3 surface family) ──────────────────── */
     --color-bg-page:    #f8f9fa;  /* surface / background */
@@ -142,17 +126,17 @@
     /* ── Text ─────────────────────────────────────────────── */
     --color-text-heading:     #191c1d;  /* on-surface */
     --color-text-body:        #191c1d;  /* on-surface — same ink as heading; hierarchy via weight/size */
-    --color-text-muted:       #584140;  /* on-surface-variant */
-    --color-text-placeholder: #8c706f;  /* outline */
-    --color-text-disabled:    #c8bcbb;  /* lightened outline, meets ~3:1 vs card so it's still legibly "disabled" */
+    --color-text-muted:       #5b6268;  /* secondary copy */
+    --color-text-placeholder: #778188;  /* form placeholder */
+    --color-text-disabled:    #b9bec1;  /* disabled content */
     --color-text-inverse:     #ffffff;  /* on-primary */
     --color-text-link:        #ae2f34;  /* primary */
 
     /* ── Borders ──────────────────────────────────────────── */
     /* Spec: "1px border in a lightened Navy tint (5% opacity)" for cards */
     --color-border-default: #d8d6d6;  /* ~5% on-surface over surface, neutral */
-    --color-border-strong:  #8c706f;  /* outline — form inputs, stronger dividers */
-    --color-border-subtle:  #e7e3e3;  /* ~2.5% on-surface over surface */
+    --color-border-strong:  #8b9499;  /* form inputs, stronger dividers */
+    --color-border-subtle:  #e4e7e8;  /* quiet section and card borders */
 
     /* ── Semantic ─────────────────────────────────────────── */
     /* Error: taken directly from the M3 export's error role */
@@ -257,44 +241,40 @@
     --card-foreground:     #191c1d;
     --popover:             #edeeef;
     --popover-foreground:  #191c1d;
-    --primary:             #ae2f34;
+    --primary:             #b54a3a;
     --primary-foreground:  #ffffff;
     --secondary:           #f3f4f5;
     --secondary-foreground:#191c1d;
     --muted:               #f3f4f5;
-    --muted-foreground:    #584140;
-    --accent:              #ffdad8;
-    --accent-foreground:   #6d0010;
+    --muted-foreground:    #5b6268;
+    --accent:              #f8ddd7;
+    --accent-foreground:   #6f2c24;
     --destructive:         #ba1a1a;
     --destructive-foreground: #ffffff;
-    --border:              #d8d6d6;
-    --input:               #d8d6d6;
-    --ring:                #ae2f34;
+    --border:              #d6dbdd;
+    --input:               #d6dbdd;
+    --ring:                #b54a3a;
     --radius:              8px;
   }
 
   /* ── Dark Mode ────────────────────────────────────────── */
-  /* Not covered by the source design system (light-mode only export) —
-     derived here following the same M3 tonal logic the app already used:
-     brighten accents, invert the text scale, near-black tinted surfaces.
-     "inverse-primary" (#ffb3b0) from the M3 export is exactly the token
-     M3 designs for this — used directly rather than re-deriving it. */
+  /* The same terracotta and teal relationships, lifted for dark surfaces. */
   .dark {
-    --color-primary:       #ffb3b0;   /* M3 inverse-primary */
-    --color-primary-dark:  #ff8f8c;
-    --color-primary-deep:  #ffdad8;
-    --color-primary-light: #6d1f22;
-    --color-primary-faint: #481216;
+    --color-primary:       #f2a08f;
+    --color-primary-dark:  #ffc1b3;
+    --color-primary-deep:  #f8ddd7;
+    --color-primary-light: #7a2f26;
+    --color-primary-faint: #51201b;
 
-    --color-action:         #ffb3b0;
-    --color-action-dark:    #ff8f8c;
-    --color-action-pressed: #ffdad8;
-    --color-action-light:   #481216;
+    --color-action:         #f2a08f;
+    --color-action-dark:    #ffc1b3;
+    --color-action-pressed: #f8ddd7;
+    --color-action-light:   #51201b;
 
-    --color-secondary-brand:           #9acfda;
-    --color-secondary-brand-container: #134e57;
-    --color-tertiary-brand:            #5dd9d0;
-    --color-tertiary-brand-container:  #00504c;
+    --color-secondary-brand:           #8fc8c2;
+    --color-secondary-brand-container: #174845;
+    --color-tertiary-brand:            #73c8b0;
+    --color-tertiary-brand-container:  #1d5b4e;
 
     --color-bg-page:    #151819;
     --color-bg-card:    #181b1c;
@@ -304,11 +284,11 @@
 
     --color-text-heading:     #fafbfc;
     --color-text-body:        #e4e6e7;
-    --color-text-muted:       #c9b8b6;
-    --color-text-placeholder: #7a716f;
-    --color-text-disabled:    #55504e;
+    --color-text-muted:       #bdc7c8;
+    --color-text-placeholder: #849092;
+    --color-text-disabled:    #555f60;
     --color-text-inverse:     #151819;
-    --color-text-link:        #ffb3b0;
+    --color-text-link:        #f2a08f;
 
     --color-border-default: #35393a;
     --color-border-strong:  #474c4d;
@@ -318,8 +298,8 @@
     --color-error-bg:   #690005;
     --color-error-text: #ffdad6;
 
-    --color-success:      #5dd9d0;
-    --color-success-bg:   #00504c;
+    --color-success:      #73c8b0;
+    --color-success-bg:   #1d5b4e;
     --color-success-text: #d8f6f0;
 
     --color-warning:      #f0c26a;
@@ -337,8 +317,8 @@
     --card-foreground:     #fafbfc;
     --popover:             #272a2b;
     --popover-foreground:  #fafbfc;
-    --primary:             #ffb3b0;
-    --primary-foreground:  #481216;
+    --primary:             #f2a08f;
+    --primary-foreground:  #51201b;
     --secondary:           #272a2b;
     --secondary-foreground:#e4e6e7;
     --muted:               #272a2b;
@@ -390,8 +370,162 @@
 
   /* headline-lg is 28px on mobile per spec, 32px from sm up */
   h2 { font-size: 1.75rem; }
+
+  .hostel-detail-title {
+    font-size: 1.75rem;
+  }
+
+  .student-dashboard-title {
+    font-size: 1.75rem;
+  }
+
   @media (min-width: 640px) {
     h2 { font-size: var(--text-h2); }
+
+    .hostel-detail-title {
+      font-size: var(--text-h1);
+    }
+
+    .student-dashboard-title {
+      font-size: var(--text-h2);
+    }
+  }
+
+  .owner-shell header h1 {
+    font-size: var(--text-h5) !important;
+    line-height: 1.2;
+  }
+
+  .owner-shell main h1 {
+    font-size: var(--text-h3) !important;
+    line-height: 1.2;
+  }
+
+  .owner-shell main h1.owner-success-heading {
+    font-size: var(--text-h2) !important;
+  }
+
+  .owner-shell main h2 {
+    font-size: var(--text-h5) !important;
+    line-height: 1.3;
+  }
+
+  .owner-shell main h2.owner-form-heading {
+    font-size: var(--text-h4) !important;
+  }
+
+  .owner-shell main h3 {
+    font-size: var(--text-body-sm) !important;
+    line-height: 1.3;
+  }
+
+  .owner-shell main h3.hostel-card-title {
+    font-size: var(--text-h5) !important;
+    line-height: 1.25;
+  }
+
+  .owner-shell main h3.owner-empty-heading {
+    font-size: var(--text-h4) !important;
+    line-height: 1.3;
+  }
+
+  .owner-shell .owner-metric-value {
+    font-size: var(--text-h3) !important;
+    line-height: 1.15;
+  }
+
+  .owner-shell nav[aria-label="Mobile owner navigation"] a {
+    font-size: var(--text-caption) !important;
+    line-height: 1.3;
+  }
+
+  .admin-shell header h1 {
+    font-size: var(--text-h5) !important;
+    line-height: 1.2;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em;
+  }
+
+  .admin-shell main h1 {
+    font-size: var(--text-h3) !important;
+    line-height: 1.15;
+    font-weight: 900 !important;
+    letter-spacing: -0.04em;
+  }
+
+  .admin-shell main h2 {
+    font-size: var(--text-h5) !important;
+    line-height: 1.3;
+    font-weight: 700 !important;
+  }
+
+  .admin-shell nav[aria-label="Mobile admin navigation"] a {
+    font-size: 0.62rem !important;
+    line-height: 1.3;
+    font-weight: 600 !important;
+  }
+
+  @media (max-width: 767px) {
+    .admin-shell main h1 {
+      font-size: 1.4rem !important;
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+    }
+
+    .admin-shell main h2 {
+      font-size: 1rem !important;
+      line-height: 1.3;
+    }
+
+    .admin-shell nav[aria-label="Mobile admin navigation"] a {
+      font-size: 0.58rem !important;
+    }
+  }
+
+  /* Tailwind v4 can resolve text-size token classes as color utilities when
+     the variable name is untyped. Keep shell-specific typography explicit. */
+  .owner-shell :where([class~="text-[var(--text-display)]"]) {
+    font-size: var(--text-display) !important;
+  }
+
+  .admin-shell :where([class~="text-[var(--text-display)]"]) {
+    font-size: var(--text-display) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-h2)]"]) {
+    font-size: var(--text-h2) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-h3)]"]) {
+    font-size: var(--text-h3) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-h4)]"]) {
+    font-size: var(--text-h4) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-h5)]"], [class~="text-[var(--text-heading-sm)]"]) {
+    font-size: var(--text-h5) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-body-lg)]"]) {
+    font-size: var(--text-body-lg) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-body)]"]) {
+    font-size: var(--text-body) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-body-sm)]"]) {
+    font-size: var(--text-body-sm) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-label)]"]) {
+    font-size: var(--text-label) !important;
+  }
+
+  .owner-shell :where([class~="text-[var(--text-caption)]"]) {
+    font-size: var(--text-caption) !important;
   }
 
   a {
@@ -402,6 +536,12 @@
 
   a:hover {
     text-decoration: underline;
+  }
+
+  .hostel-card-link,
+  .hostel-card-link:hover {
+    color: inherit;
+    text-decoration: none;
   }
 
   code, pre, kbd, samp {
@@ -529,6 +669,37 @@
       #272a2b 100%
     );
     background-size: 200% 100%;
+  }
+
+  .hero-image-drift {
+    animation: hero-image-drift 18s ease-out both;
+    transform: scale(1.04);
+  }
+
+  .hero-enter {
+    animation: hero-enter 700ms var(--ease-out-quart) both;
+  }
+
+  .hero-enter-delay-1 { animation-delay: 90ms; }
+  .hero-enter-delay-2 { animation-delay: 180ms; }
+  .hero-enter-delay-3 { animation-delay: 270ms; }
+  .hero-enter-delay-4 { animation-delay: 360ms; }
+  .hero-enter-delay-5 { animation-delay: 450ms; }
+
+  @keyframes hero-image-drift {
+    from { transform: scale(1.1); }
+    to { transform: scale(1.04); }
+  }
+
+  @keyframes hero-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes shimmer {

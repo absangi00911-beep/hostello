@@ -20,7 +20,9 @@ function getClient(): TypesenseClient {
       },
     ],
     apiKey: process.env.TYPESENSE_API_KEY || "",
-    connectionTimeoutSeconds: 10,
+    // Fail fast to the Prisma search path when Typesense is unavailable.
+    // A discovery page should not make students wait through an infrastructure timeout.
+    connectionTimeoutSeconds: 2,
     retryIntervalSeconds: 0.1,
   });
 

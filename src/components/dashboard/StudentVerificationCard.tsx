@@ -8,6 +8,7 @@ type Status = "NONE" | "PENDING" | "APPROVED" | "REJECTED";
 
 interface Props {
   currentStatus: Status;
+  embedded?: boolean;
 }
 
 const STATUS_COPY = {
@@ -41,7 +42,7 @@ const STATUS_COPY = {
   },
 } satisfies Record<Status, unknown>;
 
-export function StudentVerificationCard({ currentStatus }: Props) {
+export function StudentVerificationCard({ currentStatus, embedded = false }: Props) {
   const [status, setStatus]   = useState<Status>(currentStatus);
   const [uploading, setUploading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
@@ -85,7 +86,7 @@ export function StudentVerificationCard({ currentStatus }: Props) {
   const canUpload = status === "NONE" || status === "REJECTED";
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+    <div className={embedded ? "p-0" : "rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5"}>
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] ${cfg.iconBg}`}>

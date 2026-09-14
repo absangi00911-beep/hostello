@@ -30,13 +30,20 @@ export function DashboardTabs() {
     >
       {TABS.map(({ href, label, icon: Icon }) => {
         const isActive = pathname.startsWith(href);
+        const mobileDuplicate =
+          href === "/dashboard/saved" ||
+          href === "/dashboard/messages" ||
+          href === "/dashboard/notifications";
+
         return (
           <Link
             key={href}
             href={href}
             aria-current={isActive ? "page" : undefined}
-            className={`
-              flex items-center gap-2 h-11 px-4 whitespace-nowrap border-b-2 text-[var(--text-body-sm)] transition-all duration-[var(--transition-fast)] shrink-0
+            aria-label={label}
+            title={label}
+            className={`${mobileDuplicate ? "hidden sm:flex" : "flex"}
+              items-center gap-2 h-11 px-4 whitespace-nowrap border-b-2 text-[var(--text-body-sm)] transition-all duration-[var(--transition-fast)] shrink-0
               ${
                 isActive
                   ? "border-[var(--color-primary)] text-[var(--color-text-heading)] font-[600]"
@@ -45,9 +52,7 @@ export function DashboardTabs() {
             `}
           >
             <Icon size={15} strokeWidth={1.5} aria-hidden="true" />
-            <span className="hidden sm:inline">{label}</span>
-            {/* Icon-only on mobile */}
-            <span className="sr-only sm:not-sr-only">{label}</span>
+            <span>{label}</span>
           </Link>
         );
       })}

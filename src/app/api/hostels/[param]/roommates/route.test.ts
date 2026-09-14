@@ -24,7 +24,11 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 
 function studentSession() {
-  return { user: { id: "usr_student_1" } } as any;
+  return { user: { id: "usr_student_1", role: "STUDENT" } } as any;
+}
+
+function ownerSession() {
+  return { user: { id: "usr_owner_1", role: "OWNER" } } as any;
 }
 
 function ctx(param: string) {
@@ -64,6 +68,7 @@ function makePost(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(auth).mockResolvedValue(null as any);
 });
 
 describe("GET /api/hostels/[param]/roommates", () => {
@@ -73,6 +78,16 @@ describe("GET /api/hostels/[param]/roommates", () => {
     const res = await GET(getReq(), ctx("nonexistent"));
 
     expect(res.status).toBe(404);
+  });
+
+  it("returns 403 when an owner requests roommate details", async () => {
+    vi.mocked(auth).mockResolvedValue(ownerSession());
+
+    const res = await GET(getReq(), ctx("green-view"));
+
+    expect(res.status).toBe(403);
+    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+    expect(db.roommatePost.findMany).not.toHaveBeenCalled();
   });
 
   it("resolves the hostel by id or slug", async () => {
@@ -144,6 +159,16 @@ describe("POST /api/hostels/[param]/roommates", () => {
     const res = await POST(postReq({ bio: "hi" }), ctx("green-view"));
 
     expect(res.status).toBe(401);
+  });
+
+  it("returns 403 when an owner tries to post a roommate request", async () => {
+    vi.mocked(auth).mockResolvedValue(ownerSession());
+
+    const res = await POST(postReq({ bio: "hi" }), ctx("green-view"));
+
+    expect(res.status).toBe(403);
+    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+    expect(db.roommatePost.upsert).not.toHaveBeenCalled();
   });
 
   it("returns 404 for a hostel that doesn't exist", async () => {

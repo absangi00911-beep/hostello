@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "@/app/page";
 import { auth } from "@/lib/auth/config";
 
+const redirectMock = vi.hoisted(() => vi.fn());
+
 type TestSession = {
   user: {
     id: string;
@@ -15,6 +17,10 @@ type TestSession = {
 
 vi.mock("@/lib/auth/config", () => ({
   auth: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: redirectMock,
 }));
 
 vi.mock("@/components/layout/PublicLayout", () => ({
@@ -45,7 +51,7 @@ describe("HomePage role-based CTAs", () => {
     );
   });
 
-  it("does not show the owner listing CTA to signed-in students", async () => {
+  it("sends signed-in students directly to hostel search", async () => {
     mockedAuth.mockResolvedValue({
       user: {
         id: "student-1",
@@ -56,14 +62,26 @@ describe("HomePage role-based CTAs", () => {
       expires: "2026-06-24T00:00:00.000Z",
     });
 
-    const markup = renderToStaticMarkup(await HomePage());
+    await HomePage();
 
-    expect(markup).not.toContain("List your hostel");
-    expect(markup).not.toContain("For hostel owners");
-    expect(markup).not.toContain("Owner workspace");
-    expect(markup).not.toContain("Your owner tools");
-    expect(markup).not.toContain('href="/register?role=OWNER"');
-    expect(markup).not.toContain('href="/owner/');
+    expect(redirectMock).toHaveBeenCalledWith("/hostels");
+  });
+
+  it("sends signed-in admins directly to the admin workspace", async () => {
+    mockedAuth.mockResolvedValue({
+      user: {
+        id: "admin-1",
+        name: "Admin",
+        email: "admin@example.com",
+        role: "ADMIN",
+      },
+      expires: "2026-06-24T00:00:00.000Z",
+    });
+
+    await HomePage();
+
+    expect(redirectMock).toHaveBeenCalledWith("/admin");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("shows an owner workspace instead of hostel discovery to signed-in owners", async () => {

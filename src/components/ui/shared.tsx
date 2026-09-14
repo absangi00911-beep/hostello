@@ -33,7 +33,7 @@ export function EmptyState({
         className="mb-4 text-[var(--color-text-muted)]"
         aria-hidden="true"
       />
-      <h3 className="mb-2 text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
+      <h3 className="owner-empty-heading mb-2 text-[length:var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
         {heading}
       </h3>
       {description && (

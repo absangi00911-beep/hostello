@@ -381,7 +381,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
   }
 
   const sectionCls = "space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-8";
-  const headingCls = "text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-5";
+  const headingCls = "owner-form-heading text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-5";
 
   return (
     <div className="mx-auto max-w-6xl">

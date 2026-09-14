@@ -20,6 +20,11 @@ async function resolveHostel(param: string) {
 
 /** GET — active, non-expired posts with < AUTO_HIDE_REPORTS reports */
 export async function GET(_req: NextRequest, { params }: Ctx) {
+  const session = await auth();
+  if (session?.user.role && session.user.role !== "STUDENT") {
+    return NextResponse.json({ error: "Roommate details are available to students only" }, { status: 403 });
+  }
+
   const { param } = await params;
   const hostel = await resolveHostel(param);
   if (!hostel) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -55,6 +60,9 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 export async function POST(req: NextRequest, { params }: Ctx) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "STUDENT") {
+    return NextResponse.json({ error: "Only students can post roommate requests" }, { status: 403 });
+  }
 
   const { param } = await params;
   const hostel = await resolveHostel(param);

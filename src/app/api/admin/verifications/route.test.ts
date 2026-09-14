@@ -116,10 +116,18 @@ describe("PUT /api/admin/verifications", () => {
     const res = await PUT(putReq({ userId: "usr_1", action: "approve" }));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(db.user.update).toHaveBeenCalledWith({
-      where: { id: "usr_1" },
-      data: { verificationStatus: "APPROVED", studentVerified: true, verificationDocUrl: undefined },
-    });
+    expect(db.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "usr_1" },
+        data: expect.objectContaining({
+          verificationStatus: "APPROVED",
+          studentVerified: true,
+          verificationDocUrl: undefined,
+          verifiedById: "usr_admin_1",
+          verificationDecidedAt: expect.any(Date),
+        }),
+      }),
+    );
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({ userId: "usr_1", type: "HOSTEL_APPROVED" }),
     );
@@ -133,10 +141,18 @@ describe("PUT /api/admin/verifications", () => {
     await PUT(putReq({ userId: "usr_1", action: "reject" }));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(db.user.update).toHaveBeenCalledWith({
-      where: { id: "usr_1" },
-      data: { verificationStatus: "REJECTED", studentVerified: false, verificationDocUrl: null },
-    });
+    expect(db.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "usr_1" },
+        data: expect.objectContaining({
+          verificationStatus: "REJECTED",
+          studentVerified: false,
+          verificationDocUrl: null,
+          verifiedById: "usr_admin_1",
+          verificationDecidedAt: expect.any(Date),
+        }),
+      }),
+    );
     expect(createNotification).toHaveBeenCalledWith(
       expect.objectContaining({ type: "HOSTEL_REJECTED" }),
     );

@@ -1,44 +1,88 @@
-// Path: src/app/api/admin/listings/stats/route.ts
-
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { computeListingCompleteness, FLAGGED_THRESHOLD } from "@/lib/listingCompleteness";
+import { computeListingCompleteness } from "@/lib/listingCompleteness";
 
-const NEWLY_PUBLISHED_WINDOW_DAYS = 7;
+const VALID_STATUSES = ["PENDING_REVIEW", "ACTIVE", "SUSPENDED"] as const;
+const MAX_LIMIT = 50;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (session?.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const newlyPublishedSince = new Date(Date.now() - NEWLY_PUBLISHED_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const url = new URL(req.url);
+  const status = url.searchParams.get("status");
+  const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+  const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "20", 10) || 20));
+  const search = url.searchParams.get("search")?.trim();
+  const skip = (page - 1) * limit;
 
-  const [totalListings, pendingApproval, newlyPublished, pendingHostels] = await Promise.all([
-    db.hostel.count(),
-    db.hostel.count({ where: { status: "PENDING_REVIEW" } }),
-    db.hostel.count({ where: { status: "ACTIVE", updatedAt: { gte: newlyPublishedSince } } }),
-    // Need full content to score completeness — only pulling the
-    // (bounded) pending queue, not the whole table.
+  if (!status) {
+    return NextResponse.json({ error: "status is required" }, { status: 400 });
+  }
+
+  if (!(VALID_STATUSES as readonly string[]).includes(status)) {
+    return NextResponse.json({ error: "Invalid status." }, { status: 400 });
+  }
+
+  const where: any = { status };
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { city: { contains: search, mode: "insensitive" } },
+      { slug: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const [hostels, total] = await Promise.all([
     db.hostel.findMany({
-      where: { status: "PENDING_REVIEW" },
-      select: { images: true, description: true, amenities: true, rules: true },
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        status: true,
+        city: true,
+        verified: true,
+        createdAt: true,
+        description: true,
+        images: true,
+        amenities: true,
+        rules: true,
+        owner: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     }),
+    db.hostel.count({ where }),
   ]);
 
-  const flaggedCount = pendingHostels.filter(
-    (h) => computeListingCompleteness(h).score < FLAGGED_THRESHOLD
-  ).length;
+  const data = hostels.map((hostel) => ({
+    ...hostel,
+    completeness: Math.round(
+      computeListingCompleteness({
+        images: hostel.images ?? [],
+        description: hostel.description ?? "",
+        amenities: hostel.amenities ?? [],
+        rules: hostel.rules ?? [],
+      }).score,
+    ),
+  }));
 
   return NextResponse.json({
-    data: {
-      totalListings,
-      pendingApproval,
-      flaggedCount,
-      newlyPublished,
-      newlyPublishedWindowDays: NEWLY_PUBLISHED_WINDOW_DAYS,
-      flaggedThreshold: FLAGGED_THRESHOLD,
-    },
+    data,
+    total,
+    page,
+    limit,
+    hasMore: page * limit < total,
   });
 }

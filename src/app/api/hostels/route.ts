@@ -1,8 +1,12 @@
 // Path: src/app/api/hostels/route.ts
 
 import { type NextRequest, NextResponse } from "next/server";
+import { hostelCreateSchema } from "@hostello/shared";
+import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { searchHostelsWithFallback } from "@/lib/hostel-search";
+import { createHostelRecord } from "@/lib/hostel-service";
+import { PLANS } from "@/config/plans";
 
 // This file was missing entirely — SearchPageClient.tsx has always called
 // fetch(`/api/hostels?...`), but nothing implemented that endpoint. The
@@ -12,6 +16,51 @@ import { searchHostelsWithFallback } from "@/lib/hostel-search";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session || session.user.role !== "OWNER") {
+      return NextResponse.json({ error: "Only owners can create listings." }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const parsed = hostelCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed.", details: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+
+    const owner = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true, plan: true },
+    });
+    if (!owner) return NextResponse.json({ error: "Owner not found." }, { status: 404 });
+
+    const listingCount = await db.hostel.count({ where: { ownerId: session.user.id } });
+    if (listingCount >= PLANS[owner.plan].maxListings) {
+      return NextResponse.json(
+        { error: "You've reached your listing limit.", code: "QUOTA_EXCEEDED" },
+        { status: 403 },
+      );
+    }
+
+    const hostel = await createHostelRecord(
+      session.user.id,
+      owner.name,
+      owner.email,
+      parsed.data,
+      body,
+    );
+
+    return NextResponse.json({ data: hostel, message: "Listing submitted for review." }, { status: 201 });
+  } catch (err) {
+    console.error("[POST /api/hostels]", err);
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {

@@ -138,14 +138,18 @@ describe("Typesense success path", () => {
     );
   });
 
-  it("returns empty hostelIds when Typesense has no hits", async () => {
+  it("falls back to Prisma when Typesense has no hits", async () => {
     vi.mocked(searchHostels).mockResolvedValue(typesenseResult([], 0) as any);
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      { id: "db_hostel_1" },
+    ] as any);
+    vi.mocked(db.hostel.count).mockResolvedValue(1);
 
     const result = await searchHostelsWithFallback(baseParams());
 
-    expect(result.hostelIds).toEqual([]);
-    expect(result.total).toBe(0);
-    expect(result.isSearchDegraded).toBe(false);
+    expect(result.hostelIds).toEqual(["db_hostel_1"]);
+    expect(result.total).toBe(1);
+    expect(result.isSearchDegraded).toBe(true);
   });
 });
 

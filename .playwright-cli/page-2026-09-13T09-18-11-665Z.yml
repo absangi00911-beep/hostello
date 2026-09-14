@@ -1,0 +1,135 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e206] [cursor=pointer]
+  - alert [ref=e210]: Student hostels in Lahore | HostelLo | HostelLo
+  - generic [ref=e213]:
+    - banner [ref=e214]:
+      - generic [ref=e216]:
+        - link "HostelLo" [ref=e217] [cursor=pointer]:
+          - /url: /
+        - button "Lahore" [ref=e223]
+        - search [ref=e230]:
+          - searchbox "Search hostels" [ref=e232]
+        - generic [ref=e234]:
+          - link "Sign in" [ref=e235] [cursor=pointer]:
+            - /url: /login
+          - link "Register" [ref=e236] [cursor=pointer]:
+            - /url: /register
+    - main [ref=e237]:
+      - generic [ref=e238]:
+        - generic [ref=e239]:
+          - paragraph [ref=e240]: No hostels found in Lahore
+          - generic [ref=e242] [cursor=pointer]:
+            - generic [ref=e243]: "Sort:"
+            - combobox "Sort:" [ref=e244]:
+              - option "Recommended" [selected]
+              - 'option "Price: low to high"'
+              - 'option "Price: high to low"'
+              - option "Highest rated"
+          - button "Map" [ref=e245]
+        - generic [ref=e248]:
+          - complementary "Search filters" [ref=e249]:
+            - generic [ref=e250]:
+              - paragraph [ref=e251]: Filters
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - generic [ref=e254]: City
+                  - combobox "City" [ref=e256]:
+                    - option "All cities"
+                    - option "Lahore" [selected]
+                    - option "Islamabad"
+                    - option "Karachi"
+                    - option "Faisalabad"
+                    - option "Multan"
+                    - option "Peshawar"
+                    - option "Rawalpindi"
+                    - option "Quetta"
+                    - option "Bahawalpur"
+                    - option "Sialkot"
+                    - option "Sukkur"
+                    - option "Gujranwala"
+                    - option "Hyderabad"
+                    - option "Sargodha"
+                    - option "Sheikhupura"
+                    - option "Jhang"
+                    - option "Rahim Yar Khan"
+                    - option "Mardan"
+                    - option "Okara"
+                    - option "Dera Ghazi Khan"
+                    - option "Wah Cantt"
+                    - option "Chakwal"
+                    - option "Jhelum"
+                - group "Gender" [ref=e257]:
+                  - generic [ref=e259]:
+                    - generic [ref=e260] [cursor=pointer]:
+                      - radio "All" [checked] [ref=e263]
+                      - generic [ref=e264]: All
+                    - generic [ref=e265] [cursor=pointer]:
+                      - radio "Male only" [ref=e267]
+                      - generic [ref=e268]: Male only
+                    - generic [ref=e269] [cursor=pointer]:
+                      - radio "Female only" [ref=e271]
+                      - generic [ref=e272]: Female only
+                    - generic [ref=e273] [cursor=pointer]:
+                      - radio "Mixed" [ref=e275]
+                      - generic [ref=e276]: Mixed
+                - generic [ref=e277]:
+                  - paragraph [ref=e278]: Price range (PKR / month)
+                  - slider "Minimum" [ref=e283]
+                  - generic [ref=e284]:
+                    - spinbutton "Minimum price" [ref=e285]: "0"
+                    - generic [ref=e286]: –
+                    - spinbutton "Maximum price" [ref=e287]: "50000"
+                - group "Amenities" [ref=e288]:
+                  - generic [ref=e290]:
+                    - generic [ref=e291] [cursor=pointer]:
+                      - checkbox "Wi-Fi" [ref=e293]
+                      - generic [ref=e294]: Wi-Fi
+                    - generic [ref=e295] [cursor=pointer]:
+                      - checkbox "Fiber Internet" [ref=e297]
+                      - generic [ref=e298]: Fiber Internet
+                    - generic [ref=e299] [cursor=pointer]:
+                      - checkbox "Meals Included" [ref=e301]
+                      - generic [ref=e302]: Meals Included
+                    - generic [ref=e303] [cursor=pointer]:
+                      - checkbox "Breakfast Only" [ref=e305]
+                      - generic [ref=e306]: Breakfast Only
+                    - generic [ref=e307] [cursor=pointer]:
+                      - checkbox "Shared Kitchen" [ref=e309]
+                      - generic [ref=e310]: Shared Kitchen
+                    - generic [ref=e311] [cursor=pointer]:
+                      - checkbox "Laundry" [ref=e313]
+                      - generic [ref=e314]: Laundry
+                    - generic [ref=e315] [cursor=pointer]:
+                      - checkbox "Study Room" [ref=e317]
+                      - generic [ref=e318]: Study Room
+                    - generic [ref=e319] [cursor=pointer]:
+                      - checkbox "Gym" [ref=e321]
+                      - generic [ref=e322]: Gym
+                    - generic [ref=e323] [cursor=pointer]:
+                      - checkbox "Parking" [ref=e325]
+                      - generic [ref=e326]: Parking
+                    - generic [ref=e327] [cursor=pointer]:
+                      - checkbox "Rooftop" [ref=e329]
+                      - generic [ref=e330]: Rooftop
+                    - generic [ref=e331] [cursor=pointer]:
+                      - checkbox "Courtyard" [ref=e333]
+                      - generic [ref=e334]: Courtyard
+                    - generic [ref=e335] [cursor=pointer]:
+                      - checkbox "Elevator" [ref=e337]
+                      - generic [ref=e338]: Elevator
+                  - button "Show 9 more" [ref=e339]
+                - button "Reset filters" [ref=e340]
+          - main "Search results" [ref=e341]:
+            - list "Active filters" [ref=e342]:
+              - listitem [ref=e343]:
+                - text: Lahore
+                - button "Remove Lahore filter" [ref=e344]:
+                  - generic [aria-hidden] [ref=e345]: ✕
+            - generic [ref=e346]:
+              - status [ref=e347]:
+                - paragraph [ref=e348]: No exact matches yet
+                - paragraph [ref=e349]: Try clearing filters, widening your price range, or searching a nearby city.
+                - button "Clear all filters" [ref=e351]
+              - generic [ref=e352]:
+                - heading "No hostels match your filters" [level=3] [ref=e357]
+                - paragraph [ref=e358]: Clear filters or search a nearby area to see more options.
