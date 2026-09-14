@@ -37,7 +37,8 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
   let total: number;
   let isSearchDegraded = false;
 
-  // Try Typesense first, fall back to Prisma if unavailable
+  // Try Typesense first. An empty index is also degraded: seeded or newly
+  // approved database rows must remain discoverable before the next sync.
   try {
     const searchResults: TypesenseSearchResult<HostelDocument> = await searchHostels(q || "", {
       city: city ? city : undefined,
@@ -54,45 +55,60 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
     // Extract hostel IDs from search results — fully typed access
     hostelIds = searchResults.hits.map((hit: TypesenseSearchHit<HostelDocument>) => hit.document.id);
     total = searchResults.found;
+
+    if (total > 0) {
+      return {
+        hostelIds,
+        total,
+        isSearchDegraded,
+      };
+    }
   } catch (searchErr) {
     console.error("[searchHostelsWithFallback] Typesense failed, falling back to Prisma", searchErr);
     isSearchDegraded = true;
-
-    // Full Prisma fallback with complete filter support
-    const whereClause: Prisma.HostelWhereInput = { status: "ACTIVE" };
-    if (city) whereClause.city = city;
-    if (gender) whereClause.gender = gender;
-    if (verified) whereClause.verified = true;
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      whereClause.pricePerMonth = {};
-      if (minPrice !== undefined) whereClause.pricePerMonth.gte = minPrice;
-      if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
-    }
-    if (amenities && amenities.length > 0) {
-      // Match hostels that have ALL specified amenities (consistent with Typesense)
-      whereClause.amenities = { hasEvery: amenities };
-    }
-
-    // Determine sort order
-    const orderByClause: Prisma.HostelOrderByWithRelationInput = {};
-    if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
-    else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
-    else if (sort === "rating") orderByClause.rating = "desc";
-    else orderByClause.createdAt = "desc"; // newest
-
-    const fallbackHostels = await db.hostel.findMany({
-      where: whereClause,
-      select: { id: true },
-      orderBy: Object.keys(orderByClause).length > 0 ? orderByClause : { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    hostelIds = fallbackHostels.map((h) => h.id);
-
-    // Get total count for pagination
-    total = await db.hostel.count({ where: whereClause });
   }
+
+  // Full Prisma fallback with complete filter support.
+  const whereClause: Prisma.HostelWhereInput = { status: "ACTIVE" };
+  if (q) {
+    whereClause.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { city: { contains: q, mode: "insensitive" } },
+      { area: { contains: q, mode: "insensitive" } },
+      { address: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  if (city) whereClause.city = city;
+  if (gender) whereClause.gender = gender;
+  if (verified) whereClause.verified = true;
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    whereClause.pricePerMonth = {};
+    if (minPrice !== undefined) whereClause.pricePerMonth.gte = minPrice;
+    if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
+  }
+  if (amenities && amenities.length > 0) {
+    // Match hostels that have ALL specified amenities (consistent with Typesense)
+    whereClause.amenities = { hasEvery: amenities };
+  }
+
+  const orderByClause: Prisma.HostelOrderByWithRelationInput = {};
+  if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
+  else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
+  else if (sort === "rating") orderByClause.rating = "desc";
+  else orderByClause.createdAt = "desc";
+
+  const fallbackHostels = await db.hostel.findMany({
+    where: whereClause,
+    select: { id: true },
+    orderBy: Object.keys(orderByClause).length > 0 ? orderByClause : { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+
+  hostelIds = fallbackHostels.map((h) => h.id);
+  total = await db.hostel.count({ where: whereClause });
+  isSearchDegraded = true;
 
   return {
     hostelIds,

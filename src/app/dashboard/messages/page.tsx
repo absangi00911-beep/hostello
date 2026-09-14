@@ -37,7 +37,7 @@ interface Conversation {
   updatedAt: string;
   hostel?: { name: string; slug: string; coverImage?: string | null } | null;
   participants: { userId: string; user: ParticipantUser }[];
-  messages: { content: string; senderId: string; read: boolean; createdAt: string }[];
+  messages?: { content: string; senderId: string; read: boolean; createdAt: string }[];
   unreadCount?: number;
 }
 
@@ -89,8 +89,9 @@ function ConversationItem({
   isActive: boolean;
   onClick: () => void;
 }) {
-  const lastMsg   = convo.messages[convo.messages.length - 1];
-  const hasUnread = convo.messages.some((m) => !m.read && m.senderId !== currentUserId);
+  const messages  = convo.messages ?? [];
+  const lastMsg   = messages[messages.length - 1];
+  const hasUnread = messages.some((m) => !m.read && m.senderId !== currentUserId);
   const otherUser = convo.participants?.find((p) => p.userId !== currentUserId)?.user;
   const timeAgo   = formatDistanceToNow(new Date(convo.updatedAt), { addSuffix: false });
 
@@ -399,8 +400,9 @@ export default function MessagesPage() {
 
   const filtered = useMemo(() => {
     return conversations.filter((convo) => {
+      const messages = convo.messages ?? [];
       if (tab === "unread") {
-        const hasUnread = convo.messages.some((m) => !m.read && m.senderId !== currentUserId);
+        const hasUnread = messages.some((m) => !m.read && m.senderId !== currentUserId);
         if (!hasUnread) return false;
       }
       if (query.trim()) {

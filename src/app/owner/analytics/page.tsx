@@ -33,7 +33,7 @@ function StatCard({
         <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">{label}</p>
       </div>
       <p
-        className="text-[2rem] font-[700] leading-none text-[var(--color-text-heading)]"
+        className="owner-metric-value text-[var(--text-h3)] font-[700] leading-none text-[var(--color-text-heading)]"
 
       >
         {value}

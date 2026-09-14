@@ -42,10 +42,24 @@ export async function GET(_req: NextRequest) {
       },
       include: {
         hostel: {
-          select: { name: true },
+          select: { name: true, slug: true, coverImage: true },
+        },
+        participants: {
+          select: {
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                role: true,
+                studentVerified: true,
+              },
+            },
+          },
         },
         messages: {
-          select: { id: true, read: true, senderId: true },
+          select: { content: true, read: true, senderId: true, createdAt: true },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -64,7 +78,10 @@ export async function GET(_req: NextRequest) {
       return {
         id: conv.id,
         hostelName: conv.hostel.name,
-        unreadCount,
+        hostel: conv.hostel,
+        participants: conv.participants ?? [],
+        messages: conv.messages ?? [],
+        unreadCount: conv.messages.length > 0 ? unreadCount : conv._count.messages,
         updatedAt: conv.updatedAt,
       };
     });

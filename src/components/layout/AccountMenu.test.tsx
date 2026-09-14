@@ -75,6 +75,8 @@ describe("AccountMenu role navigation", () => {
     expect(markup).toContain("Owner dashboard");
     expect(markup).toContain("My listings");
     expect(markup).toContain("/owner/bookings");
+    expect(markup).toContain("/owner/earnings");
+    expect(markup).toContain("/owner/subscription");
     expect(markup).not.toContain("/dashboard/bookings");
     expect(markup).not.toContain("Saved hostels");
     expect(markup).not.toContain("Admin panel");

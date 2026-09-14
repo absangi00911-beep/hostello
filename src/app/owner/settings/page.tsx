@@ -135,9 +135,9 @@ function PersonalInfo({ profile }: { profile: any }) {
         <input id="os-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
       </div>
       <div className="space-y-1.5">
-        <label className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Email</label>
+          <label htmlFor="os-email" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Email</label>
         <div className="flex items-center gap-2">
-          <input type="email" value={profile?.email ?? ""} readOnly className={`${inputCls} opacity-60 cursor-not-allowed`} />
+          <input id="os-email" type="email" value={profile?.email ?? ""} readOnly className={`${inputCls} opacity-60 cursor-not-allowed`} />
           {profile?.emailVerified && <ShieldCheck size={16} strokeWidth={1.5} className="text-[var(--color-success)] shrink-0" />}
         </div>
       </div>

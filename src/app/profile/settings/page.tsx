@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  User, Shield, AlertTriangle,
   Eye, EyeOff, Loader2, ShieldCheck,
   CheckCircle2, Upload,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { inputCls } from "@/components/ui/input";
+import { StudentVerificationCard } from "@/components/dashboard/StudentVerificationCard";
 
 /* -- Section wrapper --------------------------------------- */
 function Section({
@@ -23,7 +23,7 @@ function Section({
   return (
     <section
       id={id}
-      className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 md:p-7 scroll-mt-24"
+      className="scroll-mt-24 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 md:p-7"
       aria-labelledby={`${id}-heading`}
     >
       <div className="mb-6">
@@ -385,46 +385,16 @@ function DangerZoneSection() {
   );
 }
 
-/* -- Mini-nav ---------------------------------------------- */
-const NAV_ITEMS = [
-  { id: "personal",     label: "Personal info",    icon: User },
-  { id: "security",     label: "Security",         icon: Shield },
-  { id: "danger",       label: "Danger zone",      icon: AlertTriangle },
-];
-
-function MiniNav({ active }: { active: string }) {
-  return (
-    <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0" aria-label="Settings sections">
-      {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-        <a
-          key={id}
-          href={`#${id}`}
-          aria-current={active === id ? "true" : undefined}
-          className={`flex items-center gap-2.5 h-9 px-3 rounded-[var(--radius-md)] whitespace-nowrap text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] shrink-0 ${
-            active === id
-              ? "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]"
-              : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
-          }`}
-        >
-          <Icon size={15} strokeWidth={1.5} aria-hidden="true" />
-          {label}
-        </a>
-      ))}
-    </nav>
-  );
-}
-
 /* -- Page --------------------------------------------------- */
 export default function ProfileSettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeSection] = useState("personal");
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login?callbackUrl=/profile/settings");
   }, [status, router]);
 
-  const { data: profileData } = useQuery<{ data: any }>({
+  const { data: profileData, isError: profileError } = useQuery<{ data: any }>({
     queryKey: ["profile"],
     queryFn: async () => {
       const res = await fetch("/api/profile");
@@ -446,6 +416,23 @@ export default function ProfileSettingsPage() {
     );
   }
 
+  if (profileError) {
+    return (
+      <PublicLayout noFooter>
+        <div className="mx-auto flex min-h-64 w-full max-w-[720px] items-center justify-center px-4 py-8">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-error)]/20 bg-[var(--color-error-bg)] px-4 py-3 text-center">
+            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-error-text)]">
+              We couldn&apos;t load your profile.
+            </p>
+            <p className="mt-1 text-[var(--text-caption)] text-[var(--color-error-text)]">
+              Refresh the page to try again.
+            </p>
+          </div>
+        </div>
+      </PublicLayout>
+    );
+  }
+
   return (
     <PublicLayout>
       <div className="mx-auto w-full max-w-[720px] px-4 py-8 md:py-12 pb-24 md:pb-12">
@@ -462,16 +449,20 @@ export default function ProfileSettingsPage() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-          {/* Mini-nav — sticky on desktop */}
-          <div className="w-full lg:w-44 lg:sticky lg:top-24 shrink-0">
-            <MiniNav active={activeSection} />
-          </div>
-
-          {/* Sections */}
-          <div className="flex-1 min-w-0 space-y-6">
+        <div className="space-y-6">
             <Section id="personal" title="Personal info" description="Your public-facing profile information.">
               <PersonalInfoSection profile={profile} />
+            </Section>
+
+            <Section
+              id="verification"
+              title="Student verification"
+              description="Build trust with hostel owners by confirming your student status."
+            >
+              <StudentVerificationCard
+                currentStatus={profile?.verificationStatus ?? "NONE"}
+                embedded
+              />
             </Section>
 
             <Section id="security" title="Security" description="Update your password. Changing it signs out all other sessions.">
@@ -481,7 +472,6 @@ export default function ProfileSettingsPage() {
             <Section id="danger" title="Danger zone">
               <DangerZoneSection />
             </Section>
-          </div>
         </div>
       </div>
     </PublicLayout>

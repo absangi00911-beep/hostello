@@ -1,8 +1,8 @@
 // Path: src/components/hostel/BookingPanel.tsx
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Loader2, MessageCircle } from "lucide-react";
@@ -50,20 +50,26 @@ function BookingForm({
   hostelSlug: _hostelSlug,
   basePricePerMonth,
   rooms,
+  initialRoomId,
   onSuccess,
 }: {
   hostelId: string;
   hostelSlug: string;
   basePricePerMonth: number;
   rooms: Room[];
+  initialRoomId?: string;
   onSuccess: (bookingId: string) => void;
 }) {
   const { data: session } = useSession();
-  const [roomId, setRoomId]     = useState(rooms[0]?.id ?? "");
+  const [roomId, setRoomId]     = useState(initialRoomId ?? rooms[0]?.id ?? "");
   const [checkIn, setCheckIn]   = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests]     = useState(1);
   const [loading, setLoading]   = useState(false);
+
+  useEffect(() => {
+    if (initialRoomId) setRoomId(initialRoomId);
+  }, [initialRoomId]);
 
   const selectedRoom = rooms.find((r) => r.id === roomId);
   const pricePerMonth = selectedRoom?.pricePerMonth ?? basePricePerMonth;
@@ -261,9 +267,14 @@ export function BookingPanel({
   rooms,
 }: BookingPanelProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [sheetOpen, setSheetOpen] = useState(false);
   const canRequestBooking = !session || session.user.role === "STUDENT";
+  const requestedRoomId = searchParams.get("room") ?? undefined;
+  const initialRoomId = rooms.some((room) => room.id === requestedRoomId)
+    ? requestedRoomId
+    : undefined;
 
   function handleBookingSuccess(bookingId: string) {
     setSheetOpen(false);
@@ -296,6 +307,7 @@ export function BookingPanel({
     <>
       {/* -- Desktop sticky panel --------------------------- */}
       <aside
+        id="booking-panel"
         className="hidden lg:block sticky top-24 rounded-[var(--radius-xl)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-md)]"
         aria-label="Booking panel"
       >
@@ -318,6 +330,7 @@ export function BookingPanel({
             hostelSlug={hostelSlug}
             basePricePerMonth={basePricePerMonth}
             rooms={rooms}
+            initialRoomId={initialRoomId}
             onSuccess={handleBookingSuccess}
           />
         ) : (
@@ -335,18 +348,18 @@ export function BookingPanel({
       </aside>
 
       {/* -- Mobile bottom bar ------------------------------ */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-3 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-4 py-3">
-        <div>
+      <div id="booking-panel-mobile" className="fixed bottom-16 left-0 right-0 z-40 flex items-center gap-3 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-3 sm:px-4 md:bottom-0 lg:hidden">
+        <div className="shrink-0">
           <p className="text-[var(--text-h5)] font-[700] text-[var(--color-primary-deep)] leading-none">
             {formatPKR(basePricePerMonth)}
           </p>
           <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">per month</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex min-w-0 flex-1 justify-end gap-2">
           <button
             onClick={startConversation}
-            className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)]"
             aria-label="Message owner"
           >
             <MessageCircle size={18} strokeWidth={1.5} aria-hidden="true" />
@@ -355,7 +368,7 @@ export function BookingPanel({
           {canRequestBooking ? (
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="h-10 px-5 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]">
+              <button className="h-10 min-w-0 flex-1 whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] sm:flex-none sm:px-5">
                 Request booking
               </button>
             </SheetTrigger>
@@ -376,6 +389,7 @@ export function BookingPanel({
                 hostelSlug={hostelSlug}
                 basePricePerMonth={basePricePerMonth}
                 rooms={rooms}
+                initialRoomId={initialRoomId}
                 onSuccess={handleBookingSuccess}
               />
             </SheetContent>

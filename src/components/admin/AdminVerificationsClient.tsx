@@ -84,21 +84,27 @@ export function AdminVerificationsClient() {
   });
 
   const users = useMemo(() => {
-    const list = data?.data ?? [];
+    const list = Array.isArray(data?.data) ? data.data : [];
     if (!query.trim()) return list;
     const q = query.trim().toLowerCase();
     return list.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
   }, [data, query]);
 
-  const selected = users.find((u) => u.id === selectedId) ?? users[0] ?? null;
+  const selected = Array.isArray(users)
+    ? users.find((u) => u.id === selectedId) ?? users[0] ?? null
+    : null;
 
   const actionMutation = useMutation({
-    mutationFn: ({ userId, action, reason }: { userId: string; action: "approve" | "reject"; reason?: string }) =>
-      fetch("/api/admin/verifications", {
+    mutationFn: async ({ userId, action, reason }: { userId: string; action: "approve" | "reject"; reason?: string }) => {
+      const res = await fetch("/api/admin/verifications", {
         method:  "PUT",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ userId, action, reason }),
-      }).then((r) => r.json()),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Verification action failed");
+      return json;
+    },
     onSuccess: (_, { action }) => {
       toast.success(action === "approve" ? "Student verified." : "Verification rejected.");
       setSelectedId(null);
@@ -134,6 +140,7 @@ export function AdminVerificationsClient() {
             <button
               key={key}
               onClick={() => { setTab(key); setSelectedId(null); setRejectReason(""); }}
+              aria-pressed={tab === key}
               className={`rounded-[var(--radius-sm)] px-3.5 py-1.5 text-[var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
                 tab === key
                   ? "bg-[var(--color-bg-card)] text-[var(--color-primary)] shadow-[var(--shadow-xs)]"

@@ -10,6 +10,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 
 // Owners can only move their own listing between these two states from
 // this endpoint — ACTIVE<->PENDING_REVIEW and SUSPENDED are admin-only,
@@ -27,7 +28,7 @@ export async function GET(
     const { param } = await params;
 
     const hostel = await db.hostel.findFirst({
-      where: { OR: [{ id: param }, { slug: param }] },
+      where: hostelIdOrSlugWhere(param),
       select: {
         id: true,
         name: true,
@@ -86,7 +87,7 @@ export async function PATCH(
     const requestedStatus = body?.status;
 
     const hostel = await db.hostel.findFirst({
-      where: { OR: [{ id: param }, { slug: param }] },
+      where: hostelIdOrSlugWhere(param),
       select: { id: true, ownerId: true, status: true },
     });
 

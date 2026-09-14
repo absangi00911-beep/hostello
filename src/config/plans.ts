@@ -7,7 +7,7 @@ export const PLANS = {
     analytics:   "basic" as const,
     support:     "community" as const,
     perks: [
-      "1 active listing",
+      "1 listing included",
       "Basic analytics (views & bookings)",
       "Standard search placement",
     ],

@@ -97,7 +97,14 @@ function ListingCard({
       {/* Thumbnail */}
       <div className="relative h-24 w-full sm:h-20 sm:w-32 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]">
         {hostel.coverImage ? (
-          <Image src={hostel.coverImage} alt={hostel.name} fill className="object-cover" sizes="128px" />
+          <Image
+            src={hostel.coverImage}
+            alt={hostel.name}
+            fill
+            className="object-cover"
+            sizes="128px"
+            unoptimized={hostel.coverImage.includes(".r2.dev/")}
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Building2 size={20} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />

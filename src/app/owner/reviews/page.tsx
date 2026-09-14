@@ -75,7 +75,7 @@ function StatCard({
         <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-muted)]">{label}</p>
         <Icon size={17} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
       </div>
-      <p className="mt-1.5 flex items-baseline gap-1.5 font-heading text-[1.75rem] font-[800] text-[var(--color-text-heading)]">
+      <p className="owner-metric-value mt-1.5 flex items-baseline gap-1.5 font-heading text-[var(--text-h3)] font-[800] text-[var(--color-text-heading)]">
         {value}
         {sub && <span className="text-[var(--text-caption)] font-[600] text-[var(--color-text-muted)]">{sub}</span>}
       </p>
@@ -143,10 +143,14 @@ function ReplyForm({
         className={`${inputCls} h-auto resize-none py-2.5 bg-[var(--color-bg-card)]`}
         aria-label="Reply to review"
       />
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {existing && (
           <button
-            onClick={() => deleteMutation.mutate()}
+            onClick={() => {
+              if (window.confirm("Remove this reply?")) {
+                deleteMutation.mutate();
+              }
+            }}
             disabled={deleteMutation.isPending}
             className="mr-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-[var(--text-caption)] font-[500] text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
           >
@@ -348,6 +352,7 @@ export default function OwnerReviewsPage() {
             <button
               key={key}
               onClick={() => setFilter(key)}
+              aria-pressed={filter === key}
               className={`h-9 px-3.5 rounded-full text-[var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
                 filter === key
                   ? "bg-[var(--color-primary)] text-white"

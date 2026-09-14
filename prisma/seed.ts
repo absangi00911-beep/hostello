@@ -651,52 +651,71 @@ async function main() {
     },
   });
 
-  // ─── One real review for Green Valley ────────────────────────────────────
-  // This is the ONLY review seeded. rating/reviewCount on the hostel row
-  // are computed from actual reviews. After seeding, Green Valley's stats
-  // reflect its real review; all other hostels start with 0/0.
+  // ─── Seed one review for every hostel ─────────────────────────────────────
+  // Reviews are keyed by hostel + student so this remains idempotent. The
+  // denormalized rating and reviewCount fields are always recomputed from
+  // the actual review rows below.
 
-  const greenValley = await db.hostel.findUnique({
-    where: { slug: "green-valley-boys-hostel" },
-    select: { id: true },
-  });
+  for (const data of hostelData) {
+    const hostel = await db.hostel.findUnique({
+      where: { slug: data.slug },
+      select: { id: true },
+    });
 
-  if (greenValley) {
+    if (!hostel) continue;
+
+    const rating = data.verified ? 5 : 4;
+    const locationScore = data.verified ? 5 : 4;
+
     await db.review.upsert({
-      where: { hostelId_userId: { hostelId: greenValley.id, userId: student1.id } },
-      update: {},
+      where: { hostelId_userId: { hostelId: hostel.id, userId: student1.id } },
+      update: {
+        rating,
+        title: `A solid student stay in ${data.city}`,
+        comment: `${data.name} is a practical option for students around ${data.area}. The ${data.amenities.slice(0, 2).join(" and ")} were useful during my stay, and the hostel offered good value for the monthly price.`,
+        cleanliness: rating,
+        location: locationScore,
+        value: rating,
+        safety: rating,
+        wouldRecommend: true,
+        verified: true,
+      },
       create: {
-        hostelId: greenValley.id,
+        hostelId: hostel.id,
         userId: student1.id,
-        rating: 5,
-        title: "Solid place, no complaints",
-        comment:
-          "Stayed here for two semesters. The meals are decent, Wi-Fi works well during exams, and the staff are responsive. It's not fancy but it's clean and safe. Would recommend to any LUMS or PU student.",
-        cleanliness: 5,
-        location: 5,
-        value: 4,
-        safety: 5,
+        rating,
+        title: `A solid student stay in ${data.city}`,
+        comment: `${data.name} is a practical option for students around ${data.area}. The ${data.amenities.slice(0, 2).join(" and ")} were useful during my stay, and the hostel offered good value for the monthly price.`,
+        cleanliness: rating,
+        location: locationScore,
+        value: rating,
+        safety: rating,
+        wouldRecommend: true,
         verified: true,
       },
     });
 
-    // Recompute the denormalized rating/reviewCount on the hostel row
-    // so the listing reflects the real review immediately after seeding.
-    const agg = await db.review.aggregate({
-      where: { hostelId: greenValley.id },
+    const aggregate = await db.review.aggregate({
+      where: { hostelId: hostel.id },
       _avg: { rating: true },
       _count: { rating: true },
     });
+
     await db.hostel.update({
-      where: { id: greenValley.id },
+      where: { id: hostel.id },
       data: {
-        rating: agg._avg.rating ?? 0,
-        reviewCount: agg._count.rating,
+        rating: aggregate._avg.rating ?? 0,
+        reviewCount: aggregate._count.rating,
       },
     });
   }
 
   // ─── Rooms ─────────────────────────────────────────────────────────────
+
+  const greenValley = await db.hostel.findUnique({
+    where: { slug: "green-valley-boys-hostel" },
+    select: { id: true },
+  });
 
   if (greenValley) {
     await db.room.upsert({
@@ -747,6 +766,110 @@ async function main() {
         available: 2,
       },
     });
+  }
+
+  const balochScholars = await db.hostel.findUnique({
+    where: { slug: "baloch-scholars-hostel" },
+    select: { id: true },
+  });
+
+  if (balochScholars) {
+    const balochRooms = [
+      {
+        id: "room-bsh-1",
+        name: "Standard Double",
+        description: "Bright shared room with two single beds and space for study desks.",
+        pricePerMonth: 5800,
+        capacity: 2,
+        available: 4,
+        images: ["https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"],
+      },
+      {
+        id: "room-bsh-2",
+        name: "Triple Study Room",
+        description: "Three-bed room with individual study space, ideal for students sharing costs.",
+        pricePerMonth: 5200,
+        capacity: 3,
+        available: 6,
+        images: ["https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80"],
+      },
+      {
+        id: "room-bsh-3",
+        name: "Single Room",
+        description: "Private room for focused study and extra quiet during exam season.",
+        pricePerMonth: 7500,
+        capacity: 1,
+        available: 2,
+        images: ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80"],
+      },
+    ];
+
+    for (const room of balochRooms) {
+      await db.room.upsert({
+        where: { id: room.id },
+        update: {
+          hostelId: balochScholars.id,
+          name: room.name,
+          description: room.description,
+          pricePerMonth: room.pricePerMonth,
+          capacity: room.capacity,
+          available: room.available,
+          images: room.images,
+        },
+        create: {
+          ...room,
+          hostelId: balochScholars.id,
+        },
+      });
+    }
+  }
+
+  // ─── Ensure every seeded hostel has room details ─────────────────────────
+  // Keep the richer room catalogs above, and add a consistent fallback catalog
+  // for the remaining seeded hostels so every detail page has usable room data.
+  for (const data of hostelData) {
+    const hostel = await db.hostel.findUnique({
+      where: { slug: data.slug },
+      select: { id: true },
+    });
+
+    if (!hostel) continue;
+
+    const existingRoomCount = await db.room.count({
+      where: { hostelId: hostel.id },
+    });
+
+    if (existingRoomCount > 0) continue;
+
+    const roomImage = data.images[0];
+    const rooms = [
+      {
+        id: `room-${data.slug}-shared`,
+        name: "Standard Shared Room",
+        description: `Comfortable shared accommodation near ${data.area}, with ${data.amenities.slice(0, 2).join(" and ")}.`,
+        pricePerMonth: data.pricePerMonth,
+        capacity: 2,
+        available: 4,
+      },
+      {
+        id: `room-${data.slug}-single`,
+        name: "Private Single Room",
+        description: `A quieter private room for students who want more personal study space in ${data.city}.`,
+        pricePerMonth: data.pricePerMonth + 1500,
+        capacity: 1,
+        available: 2,
+      },
+    ];
+
+    for (const room of rooms) {
+      await db.room.create({
+        data: {
+          ...room,
+          hostelId: hostel.id,
+          images: roomImage ? [roomImage] : [],
+        },
+      });
+    }
   }
 }
 

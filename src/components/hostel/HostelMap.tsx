@@ -20,6 +20,10 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    let resizeObserver: ResizeObserver | null = null;
+    let disposed = false;
+    let map: LeafletMap | null = null;
+
     // Dynamically import Leaflet to avoid SSR issues
     async function initMap() {
       try {
@@ -34,7 +38,9 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
           shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         });
 
-        const map = L.map(mapRef.current!, {
+        if (disposed || !mapRef.current?.isConnected) return;
+
+        map = L.map(mapRef.current, {
           center: [latitude, longitude],
           zoom: 15,
           scrollWheelZoom: false,
@@ -73,7 +79,32 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
           )
           .openPopup();
 
+        if (disposed) {
+          map.remove();
+          return;
+        }
+
         mapInstanceRef.current = map;
+
+        // Tabs can initialize Leaflet while the panel is hidden. Recalculate
+        // its viewport whenever the tab becomes visible or changes size.
+        const syncMapSize = () => {
+          if (disposed || !map || !mapRef.current?.isConnected) return;
+
+          try {
+            map.invalidateSize({ pan: false });
+            map.setView([latitude, longitude], map.getZoom(), { animate: false });
+          } catch (err) {
+            if (!disposed) {
+              console.warn("[HostelMap] Failed to sync map size:", err);
+            }
+          }
+        };
+
+        resizeObserver = new ResizeObserver(syncMapSize);
+        resizeObserver.observe(mapRef.current!);
+        requestAnimationFrame(syncMapSize);
+        window.setTimeout(syncMapSize, 100);
       } catch (err) {
         console.warn("[HostelMap] Leaflet failed to load:", err);
       }
@@ -82,34 +113,27 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
     initMap();
 
     return () => {
+      disposed = true;
+      resizeObserver?.disconnect();
+      if (map) {
+        map.remove();
+        map = null;
+      }
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
   }, [latitude, longitude, hostelName, address]);
-
-  // Import Leaflet CSS
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
-    return () => { document.head.removeChild(link); };
-  }, []);
 
   return (
     <div className="space-y-4">
       {/* Map container */}
       <div
         ref={mapRef}
-        className="w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)]"
-        style={{ height: 380 }}
+        className="h-[min(380px,75vw)] min-h-[260px] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] sm:h-[380px]"
         role="application"
         aria-label={`Map showing location of ${hostelName}`}
       />
-
-      {/* Address below map */}
       <div className="flex items-start gap-2.5">
         <MapPin
           size={16}
@@ -129,7 +153,7 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
 export function NoMapAvailable({ address }: { address: string }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]" style={{ height: 280 }}>
+      <div className="flex h-[min(280px,65vw)] min-h-[220px] items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] sm:h-[280px]">
         <div className="text-center space-y-2">
           <MapPin size={32} strokeWidth={1.5} className="text-[var(--color-text-muted)] mx-auto" aria-hidden="true" />
           <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">Map not available</p>

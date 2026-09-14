@@ -269,8 +269,8 @@ export default function AdminListingsPage() {
     setPendingAction(null);
   }
 
-  const hostels    = data?.data ?? [];
-  const total      = data?.total ?? 0;
+  const hostels = Array.isArray(data?.data) ? data.data : [];
+  const total = typeof data?.total === "number" ? data.total : 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
@@ -278,10 +278,10 @@ export default function AdminListingsPage() {
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-[var(--text-h1)] font-[800] text-[var(--color-text-heading)]">
+            <h1 className="font-heading text-[1.6rem] sm:text-[1.8rem] md:text-[2rem] font-[800] leading-tight text-[var(--color-text-heading)]">
               Hostel Moderation
             </h1>
-            <p className="mt-1 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-[0.75rem] sm:text-[0.8125rem] text-[var(--color-text-muted)]">
               Pending Reviews ({stats?.data.pendingApproval ?? "…"})
             </p>
           </div>
@@ -293,7 +293,7 @@ export default function AdminListingsPage() {
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search hostels or owner IDs…"
               aria-label="Search hostels or owner IDs"
-              className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-9 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
+              className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-9 pr-3 text-[0.8125rem] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
             />
           </div>
         </div>
@@ -302,44 +302,44 @@ export default function AdminListingsPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
               <div className="flex items-start justify-between">
-                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Total Listings</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Total Listings</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary-brand-container)]">
                   <Building2 size={16} strokeWidth={1.5} className="text-[var(--color-secondary-brand)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">{stats.data.totalListings.toLocaleString()}</p>
+              <p className="mt-3 font-heading text-[1.6rem] sm:text-[1.8rem] font-[800] leading-none text-[var(--color-text-heading)]">{stats.data.totalListings.toLocaleString()}</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
               <div className="flex items-start justify-between">
-                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Pending Approval</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Pending Approval</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
                   <ClipboardList size={16} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">{stats.data.pendingApproval}</p>
+              <p className="mt-3 font-heading text-[1.6rem] sm:text-[1.8rem] font-[800] leading-none text-[var(--color-text-heading)]">{stats.data.pendingApproval}</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border-l-[3px] border-l-[var(--color-error)] border-y border-r border-y-[var(--color-border-subtle)] border-r-[var(--color-border-subtle)] bg-[var(--color-error-bg)] p-5">
               <div className="flex items-start justify-between">
-                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-error-text)]">Flagged for Review</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-error-text)]">Flagged for Review</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-card)]">
                   <AlertTriangle size={16} strokeWidth={1.5} className="text-[var(--color-error)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-error)]">{stats.data.flaggedCount}</p>
-              <p className="mt-0.5 text-[var(--text-caption)] text-[var(--color-error-text)]">pending, under {FLAGGED_THRESHOLD}% complete</p>
+              <p className="mt-3 font-heading text-[1.6rem] sm:text-[1.8rem] font-[800] leading-none text-[var(--color-error)]">{stats.data.flaggedCount}</p>
+              <p className="mt-0.5 text-[0.68rem] text-[var(--color-error-text)]">pending, under {FLAGGED_THRESHOLD}% complete</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
               <div className="flex items-start justify-between">
-                <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">Newly Published</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Newly Published</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-bg)]">
                   <Sparkles size={16} strokeWidth={1.5} className="text-[var(--color-success-text)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">
-                +{stats.data.newlyPublished} <span className="text-[1rem] font-[500] text-[var(--color-text-muted)]">last {stats.data.newlyPublishedWindowDays}d</span>
+              <p className="mt-3 font-heading text-[1.6rem] sm:text-[1.8rem] font-[800] leading-none text-[var(--color-text-heading)]">
+                +{stats.data.newlyPublished} <span className="text-[0.8rem] font-[500] text-[var(--color-text-muted)]">last {stats.data.newlyPublishedWindowDays}d</span>
               </p>
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function AdminListingsPage() {
               key={value}
               onClick={() => { setTab(value); setPage(1); }}
               aria-current={tab === value ? "true" : undefined}
-              className={`h-10 px-4 text-[var(--text-body-sm)] font-[500] border-b-2 transition-all duration-[var(--transition-fast)] whitespace-nowrap ${
+              className={`h-10 px-3 sm:px-4 text-[0.75rem] sm:text-[0.8125rem] font-[500] border-b-2 transition-all duration-[var(--transition-fast)] whitespace-nowrap ${
                 tab === value
                   ? "border-[var(--color-primary)] text-[var(--color-text-heading)] font-[600]"
                   : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-body)]"
@@ -363,7 +363,7 @@ export default function AdminListingsPage() {
           ))}
         </div>
 
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[0.75rem] sm:text-[0.8125rem] text-[var(--color-text-muted)]">
           {isLoading ? "Loading…" : `${total} listing${total !== 1 ? "s" : ""}`}
         </p>
 
@@ -383,7 +383,64 @@ export default function AdminListingsPage() {
           />
         ) : (
           <>
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
+            <div className="space-y-3 md:hidden">
+              {hostels.map((hostel) => (
+                <div
+                  key={hostel.id}
+                  className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-3.5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/hostels/${hostel.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+                      >
+                        <span className="truncate">{hostel.name}</span>
+                        <ExternalLink size={11} strokeWidth={1.5} className="shrink-0 opacity-50" aria-hidden="true" />
+                      </Link>
+                    </div>
+                    <StatusBadge variant={HOSTEL_STATUS_BADGES[hostel.status]} />
+                  </div>
+
+                  <div className="mt-3 grid gap-2 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-[var(--color-text-muted)]">Owner</span>
+                      <div className="text-right">
+                        <p className="font-[500] text-[var(--color-text-body)] truncate max-w-[170px]">{hostel.owner.name}</p>
+                        <p className="truncate max-w-[170px]">{hostel.owner.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>City</span>
+                      <span className="text-[var(--color-text-body)]">{hostel.city}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Submitted</span>
+                      <span>{format(new Date(hostel.createdAt), "d MMM yyyy")}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Completeness</span>
+                      <CompletenessBar score={hostel.completeness} />
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex justify-end">
+                    <AdminActions
+                      hostel={hostel}
+                      onApprove={handleApprove}
+                      onSuspend={handleSuspendIntent}
+                      onActivate={handleActivateIntent}
+                      onReview={(id, name) => setReviewDrawer({ id, name, status: hostel.status })}
+                      loading={actingId === hostel.id}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[820px]" aria-label="Hostel listings">
                   <thead>

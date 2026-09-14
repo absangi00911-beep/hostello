@@ -17,6 +17,13 @@ import {
 } from "@/components/ui/shared";
 import { Building2 } from "lucide-react";
 import { SearchMap } from "@/components/hostel/SearchMap";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 /* ── Types ───────────────────────────────────────────────── */
 interface SearchResponse {
@@ -203,39 +210,38 @@ export function SearchPageClient({
         />
 
         {/* Results summary */}
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] flex-1 min-w-0 truncate">
+        <p className="order-3 basis-full text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] sm:order-none sm:min-w-0 sm:flex-1 sm:basis-auto sm:truncate">
           {isLoading ? "Searching…" : resultsSummary()}
         </p>
 
         {/* Sort — above results, not in sidebar */}
-        <div className="relative">
-          <div className="flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] cursor-pointer hover:border-[var(--color-border-strong)]">
-            <label
-              htmlFor="sort-select"
-              className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] whitespace-nowrap cursor-pointer"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Sort results"
+              className="inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
             >
-              Sort:
-            </label>
-            <select
-              id="sort-select"
+              <span className="text-[var(--color-text-muted)]">Sort:</span>
+              <span className="font-[500] text-[var(--color-text-body)]">{SORT_LABELS[sort]}</span>
+              <ChevronDown size={13} strokeWidth={1.5} className="ml-1 text-[var(--color-text-muted)]" aria-hidden="true" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[12rem]">
+            <DropdownMenuRadioGroup
               value={sort}
-              onChange={(e) => handleSortChange(e.target.value as SortOption)}
-              className="appearance-none bg-transparent text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] pr-5 focus:outline-none cursor-pointer"
+              onValueChange={(value) => handleSortChange(value as SortOption)}
             >
               {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(
                 ([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <DropdownMenuRadioItem key={value} value={value}>
+                    {label}
+                  </DropdownMenuRadioItem>
                 )
               )}
-            </select>
-            <ChevronDown
-              size={13}
-              strokeWidth={1.5}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
-              aria-hidden="true"
-            />
-          </div>
-        </div>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Map toggle */}
         <button

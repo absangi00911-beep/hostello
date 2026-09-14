@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { twMerge } from "tailwind-merge";
 
 // Design system swap (WanderStay spec): Plus Jakarta Sans for headings,
 // Be Vietnam Pro for body/labels — referenced in globals.css as
 // --font-heading / --font-body. next/font self-hosts the files at build
 // time: no external request from the browser, no layout shift.
-const plusJakartaSans = Plus_Jakarta_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta-sans",
-  weight: ["500", "600", "700", "800"],
+  variable: "--font-dm-sans",
+  weight: ["400", "500", "700"],
   display: "swap",
 });
 
@@ -31,11 +32,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"),
   title: {
-    default: "HostelLo | Find verified student hostels",
+    default: "HostelLo | Find Best Hostels in Pakistan",
     template: "%s | HostelLo",
   },
   description:
-    "Find verified student hostels in Pakistan, compare monthly prices, and book with confidence.",
+    "Find your desired hostel in Pakistan with HostelLo. Browse listings, compare prices, and book your seat online.",
 };
 
 export const viewport: Viewport = {
@@ -51,9 +52,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${beVietnamPro.variable} ${jetbrainsMono.variable}`}
+      className= "relative"
     >
-      <body>
+      <body className={twMerge(`${dmSans.variable} ${beVietnamPro.variable} ${jetbrainsMono.variable} "antialiased bg-[#EAEEFE]"` )}>
         <Providers>{children}</Providers>
       </body>
     </html>

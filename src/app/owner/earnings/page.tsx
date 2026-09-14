@@ -84,22 +84,22 @@ function BankDetailsForm({ initial }: { initial: EarningsData["bankDetails"] }) 
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
+          <label htmlFor="payout-account-title" className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
             Account title
           </label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
+          <input id="payout-account-title" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
+          <label htmlFor="payout-account-number" className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
             Account number / IBAN
           </label>
-          <input value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
+          <input id="payout-account-number" value={number} onChange={(e) => setNumber(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
+          <label htmlFor="payout-bank-name" className="block text-[var(--text-caption)] text-[var(--color-text-muted)] mb-1">
             Bank name
           </label>
-          <input value={bank} onChange={(e) => setBank(e.target.value)} className={inputClass} />
+          <input id="payout-bank-name" value={bank} onChange={(e) => setBank(e.target.value)} className={inputClass} />
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export default function OwnerEarningsPage() {
       {/* Pending balance */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
         <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] mb-1">Pending balance</p>
-        <p className="text-[28px] font-[600] text-[var(--color-primary-deep)]">
+        <p className="owner-metric-value text-[var(--text-h3)] font-[600] text-[var(--color-primary-deep)]">
           {formatPKR(data.pendingBalance)}
         </p>
         <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-1">

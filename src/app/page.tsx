@@ -1,8 +1,8 @@
 // Path: src/app/page.tsx
-
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   Building2,
@@ -27,13 +27,15 @@ import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard"
 export const metadata: Metadata = {
   title: "HostelLo — Verified Student Hostels in Pakistan",
   description:
-    "Search verified student hostels across Pakistan by city, university, and budget — real PKR pricing, no phone calls. Own a hostel near a university? List it on HostelLo.",
+    "Compare verified student hostels across Pakistan by city, university, monthly price, and amenities — all in one place.",
 };
 
 const STUDENT_HERO_IMAGE =
   "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=2000&q=80&auto=format&fit=crop";
+const OWNER_CTA_IMAGE =
+  "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1800&q=80&auto=format&fit=crop";
 
-const FEATURED_CITIES = CITIES.slice(0, 6);
+const FEATURED_CITIES = CITIES.slice(0, CITIES.length);
 
 const TRUST_CARDS = [
   {
@@ -136,88 +138,89 @@ function SectionHeading({
   );
 }
 
-/* ── Hero — split for anonymous visitors, search-first for students ── */
-function Hero({ isAnonymous }: { isAnonymous: boolean }) {
+function HeroTrustProof() {
+  const items = [
+    {
+      icon: ShieldCheck,
+      label: "Verified hostel listings",
+      description: "Reviewed before students book.",
+    },
+    {
+      icon: Eye,
+      label: "Real prices before you call",
+      description: "Monthly rent is visible upfront.",
+    },
+    {
+      icon: Lock,
+      label: "Secure booking handoff",
+      description: "Your booking stays tracked end to end.",
+    },
+  ];
+
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
-      <div className={isAnonymous ? "grid md:grid-cols-2" : ""}>
-        {/* Student column — always shown */}
-        <div className="relative isolate overflow-hidden">
-          <Image
-            src={STUDENT_HERO_IMAGE}
-            alt="Students studying and relaxing together in a hostel common room"
-            fill
-            priority
-            sizes={isAnonymous ? "(min-width: 768px) 50vw, 100vw" : "100vw"}
-            className="object-cover"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/30"
-            aria-hidden="true"
-          />
-
-          <div
-            className={
-              isAnonymous
-                ? "relative flex min-h-[520px] flex-col justify-center px-6 py-16 sm:px-10 md:min-h-[600px] md:py-20 lg:px-14"
-                : "container-app relative flex min-h-[520px] flex-col justify-center py-16 md:min-h-[600px] md:py-20"
-            }
-          >
-            <p className="inline-flex w-fit items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
-              For students
-            </p>
-
-            <h1 className="mt-5 max-w-lg font-heading text-[2rem] leading-[1.1] font-[600] tracking-[-0.01em] text-white sm:text-[2.5rem] md:text-[2.75rem]">
-              Find your room. Not a phone number.
-            </h1>
-
-            <p className="mt-4 max-w-md text-[1.0625rem] leading-relaxed text-white/85">
-              Search verified hostels near your university by city, price, and amenities — real PKR pricing, up front.
-            </p>
-
-            <div className="mt-7 max-w-md rounded-[var(--radius-brand)] bg-white/95 p-3 shadow-[var(--shadow-lg)] backdrop-blur-sm sm:p-4">
-              <HeroSearch />
-            </div>
+    <div className="grid gap-2 border-t border-white/15 pt-4 sm:grid-cols-3" aria-label="HostelLo trust proof">
+      {items.map(({ icon: Icon, label, description }) => (
+        <div key={label} className="flex gap-2.5 sm:block">
+          <Icon size={17} strokeWidth={1.6} className="mt-0.5 shrink-0 text-white/80" aria-hidden="true" />
+          <div>
+            <p className="text-[var(--text-body-sm)] font-[700] text-white">{label}</p>
+            <p className="mt-0.5 text-[var(--text-caption)] leading-relaxed text-white/70">{description}</p>
           </div>
         </div>
+      ))}
+    </div>
+  );
+}
 
-        {/* Owner column — anonymous visitors only */}
-        {isAnonymous && (
-          <div className="relative flex flex-col justify-center bg-[var(--color-secondary-brand)] px-6 py-16 sm:px-10 md:py-20 lg:px-14">
-            <p className="inline-flex w-fit items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
-              For hostel owners
-            </p>
+/* ── Hero — search-first for students, with a quiet owner path ── */
+function Hero({ isAnonymous, userName }: { isAnonymous: boolean; userName?: string | null }) {
+  const firstName = userName?.trim().split(/\s+/)[0];
 
-            <h2 className="mt-5 max-w-md font-heading text-[2rem] leading-[1.1] font-[600] tracking-[-0.01em] text-white sm:text-[2.5rem] md:text-[2.75rem]">
-              Fill your rooms with students who are already searching
-            </h2>
+  return (
+    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
+      <Image
+        src={STUDENT_HERO_IMAGE}
+        alt="Students studying and relaxing together in a hostel common room"
+        fill
+        priority
+        sizes="100vw"
+        className="hero-image-drift object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/65 to-black/35" aria-hidden="true" />
 
-            <p className="mt-4 max-w-md text-[1.0625rem] leading-relaxed text-white/85">
-              List your hostel on HostelLo and get discovered by students comparing verified hostels near their university, in cities across Pakistan.
-            </p>
+      <div className="container-app relative flex min-h-[620px] items-center py-16 md:min-h-[680px] md:py-20">
+        <div className="max-w-3xl">
+          <p className="hero-enter inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
+            {firstName ? `Welcome back, ${firstName}` : "Verified student living, made simple"}
+          </p>
 
-            <div className="mt-7">
-              <Button asChild size="lg" className="shadow-[var(--shadow-lg)]">
-                <Link href="/list-your-hostel">
-                  List Your Hostel
-                  <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
-                </Link>
-              </Button>
-            </div>
+          <h1 className="hero-enter hero-enter-delay-1 mt-5 max-w-2xl font-heading text-[2.5rem] leading-[1.05] font-[600] tracking-[-0.01em] text-white sm:text-[3.5rem] md:text-[4.25rem]">
+            {firstName ? "Keep looking for a room that fits your life." : "Find your room. Not a phone number."}
+          </h1>
 
-            <div className="mt-8 flex max-w-md items-center gap-3 rounded-[var(--radius-lg)] bg-white/10 p-4 backdrop-blur-sm">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
-                <ShieldCheck size={20} strokeWidth={1.5} className="text-white" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="text-[var(--text-body-sm)] font-[700] text-white">Verified listings</p>
-                <p className="text-[var(--text-caption)] text-white/75">
-                  Every hostel is reviewed before students can book
-                </p>
-              </div>
-            </div>
+          <p className="hero-enter hero-enter-delay-2 mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-white/85 sm:text-[1.125rem]">
+            {firstName
+              ? "Pick up where you left off, compare new options, and find a verified hostel near your university."
+              : "Compare verified hostels near your university with real PKR prices, photos, and amenities before you make a call."}
+          </p>
+
+          <div className="hero-enter hero-enter-delay-3 mt-8 max-w-3xl rounded-[var(--radius-brand)] bg-white/95 p-3 shadow-[var(--shadow-lg)] backdrop-blur-sm sm:p-4">
+            <HeroSearch />
           </div>
-        )}
+
+          <div className="hero-enter hero-enter-delay-4 mt-7 max-w-3xl">
+            <HeroTrustProof />
+          </div>
+
+          {isAnonymous && (
+            <p className="hero-enter hero-enter-delay-5 mt-7 text-[var(--text-body-sm)] text-white/75">
+              Own a hostel?{" "}
+              <Link href="/list-your-hostel" className="font-[700] text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+                List it on HostelLo <ArrowRight className="ml-1 inline" size={14} aria-hidden="true" />
+              </Link>
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -230,8 +233,8 @@ function TrustSection() {
       <div className="container-app">
         <SectionHeading
           eyebrow="The HostelLo promise"
-          heading="Built so you don't have to guess"
-          sub="Every listing, price, and booking on HostelLo goes through the same standard."
+          heading="Choose your next room with confidence"
+          sub="The details you need to compare a hostel are visible before you message or visit."
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-3">
@@ -269,8 +272,8 @@ function BrowseCitiesSection() {
       <div className="container-app">
         <SectionHeading
           eyebrow="Browse by city"
-          heading="Hostels in cities across Pakistan"
-          sub="Start with the city your university is in."
+          heading="Start with your campus city"
+          sub="Explore student hostels in the places where your next semester could begin."
         />
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
@@ -305,10 +308,10 @@ function RecentHostelsSection({ hostels }: { hostels: HostelCardData[] }) {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-primary-deep)]">
-              Fresh listings
+              New on HostelLo
             </p>
             <h2 className="mt-2 font-heading text-[var(--text-h2)] font-[600] text-[var(--color-text-heading)]">
-              Recently added hostels
+              Rooms worth a closer look
             </h2>
           </div>
           <Link
@@ -335,39 +338,48 @@ function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="scroll-mt-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] py-16 md:py-20"
+      className="scroll-mt-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] py-16 pb-24 md:py-20 md:pb-20"
     >
       <div className="container-app">
         <SectionHeading
-          eyebrow="How it works"
-          heading="From search to move-in, in three steps"
-          sub="No cold calls, no walk-ins to manage. Just a listing that shows you the real room."
+          eyebrow="A clear path to move-in"
+          heading="Search once. Move in with confidence."
+          sub="Shortlist a place that fits your campus life, then take the next step when you are ready."
         />
 
-        <div className="mt-12 grid gap-8 md:grid-cols-3 md:gap-6">
-          {STUDENT_STEPS.map(({ icon: Icon, title, body }, index) => (
-            <div key={title} className="relative">
-              <div className="flex items-center gap-3">
-                <span className="font-heading text-[2rem] font-[600] text-[var(--color-primary)]/30">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-bg-card)] shadow-[var(--shadow-xs)]">
-                  <Icon
-                    size={16}
-                    strokeWidth={1.5}
-                    className="text-[var(--color-primary-deep)]"
-                    aria-hidden="true"
-                  />
+        <div className="relative mt-12">
+          <div className="absolute left-[11%] right-[11%] top-6 hidden border-t border-dashed border-[var(--color-primary)]/30 md:block" aria-hidden="true" />
+          <div className="absolute bottom-6 left-6 top-6 border-l border-dashed border-[var(--color-primary)]/30 md:hidden" aria-hidden="true" />
+          <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+            {STUDENT_STEPS.map(({ icon: Icon, title, body }, index) => (
+              <div key={title} className="relative flex gap-4 md:block">
+                <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-primary)]/25 bg-[var(--color-bg-page)] text-[var(--color-primary-deep)] md:h-13 md:w-13">
+                  <Icon size={18} strokeWidth={1.6} aria-hidden="true" />
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[10px] font-[700] text-white">
+                    {index + 1}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="mt-0.5 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] md:mt-5">
+                    {title}
+                  </h3>
+                  <p className="mt-2 max-w-[34ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
+                    {body}
+                  </p>
                 </div>
               </div>
-              <h3 className="mt-3 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
-                {title}
-              </h3>
-              <p className="mt-2 max-w-[42ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                {body}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/hostels"
+            className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+          >
+            Start searching
+            <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </section>
@@ -377,18 +389,36 @@ function HowItWorksSection() {
 /* ── Closing owner CTA — anonymous visitors only ─────────────*/
 function OwnerCtaBanner() {
   return (
-    <section className="bg-[var(--color-primary)] py-14 md:py-16">
-      <div className="container-app flex flex-col items-center gap-5 text-center">
-        <h2 className="max-w-lg font-heading text-[var(--text-h2)] font-[600] text-white">
-          Own a hostel near a university?
-        </h2>
-        <p className="max-w-md text-[var(--text-body)] text-white/90">
-          List it on HostelLo and reach students who are already comparing verified hostels in your city.
-        </p>
-        <Button asChild size="lg" variant="secondary" className="shadow-[var(--shadow-md)]">
+    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
+      <Image
+        src={OWNER_CTA_IMAGE}
+        alt="A bright shared hostel lounge with comfortable seating"
+        fill
+        sizes="100vw"
+        className="hero-image-drift object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/35" aria-hidden="true" />
+
+      <div className="container-app relative grid gap-8 py-16 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-20">
+        <div className="max-w-2xl">
+          <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/75">
+            For hostel owners
+          </p>
+          <h2 className="mt-3 max-w-xl font-heading text-[var(--text-h2)] font-[600] text-white">
+            Put your rooms in front of students who are ready to compare.
+          </h2>
+          <p className="mt-4 max-w-xl text-[var(--text-body)] leading-relaxed text-white/80">
+            Add your hostel, rooms, prices, and photos once. Students can discover the details and contact you from one trusted listing.
+          </p>
+          <p className="mt-5 text-[var(--text-body-sm)] text-white/60">
+            Built for independent hostels across Pakistan.
+          </p>
+        </div>
+
+        <Button asChild size="lg" className="group w-fit shadow-[var(--shadow-lg)]">
           <Link href="/list-your-hostel">
-            List Your Hostel
-            <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+            List your hostel
+            <ArrowRight size={16} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-hover:translate-x-0.5" aria-hidden="true" />
           </Link>
         </Button>
       </div>
@@ -454,8 +484,17 @@ function OwnerHomeView() {
 export default async function HomePage() {
   const session = await auth();
 
+  if (session?.user.role === "ADMIN") {
+    redirect("/admin");
+    return null;
+  }
+
   if (session?.user.role === "OWNER") {
     return <OwnerHomeView />;
+  }
+
+  if (session?.user.role === "STUDENT") {
+    redirect("/hostels");
   }
 
   const isAnonymous = !session;
@@ -463,10 +502,10 @@ export default async function HomePage() {
 
   return (
     <PublicLayout>
-      <Hero isAnonymous={isAnonymous} />
+      <Hero isAnonymous={isAnonymous} userName={session?.user.name} />
       <TrustSection />
-      <BrowseCitiesSection />
       {hostels.length > 0 && <RecentHostelsSection hostels={hostels} />}
+      <BrowseCitiesSection />
       <HowItWorksSection />
       {isAnonymous && <OwnerCtaBanner />}
     </PublicLayout>

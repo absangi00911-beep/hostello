@@ -1,0 +1,138 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link "HostelLo" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e13]:
+          - link "Sign in" [ref=e14] [cursor=pointer]:
+            - /url: /login
+          - link "Register" [ref=e15] [cursor=pointer]:
+            - /url: /register
+    - main [ref=e16]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - img "Students studying and relaxing together in a hostel common room" [ref=e20]
+          - generic [ref=e22]:
+            - paragraph [ref=e23]: For students
+            - heading "Find your room. Not a phone number." [level=1] [ref=e24]
+            - paragraph [ref=e25]: Search verified hostels near your university by city, price, and amenities — real PKR pricing, up front.
+            - generic [ref=e27]:
+              - search "Find a hostel" [ref=e28]:
+                - button "All cities" [ref=e29]
+                - searchbox "Search hostels" [ref=e37]
+                - button "Search" [ref=e38]
+              - paragraph [ref=e42]:
+                - text: "Popular cities:"
+                - generic [ref=e43]:
+                  - button "Lahore" [ref=e44]
+                  - text: ·
+                - generic [ref=e45]:
+                  - button "Karachi" [ref=e46]
+                  - text: ·
+                - generic [ref=e47]:
+                  - button "Islamabad" [ref=e48]
+                  - text: ·
+                - button "Peshawar" [ref=e50]
+        - generic [ref=e51]:
+          - paragraph [ref=e52]: For hostel owners
+          - heading "Fill your rooms with students who are already searching" [level=2] [ref=e53]
+          - paragraph [ref=e54]: List your hostel on HostelLo and get discovered by students comparing verified hostels near their university, in cities across Pakistan.
+          - link "List Your Hostel" [ref=e56] [cursor=pointer]:
+            - /url: /list-your-hostel
+          - generic [ref=e62]:
+            - paragraph [ref=e63]: Verified listings
+            - paragraph [ref=e64]: Every hostel is reviewed before students can book
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - paragraph [ref=e68]: The HostelLo promise
+          - heading "Built so you don't have to guess" [level=2] [ref=e69]
+          - paragraph [ref=e70]: Every listing, price, and booking on HostelLo goes through the same standard.
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - heading "Verified hostel listings" [level=3] [ref=e77]
+            - paragraph [ref=e78]: Every hostel is reviewed by our team before students can see or book it, so what you find is real.
+          - generic [ref=e79]:
+            - heading "Real prices before you call" [level=3] [ref=e84]
+            - paragraph [ref=e85]: See PKR pricing, room photos, and amenities upfront — no need to call five numbers just to compare costs.
+          - generic [ref=e86]:
+            - heading "Secure booking handoff" [level=3] [ref=e91]
+            - paragraph [ref=e92]: Confirm your booking and pay through HostelLo's secure gateway, tracked end to end, not just a promise over the phone.
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - paragraph [ref=e96]: Browse by city
+          - heading "Hostels in cities across Pakistan" [level=2] [ref=e97]
+          - paragraph [ref=e98]: Start with the city your university is in.
+        - generic [ref=e99]:
+          - link "Lahore" [ref=e100] [cursor=pointer]:
+            - /url: /hostels?city=Lahore
+          - link "Islamabad" [ref=e105] [cursor=pointer]:
+            - /url: /hostels?city=Islamabad
+          - link "Karachi" [ref=e110] [cursor=pointer]:
+            - /url: /hostels?city=Karachi
+          - link "Faisalabad" [ref=e115] [cursor=pointer]:
+            - /url: /hostels?city=Faisalabad
+          - link "Multan" [ref=e120] [cursor=pointer]:
+            - /url: /hostels?city=Multan
+          - link "Peshawar" [ref=e125] [cursor=pointer]:
+            - /url: /hostels?city=Peshawar
+      - generic [ref=e131]:
+        - generic [ref=e132]:
+          - paragraph [ref=e133]: How it works
+          - heading "From search to move-in, in three steps" [level=2] [ref=e134]
+          - paragraph [ref=e135]: No cold calls, no walk-ins to manage. Just a listing that shows you the real room.
+        - generic [ref=e136]:
+          - generic [ref=e137]:
+            - generic [ref=e138]: "01"
+            - heading "Search & compare" [level=3] [ref=e144]
+            - paragraph [ref=e145]: Filter by city, university, budget, and amenities to shortlist real, verified hostels.
+          - generic [ref=e146]:
+            - generic [ref=e147]: "02"
+            - heading "Message & book" [level=3] [ref=e152]
+            - paragraph [ref=e153]: Chat with the hostel directly, confirm details, and request your booking.
+          - generic [ref=e154]:
+            - generic [ref=e155]: "03"
+            - heading "Move in with confidence" [level=3] [ref=e161]
+            - paragraph [ref=e162]: Pay securely through HostelLo and move in knowing the listing was verified before you booked.
+      - generic [ref=e164]:
+        - heading "Own a hostel near a university?" [level=2] [ref=e165]
+        - paragraph [ref=e166]: List it on HostelLo and reach students who are already comparing verified hostels in your city.
+        - link "List Your Hostel" [ref=e167] [cursor=pointer]:
+          - /url: /list-your-hostel
+    - contentinfo "Site footer" [ref=e168]:
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - link "HostelLo" [ref=e172] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e178]: Find your room. Not a phone number.
+            - paragraph [ref=e179]: Pakistan only · Prices in PKR
+          - generic [ref=e180]:
+            - paragraph [ref=e181]: Platform
+            - list [ref=e182]:
+              - listitem [ref=e183]:
+                - link "Find hostels" [ref=e184] [cursor=pointer]:
+                  - /url: /hostels
+              - listitem [ref=e185]:
+                - link "How it works" [ref=e186] [cursor=pointer]:
+                  - /url: /#how-it-works
+          - generic [ref=e187]:
+            - paragraph [ref=e188]: Company
+            - list [ref=e189]:
+              - listitem [ref=e190]:
+                - link "Privacy policy" [ref=e191] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e192]:
+                - link "Terms of service" [ref=e193] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e194]:
+                - link "Contact" [ref=e195] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e196]:
+                - link "Report an issue" [ref=e197] [cursor=pointer]:
+                  - /url: /report
+        - generic [ref=e198]:
+          - paragraph [ref=e199]: © 2026 HostelLo. All rights reserved.
+          - paragraph [ref=e200]: Built for Pakistani students, by Pakistanis.
+  - button "Open Next.js Dev Tools" [ref=e206] [cursor=pointer]
+  - alert [ref=e210]

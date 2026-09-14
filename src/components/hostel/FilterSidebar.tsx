@@ -63,7 +63,7 @@ function FilterControls({
     "block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-2";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={`flex flex-col gap-6 ${showApply ? "pb-24" : ""}`}>
       {/* -- City -------------------------------- */}
       <div>
         <label htmlFor="filter-city" className={labelCls}>
@@ -72,6 +72,7 @@ function FilterControls({
         <div className="relative">
           <select
             id="filter-city"
+            aria-label="Filter by city"
             value={filters.city}
             onChange={(e) => set("city", e.target.value)}
             className={`${inputCls} appearance-none pr-8`}

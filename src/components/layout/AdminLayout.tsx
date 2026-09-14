@@ -45,7 +45,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
   const pageTitle = currentNav?.label ?? "Admin";
 
   return (
-    <div className="flex min-h-dvh bg-[var(--color-bg-page)]">
+    <div className="admin-shell flex min-h-dvh bg-[var(--color-bg-page)]">
       {/* -- Sidebar --------------------------------------------- */}
       <aside
         className="hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
@@ -54,7 +54,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
         {/* Logo + "Admin" badge */}
         <div className="flex h-16 items-center gap-3 px-5 border-b border-[var(--color-border-subtle)] shrink-0">
           <Logo size="compact" />
-          <span className="ml-auto text-[var(--text-caption)] font-[600] text-overline text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] px-2 py-0.5 rounded-[var(--radius-sm)]">
+          <span className="ml-auto text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] px-2 py-0.5 rounded-[var(--radius-sm)]">
             Admin
           </span>
         </div>
@@ -83,8 +83,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                         transition-colors duration-[var(--transition-fast)]
                         ${
                           isActive
-                            // Full-row background tint — no side stripe needed
-                            ? "bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] font-[600]"
+                            ? "bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] font-[700] tracking-[-0.01em]"
                             : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
                         }
                       `}
@@ -124,11 +123,11 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
 
       {/* -- Main content ---------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:px-6 shrink-0">
-          <h1 className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
+          <h1 className="min-w-0 flex-1 truncate text-[var(--text-h5)] font-[800] tracking-[-0.03em] text-[var(--color-text-heading)]">
             {pageTitle}
           </h1>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <NotificationBell />
             <AccountMenu />
           </div>
@@ -138,6 +137,38 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
           {children}
         </main>
       </div>
+
+      {/* -- Mobile navigation ---------------------------------- */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="Mobile admin navigation"
+      >
+        <div className="flex min-w-max overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const isActive =
+              href === "/admin"
+                ? pathname === href
+                : pathname.startsWith(href);
+
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex min-w-[76px] shrink-0 flex-col items-center justify-center gap-1 px-2 py-2.5 text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
+                  isActive
+                    ? "text-[var(--color-primary)]"
+                    : "text-[var(--color-text-muted)]"
+                }`}
+              >
+                <Icon size={19} strokeWidth={1.5} aria-hidden="true" />
+                <span className="whitespace-nowrap">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

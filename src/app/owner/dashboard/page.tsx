@@ -8,10 +8,9 @@ import {
   Building2,
   CalendarCheck,
   Clock,
-  MessageCircle,
   ArrowRight,
 } from "lucide-react";
-import { PageSpinner, StatusBadge, formatPKR } from "@/components/ui/shared";
+import { InlineError, PageSpinner, StatusBadge, formatPKR } from "@/components/ui/shared";
 
 /* -- Stat tile — horizontal: label left, number right ------- */
 function StatTile({
@@ -37,7 +36,7 @@ function StatTile({
         <div className="h-7 w-8 skeleton rounded-[var(--radius-sm)]" />
       ) : (
         <p
-          className="text-[1.75rem] font-[700] leading-none text-[var(--color-text-heading)]"
+          className="owner-metric-value text-[var(--text-h3)] font-[700] leading-none text-[var(--color-text-heading)]"
 
         >
           {value}
@@ -93,7 +92,7 @@ function BookingRow({ booking }: { booking: any }) {
 
 /* -- Page --------------------------------------------------- */
 export default function OwnerDashboardPage() {
-  const { data: bookingsData, isLoading: loadingBookings } = useQuery<{
+  const { data: bookingsData, isLoading: loadingBookings, isError: bookingsError } = useQuery<{
     data: any[];
     total: number;
   }>({
@@ -105,7 +104,7 @@ export default function OwnerDashboardPage() {
     },
   });
 
-  const { data: listingsData, isLoading: loadingListings } = useQuery<{
+  const { data: listingsData, isLoading: loadingListings, isError: listingsError } = useQuery<{
     data: any[];
     total: number;
   }>({
@@ -126,6 +125,10 @@ export default function OwnerDashboardPage() {
 
   const loading = loadingBookings || loadingListings;
 
+  if (bookingsError || listingsError) {
+    return <InlineError message="Couldn't load your dashboard data. Please refresh." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Stat tiles — 2-col mobile, 4-col desktop */}
@@ -133,8 +136,27 @@ export default function OwnerDashboardPage() {
         <StatTile label="Listings"         value={listings.length}  icon={Building2}    loading={loadingListings} />
         <StatTile label="Active bookings"  value={activeBookings}   icon={CalendarCheck} loading={loadingBookings} />
         <StatTile label="Pending requests" value={pendingRequests}  icon={Clock}        loading={loadingBookings} />
-        <StatTile label="Active listings"  value={activeListings}   icon={MessageCircle} loading={loadingListings} />
+        <StatTile label="Active listings"  value={activeListings}   icon={Building2}     loading={loadingListings} />
       </div>
+
+      {listings.length === 0 && !loadingListings && (
+        <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-primary)]/25 bg-[var(--color-primary-faint)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+              Start by adding your first listing
+            </h2>
+            <p className="mt-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+              Share your hostel details to begin receiving student requests.
+            </p>
+          </div>
+          <Link
+            href="/owner/listings/new"
+            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-white hover:bg-[var(--color-action-dark)] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
+          >
+            Add listing
+          </Link>
+        </div>
+      )}
 
       {/* Recent booking requests */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
@@ -161,7 +183,15 @@ export default function OwnerDashboardPage() {
         ) : bookings.length === 0 ? (
           <div className="px-5 py-10 text-center">
             <Clock size={32} strokeWidth={1.5} className="text-[var(--color-text-muted)] mx-auto mb-2" aria-hidden="true" />
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">No bookings yet.</p>
+            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              Booking requests will appear here after students submit a request.
+            </p>
+            <Link
+              href="/owner/listings"
+              className="mt-2 inline-flex text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+            >
+              Review your listings
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
