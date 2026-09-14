@@ -91,7 +91,8 @@
     "simple-git-hooks": "^2.13.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.12",
-    "typescript": "^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-7": "npm:typescript@^7.0.2",
     "vitest": "^4.1.11"
   },
   "prisma": {
@@ -100,17 +101,15 @@
   "simple-git-hooks": {
     "pre-commit": "if git diff --cached --name-only | grep -q 'prisma/schema.prisma'; then if ! git diff --cached --name-only | grep -q '^prisma/migrations/'; then printf '\\nERROR: Schema changed without a migration. Run: npm run migrate:new\\n\\n' >&2; exit 1; fi; fi"
   },
-
   "overrides": {
     "prisma": {
       "@prisma/config": {
         "deepmerge-ts": "8.0.0"
+      },
+      "mysql2": "3.24.4"
     },
-    "mysql2": "3.24.4"
-  },
-  "gaxios": {
-    "uuid": "11.1.1"
+    "gaxios": {
+      "uuid": "11.1.1"
+    }
   }
 }
-}
-
