@@ -408,6 +408,8 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  RefundAuditEvent: 'RefundAuditEvent',
+  SafepayWebhookEvent: 'SafepayWebhookEvent',
   Review: 'Review',
   PasswordResetToken: 'PasswordResetToken',
   Favorite: 'Favorite',
@@ -435,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "deviceToken" | "subscription" | "payout" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "review" | "passwordResetToken" | "favorite" | "conversation" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "deviceToken" | "subscription" | "payout" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "refundAuditEvent" | "safepayWebhookEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1250,6 +1252,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.BookingCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.BookingCountAggregateOutputType> | number
+        }
+      }
+    }
+    RefundAuditEvent: {
+      payload: Prisma.$RefundAuditEventPayload<ExtArgs>
+      fields: Prisma.RefundAuditEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RefundAuditEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RefundAuditEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        findFirst: {
+          args: Prisma.RefundAuditEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RefundAuditEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        findMany: {
+          args: Prisma.RefundAuditEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>[]
+        }
+        create: {
+          args: Prisma.RefundAuditEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        createMany: {
+          args: Prisma.RefundAuditEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RefundAuditEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>[]
+        }
+        delete: {
+          args: Prisma.RefundAuditEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        update: {
+          args: Prisma.RefundAuditEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.RefundAuditEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RefundAuditEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RefundAuditEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.RefundAuditEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RefundAuditEventPayload>
+        }
+        aggregate: {
+          args: Prisma.RefundAuditEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRefundAuditEvent>
+        }
+        groupBy: {
+          args: Prisma.RefundAuditEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RefundAuditEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RefundAuditEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RefundAuditEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    SafepayWebhookEvent: {
+      payload: Prisma.$SafepayWebhookEventPayload<ExtArgs>
+      fields: Prisma.SafepayWebhookEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SafepayWebhookEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SafepayWebhookEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        findFirst: {
+          args: Prisma.SafepayWebhookEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SafepayWebhookEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        findMany: {
+          args: Prisma.SafepayWebhookEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>[]
+        }
+        create: {
+          args: Prisma.SafepayWebhookEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        createMany: {
+          args: Prisma.SafepayWebhookEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SafepayWebhookEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>[]
+        }
+        delete: {
+          args: Prisma.SafepayWebhookEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        update: {
+          args: Prisma.SafepayWebhookEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.SafepayWebhookEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SafepayWebhookEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SafepayWebhookEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.SafepayWebhookEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SafepayWebhookEventPayload>
+        }
+        aggregate: {
+          args: Prisma.SafepayWebhookEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSafepayWebhookEvent>
+        }
+        groupBy: {
+          args: Prisma.SafepayWebhookEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SafepayWebhookEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SafepayWebhookEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SafepayWebhookEventCountAggregateOutputType> | number
         }
       }
     }
@@ -2366,6 +2516,7 @@ export const BookingScalarFieldEnum = {
   paymentStatus: 'paymentStatus',
   paymentMethod: 'paymentMethod',
   transactionId: 'transactionId',
+  refundState: 'refundState',
   refundedAt: 'refundedAt',
   refundedBy: 'refundedBy',
   status: 'status',
@@ -2376,6 +2527,48 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const RefundAuditEventScalarFieldEnum = {
+  id: 'id',
+  attemptId: 'attemptId',
+  bookingId: 'bookingId',
+  adminUserId: 'adminUserId',
+  type: 'type',
+  transactionId: 'transactionId',
+  amount: 'amount',
+  currency: 'currency',
+  providerState: 'providerState',
+  providerResponseDigest: 'providerResponseDigest',
+  failureName: 'failureName',
+  failureCode: 'failureCode',
+  failureStatus: 'failureStatus',
+  createdAt: 'createdAt'
+} as const
+
+export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
+
+
+export const SafepayWebhookEventScalarFieldEnum = {
+  id: 'id',
+  bodyHash: 'bodyHash',
+  eventType: 'eventType',
+  merchantOrderId: 'merchantOrderId',
+  tracker: 'tracker',
+  providerState: 'providerState',
+  amountMinorUnits: 'amountMinorUnits',
+  currency: 'currency',
+  payloadEvidence: 'payloadEvidence',
+  status: 'status',
+  processingAttempts: 'processingAttempts',
+  processingStartedAt: 'processingStartedAt',
+  processedAt: 'processedAt',
+  lastErrorCode: 'lastErrorCode',
+  receivedAt: 'receivedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SafepayWebhookEventScalarFieldEnum = (typeof SafepayWebhookEventScalarFieldEnum)[keyof typeof SafepayWebhookEventScalarFieldEnum]
 
 
 export const ReviewScalarFieldEnum = {
@@ -2744,17 +2937,59 @@ export type ListEnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'RefundState'
+ */
+export type EnumRefundStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundState'>
+
+
+
+/**
+ * Reference to a field of type 'RefundState[]'
+ */
+export type ListEnumRefundStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundState[]'>
+
+
+
+/**
  * Reference to a field of type 'BookingStatus'
  */
 export type EnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingStatus'>
-    
+
 
 
 /**
  * Reference to a field of type 'BookingStatus[]'
  */
 export type ListEnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingStatus[]'>
-    
+
+
+
+/**
+ * Reference to a field of type 'RefundAuditEventType'
+ */
+export type EnumRefundAuditEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundAuditEventType'>
+
+
+
+/**
+ * Reference to a field of type 'RefundAuditEventType[]'
+ */
+export type ListEnumRefundAuditEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundAuditEventType[]'>
+
+
+
+/**
+ * Reference to a field of type 'SafepayWebhookEventStatus'
+ */
+export type EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus'>
+
+
+
+/**
+ * Reference to a field of type 'SafepayWebhookEventStatus[]'
+ */
+export type ListEnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus[]'>
+
 
 
 /**
@@ -2932,6 +3167,8 @@ export type GlobalOmitConfig = {
   hostel?: Prisma.HostelOmit
   room?: Prisma.RoomOmit
   booking?: Prisma.BookingOmit
+  refundAuditEvent?: Prisma.RefundAuditEventOmit
+  safepayWebhookEvent?: Prisma.SafepayWebhookEventOmit
   review?: Prisma.ReviewOmit
   passwordResetToken?: Prisma.PasswordResetTokenOmit
   favorite?: Prisma.FavoriteOmit

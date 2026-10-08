@@ -3,13 +3,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/db", () => ({
-  db: {
-    booking: {
+  db: (() => {
+    const booking = {
       findUnique: vi.fn(),
       updateMany: vi.fn(),
       findUniqueOrThrow: vi.fn(),
-    },
-  },
+    };
+    const refundAuditEvent = {
+      create: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
+    };
+    const transactionClient = { booking, refundAuditEvent };
+    return {
+      booking,
+      refundAuditEvent,
+      $transaction: vi.fn(async <T>(
+        callback: (tx: typeof transactionClient) => Promise<T>,
+      ) => callback(transactionClient)),
+    };
+  })(),
 }));
 
 vi.mock("@/lib/safepay", () => ({
@@ -107,14 +119,20 @@ describe("processRefund — automatic path", () => {
     const result = await processRefund(BOOKING_ID, ADMIN_ID);
 
     expect(refundPayment).toHaveBeenCalledWith({ transactionId: "sfpy_txn_12345", amount: 45000 });
-    expect(db.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: BOOKING_ID, paymentStatus: "PAID", status: "CANCELLED" },
+    expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: BOOKING_ID,
+        paymentStatus: "PAID",
+        status: "CANCELLED",
+        refundState: "PROCESSING",
+      }),
       data: expect.objectContaining({
         paymentStatus: "REFUNDED",
+        refundState: "REFUNDED",
         refundedBy: ADMIN_ID,
         refundedAt: expect.any(Date),
       }),
-    });
+    }));
     expect(result.automatic).toBe(true);
     expect(result.booking.paymentStatus).toBe("REFUNDED");
   });
@@ -156,7 +174,13 @@ describe("processRefund — manual fallback path", () => {
 
     const result = await processRefund(BOOKING_ID, ADMIN_ID);
 
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
+    expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ refundState: "PROCESSING" }),
+      data: { refundState: "UNCERTAIN" },
+    }));
+    expect(db.booking.updateMany).not.toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ paymentStatus: "REFUNDED" }),
+    }));
     expect(result.automatic).toBe(false);
     expect(result.manualConfirmed).toBe(false);
     expect(result.booking.paymentStatus).toBe("PAID");
@@ -172,7 +196,13 @@ describe("processRefund — manual fallback path", () => {
     expect(refundPayment).not.toHaveBeenCalled();
     expect(result.automatic).toBe(false);
     expect(result.booking.paymentStatus).toBe("PAID");
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
+    expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ refundState: "PROCESSING" }),
+      data: { refundState: "UNCERTAIN" },
+    }));
+    expect(db.booking.updateMany).not.toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ paymentStatus: "REFUNDED" }),
+    }));
   });
 });
 
@@ -186,7 +216,12 @@ describe("confirmManualRefund", () => {
 
     expect(result).toMatchObject({ automatic: false, manualConfirmed: true });
     expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: BOOKING_ID, paymentStatus: "PAID", status: "CANCELLED" },
+      where: expect.objectContaining({
+        id: BOOKING_ID,
+        paymentStatus: "PAID",
+        status: "CANCELLED",
+        refundState: { in: ["NONE", "UNCERTAIN"] },
+      }),
     }));
     expect(createNotification).toHaveBeenCalled();
     expect(sendEmail).toHaveBeenCalled();
@@ -200,7 +235,7 @@ describe("processRefund — idempotency", () => {
     vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 0 } as any); // lost the race
 
     await expect(processRefund(BOOKING_ID, ADMIN_ID)).rejects.toThrow(
-      "already refunded by a concurrent request",
+      "A refund action is already in progress",
     );
   });
 });

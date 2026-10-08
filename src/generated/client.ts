@@ -97,6 +97,16 @@ export type Room = Prisma.RoomModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model RefundAuditEvent
+ *
+ */
+export type RefundAuditEvent = Prisma.RefundAuditEventModel
+/**
+ * Model SafepayWebhookEvent
+ *
+ */
+export type SafepayWebhookEvent = Prisma.SafepayWebhookEventModel
+/**
  * Model Review
  * 
  */

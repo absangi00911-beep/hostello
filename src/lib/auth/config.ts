@@ -156,6 +156,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       session.user.id   = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
+      session.user.emailVerified = token.emailVerified;
+      session.user.tokenVersion = token.tokenVersion;
       return session;
     },
   },

@@ -62,6 +62,8 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  RefundAuditEvent: 'RefundAuditEvent',
+  SafepayWebhookEvent: 'SafepayWebhookEvent',
   Review: 'Review',
   PasswordResetToken: 'PasswordResetToken',
   Favorite: 'Favorite',
@@ -278,6 +280,7 @@ export const BookingScalarFieldEnum = {
   paymentStatus: 'paymentStatus',
   paymentMethod: 'paymentMethod',
   transactionId: 'transactionId',
+  refundState: 'refundState',
   refundedAt: 'refundedAt',
   refundedBy: 'refundedBy',
   status: 'status',
@@ -288,6 +291,48 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const RefundAuditEventScalarFieldEnum = {
+  id: 'id',
+  attemptId: 'attemptId',
+  bookingId: 'bookingId',
+  adminUserId: 'adminUserId',
+  type: 'type',
+  transactionId: 'transactionId',
+  amount: 'amount',
+  currency: 'currency',
+  providerState: 'providerState',
+  providerResponseDigest: 'providerResponseDigest',
+  failureName: 'failureName',
+  failureCode: 'failureCode',
+  failureStatus: 'failureStatus',
+  createdAt: 'createdAt'
+} as const
+
+export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
+
+
+export const SafepayWebhookEventScalarFieldEnum = {
+  id: 'id',
+  bodyHash: 'bodyHash',
+  eventType: 'eventType',
+  merchantOrderId: 'merchantOrderId',
+  tracker: 'tracker',
+  providerState: 'providerState',
+  amountMinorUnits: 'amountMinorUnits',
+  currency: 'currency',
+  payloadEvidence: 'payloadEvidence',
+  status: 'status',
+  processingAttempts: 'processingAttempts',
+  processingStartedAt: 'processingStartedAt',
+  processedAt: 'processedAt',
+  lastErrorCode: 'lastErrorCode',
+  receivedAt: 'receivedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SafepayWebhookEventScalarFieldEnum = (typeof SafepayWebhookEventScalarFieldEnum)[keyof typeof SafepayWebhookEventScalarFieldEnum]
 
 
 export const ReviewScalarFieldEnum = {

@@ -254,6 +254,7 @@ export async function refundPayment({
 }): Promise<SafepayRefundResult> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
+  const timeoutSignal = AbortSignal.timeout(15_000);
 
   const res = await fetch(
     `${baseUrl}/order/payments/v3/${encodeURIComponent(transactionId)}/refund`,
@@ -267,6 +268,7 @@ export async function refundPayment({
         amount: toSafepayMinorUnits(amount),
         currency: "PKR",
       }),
+      signal: timeoutSignal,
     }
   );
 

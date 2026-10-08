@@ -51,6 +51,7 @@ export type BookingMinAggregateOutputType = {
   paymentStatus: $Enums.PaymentStatus | null
   paymentMethod: string | null
   transactionId: string | null
+  refundState: $Enums.RefundState | null
   refundedAt: Date | null
   refundedBy: string | null
   status: $Enums.BookingStatus | null
@@ -73,6 +74,7 @@ export type BookingMaxAggregateOutputType = {
   paymentStatus: $Enums.PaymentStatus | null
   paymentMethod: string | null
   transactionId: string | null
+  refundState: $Enums.RefundState | null
   refundedAt: Date | null
   refundedBy: string | null
   status: $Enums.BookingStatus | null
@@ -95,6 +97,7 @@ export type BookingCountAggregateOutputType = {
   paymentStatus: number
   paymentMethod: number
   transactionId: number
+  refundState: number
   refundedAt: number
   refundedBy: number
   status: number
@@ -131,6 +134,7 @@ export type BookingMinAggregateInputType = {
   paymentStatus?: true
   paymentMethod?: true
   transactionId?: true
+  refundState?: true
   refundedAt?: true
   refundedBy?: true
   status?: true
@@ -153,6 +157,7 @@ export type BookingMaxAggregateInputType = {
   paymentStatus?: true
   paymentMethod?: true
   transactionId?: true
+  refundState?: true
   refundedAt?: true
   refundedBy?: true
   status?: true
@@ -175,6 +180,7 @@ export type BookingCountAggregateInputType = {
   paymentStatus?: true
   paymentMethod?: true
   transactionId?: true
+  refundState?: true
   refundedAt?: true
   refundedBy?: true
   status?: true
@@ -284,6 +290,7 @@ export type BookingGroupByOutputType = {
   paymentStatus: $Enums.PaymentStatus
   paymentMethod: string | null
   transactionId: string | null
+  refundState: $Enums.RefundState
   refundedAt: Date | null
   refundedBy: string | null
   status: $Enums.BookingStatus
@@ -329,6 +336,7 @@ export type BookingWhereInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
   paymentMethod?: Prisma.StringNullableFilter<"Booking"> | string | null
   transactionId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  refundState?: Prisma.EnumRefundStateFilter<"Booking"> | $Enums.RefundState
   refundedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   refundedBy?: Prisma.StringNullableFilter<"Booking"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
@@ -356,6 +364,7 @@ export type BookingOrderByWithRelationInput = {
   paymentStatus?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  refundState?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   refundedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -386,6 +395,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   total?: Prisma.IntFilter<"Booking"> | number
   paymentStatus?: Prisma.EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
   paymentMethod?: Prisma.StringNullableFilter<"Booking"> | string | null
+  refundState?: Prisma.EnumRefundStateFilter<"Booking"> | $Enums.RefundState
   refundedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   refundedBy?: Prisma.StringNullableFilter<"Booking"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
@@ -413,6 +423,7 @@ export type BookingOrderByWithAggregationInput = {
   paymentStatus?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrderInput | Prisma.SortOrder
   transactionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  refundState?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   refundedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -443,6 +454,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   paymentStatus?: Prisma.EnumPaymentStatusWithAggregatesFilter<"Booking"> | $Enums.PaymentStatus
   paymentMethod?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   transactionId?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
+  refundState?: Prisma.EnumRefundStateWithAggregatesFilter<"Booking"> | $Enums.RefundState
   refundedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   refundedBy?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   status?: Prisma.EnumBookingStatusWithAggregatesFilter<"Booking"> | $Enums.BookingStatus
@@ -462,6 +474,7 @@ export type BookingCreateInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -488,6 +501,7 @@ export type BookingUncheckedCreateInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -508,6 +522,7 @@ export type BookingUpdateInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -534,6 +549,7 @@ export type BookingUncheckedUpdateInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -557,6 +573,7 @@ export type BookingCreateManyInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -576,6 +593,7 @@ export type BookingUpdateManyMutationInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -597,6 +615,7 @@ export type BookingUncheckedUpdateManyInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -629,6 +648,7 @@ export type BookingCountOrderByAggregateInput = {
   paymentStatus?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  refundState?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   refundedBy?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -657,6 +677,7 @@ export type BookingMaxOrderByAggregateInput = {
   paymentStatus?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  refundState?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   refundedBy?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -679,6 +700,7 @@ export type BookingMinOrderByAggregateInput = {
   paymentStatus?: Prisma.SortOrder
   paymentMethod?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  refundState?: Prisma.SortOrder
   refundedAt?: Prisma.SortOrder
   refundedBy?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -871,6 +893,10 @@ export type EnumPaymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.PaymentStatus
 }
 
+export type EnumRefundStateFieldUpdateOperationsInput = {
+  set?: $Enums.RefundState
+}
+
 export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
@@ -901,6 +927,7 @@ export type BookingCreateWithoutUserInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -925,6 +952,7 @@ export type BookingUncheckedCreateWithoutUserInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -977,6 +1005,7 @@ export type BookingScalarWhereInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFilter<"Booking"> | $Enums.PaymentStatus
   paymentMethod?: Prisma.StringNullableFilter<"Booking"> | string | null
   transactionId?: Prisma.StringNullableFilter<"Booking"> | string | null
+  refundState?: Prisma.EnumRefundStateFilter<"Booking"> | $Enums.RefundState
   refundedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   refundedBy?: Prisma.StringNullableFilter<"Booking"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Booking"> | $Enums.BookingStatus
@@ -996,6 +1025,7 @@ export type BookingCreateWithoutPayoutInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1021,6 +1051,7 @@ export type BookingUncheckedCreateWithoutPayoutInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1066,6 +1097,7 @@ export type BookingCreateWithoutHostelInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1090,6 +1122,7 @@ export type BookingUncheckedCreateWithoutHostelInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1136,6 +1169,7 @@ export type BookingCreateWithoutRoomInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1160,6 +1194,7 @@ export type BookingUncheckedCreateWithoutRoomInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1206,6 +1241,7 @@ export type BookingCreateWithoutNotificationsInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1231,6 +1267,7 @@ export type BookingUncheckedCreateWithoutNotificationsInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1266,6 +1303,7 @@ export type BookingUpdateWithoutNotificationsInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1291,6 +1329,7 @@ export type BookingUncheckedUpdateWithoutNotificationsInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1312,6 +1351,7 @@ export type BookingCreateManyUserInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1331,6 +1371,7 @@ export type BookingUpdateWithoutUserInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1355,6 +1396,7 @@ export type BookingUncheckedUpdateWithoutUserInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1377,6 +1419,7 @@ export type BookingUncheckedUpdateManyWithoutUserInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1399,6 +1442,7 @@ export type BookingCreateManyPayoutInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1417,6 +1461,7 @@ export type BookingUpdateWithoutPayoutInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1442,6 +1487,7 @@ export type BookingUncheckedUpdateWithoutPayoutInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1464,6 +1510,7 @@ export type BookingUncheckedUpdateManyWithoutPayoutInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1484,6 +1531,7 @@ export type BookingCreateManyHostelInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1503,6 +1551,7 @@ export type BookingUpdateWithoutHostelInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1527,6 +1576,7 @@ export type BookingUncheckedUpdateWithoutHostelInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1549,6 +1599,7 @@ export type BookingUncheckedUpdateManyWithoutHostelInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1570,6 +1621,7 @@ export type BookingCreateManyRoomInput = {
   paymentStatus?: $Enums.PaymentStatus
   paymentMethod?: string | null
   transactionId?: string | null
+  refundState?: $Enums.RefundState
   refundedAt?: Date | string | null
   refundedBy?: string | null
   status?: $Enums.BookingStatus
@@ -1589,6 +1641,7 @@ export type BookingUpdateWithoutRoomInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1613,6 +1666,7 @@ export type BookingUncheckedUpdateWithoutRoomInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1635,6 +1689,7 @@ export type BookingUncheckedUpdateManyWithoutRoomInput = {
   paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
   refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
@@ -1688,6 +1743,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   paymentStatus?: boolean
   paymentMethod?: boolean
   transactionId?: boolean
+  refundState?: boolean
   refundedAt?: boolean
   refundedBy?: boolean
   status?: boolean
@@ -1716,6 +1772,7 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paymentStatus?: boolean
   paymentMethod?: boolean
   transactionId?: boolean
+  refundState?: boolean
   refundedAt?: boolean
   refundedBy?: boolean
   status?: boolean
@@ -1742,6 +1799,7 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paymentStatus?: boolean
   paymentMethod?: boolean
   transactionId?: boolean
+  refundState?: boolean
   refundedAt?: boolean
   refundedBy?: boolean
   status?: boolean
@@ -1768,6 +1826,7 @@ export type BookingSelectScalar = {
   paymentStatus?: boolean
   paymentMethod?: boolean
   transactionId?: boolean
+  refundState?: boolean
   refundedAt?: boolean
   refundedBy?: boolean
   status?: boolean
@@ -1777,7 +1836,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "hostelId" | "roomId" | "userId" | "checkIn" | "checkOut" | "months" | "guests" | "total" | "paymentStatus" | "paymentMethod" | "transactionId" | "refundedAt" | "refundedBy" | "status" | "notes" | "payoutId" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "hostelId" | "roomId" | "userId" | "checkIn" | "checkOut" | "months" | "guests" | "total" | "paymentStatus" | "paymentMethod" | "transactionId" | "refundState" | "refundedAt" | "refundedBy" | "status" | "notes" | "payoutId" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   hostel?: boolean | Prisma.HostelDefaultArgs<ExtArgs>
   room?: boolean | Prisma.Booking$roomArgs<ExtArgs>
@@ -1821,6 +1880,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     paymentStatus: $Enums.PaymentStatus
     paymentMethod: string | null
     transactionId: string | null
+    refundState: $Enums.RefundState
     refundedAt: Date | null
     refundedBy: string | null
     status: $Enums.BookingStatus
@@ -2268,6 +2328,7 @@ export interface BookingFieldRefs {
   readonly paymentStatus: Prisma.FieldRef<"Booking", 'PaymentStatus'>
   readonly paymentMethod: Prisma.FieldRef<"Booking", 'String'>
   readonly transactionId: Prisma.FieldRef<"Booking", 'String'>
+  readonly refundState: Prisma.FieldRef<"Booking", 'RefundState'>
   readonly refundedAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly refundedBy: Prisma.FieldRef<"Booking", 'String'>
   readonly status: Prisma.FieldRef<"Booking", 'BookingStatus'>

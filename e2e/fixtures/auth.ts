@@ -78,10 +78,27 @@ async function ensureLoggedIn(
   }
 
   // Sign in via the UI
-  await page.goto(`${baseURL}/login`);
-  await page.getByLabel(/email/i).fill(credentials.email);
-  await page.getByLabel(/password/i).fill(credentials.password);
-  await page.getByRole("button", { name: /sign in|log in/i }).click();
+  await page.goto(`${baseURL}/login`, { waitUntil: "networkidle" });
+  const emailInput = page.getByLabel(/email/i);
+  const passwordInput = page.getByLabel("Password", { exact: true });
+  const submitButton = page.getByRole("button", { name: /sign in|log in/i });
+
+  // Wait for the controlled form state to update. On a cold client render, an
+  // early fill can update the DOM before React has attached input handlers.
+  let enabled = false;
+  for (let attempt = 0; attempt < 3 && !enabled; attempt++) {
+    await emailInput.fill(credentials.email);
+    await passwordInput.fill(credentials.password);
+    try {
+      await expect(submitButton).toBeEnabled({ timeout: 1_500 });
+      enabled = true;
+    } catch {
+      // Refill after the client has had time to hydrate the controlled inputs.
+    }
+  }
+
+  await expect(submitButton).toBeEnabled();
+  await submitButton.click();
 
   // Wait for redirect away from /login
   await expect(page).not.toHaveURL(/\/login/, { timeout: 10_000 });
