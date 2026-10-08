@@ -32,8 +32,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const response = await login({ email, password });
-      // Pass both token and user so the Profile tab can display account info
-      await signIn(response.token, response.user);
+      // Pass the server expiry metadata; Auth.js mobile tokens are encrypted,
+      // so the client must not try to decode their claims locally.
+      await signIn(response.token, response.user, response.expiresInSeconds);
       // AuthContext route-guard will redirect to /(app) automatically
     } catch (err: unknown) {
       Alert.alert('Login Failed', err instanceof Error ? err.message : 'Login failed');

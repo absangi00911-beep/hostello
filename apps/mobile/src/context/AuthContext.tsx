@@ -1,8 +1,24 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { router, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { getAuthToken, setAuthToken, clearAuthToken, apiRequest, buildApiUrl } from '../services/api';
-import { registerForPushNotifications } from '../services/notifications';
+import {
+  getAuthToken,
+  getAuthTokenExpiresAt,
+  setAuthToken,
+  clearAuthToken,
+  apiRequest,
+  buildApiUrl,
+  normalizeTokenLifetimeSeconds,
+  registerAuthExpiredHandler,
+} from '../services/api';
+import {
+  clearRegisteredPushToken,
+  getPushTokenIfPermissionGranted,
+  getRegisteredPushToken,
+  registerForPushNotifications,
+  saveRegisteredPushToken,
+} from '../services/notifications';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,7 +37,7 @@ interface AuthContextType {
   token: string | null;
   user: StoredUser | null;
   isLoading: boolean;
-  signIn: (token: string, user: StoredUser) => Promise<void>;
+  signIn: (token: string, user: StoredUser, expiresInSeconds: number) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -34,37 +50,20 @@ const USER_STORAGE_KEY = 'auth_user';
 /** Refresh proactively when fewer than this many days remain on the token. */
 const REFRESH_THRESHOLD_DAYS = 5;
 const REFRESH_THRESHOLD_SECONDS = REFRESH_THRESHOLD_DAYS * 24 * 60 * 60;
+const REFRESH_RETRY_MS = 10 * 60 * 1000;
+const MAX_TIMER_MS = 2_000_000_000;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Decode the `iat` (issued-at) and `exp` (expiry) claims from a JWT payload
- * without verifying the signature — we only need these for the proactive
- * refresh heuristic, not for actual authentication.
- */
-function getJwtClaims(token: string): { iat: number; exp: number } | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    // atob is available in React Native's Hermes engine (via the global polyfill)
-    const payload = JSON.parse(atob(parts[1])) as Record<string, unknown>;
-    const iat = payload.iat;
-    const exp = payload.exp;
-    if (typeof iat !== 'number' || typeof exp !== 'number') return null;
-    return { iat, exp };
-  } catch {
-    return null;
-  }
-}
+type ProactiveRefreshResult =
+  | { status: 'refreshed'; token: string; expiresInSeconds: number }
+  | { status: 'invalid' }
+  | { status: 'unavailable' };
 
-/**
- * Call the refresh endpoint directly (no retry loop — this is a pre-emptive
- * call when we still have a valid token, so the first attempt should succeed).
- * Returns the new token on success, null on any failure.
- */
-async function proactiveRefresh(currentToken: string): Promise<string | null> {
+/** Call the refresh endpoint without parsing Auth.js's encrypted JWE on-device. */
+async function proactiveRefresh(currentToken: string): Promise<ProactiveRefreshResult> {
   try {
     const response = await fetch(buildApiUrl('/auth/mobile/refresh'), {
       method: 'POST',
@@ -74,11 +73,23 @@ async function proactiveRefresh(currentToken: string): Promise<string | null> {
         'Authorization': `Bearer ${currentToken}`,
       },
     });
-    if (!response.ok) return null;
-    const json = await response.json() as { data?: { token?: string } };
-    return json?.data?.token ?? null;
+    if (response.status === 401 || response.status === 403) return { status: 'invalid' };
+    if (!response.ok) return { status: 'unavailable' };
+
+    const json = await response.json() as {
+      data?: { token?: unknown; expiresInSeconds?: unknown };
+    };
+    if (typeof json.data?.token !== 'string' || json.data.token.length === 0) {
+      return { status: 'unavailable' };
+    }
+
+    return {
+      status: 'refreshed',
+      token: json.data.token,
+      expiresInSeconds: normalizeTokenLifetimeSeconds(json.data.expiresInSeconds),
+    };
   } catch {
-    return null;
+    return { status: 'unavailable' };
   }
 }
 
@@ -96,43 +107,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<StoredUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [tokenExpiresAt, setTokenExpiresAt] = useState<number | null>(null);
+  const [refreshRetryAt, setRefreshRetryAt] = useState<number | null>(null);
+  const refreshInFlight = useRef(false);
 
   const segments = useSegments();
 
-  // Rehydrate from SecureStore on mount, then proactively refresh if close to expiry
+  // Rehydrate both the opaque Auth.js token and server-supplied expiry metadata.
   useEffect(() => {
     async function rehydrate() {
       try {
-        const [storedToken, storedUser] = await Promise.all([
+        const [storedToken, storedUser, storedExpiresAt] = await Promise.all([
           getAuthToken(),
           SecureStore.getItemAsync(USER_STORAGE_KEY),
+          getAuthTokenExpiresAt(),
         ]);
 
         if (storedToken) {
-          const claims = getJwtClaims(storedToken);
-          const now = Math.floor(Date.now() / 1000);
-
-          // Proactively refresh when fewer than REFRESH_THRESHOLD_DAYS remain,
-          // so the user never hits an expired-token 401 during normal use.
-          const shouldRefresh =
-            claims !== null && claims.exp - now < REFRESH_THRESHOLD_SECONDS;
-
-          if (shouldRefresh) {
-            const refreshed = await proactiveRefresh(storedToken);
-            if (refreshed) {
-              await setAuthToken(refreshed);
-              setToken(refreshed);
-            } else {
-              // Refresh failed — token is revoked or truly expired; force sign-out
-              await clearAuthToken();
-              await SecureStore.deleteItemAsync(USER_STORAGE_KEY);
-              setToken(null);
-              setUser(null);
-              return;
-            }
-          } else {
-            setToken(storedToken);
-          }
+          setToken(storedToken);
+          setTokenExpiresAt(storedExpiresAt);
         }
 
         setUser(storedUser ? (JSON.parse(storedUser) as StoredUser) : null);
@@ -144,6 +137,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     rehydrate();
   }, []);
+
+  // Clear React state as well as SecureStore when an API request confirms the
+  // server rejected a revoked or expired session.
+  useEffect(() => registerAuthExpiredHandler(async () => {
+    await SecureStore.deleteItemAsync(USER_STORAGE_KEY);
+    setToken(null);
+    setUser(null);
+    setTokenExpiresAt(null);
+    setRefreshRetryAt(null);
+  }), []);
+
+  // Refresh before expiry, and recheck whenever the app returns to the
+  // foreground. Expiry is supplied by the server because Auth.js tokens are
+  // encrypted JWE values whose claims cannot be inspected by the client.
+  useEffect(() => {
+    if (!token) return;
+
+    let mounted = true;
+    const refreshIfDue = async () => {
+      if (refreshInFlight.current) return;
+      if (
+        tokenExpiresAt !== null &&
+        tokenExpiresAt - Date.now() > REFRESH_THRESHOLD_SECONDS * 1000
+      ) {
+        return;
+      }
+
+      refreshInFlight.current = true;
+      try {
+        const storedToken = await getAuthToken();
+        if (!storedToken) {
+          await SecureStore.deleteItemAsync(USER_STORAGE_KEY);
+          if (mounted) {
+            setToken(null);
+            setUser(null);
+            setTokenExpiresAt(null);
+          }
+          return;
+        }
+
+        const result = await proactiveRefresh(storedToken);
+        if (!mounted) return;
+
+        if (result.status === 'refreshed') {
+          const expiresAt = await setAuthToken(result.token, result.expiresInSeconds);
+          if (!mounted) return;
+          setToken(result.token);
+          setTokenExpiresAt(expiresAt);
+          setRefreshRetryAt(null);
+          return;
+        }
+
+        if (result.status === 'invalid') {
+          await clearAuthToken();
+          await SecureStore.deleteItemAsync(USER_STORAGE_KEY);
+          if (!mounted) return;
+          setToken(null);
+          setUser(null);
+          setTokenExpiresAt(null);
+          setRefreshRetryAt(null);
+          return;
+        }
+
+        // Keep a usable token during transient network/provider failures and
+        // retry later or as soon as the app becomes active again.
+        setRefreshRetryAt(Date.now() + REFRESH_RETRY_MS);
+      } catch {
+        if (mounted) setRefreshRetryAt(Date.now() + REFRESH_RETRY_MS);
+      } finally {
+        refreshInFlight.current = false;
+      }
+    };
+
+    const refreshAt = tokenExpiresAt === null
+      ? Date.now()
+      : tokenExpiresAt - REFRESH_THRESHOLD_SECONDS * 1000;
+    const now = Date.now();
+    const nextActionAt = refreshRetryAt !== null && refreshRetryAt > now
+      ? refreshRetryAt
+      : refreshAt;
+    const delay = Math.max(0, nextActionAt - now);
+    const timer = setTimeout(() => {
+      if (refreshAt > Date.now()) {
+        setRefreshRetryAt(refreshAt);
+      } else {
+        void refreshIfDue();
+      }
+    }, Math.min(delay, MAX_TIMER_MS));
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void refreshIfDue();
+    });
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+      subscription.remove();
+    };
+  }, [token, tokenExpiresAt, refreshRetryAt]);
 
   // Route guard — redirect based on auth state
   useEffect(() => {
@@ -162,37 +253,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Handlers
   // ---------------------------------------------------------------------------
 
-  const signIn = async (newToken: string, newUser: StoredUser) => {
-    await Promise.all([
-      setAuthToken(newToken),
-      SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(newUser)),
-    ]);
+  const signIn = async (
+    newToken: string,
+    newUser: StoredUser,
+    expiresInSeconds: number,
+  ) => {
+    const expiresAt = await setAuthToken(newToken, expiresInSeconds);
+    await SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    setTokenExpiresAt(expiresAt);
+    setRefreshRetryAt(null);
 
     // Register push token after login — fire and forget, never block sign-in
     registerForPushNotifications()
-      .then((result) => {
+      .then(async (result) => {
         if (!result) return;
-        return apiRequest('/device-tokens', {
+        await apiRequest('/device-tokens', {
           method: 'POST',
           body: JSON.stringify(result),
         });
+        await saveRegisteredPushToken(result.token);
       })
       .catch((err) => console.warn('[push] Token registration failed:', err));
   };
 
   const signOut = async () => {
-    // Unregister push token before clearing auth
+    // Reuse the token saved at registration. If upgrading from an older build,
+    // read it only when permission is already granted; never prompt during sign-out.
     try {
-      const pushResult = await registerForPushNotifications();
-      if (pushResult) {
+      const token = await getRegisteredPushToken() ?? await getPushTokenIfPermissionGranted();
+      if (token) {
         await apiRequest('/device-tokens', {
           method: 'DELETE',
-          body: JSON.stringify({ token: pushResult.token }),
-        }).catch(() => {});   // best-effort — don't block sign-out
+          body: JSON.stringify({ token }),
+        });
+        await clearRegisteredPushToken();
       }
-    } catch {}
+    } catch (err) {
+      // Keep the cached token so a later sign-in can transfer it to the right user.
+      console.warn('[push] Token unregistration failed:', err);
+    }
 
     await Promise.all([
       clearAuthToken(),
@@ -200,6 +301,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ]);
     setToken(null);
     setUser(null);
+    setTokenExpiresAt(null);
+    setRefreshRetryAt(null);
   };
 
   return (

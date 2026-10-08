@@ -6,6 +6,9 @@
 // NOTE: local fallback paths below assume google-services.json sits at the
 // app root (apps/mobile/google-services.json) — the standard location for a
 // config-plugin (non-bare) Expo project. Adjust if yours lives elsewhere.
+// android/ is checked in, so rerun `npx expo prebuild --platform android`
+// after changing native config or plugins; EAS will not sync app.config.js
+// into an existing native Android project automatically.
 
 module.exports = {
   expo: {
@@ -16,7 +19,6 @@ module.exports = {
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
     scheme: "hostello",
-    newArchEnabled: true,
     ios: {
       bundleIdentifier: "com.hostello.app",
       supportsTablet: true,
@@ -55,6 +57,10 @@ module.exports = {
     },
     plugins: [
       "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-router",
+      "expo-secure-store",
+      "expo-splash-screen",
       [
         "expo-notifications",
         {
@@ -63,6 +69,8 @@ module.exports = {
           sounds: [],
         },
       ],
+      "expo-status-bar",
+      "expo-web-browser",
     ],
   },
 };

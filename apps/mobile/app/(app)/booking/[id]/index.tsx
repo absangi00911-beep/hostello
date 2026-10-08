@@ -17,6 +17,11 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, router, Stack } from "expo-router";
 import { apiRequest } from "../../../../src/services/api";
+import {
+  parsePaymentReturnBookingId,
+  resolvePaymentOutcome,
+  type PaymentOutcome,
+} from "../../../../src/services/payment-status";
 import type { HostelWithDetails } from "@hostello/shared";
 import { colors } from "../../../../src/theme";
 
@@ -31,7 +36,7 @@ interface Room {
 
 type PaymentMethod = "safepay" | "jazzcash" | "easypaisa";
 type Step = "details" | "confirm";
-type PaymentState = "idle" | "paid" | "cancelled" | "failed";
+type PaymentState = "idle" | PaymentOutcome;
 
 /* -- Helpers ---------------------------------------------- */
 function formatPKR(amount: number) {
@@ -58,22 +63,6 @@ function formatDate(date: Date): string {
     month: "short",
     year: "numeric",
   });
-}
-
-/**
- * Parse the `status` and `bookingId` params from a Safepay return URL.
- * Handles both the custom scheme (hostello://payment/return?...) and any
- * https fallback — expo-linking handles both correctly.
- */
-function parseReturnUrl(url: string): { status: string; bookingId: string | null } {
-  try {
-    const parsed = Linking.parse(url);
-    const status = (parsed.queryParams?.status as string) ?? "unknown";
-    const bookingId = (parsed.queryParams?.bookingId as string) ?? null;
-    return { status, bookingId };
-  } catch {
-    return { status: "unknown", bookingId: null };
-  }
 }
 
 const PAYMENT_METHODS: {
@@ -130,33 +119,65 @@ function DateRow({ label, date, minDate, onChange }: DateRowProps) {
 
 /* -- Payment result screen -------------------------------- */
 interface PaymentResultProps {
-  state: PaymentState;
+  state: PaymentOutcome;
   hostelName: string;
   onRetry: () => void;
+  onCheckStatus: () => void;
   onDone: () => void;
 }
 
-function PaymentResult({ state, hostelName, onRetry, onDone }: PaymentResultProps) {
+function PaymentResult({ state, hostelName, onRetry, onCheckStatus, onDone }: PaymentResultProps) {
   const isPaid = state === "paid";
+  const isSettled = isPaid || state === "paid_cancelled" || state === "refunded";
+  const isChecking = state === "checking";
+
+  const title = isPaid
+    ? "Payment confirmed"
+    : state === "paid_cancelled"
+    ? "Payment received after cancellation"
+    : state === "refunded"
+    ? "Payment refunded"
+    : isChecking
+    ? "Checking payment status"
+    : state === "cancelled"
+    ? "Booking cancelled"
+    : "Payment unsuccessful";
+
+  const body = isPaid
+    ? `Your booking at ${hostelName} is awaiting owner confirmation. You'll be notified once it's confirmed.`
+    : state === "paid_cancelled"
+    ? "Safepay confirmed the payment, but this booking is cancelled. Contact support before making another payment."
+    : state === "refunded"
+    ? "The server records this payment as refunded. Contact support if the refund has not appeared in your account."
+    : isChecking
+    ? "Safepay has not confirmed this payment yet. Check again shortly, or resume the same checkout; your booking status will update when confirmation arrives."
+    : state === "cancelled"
+    ? "This booking is cancelled and no successful payment is recorded. You can start a new booking."
+    : "Safepay did not confirm this payment. You can try again; if your statement shows a charge, contact support.";
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.resultContainer}>
-        <Text style={styles.resultIcon}>{isPaid ? "✅" : "❌"}</Text>
-        <Text style={styles.resultTitle}>
-          {isPaid ? "Payment confirmed" : "Payment unsuccessful"}
-        </Text>
-        <Text style={styles.resultBody}>
-          {isPaid
-            ? `Your booking at ${hostelName} is awaiting owner confirmation. You'll be notified once it's confirmed.`
-            : state === "cancelled"
-            ? "You cancelled the payment. Your booking is held for 30 minutes — you can try again."
-            : "Something went wrong with the payment. Your booking is held for 30 minutes — please try again."}
-        </Text>
+        <Text style={styles.resultIcon}>{isPaid ? "✅" : isChecking ? "⏳" : isSettled ? "ℹ️" : "❌"}</Text>
+        <Text style={styles.resultTitle}>{title}</Text>
+        <Text style={styles.resultBody}>{body}</Text>
 
-        {isPaid ? (
+        {isSettled ? (
           <TouchableOpacity style={styles.ctaButton} onPress={onDone} accessibilityRole="button">
             <Text style={styles.ctaText}>View my bookings</Text>
           </TouchableOpacity>
+        ) : isChecking ? (
+          <>
+            <TouchableOpacity style={styles.ctaButton} onPress={onCheckStatus} accessibilityRole="button">
+              <Text style={styles.ctaText}>Check payment status</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={onRetry} accessibilityRole="button">
+              <Text style={styles.secondaryButtonText}>Resume payment</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={onDone} accessibilityRole="button">
+              <Text style={styles.secondaryButtonText}>View my bookings</Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <>
             <TouchableOpacity style={styles.ctaButton} onPress={onRetry} accessibilityRole="button">
@@ -196,9 +217,41 @@ export default function BookingScreen() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("safepay");
 
-  // Prevents the Linking listener from firing a second time if
-  // openAuthSessionAsync already handled the return URL.
+  // Prevents a duplicate booking-state read when the browser result and the
+  // Linking fallback both report the same checkout return.
   const returnHandled = useRef(false);
+  const activeBookingId = useRef<string | null>(null);
+  const reconciliationRequest = useRef<Promise<void> | null>(null);
+
+  const reconcilePayment = useCallback(async (bookingId: string) => {
+    if (reconciliationRequest.current) {
+      await reconciliationRequest.current;
+      return;
+    }
+
+    setPaymentState("checking");
+    setSubmitting(false);
+    const request = (async () => {
+      try {
+        const booking = await apiRequest<{ paymentStatus: string; status: string }>(
+          `/bookings/${encodeURIComponent(bookingId)}`,
+        );
+        setPaymentState(resolvePaymentOutcome({
+          paymentStatus: booking.paymentStatus,
+          bookingStatus: booking.status,
+        }));
+      } catch {
+        // A network failure cannot establish whether Safepay collected money.
+        setPaymentState("checking");
+      }
+    })();
+    reconciliationRequest.current = request;
+    try {
+      await request;
+    } finally {
+      if (reconciliationRequest.current === request) reconciliationRequest.current = null;
+    }
+  }, []);
 
   /* -- Deep link fallback listener ------------------------ */
   // openAuthSessionAsync handles the return URL synchronously on iOS via
@@ -210,13 +263,12 @@ export default function BookingScreen() {
   useEffect(() => {
     if (!incomingUrl) return;
     if (returnHandled.current) return;
-    if (!incomingUrl.startsWith("hostello://payment/return")) return;
+    const returnedBookingId = parsePaymentReturnBookingId(incomingUrl);
+    if (!returnedBookingId || returnedBookingId !== activeBookingId.current) return;
 
     returnHandled.current = true;
-    const { status } = parseReturnUrl(incomingUrl);
-    setPaymentState(status === "paid" ? "paid" : status === "cancelled" ? "cancelled" : "failed");
-    setSubmitting(false);
-  }, [incomingUrl]);
+    void reconcilePayment(returnedBookingId);
+  }, [incomingUrl, reconcilePayment]);
 
   /* -- Fetch hostel + rooms ----------------------------- */
   useEffect(() => {
@@ -261,32 +313,39 @@ export default function BookingScreen() {
     returnHandled.current = false;
 
     try {
-      // 1. Create booking record
-      const booking = await apiRequest<{ id: string }>("/bookings", {
-        method: "POST",
-        body: JSON.stringify({
-          hostelId: id,
-          roomId: selectedRoom?.id,
-          checkIn: checkIn.toISOString(),
-          checkOut: checkOut.toISOString(),
-          guests,
-          paymentMethod,
-        }),
-      });
+      // Reuse the current booking when a payment is pending or failed. The
+      // payment API resumes the outstanding tracker while pending and creates
+      // a new tracker only after failure, avoiding a second booking.
+      let bookingId = activeBookingId.current;
+      if (!bookingId) {
+        const booking = await apiRequest<{ id: string }>("/bookings", {
+          method: "POST",
+          body: JSON.stringify({
+            hostelId: id,
+            roomId: selectedRoom?.id,
+            checkIn: checkIn.toISOString(),
+            checkOut: checkOut.toISOString(),
+            guests,
+            paymentMethod,
+          }),
+        });
+        bookingId = booking.id;
+        activeBookingId.current = booking.id;
+      }
 
       // 2. Get Safepay checkout URL
       const { paymentUrl } = await apiRequest<{ paymentUrl: string }>(
         "/payment/initiate",
-        { method: "POST", body: JSON.stringify({ bookingId: booking.id }) },
+        { method: "POST", body: JSON.stringify({ bookingId }) },
       );
 
       // 3. Open Safepay in an in-app browser.
       //    openAuthSessionAsync monitors for any redirect whose URL begins
       //    with "hostello://payment/return" and closes the browser when it
       //    detects one — keeping the user inside the app the whole time.
-      //    The payment/initiate API route sets the Safepay redirect URL to
-      //    hostello://payment/return?bookingId=...&status=paid  (mobile branch).
-      const result = await WebBrowser.openAuthSessionAsync(
+      //    The return URL only identifies this booking. The server's recorded
+      //    payment state, never a redirect query parameter, confirms payment.
+      await WebBrowser.openAuthSessionAsync(
         paymentUrl,
         "hostello://payment/return",
       );
@@ -294,12 +353,11 @@ export default function BookingScreen() {
       // Mark handled so the Linking listener doesn't fire a duplicate
       returnHandled.current = true;
 
-      if (result.type === "success") {
-        const { status } = parseReturnUrl(result.url);
-        setPaymentState(status === "paid" ? "paid" : status === "cancelled" ? "cancelled" : "failed");
-      } else {
-        // result.type === "dismiss": user manually closed the browser
-        setPaymentState("cancelled");
+      if (!returnHandled.current) {
+        // Verify after success, cancellation, and manual dismissal. A browser
+        // result cannot prove whether a payment reached Safepay.
+        returnHandled.current = true;
+        await reconcilePayment(bookingId);
       }
     } catch (err: unknown) {
       setPaymentError(
@@ -308,7 +366,7 @@ export default function BookingScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [id, selectedRoom, checkIn, checkOut, guests, paymentMethod, validate]);
+  }, [id, selectedRoom, checkIn, checkOut, guests, paymentMethod, validate, reconcilePayment]);
 
   function handleCheckInChange(date: Date) {
     setCheckIn(date);
@@ -322,9 +380,14 @@ export default function BookingScreen() {
         state={paymentState}
         hostelName={hostel?.name ?? "the hostel"}
         onRetry={() => {
+          if (paymentState === "cancelled") activeBookingId.current = null;
           setPaymentState("idle");
           setPaymentError(null);
           returnHandled.current = false;
+          void handleSubmit();
+        }}
+        onCheckStatus={() => {
+          if (activeBookingId.current) void reconcilePayment(activeBookingId.current);
         }}
         onDone={() => router.replace("/(app)/(tabs)/bookings")}
       />

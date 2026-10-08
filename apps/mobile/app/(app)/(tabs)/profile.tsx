@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useAuth } from '../../../src/context/AuthContext';
 import {
   colors,
@@ -183,7 +184,7 @@ export default function ProfileScreen() {
             <SettingsRow
               icon="notifications-outline"
               label="Notifications"
-              onPress={() => {}}
+              onPress={() => router.push('/(app)/(tabs)/notifications')}
             />
           </View>
         </View>
