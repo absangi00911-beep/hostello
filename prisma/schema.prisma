@@ -54,6 +54,30 @@ enum PaymentStatus {
   FAILED
 }
 
+enum RefundState {
+  NONE
+  PROCESSING
+  UNCERTAIN
+  REFUNDED
+}
+
+enum RefundAuditEventType {
+  AUTOMATIC_REQUESTED
+  AUTOMATIC_CONFIRMED
+  AUTOMATIC_UNCERTAIN
+  MANUAL_CONFIRMED
+}
+
+enum SafepayWebhookEventStatus {
+  RECEIVED
+  QUEUED
+  PROCESSING
+  PROCESSED
+  RECONCILIATION_REQUIRED
+  IGNORED
+  RETRYABLE
+}
+
 enum PayoutStatus {
   PENDING
   PAID
@@ -341,6 +365,7 @@ model Booking {
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod String?
   transactionId String?       @unique
+  refundState   RefundState   @default(NONE)
   refundedAt    DateTime?
   refundedBy    String?       // Admin userId who processed the refund.
 
@@ -361,6 +386,56 @@ model Booking {
   @@index([checkIn, checkOut])
   @@index([payoutId])
   @@map("bookings")
+}
+
+// Append-only records of provider refund requests and admin decisions.
+model RefundAuditEvent {
+  id                     String               @id @default(cuid())
+  attemptId              String
+  bookingId              String
+  adminUserId            String
+  type                   RefundAuditEventType
+  transactionId          String?
+  amount                 Int                  // Whole-integer PKR.
+  currency               String               @default("PKR")
+  providerState          String?
+  providerResponseDigest String?
+  failureName            String?
+  failureCode            String?
+  failureStatus          Int?
+  createdAt              DateTime             @default(now())
+
+  @@unique([attemptId, type])
+  @@index([bookingId, createdAt])
+  @@index([attemptId, createdAt])
+  @@map("refund_audit_events")
+}
+
+// Stores minimal, verified Safepay event evidence before applying its business effects.
+// The merchant API key is redacted from payloadEvidence; bodyHash fingerprints the
+// exact signed bytes without retaining the credential embedded in the request.
+model SafepayWebhookEvent {
+  id                  String                   @id @default(cuid())
+  bodyHash            String                   @unique
+  eventType           String
+  merchantOrderId     String?
+  tracker             String?
+  providerState       String?
+  amountMinorUnits    Int?
+  currency            String?
+  payloadEvidence     String                   @db.Text
+  status              SafepayWebhookEventStatus @default(RECEIVED)
+  processingAttempts  Int                      @default(0)
+  processingStartedAt DateTime?
+  processedAt         DateTime?
+  lastErrorCode       String?
+  receivedAt          DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  @@index([status, receivedAt])
+  @@index([merchantOrderId, receivedAt])
+  @@index([tracker, receivedAt])
+  @@map("safepay_webhook_events")
 }
 
 model Review {

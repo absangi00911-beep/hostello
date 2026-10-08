@@ -116,6 +116,7 @@ function BookingForm({
           checkOut: new Date(checkOut).toISOString(),
           months,
           guests,
+          paymentMethod: "safepay",
         }),
       });
 

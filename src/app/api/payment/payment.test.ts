@@ -9,6 +9,44 @@ const mocks = vi.hoisted(() => ({
   subscriptionFindUnique: vi.fn(),
   subscriptionUpdateMany: vi.fn(),
   userUpdate: vi.fn(),
+  webhookEvents: new Map<string, {
+    id: string;
+    bodyHash: string;
+    status: string;
+    processingStartedAt: Date | null;
+    payloadEvidence: string;
+  }>(),
+  webhookCreateMany: vi.fn(async ({ data }: { data: Array<{
+    bodyHash: string;
+    payloadEvidence: string;
+  }> }) => {
+    for (const event of data) {
+      if (!mocks.webhookEvents.has(event.bodyHash)) {
+        mocks.webhookEvents.set(event.bodyHash, {
+          id: event.bodyHash,
+          bodyHash: event.bodyHash,
+          status: "RECEIVED",
+          processingStartedAt: null,
+          payloadEvidence: event.payloadEvidence,
+        });
+      }
+    }
+    return { count: data.length };
+  }),
+  webhookFindUnique: vi.fn(async ({ where }: { where: { bodyHash?: string; id?: string } }) => {
+    const key = where.bodyHash ?? where.id;
+    return key ? mocks.webhookEvents.get(key) ?? null : null;
+  }),
+  webhookUpdateMany: vi.fn(async ({ where, data }: {
+    where: { id: string };
+    data: { status?: string; processingStartedAt?: Date | null };
+  }) => {
+    const event = mocks.webhookEvents.get(where.id);
+    if (!event) return { count: 0 };
+    if (data.status) event.status = data.status;
+    if ("processingStartedAt" in data) event.processingStartedAt = data.processingStartedAt ?? null;
+    return { count: 1 };
+  }),
   paymentMethods: [
     { value: "safepay", enabled: true },
     { value: "jazzcash", enabled: true },
@@ -38,6 +76,11 @@ vi.mock("@/lib/db", () => ({
       updateMany: mocks.subscriptionUpdateMany,
     },
     user: { update: mocks.userUpdate },
+    safepayWebhookEvent: {
+      createMany: mocks.webhookCreateMany,
+      findUnique: mocks.webhookFindUnique,
+      updateMany: mocks.webhookUpdateMany,
+    },
     $transaction: vi.fn(async (work: (tx: unknown) => Promise<unknown>) => work({
       subscription: { updateMany: mocks.subscriptionUpdateMany },
       user: { update: mocks.userUpdate },
@@ -285,6 +328,7 @@ describe("EasyPaisa callback", () => {
 describe("Safepay webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.webhookEvents.clear();
     vi.mocked(sendEmail).mockResolvedValue({ success: true } as any);
     mocks.bookingFindUnique.mockResolvedValue(makeBooking());
     mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });

@@ -75,6 +75,39 @@ export const PaymentStatus = {
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 
+export const RefundState = {
+  NONE: 'NONE',
+  PROCESSING: 'PROCESSING',
+  UNCERTAIN: 'UNCERTAIN',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type RefundState = (typeof RefundState)[keyof typeof RefundState]
+
+
+export const RefundAuditEventType = {
+  AUTOMATIC_REQUESTED: 'AUTOMATIC_REQUESTED',
+  AUTOMATIC_CONFIRMED: 'AUTOMATIC_CONFIRMED',
+  AUTOMATIC_UNCERTAIN: 'AUTOMATIC_UNCERTAIN',
+  MANUAL_CONFIRMED: 'MANUAL_CONFIRMED'
+} as const
+
+export type RefundAuditEventType = (typeof RefundAuditEventType)[keyof typeof RefundAuditEventType]
+
+
+export const SafepayWebhookEventStatus = {
+  RECEIVED: 'RECEIVED',
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  RECONCILIATION_REQUIRED: 'RECONCILIATION_REQUIRED',
+  IGNORED: 'IGNORED',
+  RETRYABLE: 'RETRYABLE'
+} as const
+
+export type SafepayWebhookEventStatus = (typeof SafepayWebhookEventStatus)[keyof typeof SafepayWebhookEventStatus]
+
+
 export const PayoutStatus = {
   PENDING: 'PENDING',
   PAID: 'PAID',

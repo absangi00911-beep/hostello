@@ -145,6 +145,21 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     requiredInProduction: true,
     description: "Secret token for authenticating cron job requests from Upstash",
   },
+  {
+    name: "QSTASH_TOKEN",
+    requiredInProduction: true,
+    description: "QStash API token for durable payment-webhook dispatch and scheduled jobs",
+  },
+  {
+    name: "QSTASH_CURRENT_SIGNING_KEY",
+    requiredInProduction: true,
+    description: "Current QStash signing key for verifying queued webhook deliveries",
+  },
+  {
+    name: "QSTASH_NEXT_SIGNING_KEY",
+    requiredInProduction: true,
+    description: "Next QStash signing key for verifying queued webhook deliveries during key rotation",
+  },
 
   // -- Email --------------------------------------------------------------
   {

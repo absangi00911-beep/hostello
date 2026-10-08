@@ -4,13 +4,14 @@
 // global.setup.ts in the correct FK order so no orphans are left behind.
 
 import fs from "fs/promises";
-import { STATE_FILE } from "./global.setup";
+import { AUTH_DIR, STATE_FILE } from "./global.setup";
 import { createE2EDb } from "./db";
 
 async function globalTeardown() {
   const db = createE2EDb();
 
   try {
+    await fs.rm(AUTH_DIR, { recursive: true, force: true });
     const raw   = await fs.readFile(STATE_FILE, "utf-8").catch(() => null);
     if (!raw) return; // setup never ran — nothing to clean
 

@@ -19,6 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const STATE_FILE = path.join(__dirname, ".test-state.json");
+export const AUTH_DIR = path.join(__dirname, ".auth");
 export const TEST_PASSWORD = "E2eTestPwd123!";
 
 const OWNER_EMAIL   = "e2e-owner@hostello.test";
@@ -26,6 +27,9 @@ const STUDENT_EMAIL = "e2e-student@hostello.test";
 const HOSTEL_SLUG   = "e2e-test-hostel";
 
 async function globalSetup() {
+  // Seeded users are recreated on every run, so saved browser cookies from an
+  // earlier run can never represent the current test accounts.
+  await fs.rm(AUTH_DIR, { recursive: true, force: true });
   const db = createE2EDb();
 
   try {

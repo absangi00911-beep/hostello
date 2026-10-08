@@ -1,6 +1,6 @@
 # HostelLo Operations Runbook
 
-**Last updated:** October 6, 2026  
+**Last updated:** October 8, 2026
 **Status:** Repository procedures are documented; provider and production access still need validation.
 
 ## Structured operational events and alerts
@@ -74,6 +74,8 @@ Do not manually change `CronLog` rows to clear an alert; health should reflect a
 ## Payment support
 
 - Treat Safepay's authenticated transaction record and signed webhook processing as the payment source of truth. A browser return URL is not proof of payment.
+- Verified Safepay events are stored with a bounded, sanitized payload before QStash dispatch. The signed worker processes the stored event; QStash retries transient failures up to five times. If delivery is exhausted, `payment.webhook.queue_exhausted` is logged and the inbox row becomes `RETRYABLE`. Compare that row with the Safepay transaction and booking state before replaying the message from the QStash dead-letter queue.
+- Refund requests and operator decisions are recorded in append-only `RefundAuditEvent` rows; `Booking.refundState` tracks `NONE`, `PROCESSING`, `UNCERTAIN`, or `REFUNDED`. For a timeout or stale `PROCESSING` attempt, verify the transaction in Safepay before recording a manual confirmation or recovering the attempt. The audit ledger is evidence of Hostello's actions, not proof that Safepay completed a refund.
 - For a pending or failed booking, compare the Hostello booking state and transaction reference with the Safepay transaction before taking action.
 - If a refund outcome is uncertain, leave the booking in its existing paid state until Safepay confirms the result. Do not issue the refund again or mark it refunded based only on a timeout. Record a manual refund in Hostello only after the completed refund is confirmed in Safepay.
 - Keep JazzCash and EasyPaisa disabled for the mobile beta until their complete transaction inquiry, callback, and refund paths have been verified in their sandboxes.
@@ -100,4 +102,5 @@ Do not manually change `CronLog` rows to clear an alert; health should reflect a
 - [QStash schedule API](https://upstash.com/docs/qstash/api-reference/schedules/create-a-schedule)
 - [QStash schedules guide](https://upstash.com/docs/qstash/features/schedules)
 - [QStash signature verification](https://upstash.com/docs/qstash/howto/signature)
+- [QStash failure callbacks and dead-letter recovery](https://upstash.com/docs/qstash/features/callbacks)
 - [Vercel guidance for async work in functions](https://vercel.com/kb/guide/troubleshooting-inconsistent-logs-in-vercel-functions)

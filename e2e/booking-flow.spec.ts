@@ -9,16 +9,32 @@
 // is sufficient to verify the full web app flow up to the payment redirect.
 
 import { test, expect } from "./fixtures/auth";
+import type { Page } from "@playwright/test";
+
+async function fillStayDates(page: Page, months: number) {
+  // The server-rendered panel is visible before the session-aware client
+  // components hydrate; wait for the authenticated navigation before input.
+  await expect(page.getByRole("button", { name: "Account menu" })).toBeVisible();
+
+  const checkIn = await page.locator("#check-in").getAttribute("min");
+  if (!checkIn) throw new Error("The booking form has no minimum check-in date.");
+
+  const checkOutDate = new Date(`${checkIn}T12:00:00.000Z`);
+  checkOutDate.setUTCMonth(checkOutDate.getUTCMonth() + months);
+
+  const checkInInput = page.locator("#check-in");
+  await checkInInput.fill(checkIn);
+  await expect(checkInInput).toHaveValue(checkIn);
+  await page.locator("#check-out").fill(checkOutDate.toISOString().slice(0, 10));
+}
 
 test.describe("Student booking flow", () => {
 
   test("student can log in and reach their dashboard", async ({ studentPage: page }) => {
-    await page.goto("/dashboard");
-    await expect(page).toHaveURL(/\/dashboard/);
+    await page.goto("/dashboard/bookings", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/\/dashboard\/bookings/);
     // Dashboard renders a heading or nav that identifies the authenticated user
-    await expect(
-      page.getByRole("heading", { name: /dashboard|my bookings|overview/i }).first(),
-    ).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByRole("heading", { name: "My account" })).toBeVisible({ timeout: 8_000 });
   });
 
   test("search page loads and displays the seeded hostel", async ({ studentPage: page, state }) => {
@@ -50,16 +66,8 @@ test.describe("Student booking flow", () => {
     const panel = page.getByRole("complementary", { name: "Booking panel" });
     await expect(panel).toBeVisible({ timeout: 8_000 });
 
-    // Fill in dates — tomorrow as check-in, two months later as check-out
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const checkOut = new Date(tomorrow);
-    checkOut.setMonth(checkOut.getMonth() + 2);
-
-    const fmt = (d: Date) => d.toISOString().split("T")[0]; // YYYY-MM-DD
-
-    await page.locator("#check-in").fill(fmt(tomorrow));
-    await page.locator("#check-out").fill(fmt(checkOut));
+    // Use the form's own minimum to avoid browser/server timezone drift.
+    await fillStayDates(page, 2);
     await page.locator("#guests").fill("1");
 
     // Submit the form — "Request booking" is the submit button label
@@ -78,14 +86,7 @@ test.describe("Student booking flow", () => {
     // Re-navigate to the hostel and create a fresh booking (each test is isolated)
     await page.goto(`/hostels/${state.hostel.slug}`);
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const checkOut = new Date(tomorrow);
-    checkOut.setMonth(checkOut.getMonth() + 1);
-    const fmt = (d: Date) => d.toISOString().split("T")[0];
-
-    await page.locator("#check-in").fill(fmt(tomorrow));
-    await page.locator("#check-out").fill(fmt(checkOut));
+    await fillStayDates(page, 1);
     await page.getByRole("button", { name: /request booking/i }).click();
     await expect(page).toHaveURL(/\/booking\/.+\/review/, { timeout: 15_000 });
 
@@ -105,14 +106,7 @@ test.describe("Student booking flow", () => {
     // Create a booking
     await page.goto(`/hostels/${state.hostel.slug}`);
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const checkOut = new Date(tomorrow);
-    checkOut.setMonth(checkOut.getMonth() + 1);
-    const fmt = (d: Date) => d.toISOString().split("T")[0];
-
-    await page.locator("#check-in").fill(fmt(tomorrow));
-    await page.locator("#check-out").fill(fmt(checkOut));
+    await fillStayDates(page, 1);
     await page.getByRole("button", { name: /request booking/i }).click();
     await expect(page).toHaveURL(/\/booking\/.+\/review/, { timeout: 15_000 });
 
