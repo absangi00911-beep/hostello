@@ -41,6 +41,17 @@ export const rulesSchema = z
 
 // -- Auth --
 
+export const newPasswordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(128, "Password must be no more than 128 characters")
+  .regex(/[A-Z]/, "Include at least one uppercase letter")
+  .regex(/[0-9]/, "Include at least one number")
+  .refine(
+    (password) => new TextEncoder().encode(password).byteLength <= 72,
+    "Password must be no more than 72 UTF-8 bytes",
+  );
+
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -55,11 +66,7 @@ export const signupSchema = z
       .regex(/^(\+92|0)[0-9]{10}$/, "Enter a valid Pakistani phone number")
       .optional()
       .or(z.literal("")),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Include at least one uppercase letter")
-      .regex(/[0-9]/, "Include at least one number"),
+    password: newPasswordSchema,
     confirmPassword: z.string().optional(),
     role: z.enum(["STUDENT", "OWNER"]),
   })
@@ -93,6 +100,8 @@ export const hostelCreateSchema = z.object({
   maxStay: z.number().int().optional(),
   amenities: z.array(z.string()).min(1, "Select at least one amenity"),
   rules: rulesSchema,
+  images: z.array(z.string().max(2_048)).max(15).optional(),
+  coverImage: z.string().max(2_048).optional(),
 });
 
 // --- Review -------------------------------------------------------------------
@@ -164,13 +173,9 @@ export const profileSchema = z.object({
 
 export const passwordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Include at least one uppercase letter")
-      .regex(/[0-9]/, "Include at least one number"),
-    confirmPassword: z.string(),
+    currentPassword: z.string().min(1, "Current password is required").max(128),
+    newPassword: newPasswordSchema,
+    confirmPassword: z.string().max(128),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
