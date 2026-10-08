@@ -16,16 +16,20 @@ async function fillStayDates(page: Page, months: number) {
   // components hydrate; wait for the authenticated navigation before input.
   await expect(page.getByRole("button", { name: "Account menu" })).toBeVisible();
 
-  const checkIn = await page.locator("#check-in").getAttribute("min");
+  // The responsive mobile sheet can render duplicate IDs. Scope controls to
+  // the visible desktop booking panel used by this suite's desktop project.
+  const bookingPanel = page.getByRole("complementary", { name: "Booking panel" });
+  const checkInInput = bookingPanel.locator("#check-in");
+  const checkOutInput = bookingPanel.locator("#check-out");
+  const checkIn = await checkInInput.getAttribute("min");
   if (!checkIn) throw new Error("The booking form has no minimum check-in date.");
 
   const checkOutDate = new Date(`${checkIn}T12:00:00.000Z`);
   checkOutDate.setUTCMonth(checkOutDate.getUTCMonth() + months);
 
-  const checkInInput = page.locator("#check-in");
   await checkInInput.fill(checkIn);
   await expect(checkInInput).toHaveValue(checkIn);
-  await page.locator("#check-out").fill(checkOutDate.toISOString().slice(0, 10));
+  await checkOutInput.fill(checkOutDate.toISOString().slice(0, 10));
 }
 
 test.describe("Student booking flow", () => {
