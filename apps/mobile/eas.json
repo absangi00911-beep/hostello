@@ -21,10 +21,7 @@
     "staging": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "REPLACE_WITH_VERCEL_PREVIEW_URL/api"
-      },
+      "environment": "preview",
       "ios": {
         "simulator": false
       },

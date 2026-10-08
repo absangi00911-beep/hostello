@@ -15,17 +15,83 @@ global.fetch = vi.fn();
 
 describe('apiRequest', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
-  it('handles 401 Unauthorized by clearing token', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-      status: 401,
-      ok: false,
-    });
+  it('clears a stored token when the refresh endpoint rejects it', async () => {
+    vi.mocked(SecureStore.getItemAsync).mockResolvedValue('expired-token');
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ status: 401, ok: false } as Response)
+      .mockResolvedValueOnce({ status: 401, ok: false } as Response);
 
     await expect(apiRequest('/test')).rejects.toThrow('Unauthorized: Session expired');
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_token');
+  });
+
+  it('preserves the login error and skips refresh when credentials are rejected', async () => {
+    vi.mocked(SecureStore.getItemAsync).mockResolvedValue('stale-token');
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 401,
+      ok: false,
+      json: () => Promise.resolve({ error: 'Invalid email or password' }),
+    } as Response);
+
+    await expect(apiRequest('/auth/mobile/login', { method: 'POST' }))
+      .rejects.toThrow('Invalid email or password');
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].headers)
+      .not.toHaveProperty('Authorization');
+    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
+  });
+
+  it('keeps credentials when a 401 refresh is temporarily unavailable', async () => {
+    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
+      key === 'auth_token' ? 'current-token' : null,
+    );
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ status: 401, ok: false } as Response)
+      .mockResolvedValueOnce({ status: 503, ok: false } as Response);
+
+    await expect(apiRequest('/test')).rejects.toThrow('Session refresh is unavailable');
+    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
+  });
+
+  it('stores the new token and server expiry after a successful refresh', async () => {
+    let storedToken = 'old-token';
+    let storedExpiry = '';
+    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
+      if (key === 'auth_token') return storedToken;
+      if (key === 'auth_token_expires_at_ms') return storedExpiry || null;
+      return null;
+    });
+    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
+      if (key === 'auth_token') storedToken = value;
+      if (key === 'auth_token_expires_at_ms') storedExpiry = value;
+    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ status: 401, ok: false } as Response)
+      .mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        json: () => Promise.resolve({ data: { token: 'new-token', expiresInSeconds: 3600 } }),
+      } as Response)
+      .mockResolvedValueOnce({
+        status: 200,
+        ok: true,
+        json: () => Promise.resolve({ data: { id: 'student_1' } }),
+      } as Response);
+    const beforeRefresh = Date.now();
+
+    await expect(apiRequest('/test')).resolves.toEqual({ id: 'student_1' });
+
+    expect(storedToken).toBe('new-token');
+    expect(Number(storedExpiry)).toBeGreaterThanOrEqual(beforeRefresh + 3_600_000);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls[2][1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
+      }),
+    );
   });
 
   it('handles successful API requests', async () => {

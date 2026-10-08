@@ -1,6 +1,9 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+
+const REGISTERED_PUSH_TOKEN_KEY = "registered_push_token";
 
 /**
  * Requests push notification permissions and returns the native device
@@ -49,6 +52,34 @@ export async function registerForPushNotifications(): Promise<{
     return { token, platform: Platform.OS as "ios" | "android" };
   } catch (err) {
     console.error("[push] Failed to get device token:", err);
+    return null;
+  }
+}
+
+export function getRegisteredPushToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(REGISTERED_PUSH_TOKEN_KEY);
+}
+
+export function saveRegisteredPushToken(token: string): Promise<void> {
+  return SecureStore.setItemAsync(REGISTERED_PUSH_TOKEN_KEY, token);
+}
+
+export function clearRegisteredPushToken(): Promise<void> {
+  return SecureStore.deleteItemAsync(REGISTERED_PUSH_TOKEN_KEY);
+}
+
+/** Read an existing token during sign-out without opening a permission prompt. */
+export async function getPushTokenIfPermissionGranted(): Promise<string | null> {
+  if (!Device.isDevice) return null;
+
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== "granted") return null;
+
+  try {
+    const { data } = await Notifications.getDevicePushTokenAsync();
+    return typeof data === "string" ? data : null;
+  } catch (err) {
+    console.warn("[push] Could not read the existing device token:", err);
     return null;
   }
 }

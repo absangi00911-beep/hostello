@@ -3,6 +3,7 @@ import { LoginInput } from "@hostello/shared/validations";
 
 export interface AuthResponse {
   token: string;
+  expiresInSeconds: number;
   user: {
     id: string;
     name: string;
