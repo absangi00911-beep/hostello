@@ -36,18 +36,20 @@ corresponding new file in `prisma/migrations/`.
 
 ---
 
-## What Vercel runs on every production deploy
+## Production migration deployment
 
 ```bash
-prisma migrate deploy && prisma generate && next build
+npm run db:migrate:deploy
 ```
 
-`prisma migrate deploy` applies every pending migration in `prisma/migrations/` in chronological
-order. It does **not** generate new migrations — it only applies ones that already exist. This is
-safe to run in CI and production.
+The production GitHub Actions workflow runs this command after the quality gate using
+`vercel env run -e production`, so the database URL stays in Vercel's Production environment.
+`prisma migrate deploy` applies pending migrations in `prisma/migrations/`; it does **not**
+generate new migrations. Pull-request preview builds do not apply migrations; manage non-production
+schema changes separately and keep the preview database compatible before checking data-backed routes.
 
-This command is defined in `package.json` `"build"` and referenced explicitly in `vercel.json`
-`"buildCommand"` as `npm run build`.
+The migration command is declared in `package.json` as `db:migrate:deploy`. Vercel's build command
+remains `npm run build`, which performs Prisma Client generation and the Next.js artifact build.
 
 ---
 
@@ -56,7 +58,8 @@ This command is defined in `package.json` `"build"` and referenced explicitly in
 1. **Do not push a fix with `db push`** — that bypasses the migration history and makes the
    situation worse.
 
-2. Check the Vercel build logs for the exact Prisma error. Common causes:
+2. Check the production GitHub Actions migration step for Prisma errors and the Vercel build logs
+   for application build failures. Common migration causes:
    - The migration SQL references a column or table that does not exist yet (bad ordering)
    - A `NOT NULL` column was added without a `DEFAULT` and existing rows cannot be backfilled
    - A unique constraint conflicts with existing data
@@ -77,7 +80,7 @@ This command is defined in `package.json` `"build"` and referenced explicitly in
 
 ## Existing migrations (do not touch)
 
-**Last audited:** June 1, 2026. The repository currently has 15 migration
+**Last audited:** October 5, 2026. The repository currently has 21 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -98,6 +101,12 @@ migration is committed.
 | 20260524030942 | add_student_verification |
 | 20260524031336 | add_owner_subscriptions |
 | 20260524182830 | add_roommate_finder |
+| 20260702072546 | add_payouts_and_refund_tracking |
+| 20260705034152 | add_booking_refunded_notification_type |
+| 20260814000000 | add_verification_moderator_tracking |
+| 20260815000000 | add_review_would_recommend |
+| 20260822095900 | add_safety_score |
+| 20260914111135 | add_student_verification_notification_types |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL
