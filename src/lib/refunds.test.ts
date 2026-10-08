@@ -28,7 +28,7 @@ vi.mock("@/lib/email-templates/booking-status", () => ({
   bookingRefundedEmail: vi.fn().mockReturnValue({ to: "student@test.com", subject: "x", html: "x" }),
 }));
 
-import { processRefund } from "./refunds";
+import { confirmManualRefund, processRefund } from "./refunds";
 import { db } from "../lib/db";
 import { refundPayment } from "../lib/safepay";
 import { createNotification } from "../lib/notifications";
@@ -108,7 +108,7 @@ describe("processRefund — automatic path", () => {
 
     expect(refundPayment).toHaveBeenCalledWith({ transactionId: "sfpy_txn_12345", amount: 45000 });
     expect(db.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: BOOKING_ID, paymentStatus: "PAID" },
+      where: { id: BOOKING_ID, paymentStatus: "PAID", status: "CANCELLED" },
       data: expect.objectContaining({
         paymentStatus: "REFUNDED",
         refundedBy: ADMIN_ID,
@@ -150,32 +150,46 @@ describe("processRefund — automatic path", () => {
 });
 
 describe("processRefund — manual fallback path", () => {
-  it("still marks REFUNDED and returns automatic: false when the gateway call throws", async () => {
+  it("keeps the booking PAID and sends no refund notification when provider completion is uncertain", async () => {
     vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
     vi.mocked(refundPayment).mockRejectedValue(new Error("Safepay refund failed: 404 Not Found"));
-    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
-    vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(
-      makeBooking({ paymentStatus: "REFUNDED" }) as any,
-    );
 
     const result = await processRefund(BOOKING_ID, ADMIN_ID);
 
-    expect(db.booking.updateMany).toHaveBeenCalled(); // still closes out on our side
+    expect(db.booking.updateMany).not.toHaveBeenCalled();
     expect(result.automatic).toBe(false);
-    expect(result.booking.paymentStatus).toBe("REFUNDED");
+    expect(result.manualConfirmed).toBe(false);
+    expect(result.booking.paymentStatus).toBe("PAID");
+    expect(createNotification).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("skips the gateway call entirely and returns automatic: false when there's no transactionId on file", async () => {
+  it("leaves a booking PAID when there's no provider transaction reference", async () => {
     vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking({ transactionId: null }) as any);
-    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
-    vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(
-      makeBooking({ transactionId: null, paymentStatus: "REFUNDED" }) as any,
-    );
 
     const result = await processRefund(BOOKING_ID, ADMIN_ID);
 
     expect(refundPayment).not.toHaveBeenCalled();
     expect(result.automatic).toBe(false);
+    expect(result.booking.paymentStatus).toBe("PAID");
+    expect(db.booking.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("confirmManualRefund", () => {
+  it("records and notifies only after the admin explicitly confirms an external refund", async () => {
+    vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
+    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
+    vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(makeBooking({ paymentStatus: "REFUNDED" }) as any);
+
+    const result = await confirmManualRefund(BOOKING_ID, ADMIN_ID);
+
+    expect(result).toMatchObject({ automatic: false, manualConfirmed: true });
+    expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: BOOKING_ID, paymentStatus: "PAID", status: "CANCELLED" },
+    }));
+    expect(createNotification).toHaveBeenCalled();
+    expect(sendEmail).toHaveBeenCalled();
   });
 });
 

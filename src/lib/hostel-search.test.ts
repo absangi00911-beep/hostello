@@ -185,6 +185,42 @@ describe("Prisma fallback — triggered on any Typesense error", () => {
     expect(result.total).toBe(99);
   });
 
+  it("emits a correlated degradation event without recording search text", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const context = { request_id: "search-request-1", trace_id: "a".repeat(32) };
+
+    await searchHostelsWithFallback(baseParams({ q: "private search text" }), context);
+
+    const event = warn.mock.calls
+      .map(([line]) => JSON.parse(String(line)))
+      .find((record) => record.event === "search.degraded");
+    expect(event).toMatchObject({
+      request_id: "search-request-1",
+      trace_id: "a".repeat(32),
+      attributes: {
+        degradation_reason: "typesense_error",
+        result_count: IDS.length,
+        provider_error_name: "Error",
+      },
+    });
+    expect(JSON.stringify(event)).not.toContain("private search text");
+    expect(JSON.stringify(event)).not.toContain("connection refused");
+    warn.mockRestore();
+  });
+
+  it("does not alert on a valid no-results query when database fallback is also empty", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.mocked(searchHostels).mockResolvedValue(typesenseResult([], 0) as any);
+    vi.mocked(db.hostel.findMany).mockResolvedValue([]);
+    vi.mocked(db.hostel.count).mockResolvedValue(0);
+
+    const result = await searchHostelsWithFallback(baseParams({ q: "no matching hostel" }));
+
+    expect(result).toMatchObject({ hostelIds: [], total: 0, isSearchDegraded: true });
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it("always filters by status: ACTIVE in fallback", async () => {
     await searchHostelsWithFallback(baseParams());
 

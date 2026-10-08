@@ -1,8 +1,10 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/report/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";
 import { reportSchema, sendIssueReport } from "@/lib/support";
+import { readBoundedJson } from "@/lib/bounded-json";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -25,7 +27,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const parsed = reportSchema.safeParse(await req.json());
+    const body = await readBoundedJson(req, 8_192);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = reportSchema.safeParse(body.data);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       return NextResponse.json(
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
       message: "Report submitted. We review all reports within 48 hours.",
     });
   } catch (err) {
-    console.error("[POST /api/report]", err);
+    console.error("[POST /api/report]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

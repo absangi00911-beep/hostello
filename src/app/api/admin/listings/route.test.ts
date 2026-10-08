@@ -1,9 +1,10 @@
 // Path: src/app/api/admin/listings/route.test.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
+vi.mock("@/lib/admin-read-limit", () => ({ enforceAdminReadLimit: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -16,6 +17,7 @@ vi.mock("@/lib/db", () => ({
 
 import { GET } from "./route";
 import { auth } from "@/lib/auth/config";
+import { enforceAdminReadLimit } from "@/lib/admin-read-limit";
 import { db } from "@/lib/db";
 
 function adminSession() {
@@ -31,6 +33,7 @@ function req(query = "") {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(enforceAdminReadLimit).mockResolvedValue(null);
   vi.mocked(db.hostel.findMany).mockResolvedValue([]);
   vi.mocked(db.hostel.count).mockResolvedValue(0);
 });
@@ -43,6 +46,22 @@ describe("GET /api/admin/listings", () => {
 
     expect(res.status).toBe(403);
     expect(db.hostel.findMany).not.toHaveBeenCalled();
+  });
+
+  it("enforces the shared admin read quota before querying listings", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(enforceAdminReadLimit).mockResolvedValueOnce(NextResponse.json(
+      { error: "Too many admin requests. Please slow down." },
+      { status: 429, headers: { "Retry-After": "30" } },
+    ));
+
+    const res = await GET(req("?status=PENDING_REVIEW"));
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBe("30");
+    expect(enforceAdminReadLimit).toHaveBeenCalledWith("usr_admin_1");
+    expect(db.hostel.findMany).not.toHaveBeenCalled();
+    expect(db.hostel.count).not.toHaveBeenCalled();
   });
 
   it("returns 400 when status is missing", async () => {

@@ -16,7 +16,6 @@ const CSRF_EXEMPT: string[] = [
   "/api/auth/session",      // NextAuth session reads
   "/api/auth/csrf",         // NextAuth CSRF token
   "/api/auth/providers",    // NextAuth providers list
-  "/api/auth/verify-email", // GET only, safe
   "/api/auth/mobile/login", // Mobile login — no Origin header
   "/api/cron/",             // Upstash QStash — Bearer token auth
   "/api/payment/webhook",   // Safepay — HMAC signature auth

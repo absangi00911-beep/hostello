@@ -1,9 +1,11 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/phone/verify-otp/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { normalizePhoneNumber } from "@/lib/sms";
 import { z } from "zod";
+import { readBoundedJson } from "@/lib/bounded-json";
 
 const verifyOtpSchema = z.object({
   phone: z
@@ -38,8 +40,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const parsed = verifyOtpSchema.safeParse(body);
+    const body = await readBoundedJson(req, 1_024);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = verifyOtpSchema.safeParse(body.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -63,6 +68,7 @@ export async function POST(req: NextRequest) {
     const token = await db.phoneVerificationToken.findFirst({
       where: { phone: normalized, userId: session.user.id },
     });
+    const now = new Date();
 
     if (!token) {
       return NextResponse.json(
@@ -72,10 +78,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if expired
-    if (new Date() > token.expires) {
+    if (now > token.expires) {
       // Clean up expired token
       await db.phoneVerificationToken.deleteMany({
-        where: { phone: normalized, otp: token.otp },
+        where: { phone: normalized, otp: token.otp, userId: session.user.id },
       });
       return NextResponse.json(
         { error: "OTP expired. Request a new one." },
@@ -86,7 +92,7 @@ export async function POST(req: NextRequest) {
     // Check if max attempts exceeded
     if (token.attempts >= 5) {
       await db.phoneVerificationToken.deleteMany({
-        where: { phone: normalized, otp: token.otp },
+        where: { phone: normalized, otp: token.otp, userId: session.user.id },
       });
       return NextResponse.json(
         { error: "Too many failed attempts. Request a new OTP." },
@@ -96,13 +102,27 @@ export async function POST(req: NextRequest) {
 
     // Verify OTP
     if (token.otp !== otp) {
-      // Increment failed attempts
-      await db.phoneVerificationToken.updateMany({
-        where: { phone: normalized, otp: token.otp },
+      // Claim one remaining attempt conditionally so concurrent requests
+      // cannot all increment from the same stale attempt count.
+      const attempt = await db.phoneVerificationToken.updateMany({
+        where: {
+          phone: normalized,
+          otp: token.otp,
+          userId: session.user.id,
+          attempts: { lt: 5 },
+          expires: { gt: now },
+        },
         data: { attempts: { increment: 1 } },
       });
 
-      const remaining = 5 - (token.attempts + 1);
+      if (attempt.count !== 1) {
+        return NextResponse.json(
+          { error: "OTP is no longer valid. Request a new one." },
+          { status: 400 },
+        );
+      }
+
+      const remaining = Math.max(0, 5 - (token.attempts + 1));
       return NextResponse.json(
         {
           error: `Invalid OTP. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`,
@@ -111,24 +131,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // OTP is correct! Update user's phone and mark as verified
-    const updatedUser = await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        phone: normalized,
-        phoneVerified: new Date(),
-      },
-      select: {
-        id: true,
-        phone: true,
-        phoneVerified: true,
-      },
+    // Claim the OTP once and update the user in one transaction. Concurrent
+    // correct-code requests cannot both reuse the verification token.
+    const updatedUser = await db.$transaction(async (tx) => {
+      const claimed = await tx.phoneVerificationToken.deleteMany({
+        where: {
+          phone: normalized,
+          userId: session.user.id,
+          otp,
+          attempts: { lt: 5 },
+          expires: { gt: new Date() },
+        },
+      });
+      if (claimed.count !== 1) return null;
+
+      return tx.user.update({
+        where: { id: session.user.id },
+        data: {
+          phone: normalized,
+          phoneVerified: new Date(),
+        },
+        select: {
+          id: true,
+          phone: true,
+          phoneVerified: true,
+        },
+      });
     });
 
-    // Clean up the OTP token
-    await db.phoneVerificationToken.deleteMany({
-      where: { phone: normalized, otp, userId: session.user.id },
-    });
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: "OTP expired or already used. Request a new one." },
+        { status: 400 },
+      );
+    }
 
     return NextResponse.json(
       {
@@ -138,7 +174,7 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (err) {
-    console.error("[POST /api/auth/phone/verify-otp]", err);
+    console.error("[POST /api/auth/phone/verify-otp]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

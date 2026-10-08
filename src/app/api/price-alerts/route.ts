@@ -1,32 +1,60 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/price-alerts/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
+import { parsePagination } from "@/lib/pagination";
 
 const priceAlertSchema = z.object({
-  hostelId: z.string().min(1),
-  targetPrice: z.number().int().positive(),
+  hostelId: z.string().min(1).max(64),
+  targetPrice: z.number().int().positive().max(2_147_483_647),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const alerts = await db.priceAlert.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      include: {
-        hostel: {
-          select: { id: true, name: true, slug: true, coverImage: true, pricePerMonth: true, city: true },
-        },
-      },
+    if (req.nextUrl.search.length > 1_024) {
+      return NextResponse.json({ error: "Query is too long." }, { status: 400 });
+    }
+
+    const { page, limit, skip } = parsePagination(req.nextUrl.searchParams, {
+      defaultLimit: 20,
+      maxLimit: 50,
     });
 
-    return NextResponse.json({ data: alerts });
+    const where = {
+      userId: session.user.id,
+      hostel: { is: { status: "ACTIVE" as const } },
+    };
+    const [alerts, total] = await Promise.all([
+      db.priceAlert.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          hostel: {
+            select: { id: true, name: true, slug: true, coverImage: true, pricePerMonth: true, city: true },
+          },
+        },
+      }),
+      db.priceAlert.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      data: alerts,
+      total,
+      page,
+      limit,
+      hasMore: skip + alerts.length < total,
+    });
   } catch (err) {
-    console.error("[GET /api/price-alerts]", err);
+    console.error("[GET /api/price-alerts]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -36,8 +64,19 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
-    const parsed = priceAlertSchema.safeParse(body);
+    const limit = await rateLimit(`price-alert-create:${session.user.id}`, {
+      limit: 10,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json({ error: "Too many price alert attempts. Try again later." }, { status: 429 });
+    }
+
+    const body = await readBoundedJson(req, 1_024);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = priceAlertSchema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation failed.", details: parsed.error.flatten() },
@@ -45,8 +84,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hostel = await db.hostel.findUnique({
-      where: { id: parsed.data.hostelId },
+    const hostel = await db.hostel.findFirst({
+      where: { id: parsed.data.hostelId, status: "ACTIVE" },
       select: { id: true, pricePerMonth: true },
     });
 
@@ -80,7 +119,7 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch (err) {
-    console.error("[POST /api/price-alerts]", err);
+    console.error("[POST /api/price-alerts]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

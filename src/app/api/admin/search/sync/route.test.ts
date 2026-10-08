@@ -10,10 +10,12 @@ vi.mock("@/lib/typesense-sync", () => ({
   indexSingleHostel: vi.fn(),
   removeHostelIndex: vi.fn(),
 }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
 import { POST } from "./route";
 import { auth } from "@/lib/auth/config";
 import { syncAllHostelsToTypesense, indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
+import { rateLimit } from "@/lib/rate-limit";
 
 function adminSession() {
   return { user: { id: "usr_admin_1", role: "ADMIN" } } as any;
@@ -32,6 +34,7 @@ function req(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 1, resetAt: Date.now() + 3_600_000 });
 });
 
 describe("POST /api/admin/search/sync", () => {
@@ -52,6 +55,21 @@ describe("POST /api/admin/search/sync", () => {
 
     expect(syncAllHostelsToTypesense).toHaveBeenCalled();
     expect(res.status).toBe(200);
+    expect(rateLimit).toHaveBeenCalledWith("admin-search-sync:usr_admin_1:sync-all", {
+      limit: 2,
+      windowMs: 60 * 60 * 1000,
+    });
+  });
+
+  it("throttles sync-all before calling Typesense", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(rateLimit).mockResolvedValue({ ok: false, remaining: 0, resetAt: Date.now() + 30_000 });
+
+    const response = await POST(req({ action: "sync-all" }));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBeTruthy();
+    expect(syncAllHostelsToTypesense).not.toHaveBeenCalled();
   });
 
   it("sync-single calls indexSingleHostel with the given hostelId", async () => {

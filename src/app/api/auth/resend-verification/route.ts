@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/resend-verification/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
@@ -5,8 +6,9 @@ import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { verificationEmail } from "@/lib/email-templates/verification";
 import { randomBytes } from "crypto";
+import { hashOneTimeToken } from "@/lib/one-time-token";
 import { rateLimit, getIp } from "@/lib/rate-limit";
-import { getRequestOrigin } from "@/lib/app-url";
+import { getAppOrigin } from "@/lib/app-url";
 
 export async function POST(req: NextRequest) {
   const rl = await rateLimit(`resend-verify:${getIp(req)}`, {
@@ -48,10 +50,10 @@ export async function POST(req: NextRequest) {
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     await db.verificationToken.create({
-      data: { token, identifier: user.email, expires },
+      data: { token: hashOneTimeToken(token), identifier: user.email, expires },
     });
 
-    const origin = getRequestOrigin(req);
+    const origin = getAppOrigin();
     const verifyUrl = `${origin}/api/auth/verify-email?token=${token}`;
     const template = verificationEmail({ name: user.name, verifyUrl });
 
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: "Verification email sent. Check your inbox." });
   } catch (err) {
-    console.error("[POST /api/auth/resend-verification]", err);
+    console.error("[POST /api/auth/resend-verification]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -1,10 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { enforceAdminReadLimit } from "@/lib/admin-read-limit";
 import { computeListingCompleteness } from "@/lib/listingCompleteness";
+import { parsePagination } from "@/lib/pagination";
 
 const VALID_STATUSES = ["PENDING_REVIEW", "ACTIVE", "SUSPENDED"] as const;
 const MAX_LIMIT = 50;
+const MAX_SEARCH_LENGTH = 200;
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -12,12 +15,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const readLimitResponse = await enforceAdminReadLimit(session.user.id);
+  if (readLimitResponse) return readLimitResponse;
+
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
-  const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
-  const limit = Math.min(MAX_LIMIT, Math.max(1, Number.parseInt(url.searchParams.get("limit") ?? "20", 10) || 20));
+  const { page, limit } = parsePagination(url.searchParams, { defaultLimit: 20, maxLimit: MAX_LIMIT });
   const search = url.searchParams.get("search")?.trim();
   const skip = (page - 1) * limit;
+
+  if (url.search.length > 4_096 || (search !== undefined && search.length > MAX_SEARCH_LENGTH)) {
+    return NextResponse.json({ error: "Search query is too long." }, { status: 400 });
+  }
 
   if (!status) {
     return NextResponse.json({ error: "status is required" }, { status: 400 });

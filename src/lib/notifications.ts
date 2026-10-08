@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { NotificationType } from "@/generated/enums";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
 import { getMessaging } from "firebase-admin/messaging";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
 
 interface CreateNotificationInput {
   userId: string;
@@ -13,6 +15,10 @@ interface CreateNotificationInput {
   bookingId?: string;
   reviewId?: string;
   hostelId?: string;
+  /** Push-only route context. Not persisted in the notification row. */
+  conversationId?: string;
+  /** Optional request/trace context inherited from the operation that triggered this notification. */
+  logContext?: OperationalLogContext;
 }
 
 export async function createNotification({
@@ -23,6 +29,8 @@ export async function createNotification({
   bookingId,
   reviewId,
   hostelId,
+  conversationId,
+  logContext,
 }: CreateNotificationInput) {
   try {
     const notification = await db.notification.create({
@@ -40,22 +48,35 @@ export async function createNotification({
     // Dispatch push notification to mobile devices (fire-and-forget)
     sendPushNotification(userId, {
       title,
-      body: message,
+      // Message content stays in the authenticated inbox; push surfaces only
+      // a generic preview that is safer on a shared lock screen.
+      body: type === "MESSAGE_RECEIVED" ? "You have a new message." : message,
       data: {
         type,
         notificationId: notification.id,
         ...(bookingId && { bookingId }),
         ...(reviewId && { reviewId }),
         ...(hostelId && { hostelId }),
+        ...(conversationId && { conversationId }),
       },
-    }).catch((err) => {
-      console.error("[createNotification] Push dispatch failed:", err);
+    }, { notificationType: type, logContext }).catch((err) => {
+      const summary = getSafeErrorSummary(err);
+      logOperationalEvent("error", "notification.dispatch_failed", {
+        notification_type: type,
+        error_name: summary.name,
+        ...(summary.code ? { error_code: summary.code } : {}),
+      }, logContext);
     });
 
     return notification;
   } catch (err) {
     // Fire-and-forget callers — log but never throw
-    console.error("[createNotification]", err);
+    const summary = getSafeErrorSummary(err);
+    logOperationalEvent("error", "notification.persist_failed", {
+      notification_type: type,
+      error_name: summary.name,
+      ...(summary.code ? { error_code: summary.code } : {}),
+    }, logContext);
     return null;
   }
 }
@@ -66,9 +87,10 @@ export async function createNotification({
  * @param userId - ID of the user to receive the notification
  * @param payload - Notification content and data
  */
-async function sendPushNotification(
+export async function sendPushNotification(
   userId: string,
-  payload: { title: string; body: string; data?: Record<string, string> }
+  payload: { title: string; body: string; data?: Record<string, string> },
+  options: { notificationType?: NotificationType; logContext?: OperationalLogContext } = {},
 ) {
   const admin = getFirebaseAdmin();
   if (!admin) return;
@@ -118,9 +140,25 @@ async function sendPushNotification(
           where: { token: { in: staleTokens } },
         });
       }
+
+      const otherFailures = response.failureCount - staleTokens.length;
+      if (otherFailures > 0) {
+        logOperationalEvent("warn", "notification.push.partial_failure", {
+          ...(options.notificationType ? { notification_type: options.notificationType } : {}),
+          failure_count: response.failureCount,
+          success_count: response.successCount,
+          stale_token_count: staleTokens.length,
+        }, options.logContext);
+      }
     }
   } catch (err) {
-    console.error("[sendPushNotification] Error:", err);
+    const summary = getSafeErrorSummary(err);
+    logOperationalEvent("error", "notification.push.dispatch_failed", {
+      ...(options.notificationType ? { notification_type: options.notificationType } : {}),
+      error_name: summary.name,
+      ...(summary.code ? { error_code: summary.code } : {}),
+      ...(summary.status ? { error_status: summary.status } : {}),
+    }, options.logContext);
   }
 }
 
@@ -133,7 +171,7 @@ export async function getUnreadCount(userId: string) {
       },
     });
   } catch (err) {
-    console.error("[getUnreadCount]", err);
+    console.error("[getUnreadCount]", getSafeErrorSummary(err));
     throw err;
   }
 }
@@ -183,7 +221,7 @@ export async function getRecentNotifications(userId: string, limit = 10) {
       },
     });
   } catch (err) {
-    console.error("[getRecentNotifications]", err);
+    console.error("[getRecentNotifications]", getSafeErrorSummary(err));
     throw err;
   }
 }
@@ -204,7 +242,7 @@ export async function markNotificationAsRead(
       },
     });
   } catch (err) {
-    console.error("[markNotificationAsRead]", err);
+    console.error("[markNotificationAsRead]", getSafeErrorSummary(err));
     throw err;
   }
 }
@@ -222,7 +260,7 @@ export async function markAllNotificationsAsRead(userId: string) {
       },
     });
   } catch (err) {
-    console.error("[markAllNotificationsAsRead]", err);
+    console.error("[markAllNotificationsAsRead]", getSafeErrorSummary(err));
     throw err;
   }
 }

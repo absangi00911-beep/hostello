@@ -4,9 +4,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({
-  db: { hostel: { update: vi.fn() } },
+  db: { hostel: { findUnique: vi.fn(), updateMany: vi.fn() } },
 }));
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
@@ -31,6 +32,7 @@ import { db } from "@/lib/db";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 import { createNotification } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 
 function adminSession() {
   return { user: { id: "usr_admin_1", role: "ADMIN" } } as any;
@@ -60,6 +62,9 @@ function makeHostel(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60_000 });
+  vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
+  vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
 });
 
 describe("PATCH /api/admin/hostels", () => {
@@ -69,7 +74,18 @@ describe("PATCH /api/admin/hostels", () => {
     const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
 
     expect(res.status).toBe(403);
-    expect(db.hostel.update).not.toHaveBeenCalled();
+    expect(db.hostel.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("limits moderation actions per admin before reading listing state", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(rateLimit).mockResolvedValue({ ok: false, remaining: 0, resetAt: Date.now() + 30_000 });
+
+    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBeTruthy();
+    expect(db.hostel.findUnique).not.toHaveBeenCalled();
   });
 
   it("returns 400 for an invalid action", async () => {
@@ -91,13 +107,16 @@ describe("PATCH /api/admin/hostels", () => {
   describe("verify", () => {
     it("sets verified + ACTIVE, indexes to Typesense, sends the approved email and HOSTEL_APPROVED notification", async () => {
       vi.mocked(auth).mockResolvedValue(adminSession());
-      vi.mocked(db.hostel.update).mockResolvedValue(makeHostel() as any);
+      vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
 
       const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
       await new Promise((r) => setTimeout(r, 0));
 
-      expect(db.hostel.update).toHaveBeenCalledWith(
-        expect.objectContaining({ data: { verified: true, status: "ACTIVE" } }),
+      expect(db.hostel.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "clx000000000000000000001", status: "PENDING_REVIEW" },
+          data: { verified: true, status: "ACTIVE" },
+        }),
       );
       expect(indexSingleHostel).toHaveBeenCalledWith("hst_1");
       expect(sendEmail).toHaveBeenCalled();
@@ -111,12 +130,15 @@ describe("PATCH /api/admin/hostels", () => {
   describe("activate", () => {
     it("also sends the approved email/notification (activate is treated as a fresh approval)", async () => {
       vi.mocked(auth).mockResolvedValue(adminSession());
-      vi.mocked(db.hostel.update).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
+      vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "SUSPENDED" }) as any);
 
       await PATCH(req({ hostelId: "clx000000000000000000001", action: "activate" }));
       await new Promise((r) => setTimeout(r, 0));
 
-      expect(db.hostel.update).toHaveBeenCalledWith(expect.objectContaining({ data: { status: "ACTIVE" } }));
+      expect(db.hostel.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: "clx000000000000000000001", status: "SUSPENDED" },
+        data: { status: "ACTIVE" },
+      }));
       expect(indexSingleHostel).toHaveBeenCalledWith("hst_1");
       expect(createNotification).toHaveBeenCalledWith(
         expect.objectContaining({ type: "HOSTEL_APPROVED" }),
@@ -127,12 +149,15 @@ describe("PATCH /api/admin/hostels", () => {
   describe("suspend", () => {
     it("sets SUSPENDED, removes from the Typesense index, sends the suspended email and HOSTEL_REJECTED notification", async () => {
       vi.mocked(auth).mockResolvedValue(adminSession());
-      vi.mocked(db.hostel.update).mockResolvedValue(makeHostel({ status: "SUSPENDED" }) as any);
+      vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
 
       await PATCH(req({ hostelId: "clx000000000000000000001", action: "suspend", reason: "Fake photos" }));
       await new Promise((r) => setTimeout(r, 0));
 
-      expect(db.hostel.update).toHaveBeenCalledWith(expect.objectContaining({ data: { status: "SUSPENDED" } }));
+      expect(db.hostel.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: "clx000000000000000000001", status: "ACTIVE" },
+        data: { status: "SUSPENDED" },
+      }));
       expect(removeHostelIndex).toHaveBeenCalledWith("hst_1");
       expect(createNotification).toHaveBeenCalledWith(
         expect.objectContaining({ type: "HOSTEL_REJECTED" }),
@@ -142,7 +167,7 @@ describe("PATCH /api/admin/hostels", () => {
 
   it("returns 500 and doesn't crash if the update itself fails", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(db.hostel.update).mockRejectedValue(new Error("Record not found"));
+    vi.mocked(db.hostel.updateMany).mockRejectedValue(new Error("Database unavailable"));
 
     const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
 
@@ -150,9 +175,32 @@ describe("PATCH /api/admin/hostels", () => {
     expect(indexSingleHostel).not.toHaveBeenCalled();
   });
 
+  it("rejects verify when the listing is no longer pending review", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
+
+    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+
+    expect(res.status).toBe(409);
+    expect(db.hostel.updateMany).not.toHaveBeenCalled();
+    expect(indexSingleHostel).not.toHaveBeenCalled();
+  });
+
+  it("does not dispatch side effects when another action wins the status transition", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 0 } as any);
+
+    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+
+    expect(res.status).toBe(409);
+    expect(indexSingleHostel).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(createNotification).not.toHaveBeenCalled();
+  });
+
   it("still returns 200 even if the fire-and-forget email dispatch throws", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(db.hostel.update).mockResolvedValue(makeHostel() as any);
+    vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
     vi.mocked(sendEmail).mockRejectedValueOnce(new Error("Resend is down"));
 
     const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));

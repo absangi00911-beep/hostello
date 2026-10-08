@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth/config";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { CRON_SCHEDULES } from "@/lib/cron-schedules";
 
 /**
  * GET /api/health/crons
@@ -16,25 +18,6 @@ import { auth } from "@/lib/auth/config";
  *   207 — some crons degraded (ran but errored or ran too long ago)
  *   500 — DB unreachable
  */
-
-const CRON_SCHEDULES: Record<string, { maxAgeMs: number; label: string }> = {
-  "cancel-abandoned-payments": {
-    maxAgeMs: 10 * 60 * 1000,        // expect every 5 min, alert if >10 min stale
-    label:    "Cancel abandoned payments",
-  },
-  "check-price-alerts": {
-    maxAgeMs: 8 * 60 * 60 * 1000,    // expect every 6 h, alert if >8 h stale
-    label:    "Check price alerts",
-  },
-  "cleanup-tokens": {
-    maxAgeMs: 26 * 60 * 60 * 1000,   // expect daily, alert if >26 h stale
-    label:    "Cleanup expired tokens",
-  },
-  "mark-completed-stays": {
-    maxAgeMs: 26 * 60 * 60 * 1000,   // expect daily at midnight UTC
-    label:    "Mark completed stays",
-  },
-};
 
 export async function GET(req: Request) {
   // Auth: admin session OR internal secret header
@@ -54,11 +37,13 @@ export async function GET(req: Request) {
 
   try {
     logs = await db.cronLog.findMany({
+      where: { name: { in: Object.keys(CRON_SCHEDULES) } },
       select: { name: true, ranAt: true, status: true, durationMs: true, error: true },
     });
   } catch (err) {
+    console.error("[GET /api/health/crons]", getSafeErrorSummary(err));
     return NextResponse.json(
-      { error: "Database unavailable", details: err instanceof Error ? err.message : String(err) },
+      { error: "Database unavailable" },
       { status: 500 },
     );
   }
@@ -93,7 +78,7 @@ export async function GET(req: Request) {
       ranAt:       log.ranAt.toISOString(),
       ageMs,
       durationMs:  log.durationMs,
-      error:       log.error ?? null,
+      error:       errored ? "Cron job failed; details redacted." : null,
     };
   });
 

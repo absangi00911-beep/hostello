@@ -5,8 +5,13 @@ import { hostelCreateSchema } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { searchHostelsWithFallback } from "@/lib/hostel-search";
-import { createHostelRecord } from "@/lib/hostel-service";
+import { parsePagination } from "@/lib/pagination";
+import { createHostelRecord, notifyAdminOfNewListing } from "@/lib/hostel-service";
 import { PLANS } from "@/config/plans";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { getIp, rateLimit } from "@/lib/rate-limit";
+import { createOperationalLogContext } from "@/lib/operational-logger";
 
 // This file was missing entirely — SearchPageClient.tsx has always called
 // fetch(`/api/hostels?...`), but nothing implemented that endpoint. The
@@ -16,6 +21,20 @@ import { PLANS } from "@/config/plans";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
+const MAX_SEARCH_LENGTH = 200;
+const MAX_CITY_LENGTH = 100;
+const MAX_AMENITY_FILTERS = 30;
+const MAX_AMENITY_LENGTH = 100;
+const MAX_QUERY_LENGTH = 4_096;
+const MAX_SEARCH_REQUESTS_PER_MINUTE = 120;
+const MAX_LISTING_TRANSACTION_ATTEMPTS = 3;
+
+function isSerializableTransactionConflict(error: unknown) {
+  return error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "P2034";
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,8 +43,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only owners can create listings." }, { status: 403 });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const parsed = hostelCreateSchema.safeParse(body);
+    const createLimit = await rateLimit(`hostel-create:${session.user.id}`, {
+      limit: 5,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!createLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many listing submissions. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.max(1, Math.ceil((createLimit.resetAt - Date.now()) / 1000))),
+          },
+        },
+      );
+    }
+
+    const body = await readBoundedJson(req, 64 * 1024);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const bodyData = body.data;
+    if (!bodyData || typeof bodyData !== "object" || Array.isArray(bodyData)) {
+      return NextResponse.json({ error: "Validation failed." }, { status: 400 });
+    }
+    const parsed = hostelCreateSchema.safeParse(bodyData);
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation failed.", details: parsed.error.flatten() },
@@ -33,31 +75,63 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const owner = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, email: true, plan: true },
-    });
-    if (!owner) return NextResponse.json({ error: "Owner not found." }, { status: 404 });
+    let result:
+      | { kind: "owner_missing" }
+      | { kind: "limit_reached" }
+      | {
+          kind: "created";
+          ownerName: string;
+          ownerEmail: string;
+          hostel: Awaited<ReturnType<typeof createHostelRecord>>;
+        }
+      | undefined;
 
-    const listingCount = await db.hostel.count({ where: { ownerId: session.user.id } });
-    if (listingCount >= PLANS[owner.plan].maxListings) {
+    for (let attempt = 0; attempt < MAX_LISTING_TRANSACTION_ATTEMPTS; attempt++) {
+      try {
+        result = await db.$transaction(async (tx) => {
+          const owner = await tx.user.findUnique({
+            where: { id: session.user.id },
+            select: { name: true, email: true, plan: true },
+          });
+          if (!owner) return { kind: "owner_missing" } as const;
+
+          const listingCount = await tx.hostel.count({ where: { ownerId: session.user.id } });
+          if (listingCount >= PLANS[owner.plan].maxListings) {
+            return { kind: "limit_reached" } as const;
+          }
+
+          const hostel = await createHostelRecord(tx, session.user.id, parsed.data);
+          return {
+            kind: "created",
+            ownerName: owner.name,
+            ownerEmail: owner.email,
+            hostel,
+          } as const;
+        }, { isolationLevel: "Serializable" });
+        break;
+      } catch (error) {
+        if (!isSerializableTransactionConflict(error) || attempt + 1 === MAX_LISTING_TRANSACTION_ATTEMPTS) {
+          throw error;
+        }
+      }
+    }
+
+    if (!result) throw new Error("Listing submission transaction did not return a result.");
+    if (result.kind === "owner_missing") {
+      return NextResponse.json({ error: "Owner not found." }, { status: 404 });
+    }
+    if (result.kind === "limit_reached") {
       return NextResponse.json(
         { error: "You've reached your listing limit.", code: "QUOTA_EXCEEDED" },
         { status: 403 },
       );
     }
 
-    const hostel = await createHostelRecord(
-      session.user.id,
-      owner.name,
-      owner.email,
-      parsed.data,
-      body,
-    );
+    notifyAdminOfNewListing(result.ownerName, result.ownerEmail, result.hostel);
 
-    return NextResponse.json({ data: hostel, message: "Listing submitted for review." }, { status: 201 });
+    return NextResponse.json({ data: result.hostel, message: "Listing submitted for review." }, { status: 201 });
   } catch (err) {
-    console.error("[POST /api/hostels]", err);
+    console.error("[POST /api/hostels]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -65,6 +139,26 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const params = req.nextUrl.searchParams;
+
+    if (req.nextUrl.search.length > MAX_QUERY_LENGTH) {
+      return NextResponse.json({ error: "Search query is too long." }, { status: 400 });
+    }
+
+    const searchLimit = await rateLimit(`hostel-search:${getIp(req)}`, {
+      limit: MAX_SEARCH_REQUESTS_PER_MINUTE,
+      windowMs: 60 * 1000,
+    });
+    if (!searchLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many search requests. Please try again shortly." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.max(1, Math.ceil((searchLimit.resetAt - Date.now()) / 1000))),
+          },
+        },
+      );
+    }
 
     const q      = params.get("q") ?? undefined;
     const city   = params.get("city") ?? undefined;
@@ -74,11 +168,25 @@ export async function GET(req: NextRequest) {
     const maxPrice = params.has("maxPrice") ? Number(params.get("maxPrice")) : undefined;
     const amenities = params.getAll("amenities");
     const sortParam = params.get("sort");
-    const sort = (["price_asc", "price_desc", "rating", "newest"] as const).includes(sortParam as any)
-      ? (sortParam as "price_asc" | "price_desc" | "rating" | "newest")
+    const sort = sortParam === "price_asc" || sortParam === "price_desc" || sortParam === "rating" || sortParam === "newest"
+      ? sortParam
       : "newest";
-    const page  = Math.max(1, parseInt(params.get("page") ?? "1", 10) || 1);
-    const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(params.get("limit") ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT));
+    const { page, limit } = parsePagination(params, { defaultLimit: DEFAULT_LIMIT, maxLimit: MAX_LIMIT });
+
+    if (
+      (q !== undefined && q.length > MAX_SEARCH_LENGTH) ||
+      (city !== undefined && city.length > MAX_CITY_LENGTH) ||
+      amenities.length > MAX_AMENITY_FILTERS ||
+      amenities.some((amenity) => amenity.length > MAX_AMENITY_LENGTH)
+    ) {
+      return NextResponse.json({ error: "One or more search filters are too long." }, { status: 400 });
+    }
+    if (
+      (minPrice !== undefined && (!Number.isFinite(minPrice) || minPrice < 0)) ||
+      (maxPrice !== undefined && (!Number.isFinite(maxPrice) || maxPrice < 0))
+    ) {
+      return NextResponse.json({ error: "Price filters must be non-negative numbers." }, { status: 400 });
+    }
 
     const { hostelIds, total, isSearchDegraded } = await searchHostelsWithFallback({
       q,
@@ -90,7 +198,7 @@ export async function GET(req: NextRequest) {
       sort,
       page,
       limit,
-    });
+    }, createOperationalLogContext(req));
 
     // Fetch full records for the matched IDs. findMany with `id: { in }`
     // does NOT preserve input order, so the search's relevance/sort order
@@ -139,7 +247,7 @@ export async function GET(req: NextRequest) {
       isSearchDegraded,
     });
   } catch (err) {
-    console.error("[GET /api/hostels]", err);
+    console.error("[GET /api/hostels]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Search failed. Please try again." }, { status: 500 });
   }
 }

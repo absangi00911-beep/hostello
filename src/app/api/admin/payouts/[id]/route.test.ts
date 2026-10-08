@@ -3,17 +3,28 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+const mocks = vi.hoisted(() => ({
+  PayoutServiceError: class extends Error {
+    constructor(message: string, readonly statusCode: number) {
+      super(message);
+    }
+  },
+}));
+
 vi.mock("@/lib/auth/config", () => ({
   auth: vi.fn(),
 }));
 
 vi.mock("@/lib/payouts", () => ({
   markPayoutPaid: vi.fn(),
+  PayoutServiceError: mocks.PayoutServiceError,
 }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
 import { PATCH } from "./route";
 import { auth } from "@/lib/auth/config";
-import { markPayoutPaid } from "@/lib/payouts";
+import { markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
+import { rateLimit } from "@/lib/rate-limit";
 
 function adminSession() {
   return { user: { id: "usr_admin_1", role: "ADMIN" } } as any;
@@ -33,6 +44,7 @@ function patchRequest(body: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 9, resetAt: Date.now() + 3_600_000 });
 });
 
 describe("PATCH /api/admin/payouts/[id]", () => {
@@ -65,6 +77,32 @@ describe("PATCH /api/admin/payouts/[id]", () => {
     expect(body.data.status).toBe("PAID");
   });
 
+  it("limits payout status changes before parsing or writing", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(rateLimit).mockResolvedValue({ ok: false, remaining: 0, resetAt: Date.now() + 30_000 });
+
+    const req = new NextRequest("https://hostello.test/api/admin/payouts/pay-1", {
+      method: "PATCH",
+      body: "not-json",
+    });
+    const res = await PATCH(req, { params: Promise.resolve({ id: "pay-1" }) });
+
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBeTruthy();
+    expect(markPayoutPaid).not.toHaveBeenCalled();
+  });
+
+  it("rejects an oversized payout ID before parsing or writing", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+
+    const res = await PATCH(patchRequest({}), {
+      params: Promise.resolve({ id: "x".repeat(129) }),
+    });
+
+    expect(res.status).toBe(400);
+    expect(markPayoutPaid).not.toHaveBeenCalled();
+  });
+
   it("works without a reference (optional field)", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(markPayoutPaid).mockResolvedValue({ id: "pay-1", status: "PAID" } as any);
@@ -77,21 +115,35 @@ describe("PATCH /api/admin/payouts/[id]", () => {
 
   it("returns 400 with the service's message when the payout isn't PENDING", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(markPayoutPaid).mockRejectedValue(new Error("Cannot mark a PAID payout as paid."));
+    vi.mocked(markPayoutPaid).mockRejectedValue(
+      new PayoutServiceError("Cannot mark a PAID payout as paid.", 409),
+    );
 
     const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "pay-1" }) });
     const body = await res.json();
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(409);
     expect(body.error).toBe("Cannot mark a PAID payout as paid.");
   });
 
   it("returns 400 when the payout doesn't exist", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(markPayoutPaid).mockRejectedValue(new Error("Payout not found."));
+    vi.mocked(markPayoutPaid).mockRejectedValue(new PayoutServiceError("Payout not found.", 404));
 
     const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "nonexistent" }) });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(404);
+  });
+
+  it("hides unexpected persistence error details", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(markPayoutPaid).mockRejectedValue(
+      new Error("Database connection failed: sensitive-host.internal"),
+    );
+
+    const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "pay-1" }) });
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Could not update payout. Please try again." });
   });
 });

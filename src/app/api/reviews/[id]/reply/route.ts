@@ -1,8 +1,14 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/reviews/[id]/reply/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { isBoundedRouteParam } from "@/lib/route-params";
+
+const REVIEW_REPLY_ACTIONS_PER_HOUR = 10;
 
 const replySchema = z.object({
   ownerReply: z.string().min(10, "Reply must be at least 10 characters").max(1000),
@@ -21,32 +27,40 @@ export async function PATCH(
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const limit = await rateLimit(`review-reply:${session.user.id}`, {
+      limit: REVIEW_REPLY_ACTIONS_PER_HOUR,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json({ error: "Too many review reply changes. Try again later." }, { status: 429 });
+    }
 
     const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid review." }, { status: 400 });
+    }
 
-    const review = await db.review.findUnique({
-      where: { id },
-      include: {
-        hostel: { select: { ownerId: true } },
-      },
+    const isAdmin = session.user.role === "ADMIN";
+    const review = await db.review.findFirst({
+      where: isAdmin
+        ? { id }
+        : { id, hostel: { is: { ownerId: session.user.id } } },
+      select: { id: true },
     });
 
     if (!review) {
       return NextResponse.json({ error: "Review not found." }, { status: 404 });
     }
 
-    const isOwner = review.hostel.ownerId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json(
-        { error: "Only the hostel owner can reply to reviews." },
-        { status: 403 }
-      );
+    const body = await readBoundedJson(req, 2_048);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
     }
-
-    const body = await req.json();
-    const parsed = replySchema.safeParse(body);
+    const parsed = replySchema.safeParse(body.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -55,22 +69,30 @@ export async function PATCH(
       );
     }
 
-    const updated = await db.review.update({
-      where: { id },
+    const repliedAt = new Date();
+    const updateResult = await db.review.updateMany({
+      where: isAdmin
+        ? { id }
+        : { id, hostel: { is: { ownerId: session.user.id } } },
       data: {
         ownerReply: parsed.data.ownerReply,
-        repliedAt: new Date(),
-      },
-      select: {
-        id: true,
-        ownerReply: true,
-        repliedAt: true,
+        repliedAt,
       },
     });
 
-    return NextResponse.json({ data: updated, message: "Reply saved." });
+    if (updateResult.count !== 1) {
+      return NextResponse.json(
+        { error: "Review ownership changed. Refresh and try again." },
+        { status: 409 },
+      );
+    }
+
+    return NextResponse.json({
+      data: { id, ownerReply: parsed.data.ownerReply, repliedAt },
+      message: "Reply saved.",
+    });
   } catch (err) {
-    console.error("[PATCH /api/reviews/[id]/reply]", err);
+    console.error("[PATCH /api/reviews/[id]/reply]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -88,38 +110,52 @@ export async function DELETE(
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const limit = await rateLimit(`review-reply:${session.user.id}`, {
+      limit: REVIEW_REPLY_ACTIONS_PER_HOUR,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json({ error: "Too many review reply changes. Try again later." }, { status: 429 });
+    }
 
     const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid review." }, { status: 400 });
+    }
 
-    const review = await db.review.findUnique({
-      where: { id },
-      include: {
-        hostel: { select: { ownerId: true } },
-      },
+    const isAdmin = session.user.role === "ADMIN";
+    const review = await db.review.findFirst({
+      where: isAdmin
+        ? { id }
+        : { id, hostel: { is: { ownerId: session.user.id } } },
+      select: { id: true },
     });
 
     if (!review) {
       return NextResponse.json({ error: "Review not found." }, { status: 404 });
     }
 
-    const isOwner = review.hostel.ownerId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json(
-        { error: "Only the hostel owner can remove a reply." },
-        { status: 403 }
-      );
-    }
-
-    await db.review.update({
-      where: { id },
+    const updateResult = await db.review.updateMany({
+      where: isAdmin
+        ? { id }
+        : { id, hostel: { is: { ownerId: session.user.id } } },
       data: { ownerReply: null, repliedAt: null },
     });
 
+    if (updateResult.count !== 1) {
+      return NextResponse.json(
+        { error: "Review ownership changed. Refresh and try again." },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json({ message: "Reply removed." });
   } catch (err) {
-    console.error("[DELETE /api/reviews/[id]/reply]", err);
+    console.error("[DELETE /api/reviews/[id]/reply]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

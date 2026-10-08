@@ -6,7 +6,10 @@ import { sendEmail } from "@/lib/email";
 import { listingApprovedEmail, listingSuspendedEmail } from "@/lib/email-templates/listing-status";
 import { indexSingleHostel, removeHostelIndex } from "@/lib/typesense-sync";
 import { createNotification } from "@/lib/notifications";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 import { z } from "zod";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   hostelId: z.string().cuid(),
@@ -20,8 +23,25 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body   = await req.json();
-  const parsed = schema.safeParse(body);
+  const moderationLimit = await rateLimit(`admin-hostel-moderation:${session.user.id}`, {
+    limit: 30,
+    windowMs: 60_000,
+  });
+  if (!moderationLimit.ok) {
+    return NextResponse.json(
+      { error: "Too many listing moderation actions. Try again shortly." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.max(1, Math.ceil((moderationLimit.resetAt - Date.now()) / 1000))) },
+      },
+    );
+  }
+
+  const body = await readBoundedJson(req, 2_048);
+  if (!body.ok) {
+    return NextResponse.json({ error: body.error }, { status: body.status });
+  }
+  const parsed = schema.safeParse(body.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
@@ -34,9 +54,8 @@ export async function PATCH(req: NextRequest) {
                             { status: "ACTIVE" };
 
   try {
-    const hostel = await db.hostel.update({
+    const hostel = await db.hostel.findUnique({
       where: { id: hostelId },
-      data,
       select: {
         id:       true,
         status:   true,
@@ -52,14 +71,40 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
+    if (!hostel) {
+      return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
+    }
+
+    const actionAllowed =
+      (action === "verify" && hostel.status === "PENDING_REVIEW") ||
+      (action === "suspend" && (hostel.status === "PENDING_REVIEW" || hostel.status === "ACTIVE")) ||
+      (action === "activate" && hostel.status === "SUSPENDED");
+    if (!actionAllowed) {
+      return NextResponse.json(
+        { error: "This listing has already changed. Refresh the moderation queue and try again." },
+        { status: 409 },
+      );
+    }
+
+    const result = await db.hostel.updateMany({
+      where: { id: hostelId, status: hostel.status },
+      data,
+    });
+    if (result.count !== 1) {
+      return NextResponse.json(
+        { error: "This listing has already changed. Refresh the moderation queue and try again." },
+        { status: 409 },
+      );
+    }
+
     // -- Typesense sync --
     if (action === "verify" || action === "activate") {
       void indexSingleHostel(hostel.id).catch((err) =>
-        console.error(`[typesense] Failed to index hostel ${hostel.id}:`, err),
+        console.error("[typesense] Failed to index hostel:", getSafeErrorSummary(err)),
       );
     } else if (action === "suspend") {
       void removeHostelIndex(hostel.id).catch((err) =>
-        console.error(`[typesense] Failed to remove hostel ${hostel.id}:`, err),
+        console.error("[typesense] Failed to remove hostel from index:", getSafeErrorSummary(err)),
       );
     }
 
@@ -75,11 +120,8 @@ export async function PATCH(req: NextRequest) {
           hostelId:   hostel.id,
           status:     "APPROVED",
         }),
-      ).catch(() =>
-        console.error(
-          `[email] Failed to send listing approved email to ${hostel.owner.email} ` +
-          `for hostel ${hostel.id}`,
-        ),
+      ).catch((err) =>
+        console.error("[email] Listing approval email dispatch failed:", getSafeErrorSummary(err)),
       );
 
       void createNotification({
@@ -89,11 +131,7 @@ export async function PATCH(req: NextRequest) {
         message:  `Your hostel "${hostel.name}" is now live and visible to students.`,
         hostelId: hostel.id,
       }).catch((err) =>
-        console.error(
-          `[notifications] Failed to send HOSTEL_APPROVED notification ` +
-          `to owner ${hostel.owner.id} for hostel ${hostel.id}:`,
-          err,
-        ),
+        console.error("[notifications] Listing approval notification failed:", getSafeErrorSummary(err)),
       );
     } else if (action === "suspend") {
       void sendEmail(
@@ -105,11 +143,8 @@ export async function PATCH(req: NextRequest) {
           status:     "SUSPENDED",
           reason:     reason,
         }),
-      ).catch(() =>
-        console.error(
-          `[email] Failed to send listing suspended email to ${hostel.owner.email} ` +
-          `for hostel ${hostel.id}`,
-        ),
+      ).catch((err) =>
+        console.error("[email] Listing suspension email dispatch failed:", getSafeErrorSummary(err)),
       );
 
       void createNotification({
@@ -119,23 +154,19 @@ export async function PATCH(req: NextRequest) {
         message:  `Your hostel "${hostel.name}" has been suspended. Check your email for details and next steps.`,
         hostelId: hostel.id,
       }).catch((err) =>
-        console.error(
-          `[notifications] Failed to send HOSTEL_REJECTED notification ` +
-          `to owner ${hostel.owner.id} for hostel ${hostel.id}:`,
-          err,
-        ),
+        console.error("[notifications] Listing suspension notification failed:", getSafeErrorSummary(err)),
       );
     }
 
     return NextResponse.json({
       data: {
         id:       hostel.id,
-        status:   hostel.status,
-        verified: hostel.verified,
+        status:   data.status,
+        verified: action === "verify" ? true : hostel.verified,
       },
     });
   } catch (err) {
-    console.error("[PATCH /api/admin/hostels]", err);
+    console.error("[PATCH /api/admin/hostels]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/hostels/[param]/view/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
@@ -18,6 +19,9 @@ export async function POST(
 ) {
   try {
     const { param: slug } = await params;
+    if (slug.length > 200) {
+      return NextResponse.json({ success: false }, { status: 400 });
+    }
 
     // Rate limit: 30 views per IP per minute
     const rl = await rateLimit(`view:${getIp(request)}`, {
@@ -31,8 +35,8 @@ export async function POST(
     // Increment viewCount for the hostel
     // Using fire-and-forget pattern since this is a non-critical stat
     await db.hostel
-      .update({
-        where: { slug },
+      .updateMany({
+        where: { slug, status: "ACTIVE" },
         data: { viewCount: { increment: 1 } },
       })
       .catch(() => {
@@ -42,7 +46,7 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     // Log error but don't expose to client
-    console.error("[hostels/view] Error incrementing view count:", error);
+    console.error("[hostels/view] Error incrementing view count:", getSafeErrorSummary(error));
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

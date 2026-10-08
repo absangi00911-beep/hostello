@@ -2,6 +2,7 @@
 
 import * as admin from "firebase-admin";
 import { cert } from "firebase-admin/app";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
 /**
  * Initializes the Firebase Admin SDK for FCM push notifications.
@@ -38,7 +39,10 @@ export function getFirebaseAdmin() {
 
     return admin;
   } catch (err) {
-    console.error("[firebase-admin] Failed to initialize Firebase Admin SDK:", err);
+    console.error(
+      "[firebase-admin] Failed to initialize Firebase Admin SDK:",
+      getSafeErrorSummary(err),
+    );
     return null;
   }
 }

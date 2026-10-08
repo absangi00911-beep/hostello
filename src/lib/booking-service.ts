@@ -5,6 +5,25 @@ import { calculateMonths } from "@/lib/utils";
 import { createNotification } from "@/lib/notifications";
 import type { BookingInput } from "@hostello/shared";
 
+export class BookingServiceError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: 404 | 409,
+  ) {
+    super(message);
+    this.name = "BookingServiceError";
+  }
+}
+
+function isMissingRecordError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2025"
+  );
+}
+
 /**
  * Service to handle booking operations.
  * 
@@ -23,7 +42,7 @@ export async function createBooking(userId: string, input: BookingInput) {
   });
 
   if (!hostel || hostel.status !== "ACTIVE") {
-    throw new Error("Hostel not found or not available for booking.");
+    throw new BookingServiceError("Hostel not found or not available for booking.", 404);
   }
 
   let pricePerMonth = hostel.pricePerMonth;
@@ -35,11 +54,11 @@ export async function createBooking(userId: string, input: BookingInput) {
     });
 
     if (!targetRoom) {
-      throw new Error("Selected room not found.");
+      throw new BookingServiceError("Selected room not found.", 404);
     }
     
     if (targetRoom.available < guests) {
-      throw new Error("Not enough capacity in the selected room.");
+      throw new BookingServiceError("Not enough capacity in the selected room.", 409);
     }
 
     pricePerMonth = targetRoom.pricePerMonth;
@@ -53,19 +72,27 @@ export async function createBooking(userId: string, input: BookingInput) {
   return await db.$transaction(async (tx) => {
     // If a specific room was selected, decrement availability with optimistic lock
     if (roomId && targetRoom) {
-      const updatedRoom = await tx.room.update({
-        where: { 
-          id: roomId,
-          version: targetRoom.version // Optimistic lock
-        },
-        data: {
-          available: { decrement: guests },
-          version: { increment: 1 }
+      let updatedRoom;
+      try {
+        updatedRoom = await tx.room.update({
+          where: {
+            id: roomId,
+            version: targetRoom.version // Optimistic lock
+          },
+          data: {
+            available: { decrement: guests },
+            version: { increment: 1 }
+          }
+        });
+      } catch (error) {
+        if (isMissingRecordError(error)) {
+          throw new BookingServiceError("Room availability changed. Please try again.", 409);
         }
-      });
+        throw error;
+      }
 
       if (updatedRoom.available < 0) {
-        throw new Error("Room became full during booking. Please try again.");
+        throw new BookingServiceError("Room became full during booking. Please try again.", 409);
       }
     }
 

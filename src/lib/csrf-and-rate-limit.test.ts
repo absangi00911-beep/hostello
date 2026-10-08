@@ -374,40 +374,36 @@ describe("getIp", () => {
     return new Request("https://hostello.pk/api/test", { headers });
   }
 
-  it("prefers cf-connecting-ip (Cloudflare, cannot be spoofed)", () => {
+  it("uses the Vercel-forwarded address and ignores alternate proxy headers", () => {
     const r = req({
       "cf-connecting-ip":  "1.2.3.4",
       "x-forwarded-for":   "9.9.9.9",
     });
-    expect(getIp(r)).toBe("1.2.3.4");
+    expect(getIp(r)).toBe("9.9.9.9");
   });
 
-  it("trims whitespace from cf-connecting-ip", () => {
-    expect(getIp(req({ "cf-connecting-ip": "  5.6.7.8  " }))).toBe("5.6.7.8");
+  it("does not trust cf-connecting-ip without the Vercel-forwarded address", () => {
+    expect(getIp(req({ "cf-connecting-ip": "  5.6.7.8  " }))).toBe("unknown");
   });
 
-  it("uses leftmost x-forwarded-for entry when no CF header", () => {
+  it("rejects ambiguous x-forwarded-for chains", () => {
     const r = req({ "x-forwarded-for": "10.0.0.1, 172.16.0.1, 192.168.0.1" });
-    expect(getIp(r)).toBe("10.0.0.1");
+    expect(getIp(r)).toBe("unknown");
   });
 
-  it("trims whitespace around x-forwarded-for entries", () => {
-    const r = req({ "x-forwarded-for": "  11.22.33.44  , 1.1.1.1" });
+  it("trims whitespace from a single x-forwarded-for address", () => {
+    const r = req({ "x-forwarded-for": "  11.22.33.44  " });
     expect(getIp(r)).toBe("11.22.33.44");
   });
 
-  it("skips 'unknown' as leftmost x-forwarded-for and tries next", () => {
+  it("rejects chains whose first forwarded value is unknown", () => {
     const r = req({ "x-forwarded-for": "unknown, 55.66.77.88" });
-    // 'unknown' is skipped — falls through to x-real-ip or 'unknown' fallback
-    // The current implementation only checks the leftmost entry, so it returns 'unknown'
-    // here. This test documents the current behaviour.
-    const ip = getIp(r);
-    expect(["unknown", "55.66.77.88"]).toContain(ip);
+    expect(getIp(r)).toBe("unknown");
   });
 
-  it("falls back to x-real-ip when no CF or forwarded header", () => {
+  it("does not trust x-real-ip without a trusted forwarded address", () => {
     const r = req({ "x-real-ip": "99.88.77.66" });
-    expect(getIp(r)).toBe("99.88.77.66");
+    expect(getIp(r)).toBe("unknown");
   });
 
   it("returns 'unknown' when no IP headers present", () => {

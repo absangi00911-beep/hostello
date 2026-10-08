@@ -120,6 +120,7 @@ describe("GET /api/bookings", () => {
   beforeAll(async () => {
     // Reset all mocks before tests begin
     vi.clearAllMocks();
+    vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 59, resetAt: Date.now() + 60_000 });
   });
 
   afterAll(async () => {
@@ -175,7 +176,10 @@ describe("GET /api/bookings", () => {
     const ownerId = "o1";
     const hostelId = "h1";
 
-    mockDb.hostel.findMany.mockResolvedValueOnce([{ id: hostelId }]);
+    mockDb.hostel.findMany.mockClear();
+    mockDb.booking.findMany.mockClear();
+    mockDb.booking.count.mockClear();
+
     mockDb.booking.findMany.mockResolvedValueOnce([
       {
         id: "b1",
@@ -194,16 +198,15 @@ describe("GET /api/bookings", () => {
 
     expect(res.status).toBe(200);
     expect(body.data).toHaveLength(1);
-    expect(mockDb.hostel.findMany).toHaveBeenCalledWith({
-      where: { ownerId },
-      select: { id: true },
-    });
+    expect(mockDb.hostel.findMany).not.toHaveBeenCalled();
+    expect(mockDb.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { hostel: { is: { ownerId } } },
+    }));
   });
 
   it("owner response includes user.phone", async () => {
     const ownerId = "o1";
 
-    mockDb.hostel.findMany.mockResolvedValueOnce([{ id: "h1" }]);
     mockDb.booking.findMany.mockResolvedValueOnce([
       {
         id: "b1",
@@ -243,7 +246,6 @@ describe("GET /api/bookings", () => {
   it("owner with ?status=PENDING filters correctly", async () => {
     const ownerId = "o1";
 
-    mockDb.hostel.findMany.mockResolvedValueOnce([{ id: "h1" }]);
     mockDb.booking.findMany.mockResolvedValueOnce([
       {
         id: "b1",
@@ -270,7 +272,11 @@ describe("GET /api/bookings", () => {
   it("owner with no hostels returns empty array not 500", async () => {
     const ownerId = "new-owner-no-hostels";
 
-    mockDb.hostel.findMany.mockResolvedValueOnce([]);
+    mockDb.hostel.findMany.mockClear();
+    mockDb.booking.findMany.mockClear();
+    mockDb.booking.count.mockClear();
+    mockDb.booking.findMany.mockResolvedValueOnce([]);
+    mockDb.booking.count.mockResolvedValueOnce(0);
 
     const res = await GET(mockRequest({ role: "OWNER", userId: ownerId }));
     const body = await res.json();
@@ -278,6 +284,10 @@ describe("GET /api/bookings", () => {
     expect(res.status).toBe(200);
     expect(body.data).toEqual([]);
     expect(body.total).toBe(0);
+    expect(mockDb.hostel.findMany).not.toHaveBeenCalled();
+    expect(mockDb.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { hostel: { is: { ownerId } } },
+    }));
   });
 
   it("unauthenticated request returns 401", async () => {

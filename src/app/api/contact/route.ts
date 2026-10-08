@@ -1,8 +1,10 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/contact/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";
 import { contactSchema, sendContactMessage } from "@/lib/support";
+import { readBoundedJson } from "@/lib/bounded-json";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -25,7 +27,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const parsed = contactSchema.safeParse(await req.json());
+    const body = await readBoundedJson(req, 8_192);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = contactSchema.safeParse(body.data);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       return NextResponse.json(
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
       message: "Message sent! We'll reply within 24 hours.",
     });
   } catch (err) {
-    console.error("[POST /api/contact]", err);
+    console.error("[POST /api/contact]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

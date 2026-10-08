@@ -1,6 +1,27 @@
 // Path: src/lib/payouts.ts
 
 import { db } from "@/lib/db";
+import type { Prisma } from "@/generated/client";
+
+export class PayoutServiceError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: 404 | 409,
+  ) {
+    super(message);
+    this.name = "PayoutServiceError";
+  }
+}
+
+/** Shared booking eligibility policy for balances, admin queues, and claims. */
+export function getEligiblePayoutBookingWhere(): Prisma.BookingWhereInput {
+  return {
+    status: { in: ["CONFIRMED", "COMPLETED"] },
+    paymentStatus: "PAID",
+    checkOut: { lte: new Date() },
+    payoutId: null,
+  };
+}
 
 /**
  * Service to handle owner payout operations.
@@ -20,11 +41,8 @@ import { db } from "@/lib/db";
 export async function getEligibleBookings(ownerId: string) {
   return db.booking.findMany({
     where: {
+      ...getEligiblePayoutBookingWhere(),
       hostel: { ownerId },
-      status: { in: ["CONFIRMED", "COMPLETED"] },
-      paymentStatus: "PAID",
-      checkOut: { lte: new Date() },
-      payoutId: null,
     },
     orderBy: { checkOut: "asc" },
   });
@@ -39,13 +57,28 @@ export async function getEligibleBookings(ownerId: string) {
  * derived from what actually got claimed, not the initial eligibility read.
  */
 export async function createPayoutBatch(ownerId: string, adminUserId: string) {
-  const eligibleIds = (await getEligibleBookings(ownerId)).map((b) => b.id);
-
-  if (eligibleIds.length === 0) {
-    throw new Error("No eligible bookings to pay out for this owner.");
-  }
-
   return db.$transaction(async (tx) => {
+    const owner = await tx.user.findUnique({
+      where: { id: ownerId },
+      select: {
+        role: true,
+        bankAccountTitle: true,
+        bankAccountNumber: true,
+        bankName: true,
+      },
+    });
+
+    if (!owner || owner.role !== "OWNER") {
+      throw new PayoutServiceError("Payout owner not found.", 404);
+    }
+    if (
+      !owner.bankAccountTitle?.trim() ||
+      !owner.bankAccountNumber?.trim() ||
+      !owner.bankName?.trim()
+    ) {
+      throw new PayoutServiceError("Owner must complete all payout bank details before a batch can be generated.", 409);
+    }
+
     const payout = await tx.payout.create({
       data: {
         ownerId,
@@ -56,19 +89,22 @@ export async function createPayoutBatch(ownerId: string, adminUserId: string) {
     });
 
     const claimed = await tx.booking.updateMany({
-      where: { id: { in: eligibleIds }, payoutId: null },
+      where: {
+        ...getEligiblePayoutBookingWhere(),
+        hostel: { ownerId },
+      },
       data: { payoutId: payout.id },
     });
 
     if (claimed.count === 0) {
-      throw new Error("All eligible bookings were already claimed by another payout batch.");
+      throw new PayoutServiceError("No eligible bookings to pay out for this owner; another batch may have claimed them.", 409);
     }
 
-    const claimedBookings = await tx.booking.findMany({
+    const claimedBookings = await tx.booking.aggregate({
       where: { payoutId: payout.id },
-      select: { total: true },
+      _sum: { total: true },
     });
-    const amount = claimedBookings.reduce((sum, b) => sum + b.total, 0);
+    const amount = Number(claimedBookings._sum.total ?? 0);
 
     return tx.payout.update({
       where: { id: payout.id },
@@ -97,9 +133,9 @@ export async function markPayoutPaid(payoutId: string, adminUserId: string, refe
   if (result.count === 0) {
     const existing = await db.payout.findUnique({ where: { id: payoutId } });
     if (!existing) {
-      throw new Error("Payout not found.");
+      throw new PayoutServiceError("Payout not found.", 404);
     }
-    throw new Error(`Cannot mark a ${existing.status} payout as paid.`);
+    throw new PayoutServiceError(`Cannot mark a ${existing.status} payout as paid.`, 409);
   }
 
   return db.payout.findUniqueOrThrow({ where: { id: payoutId } });
@@ -107,6 +143,12 @@ export async function markPayoutPaid(payoutId: string, adminUserId: string, refe
 
 /** Pending balance for an owner: sum of eligible bookings not yet in a payout batch. */
 export async function getPendingBalance(ownerId: string) {
-  const eligible = await getEligibleBookings(ownerId);
-  return eligible.reduce((sum, b) => sum + b.total, 0);
+  const eligible = await db.booking.aggregate({
+    where: {
+      ...getEligiblePayoutBookingWhere(),
+      hostel: { ownerId },
+    },
+    _sum: { total: true },
+  });
+  return Number(eligible._sum.total ?? 0);
 }

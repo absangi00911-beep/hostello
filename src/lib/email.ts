@@ -1,6 +1,7 @@
 // Path: src/lib/email.ts
 
 import { Resend } from "resend";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 export { escapeHtml } from "@hostello/shared";
 
 const FROM = process.env.EMAIL_FROM ?? "HostelLo <noreply@hostello.pk>";
@@ -31,7 +32,6 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   // Set RESEND_API_KEY in .env.local to send real emails.
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key || key === "re_placeholder" || !key.startsWith("re_")) {
-    console.warn(`[email] Would send to ${to}: "${subject}"`);
     return { success: true, dev: true };
   }
 
@@ -49,13 +49,13 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
     });
 
     if (error) {
-      console.error("[email] Resend error:", error);
-      return { success: false, error };
+      console.error("[email] Resend rejected a message:", getSafeErrorSummary(error));
+      return { success: false, error: "Email delivery failed." };
     }
 
     return { success: true, id: data?.id };
   } catch (err) {
-    console.error("[email] Unexpected error:", err);
-    return { success: false, error: err };
+    console.error("[email] Unexpected provider error:", getSafeErrorSummary(err));
+    return { success: false, error: "Email delivery failed." };
   }
 }

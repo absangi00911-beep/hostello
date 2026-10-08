@@ -19,9 +19,14 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: vi.fn(),
+}));
+
 import { GET, POST } from "./route";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 
 function studentSession() {
   return { user: { id: "usr_student_1", role: "STUDENT" } } as any;
@@ -69,10 +74,21 @@ function makePost(overrides = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth).mockResolvedValue(null as any);
+  vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 9, resetAt: 0 });
 });
 
 describe("GET /api/hostels/[param]/roommates", () => {
+  it("requires a signed-in student", async () => {
+    vi.mocked(auth).mockResolvedValue(null as any);
+
+    const res = await GET(getReq(), ctx("green-view"));
+
+    expect(res.status).toBe(401);
+    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+  });
+
   it("returns 404 when the hostel doesn't exist or isn't active", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
     vi.mocked(db.hostel.findFirst).mockResolvedValue(null);
 
     const res = await GET(getReq(), ctx("nonexistent"));
@@ -91,6 +107,7 @@ describe("GET /api/hostels/[param]/roommates", () => {
   });
 
   it("resolves the hostel by id or slug", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
     vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
     vi.mocked(db.roommatePost.findMany).mockResolvedValue([]);
 
@@ -104,6 +121,7 @@ describe("GET /api/hostels/[param]/roommates", () => {
   });
 
   it("returns posts with zero reports", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
     vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
     vi.mocked(db.roommatePost.findMany).mockResolvedValue([makePost()] as any);
 
@@ -114,31 +132,33 @@ describe("GET /api/hostels/[param]/roommates", () => {
     expect(body.data).toHaveLength(1);
   });
 
-  it(
-    "hides a post after its very first report, not after reaching AUTO_HIDE_REPORTS (3) — " +
-      "documents current behavior, not necessarily intended behavior; see the finding note in the session summary",
-    async () => {
-      vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
-      // The route's own DB query filters to `reports: { none: {} }` — zero reports only —
-      // before the in-memory `_count.reports < 3` check ever runs. That in-memory check
-      // can therefore never reject anything: every row already has _count.reports === 0
-      // by construction. A post with 1 or 2 reports never reaches findMany's result set
-      // at all, so it's indistinguishable here from a post with 3+.
-      vi.mocked(db.roommatePost.findMany).mockResolvedValue([]);
+  it("keeps posts with one or two reports visible and hides posts at three reports", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
+    vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
+    vi.mocked(db.roommatePost.findMany).mockResolvedValue([
+      makePost({ id: "clean", _count: { reports: 0 } }),
+      makePost({ id: "reported-once", _count: { reports: 1 } }),
+      makePost({ id: "reported-twice", _count: { reports: 2 } }),
+      makePost({ id: "hidden", _count: { reports: 3 } }),
+    ] as any);
 
-      const res = await GET(getReq(), ctx("green-view"));
-      const body = await res.json();
+    const res = await GET(getReq(), ctx("green-view"));
+    const body = await res.json();
 
-      expect(db.roommatePost.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ reports: { none: {} } }),
-        }),
-      );
-      expect(body.data).toHaveLength(0);
-    },
-  );
+    expect(db.roommatePost.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({ reports: expect.anything() }),
+      }),
+    );
+    expect(body.data.map((post: any) => post.id)).toEqual([
+      "clean",
+      "reported-once",
+      "reported-twice",
+    ]);
+  });
 
-  it("excludes a post that slips through with reports already attached (belt-and-suspenders in-memory filter)", async () => {
+  it("excludes a post once it has reached the report threshold", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
     vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
     vi.mocked(db.roommatePost.findMany).mockResolvedValue([
       makePost({ id: "clean", _count: { reports: 0 } }),
@@ -169,6 +189,26 @@ describe("POST /api/hostels/[param]/roommates", () => {
     expect(res.status).toBe(403);
     expect(db.hostel.findFirst).not.toHaveBeenCalled();
     expect(db.roommatePost.upsert).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits student post edits before looking up the hostel", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
+    vi.mocked(rateLimit).mockResolvedValue({ ok: false, remaining: 0, resetAt: 1 });
+
+    const res = await POST(postReq({ bio: "Looking for a roommate" }), ctx("green-view"));
+
+    expect(res.status).toBe(429);
+    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+    expect(db.roommatePost.upsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects an oversized post body", async () => {
+    vi.mocked(auth).mockResolvedValue(studentSession());
+
+    const res = await POST(postReq({ bio: "x".repeat(5_000) }), ctx("green-view"));
+
+    expect(res.status).toBe(413);
+    expect(db.hostel.findFirst).not.toHaveBeenCalled();
   });
 
   it("returns 404 for a hostel that doesn't exist", async () => {

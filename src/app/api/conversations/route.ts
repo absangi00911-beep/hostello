@@ -1,12 +1,16 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/conversations/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { parsePagination } from "@/lib/pagination";
+import type { Prisma } from "@/generated/client";
 import { z } from "zod";
+import { readBoundedJson } from "@/lib/bounded-json";
 
 const conversationSchema = z.object({
-  hostelId: z.string().min(1, "Hostel ID is required"),
+  hostelId: z.string().min(1, "Hostel ID is required").max(128, "Hostel ID is too long"),
   initialMessage: z.string().min(1, "Initial message is required").max(2000),
 });
 
@@ -14,7 +18,7 @@ const conversationSchema = z.object({
  * GET /api/conversations
  * Lists all conversations for the current user.
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
@@ -32,14 +36,43 @@ export async function GET(_req: NextRequest) {
       );
     }
 
-    const conversations = await db.conversation.findMany({
-      where: {
-        participants: {
-          some: {
-            userId: session.user.id,
+    if (req.nextUrl.search.length > 1_024) {
+      return NextResponse.json({ error: "Query is too long." }, { status: 400 });
+    }
+    const search = (req.nextUrl.searchParams.get("search") ?? "").trim();
+    const unreadParam = req.nextUrl.searchParams.get("unread");
+    if (search.length > 100 || (unreadParam !== null && unreadParam !== "true" && unreadParam !== "false")) {
+      return NextResponse.json({ error: "Invalid conversation filters." }, { status: 400 });
+    }
+    const unreadOnly = unreadParam === "true";
+    const { page, limit, skip } = parsePagination(req.nextUrl.searchParams, {
+      defaultLimit: 20,
+      maxLimit: 50,
+    });
+    const where: Prisma.ConversationWhereInput = {
+      participants: { some: { userId: session.user.id } },
+      ...(unreadOnly && {
+        messages: { some: { read: false, senderId: { not: session.user.id } } },
+      }),
+      ...(search && {
+        OR: [
+          { hostel: { name: { contains: search, mode: "insensitive" } } },
+          {
+            participants: {
+              some: {
+                userId: { not: session.user.id },
+                user: { name: { contains: search, mode: "insensitive" } },
+              },
+            },
           },
-        },
-      },
+        ],
+      }),
+    };
+
+    const [conversations, total] = await Promise.all([db.conversation.findMany({
+      where,
+      skip,
+      take: limit,
       include: {
         hostel: {
           select: { name: true, slug: true, coverImage: true },
@@ -64,31 +97,35 @@ export async function GET(_req: NextRequest) {
           take: 1,
         },
         _count: {
-          select: { messages: true },
+          select: {
+            messages: { where: { read: false, senderId: { not: session.user.id } } },
+          },
         },
       },
       orderBy: { updatedAt: "desc" },
-    });
+    }), db.conversation.count({ where })]);
 
     const data = conversations.map((conv) => {
-      const unreadCount = conv.messages.filter(
-        (msg) => !msg.read && msg.senderId !== session.user.id
-      ).length;
-
       return {
         id: conv.id,
         hostelName: conv.hostel.name,
         hostel: conv.hostel,
         participants: conv.participants ?? [],
         messages: conv.messages ?? [],
-        unreadCount: conv.messages.length > 0 ? unreadCount : conv._count.messages,
+        unreadCount: conv._count.messages,
         updatedAt: conv.updatedAt,
       };
     });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({
+      data,
+      total,
+      page,
+      limit,
+      hasMore: skip + conversations.length < total,
+    });
   } catch (err) {
-    console.error("[GET /api/conversations]", err);
+    console.error("[GET /api/conversations]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -103,6 +140,9 @@ export async function POST(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.user.role !== "STUDENT") {
+      return NextResponse.json({ error: "Only students can start conversations with hostel owners." }, { status: 403 });
+    }
 
     const rl = await rateLimit(`create-conv:${session.user.id}`, {
       limit: 10,
@@ -115,8 +155,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const parsed = conversationSchema.safeParse(body);
+    const body = await readBoundedJson(req, 4_096);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = conversationSchema.safeParse(body.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -129,7 +172,7 @@ export async function POST(req: NextRequest) {
 
     // Verify hostel exists and get its owner
     const hostel = await db.hostel.findUnique({
-      where: { id: hostelId },
+      where: { id: hostelId, status: "ACTIVE" },
       select: { id: true, name: true, ownerId: true },
     });
 
@@ -188,7 +231,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: { id: conversation.id } }, { status: 201 });
   } catch (err) {
-    console.error("[POST /api/conversations]", err);
+    console.error("[POST /api/conversations]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -1,3 +1,5 @@
+import { getTrustedClientIp } from "@/lib/client-ip";
+
 // Path: src/lib/gateway-ip-allowlist.ts
 
 /**
@@ -34,8 +36,11 @@ function parseGatewayIps(): Map<string, Set<string>> {
   if (!envValue.trim()) return map;
 
   for (const gatewayPart of envValue.split(";")) {
-    const [gateway, ipsStr] = gatewayPart.split(":");
-    if (!gateway || !ipsStr) continue;
+    const separator = gatewayPart.indexOf(":");
+    if (separator <= 0) continue;
+    const gateway = gatewayPart.slice(0, separator);
+    const ipsStr = gatewayPart.slice(separator + 1);
+    if (!ipsStr) continue;
 
     const ips = new Set(
       ipsStr
@@ -54,46 +59,6 @@ function parseGatewayIps(): Map<string, Set<string>> {
 
 const ALLOWED_GATEWAY_IPS = parseGatewayIps();
 
-interface RequestWithIp {
-  headers?: {
-    get(name: string): string | null;
-  };
-  ip?: string | null;
-}
-
-/**
- * Get the client's real IP address from the request, accounting for proxies.
- *
- * Checks headers in this order (common proxy patterns):
- *   1. cf-connecting-ip (Cloudflare)
- *   2. x-forwarded-for (traditional proxy, comma-separated; takes first)
- *   3. x-real-ip (Nginx reverse proxy)
- *   4. req.ip (Node.js raw socket IP)
- *
- * @param req NextRequest object
- * @returns Client IP address or null if unable to determine
- */
-function getClientIp(req: RequestWithIp): string | null {
-  // Cloudflare
-  const cfIp = req.headers?.get?.("cf-connecting-ip");
-  if (cfIp) return cfIp;
-
-  // Traditional X-Forwarded-For (comma-separated list of IPs)
-  // Leftmost is the original client IP.
-  const xForwardedFor = req.headers?.get?.("x-forwarded-for");
-  if (xForwardedFor) {
-    const ips = xForwardedFor.split(",").map((ip: string) => ip.trim());
-    return ips[0] || null;
-  }
-
-  // Nginx reverse proxy
-  const xRealIp = req.headers?.get?.("x-real-ip");
-  if (xRealIp) return xRealIp;
-
-  // Direct connection
-  return req.ip || null;
-}
-
 /**
  * Verify that the request IP is in the allowlist for the given gateway.
  *
@@ -104,12 +69,12 @@ function getClientIp(req: RequestWithIp): string | null {
  * @param gateway Gateway name (e.g., 'jazzcash', 'easypaisa')
  * @returns Error message if IP is not allowed; null if allowed or no allowlist
  */
-export function verifyGatewayIp(req: RequestWithIp, gateway: string): string | null {
+export function verifyGatewayIp(req: Request, gateway: string): string | null {
   // If no allowlist is configured, skip IP verification
   const allowedIps = ALLOWED_GATEWAY_IPS.get(gateway.toLowerCase());
   if (!allowedIps) return null;
 
-  const clientIp = getClientIp(req);
+  const clientIp = getTrustedClientIp(req);
   if (!clientIp) {
     return "Unable to determine client IP address";
   }

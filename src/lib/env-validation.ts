@@ -65,6 +65,21 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "Cloudflare R2 bucket name for image uploads",
   },
   {
+    name: "R2_VERIFICATION_BUCKET_NAME",
+    requiredInProduction: true,
+    description: "Private Cloudflare R2 bucket for student verification documents",
+  },
+  {
+    name: "R2_VERIFICATION_ACCESS_KEY_ID",
+    requiredInProduction: true,
+    description: "Bucket-scoped Cloudflare R2 API token access key for private verification documents",
+  },
+  {
+    name: "R2_VERIFICATION_SECRET_ACCESS_KEY",
+    requiredInProduction: true,
+    description: "Bucket-scoped Cloudflare R2 API token secret for private verification documents",
+  },
+  {
     name: "R2_PUBLIC_URL",
     requiredInProduction: true,
     description:
@@ -76,7 +91,12 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
   {
     name: "SAFEPAY_SECRET",
     requiredInProduction: true,
-    description: "Safepay merchant secret for HMAC verification",
+    description: "Safepay merchant secret for server-side payment API requests",
+  },
+  {
+    name: "SAFEPAY_API_KEY",
+    requiredInProduction: true,
+    description: "Safepay public API key (sec_...) used when creating v3 payment sessions",
   },
   {
     name: "SAFEPAY_WEBHOOK_SECRET",

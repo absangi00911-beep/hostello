@@ -3,6 +3,8 @@
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/client";
 import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
 
 export interface SearchParams {
   q?: string;
@@ -30,12 +32,17 @@ export interface SearchResult {
  * This shared function ensures consistent search logic across API routes and RSCs.
  * Any future improvements to search handling are automatically applied everywhere.
  */
-export async function searchHostelsWithFallback(params: SearchParams): Promise<SearchResult> {
+export async function searchHostelsWithFallback(
+  params: SearchParams,
+  logContext?: OperationalLogContext,
+): Promise<SearchResult> {
   const { q, city, gender, minPrice, maxPrice, amenities, verified, sort, page, limit } = params;
 
   let hostelIds: string[];
   let total: number;
   let isSearchDegraded = false;
+  let degradationReason: "typesense_error" | "empty_index" | undefined;
+  let providerError: ReturnType<typeof getSafeErrorSummary> | undefined;
 
   // Try Typesense first. An empty index is also degraded: seeded or newly
   // approved database rows must remain discoverable before the next sync.
@@ -63,8 +70,10 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
         isSearchDegraded,
       };
     }
+    degradationReason = "empty_index";
   } catch (searchErr) {
-    console.error("[searchHostelsWithFallback] Typesense failed, falling back to Prisma", searchErr);
+    providerError = getSafeErrorSummary(searchErr);
+    degradationReason = "typesense_error";
     isSearchDegraded = true;
   }
 
@@ -109,6 +118,22 @@ export async function searchHostelsWithFallback(params: SearchParams): Promise<S
   hostelIds = fallbackHostels.map((h) => h.id);
   total = await db.hostel.count({ where: whereClause });
   isSearchDegraded = true;
+
+  // An empty Typesense result can be a valid no-match query. Report that path
+  // only when the database fallback finds rows that the index missed.
+  if (degradationReason === "typesense_error" || total > 0) {
+    logOperationalEvent("warn", "search.degraded", {
+      degradation_reason: degradationReason ?? "empty_index",
+      result_count: total,
+      page,
+      page_size: limit,
+      ...(providerError ? {
+        provider_error_name: providerError.name,
+        ...(providerError.code ? { provider_error_code: providerError.code } : {}),
+        ...(providerError.status ? { provider_http_status: providerError.status } : {}),
+      } : {}),
+    }, logContext);
+  }
 
   return {
     hostelIds,

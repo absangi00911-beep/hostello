@@ -1,7 +1,19 @@
 // Path: src/lib/validations.test.ts
 
 import { describe, it, expect } from "vitest";
-import { sanitizeString } from "./validations";
+import { newPasswordSchema, sanitizeString } from "./validations";
+
+describe("newPasswordSchema", () => {
+  it("accepts passwords within bcrypt's UTF-8 input limit", () => {
+    expect(newPasswordSchema.safeParse(`A1${"x".repeat(70)}`).success).toBe(true);
+    expect(newPasswordSchema.safeParse(`A1${"é".repeat(35)}`).success).toBe(true);
+  });
+
+  it("rejects passwords that bcrypt would silently truncate", () => {
+    expect(newPasswordSchema.safeParse(`A1${"x".repeat(71)}`).success).toBe(false);
+    expect(newPasswordSchema.safeParse(`A1${"é".repeat(36)}`).success).toBe(false);
+  });
+});
 
 describe("sanitizeString", () => {
   describe("HTML tag removal", () => {

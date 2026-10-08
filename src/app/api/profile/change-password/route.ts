@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/profile/change-password/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
@@ -6,6 +7,8 @@ import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { newPasswordSchema } from "@/lib/validations";
 
 // --- Session Invalidation Pattern ------------------------------------------
 // When a user's password changes (either via change-password or reset-password),
@@ -34,9 +37,9 @@ import { rateLimit } from "@/lib/rate-limit";
 // ----------------------------------------------------------------------------
 
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
+  currentPassword: z.string().min(1, "Current password is required").max(128),
+  newPassword: newPasswordSchema,
+  confirmPassword: z.string().max(128),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -65,8 +68,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const parsed = changePasswordSchema.safeParse(body);
+    const body = await readBoundedJson(req, 2_048);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = changePasswordSchema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? "Validation failed" },
@@ -119,7 +125,7 @@ export async function POST(req: NextRequest) {
       message: "Password changed successfully. Please sign in again.",
     });
   } catch (err) {
-    console.error("[POST /api/profile/change-password]", err);
+    console.error("[POST /api/profile/change-password]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong." },
       { status: 500 }

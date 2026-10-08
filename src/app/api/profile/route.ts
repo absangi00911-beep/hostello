@@ -1,8 +1,13 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/profile/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
+
+const MAX_PROFILE_BODY_BYTES = 8_192;
 
 // --- GET /api/profile --------------------------------------------------------
 //
@@ -32,6 +37,7 @@ export async function GET(_req: NextRequest) {
         name:          true,
         email:         true,
         emailVerified: true,  // DateTime | null — truthy = verified
+        emailNotifications: true,
         phone:         true,
         phoneVerified: true,  // DateTime | null — truthy = verified
         avatar:        true,
@@ -58,7 +64,7 @@ export async function GET(_req: NextRequest) {
 
     return NextResponse.json({ data: user });
   } catch (err) {
-    console.error("[GET /api/profile]", err);
+    console.error("[GET /api/profile]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -66,7 +72,8 @@ export async function GET(_req: NextRequest) {
 // --- PATCH /api/profile -------------------------------------------------------
 //
 // Updates editable profile fields for the authenticated user.
-// Avatar updates go through /api/upload separately.
+// Avatar updates go through /api/upload separately. A phone number can only
+// be set by the OTP verification endpoint; profile edits may clear it.
 
 const updateSchema = z.object({
   name:  z.string().min(2).max(100).optional(),
@@ -76,8 +83,9 @@ const updateSchema = z.object({
     .optional()
     .or(z.literal("")),
   bio:   z.string().max(500).optional(),
-  city:  z.string().optional(),
-  avatar: z.string().url("Enter a valid profile photo URL").or(z.literal("")).optional(),
+  city:  z.string().max(100).optional(),
+  avatar: z.string().max(2_048).url("Enter a valid profile photo URL").or(z.literal("")).optional(),
+  emailNotifications: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -87,8 +95,19 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const parsed = updateSchema.safeParse(body);
+    const limit = await rateLimit(`profile-update:${session.user.id}`, {
+      limit: 60,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json({ error: "Too many profile updates. Try again later." }, { status: 429 });
+    }
+
+    const body = await readBoundedJson(req, MAX_PROFILE_BODY_BYTES);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = updateSchema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Validation failed.", details: parsed.error.flatten() },
@@ -99,15 +118,26 @@ export async function PATCH(req: NextRequest) {
     const data: {
       name?: string;
       phone?: string | null;
+      phoneVerified?: Date | null;
       bio?: string;
       city?: string;
       avatar?: string | null;
+      emailNotifications?: boolean;
     } = { ...parsed.data };
 
-    // Empty string clears the phone/avatar; omitted fields are left unchanged.
+    // Only the OTP endpoint may set a phone number. A verified timestamp must
+    // never survive a change to an unverified number.
     if ("phone" in parsed.data) {
-      data.phone = parsed.data.phone || null;
+      if (parsed.data.phone) {
+        return NextResponse.json(
+          { error: "Verify a phone number with the code before saving it." },
+          { status: 400 },
+        );
+      }
+      data.phone = null;
+      data.phoneVerified = null;
     }
+    // Empty avatar clears it; omitted fields are left unchanged.
     if ("avatar" in parsed.data) {
       data.avatar = parsed.data.avatar || null;
     }
@@ -123,12 +153,13 @@ export async function PATCH(req: NextRequest) {
         bio:    true,
         city:   true,
         avatar: true,
+        emailNotifications: true,
       },
     });
 
     return NextResponse.json({ data: updated, message: "Profile updated." });
   } catch (err) {
-    console.error("[PATCH /api/profile]", err);
+    console.error("[PATCH /api/profile]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

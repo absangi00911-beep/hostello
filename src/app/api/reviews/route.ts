@@ -5,24 +5,98 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 import { indexSingleHostel } from "@/lib/typesense-sync";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { parsePagination } from "@/lib/pagination";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { getIp, rateLimit } from "@/lib/rate-limit";
+import { isBoundedRouteParam } from "@/lib/route-params";
+
+const PUBLIC_REVIEW_READS_PER_MINUTE = 120;
+const ADMIN_REVIEW_READS_PER_MINUTE = 60;
 
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const hostelId = url.searchParams.get("hostelId");
-    if (!hostelId) return NextResponse.json({ error: "hostelId is required." }, { status: 400 });
+    const { page, limit, skip } = parsePagination(url.searchParams, { defaultLimit: 20, maxLimit: 50 });
 
-    const reviews = await db.review.findMany({
-      where: { hostelId },
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-      },
+    if (url.search.length > 1_024 || (hostelId !== null && hostelId.length > 64)) {
+      return NextResponse.json({ error: "Invalid review filters." }, { status: 400 });
+    }
+
+    if (!hostelId) {
+      const session = await auth();
+      if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      if (session.user.role !== "ADMIN") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      const adminLimit = await rateLimit(`reviews:admin:${session.user.id}`, {
+        limit: ADMIN_REVIEW_READS_PER_MINUTE,
+        windowMs: 60_000,
+      });
+      if (!adminLimit.ok) {
+        return NextResponse.json(
+          { error: "Too many review-list requests. Please slow down." },
+          {
+            status: 429,
+            headers: { "Retry-After": String(Math.max(1, Math.ceil((adminLimit.resetAt - Date.now()) / 1000))) },
+          },
+        );
+      }
+
+      const [reviews, total] = await Promise.all([
+        db.review.findMany({
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: limit,
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+            hostel: { select: { id: true, name: true, slug: true } },
+          },
+        }),
+        db.review.count(),
+      ]);
+
+      return NextResponse.json({ data: reviews, total, page, limit });
+    }
+
+    const publicLimit = await rateLimit(`reviews:public:${getIp(req)}`, {
+      limit: PUBLIC_REVIEW_READS_PER_MINUTE,
+      windowMs: 60_000,
     });
+    if (!publicLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many review requests. Please slow down." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((publicLimit.resetAt - Date.now()) / 1000))) },
+        },
+      );
+    }
 
-    return NextResponse.json({ data: reviews });
+    const publicHostel = await db.hostel.findFirst({
+      where: { id: hostelId, status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (!publicHostel) return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
+
+    const [reviews, total] = await Promise.all([
+      db.review.findMany({
+        where: { hostelId },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+        },
+      }),
+      db.review.count({ where: { hostelId } }),
+    ]);
+
+    return NextResponse.json({ data: reviews, total, page, limit });
   } catch (err) {
-    console.error("[GET /api/reviews]", err);
+    console.error("[GET /api/reviews]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -31,12 +105,30 @@ export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (session.user.role !== "STUDENT") {
+      return NextResponse.json({ error: "Student accounts only." }, { status: 403 });
+    }
 
-    const body = await req.json().catch(() => ({}));
-    const hostelId = typeof body?.hostelId === "string" ? body.hostelId : "";
-    const parsed = reviewSchema.safeParse(body);
+    const limit = await rateLimit(`review:${session.user.id}`, {
+      limit: 10,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) return NextResponse.json({ error: "Too many review updates. Try again later." }, { status: 429 });
 
-    if (!hostelId || !parsed.success) {
+    const body = await readBoundedJson(req, 8_192);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const bodyData = body.data;
+    if (!bodyData || typeof bodyData !== "object" || Array.isArray(bodyData)) {
+      return NextResponse.json({ error: "Validation failed." }, { status: 400 });
+    }
+    const hostelId = typeof (bodyData as Record<string, unknown>).hostelId === "string"
+      ? (bodyData as Record<string, string>).hostelId
+      : "";
+    const parsed = reviewSchema.safeParse(bodyData);
+
+    if (!isBoundedRouteParam(hostelId) || !parsed.success) {
       return NextResponse.json(
         { error: "Validation failed.", details: parsed.success ? undefined : parsed.error.flatten() },
         { status: 400 },
@@ -63,7 +155,9 @@ export async function POST(req: NextRequest) {
       // wouldRecommend isn't in reviewSchema (from @hostello/shared, not
       // present in this snapshot to extend) — read it straight off the raw
       // body instead of parsed.data so it doesn't get silently dropped.
-      const wouldRecommend = typeof body?.wouldRecommend === "boolean" ? body.wouldRecommend : undefined;
+      const wouldRecommend = typeof (bodyData as Record<string, unknown>).wouldRecommend === "boolean"
+        ? (bodyData as Record<string, boolean>).wouldRecommend
+        : undefined;
 
       const savedReview = await tx.review.upsert({
         where: {
@@ -126,7 +220,10 @@ export async function POST(req: NextRequest) {
         hostelId,
       });
       void indexSingleHostel(hostelId).catch((err) => {
-        console.warn("[POST /api/reviews] Typesense sync failed:", err);
+        console.warn(
+          "[POST /api/reviews] Typesense sync failed:",
+          getSafeErrorSummary(err),
+        );
       });
     }
 
@@ -135,7 +232,7 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch (err) {
-    console.error("[POST /api/reviews]", err);
+    console.error("[POST /api/reviews]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

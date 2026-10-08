@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/delete-account/route.ts
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
@@ -5,6 +6,8 @@ import { compare } from "bcryptjs";
 import { sendEmail } from "@/lib/email";
 import { accountDeletedEmail } from "@/lib/email-templates/account-deleted";
 import { NextResponse } from "next/server";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * DELETE /api/auth/delete-account
@@ -28,11 +31,24 @@ export async function POST(request: Request) {
 
     const userId = session.user.id;
 
-    // 2. Parse and validate request
-    const body = await request.json();
-    const { password } = body;
+    const limit = await rateLimit(`delete-account:${userId}`, {
+      limit: 3,
+      windowMs: 60 * 60 * 1000,
+    });
+    if (!limit.ok) {
+      return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
+    }
 
-    if (!password || typeof password !== "string") {
+    // 2. Parse and validate request
+    const body = await readBoundedJson(request, 1_024);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const password = body.data && typeof body.data === "object" && !Array.isArray(body.data)
+      ? (body.data as Record<string, unknown>).password
+      : undefined;
+
+    if (typeof password !== "string" || password.length < 1 || password.length > 128) {
       return NextResponse.json(
         { error: "Password is required" },
         { status: 400 }
@@ -77,7 +93,54 @@ export async function POST(request: Request) {
       // Delete price alerts
       await tx.priceAlert.deleteMany({ where: { userId } });
 
-      // Delete reviews (but preserve hostel rating stats for now)
+      // Recompute denormalized stats for hostels that remain after this user
+      // is deleted. Reviews belonging to hostels owned by this user are
+      // removed with those hostels below.
+      // Page through the user's reviews on surviving hostels. Delete each
+      // bounded batch before recomputing affected aggregates so every update
+      // reflects the final review set for that hostel.
+      let reviewCursor: string | undefined;
+      while (true) {
+        const reviewBatch = await tx.review.findMany({
+          where: {
+            userId,
+            hostel: { is: { ownerId: { not: userId } } },
+            ...(reviewCursor ? { id: { gt: reviewCursor } } : {}),
+          },
+          orderBy: { id: "asc" },
+          take: 200,
+          select: { id: true, hostelId: true },
+        });
+        if (reviewBatch.length === 0) break;
+
+        await tx.review.deleteMany({
+          where: { id: { in: reviewBatch.map((review) => review.id) } },
+        });
+        for (const hostelId of new Set(reviewBatch.map((review) => review.hostelId))) {
+          const aggregate = await tx.review.aggregate({
+            where: { hostelId },
+            _avg: { rating: true },
+            _count: { rating: true },
+          });
+          const reviewCount = typeof aggregate._count === "number"
+            ? aggregate._count
+            : aggregate._count.rating;
+
+          await tx.hostel.update({
+            where: { id: hostelId },
+            data: {
+              rating: aggregate._avg.rating ?? 0,
+              reviewCount,
+            },
+          });
+        }
+
+        reviewCursor = reviewBatch[reviewBatch.length - 1].id;
+        if (reviewBatch.length < 200) break;
+      }
+
+      // Reviews on the user's own hostels do not need aggregate updates since
+      // those hostels and their remaining bookings are removed below.
       await tx.review.deleteMany({ where: { userId } });
 
       // Delete bookings
@@ -93,20 +156,11 @@ export async function POST(request: Request) {
       await tx.session.deleteMany({ where: { userId } });
       await tx.account.deleteMany({ where: { userId } });
 
-      // For owners: Delete hostels with batch operations
-      const userHostels = await tx.hostel.findMany({
-        where: { ownerId: userId },
-        select: { id: true },
-      });
-
-      if (userHostels.length > 0) {
-        const hostelIds = userHostels.map(h => h.id);
-
-        await tx.booking.deleteMany({ where: { hostelId: { in: hostelIds } } });
-        await tx.review.deleteMany({ where: { hostelId: { in: hostelIds } } });
-
-        await tx.hostel.deleteMany({ where: { ownerId: userId } });
-      }
+      // For owners: scope cleanup through the relation instead of loading
+      // every owned hostel ID into application memory.
+      await tx.booking.deleteMany({ where: { hostel: { is: { ownerId: userId } } } });
+      await tx.review.deleteMany({ where: { hostel: { is: { ownerId: userId } } } });
+      await tx.hostel.deleteMany({ where: { ownerId: userId } });
 
       // Finally: Delete the user account
       await tx.user.delete({ where: { id: userId } });
@@ -119,7 +173,7 @@ export async function POST(request: Request) {
         ...accountDeletedEmail({ name: user.name }),
       });
     } catch (emailError) {
-      console.error("Failed to send account deletion email:", emailError);
+      console.error("Failed to send account deletion email:", getSafeErrorSummary(emailError));
     }
 
     // 7. Return success
@@ -128,7 +182,7 @@ export async function POST(request: Request) {
       message: "Account permanently deleted",
     });
   } catch (error) {
-    console.error("Account deletion error:", error);
+    console.error("Account deletion error:", getSafeErrorSummary(error));
     return NextResponse.json(
       { error: "Failed to delete account" },
       { status: 500 }
