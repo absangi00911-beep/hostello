@@ -24,13 +24,14 @@ export const MIN_REVIEW_LENGTH = 20;
 export const MAX_REVIEW_LENGTH = 1000;
 
 // File upload limits
-export const MAX_IMAGE_SIZE_MB = 5;
+export const MAX_IMAGE_SIZE_MB = 4;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const MAX_IMAGES_PER_HOSTEL = 15;
 
 // Rate limiting (attempts / window)
 export const AUTH_RATE_LIMIT = { attempts: 5, windowMinutes: 15 };
 export const API_RATE_LIMIT = { attempts: 100, windowMinutes: 1 };
+export const MOBILE_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 // Revalidation intervals (seconds)
 export const HOSTEL_REVALIDATE = 3600;   // 1 hour
