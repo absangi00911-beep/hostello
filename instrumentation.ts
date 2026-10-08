@@ -1,6 +1,8 @@
-// Path: src/instrumentation.ts
+// Path: instrumentation.ts
 // Next.js App Router requires this file at the project root (alongside next.config.ts)
 // for server-side initialisation. The SDK reads it automatically.
+
+import * as Sentry from "@sentry/nextjs";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
@@ -13,3 +15,5 @@ export async function register() {
     await import("./sentry.edge.config");
   }
 }
+
+export const onRequestError = Sentry.captureRequestError;

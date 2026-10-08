@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 // Dev-only allowance so impeccable live mode can load. Guarded by NODE_ENV.
 const __impeccableLiveDev =
@@ -102,6 +102,11 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        // Reset links carry a bearer token in the URL; never send that URL as a referrer.
+        source: "/reset-password",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
       },
     ];
   },
