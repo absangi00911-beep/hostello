@@ -22,9 +22,93 @@ function getSafepaySecret() {
   return process.env.SAFEPAY_SECRET ?? "";
 }
 
+function getSafepayApiKey() {
+  return process.env.SAFEPAY_API_KEY ?? "";
+}
+
+function getSafepayEnvironment(): "sandbox" | "production" {
+  return process.env.NEXT_PUBLIC_SAFEPAY_ENV === "production" ? "production" : "sandbox";
+}
+
+/** The application stores whole PKR; Safepay APIs use the lowest currency unit. */
+export function toSafepayMinorUnits(amountInPkr: number): number {
+  if (!Number.isSafeInteger(amountInPkr) || amountInPkr <= 0) {
+    throw new Error("Safepay amount must be a positive whole-PKR safe integer.");
+  }
+
+  const minorUnits = amountInPkr * 100;
+  if (!Number.isSafeInteger(minorUnits)) {
+    throw new Error("Safepay amount exceeds the supported integer range.");
+  }
+  return minorUnits;
+}
+
 export interface SafepaySession {
   token: string;
   redirectUrl: string;
+}
+
+export async function createCheckoutLink({
+  bookingId,
+  token,
+  orderId,
+  appUrl = getAppUrl(),
+  redirectPath,
+  cancelPath,
+  source = "hosted",
+}: {
+  bookingId: string;
+  token: string;
+  orderId: string;
+  appUrl?: string;
+  redirectPath?: string;
+  cancelPath?: string;
+  source?: "hosted" | "mobile";
+}): Promise<SafepaySession> {
+  const baseUrl = getSafepayBaseUrl();
+  const secret = getSafepaySecret();
+  if (!secret) throw new Error("Safepay is not configured. Set SAFEPAY_SECRET.");
+
+  const origin = appUrl.replace(/\/+$/, "");
+  const resolveUrl = (path: string) =>
+    /^[a-z][a-z\d+.-]*:/i.test(path) ? path : new URL(path, `${origin}/`).toString();
+  const redirectUrl = resolveUrl(redirectPath ?? `/booking/${bookingId}/confirmation?payment=return`);
+  const cancelUrl = resolveUrl(cancelPath ?? `/booking/${bookingId}/payment?payment=cancelled`);
+
+  const authResponse = await fetch(`${baseUrl}/client/passport/v1/token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-SFPY-MERCHANT-SECRET": secret,
+    },
+    body: "{}",
+  });
+
+  if (!authResponse.ok) {
+    const text = await authResponse.text();
+    throw new Error(`Safepay checkout authentication failed: ${text}`);
+  }
+
+  const authData = await authResponse.json();
+  const tbt = authData?.data as string | undefined;
+  if (!tbt) throw new Error("No authentication token in Safepay response");
+
+  const environment = getSafepayEnvironment();
+  const checkoutBase = environment === "production"
+    ? "https://getsafepay.com/embedded/"
+    : "https://sandbox.api.getsafepay.com/embedded/";
+  const checkoutUrl = new URL(checkoutBase);
+  checkoutUrl.search = new URLSearchParams({
+    environment,
+    tracker: token,
+    tbt,
+    source,
+    order_id: orderId,
+    redirect_url: redirectUrl,
+    cancel_url: cancelUrl,
+  }).toString();
+
+  return { token, redirectUrl: checkoutUrl.toString() };
 }
 
 export async function createCheckoutSession({
@@ -34,8 +118,9 @@ export async function createCheckoutSession({
   customerEmail,
   customerName,
   appUrl = getAppUrl(),
-  redirectPath = "/payment/success",
+  redirectPath = `/booking/${bookingId}/confirmation?payment=return`,
   cancelPath,
+  source = "hosted",
 }: {
   bookingId: string;
   amount: number;
@@ -45,60 +130,94 @@ export async function createCheckoutSession({
   appUrl?: string;
   redirectPath?: string;
   cancelPath?: string;
+  source?: "hosted" | "mobile";
 }): Promise<SafepaySession> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
-  const origin = appUrl.replace(/\/+$/, "");
+  const apiKey = getSafepayApiKey();
+  if (!secret || !/^sec_[A-Za-z0-9_-]+$/.test(apiKey)) {
+    throw new Error("Safepay is not configured. Set SAFEPAY_SECRET and SAFEPAY_API_KEY.");
+  }
 
-  const finalRedirectUrl = redirectPath.startsWith("http") 
-    ? redirectPath 
-    : `${origin}${redirectPath}${redirectPath.includes("?") ? "&" : "?"}bookingId=${bookingId}`;
-
-  const finalCancelUrl = cancelPath 
-    ? (cancelPath.startsWith("http") ? cancelPath : `${origin}${cancelPath}`)
-    : `${origin}/bookings/${bookingId}?payment=cancelled`;
-
-  const payload = {
-    client: secret,
-    amount: Math.round(amount),
-    currency: "PKR",
-    order_id: orderId,
-    source: "custom",
-    cancel_url: finalCancelUrl,
-    redirect_url: finalRedirectUrl,
-    webhook_url: `${origin}/api/payment/webhook`,
-    customer: {
-      email: customerEmail,
-      name: customerName,
-    },
-  };
-
-  const res = await fetch(`${baseUrl}/order/v1/init`, {
+  // Callers pass whole PKR, matching the integer convention in our database.
+  // Convert once here to Safepay's lowest-denomination units (paisa).
+  const sessionResponse = await fetch(`${baseUrl}/order/payments/v3/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-SFPY-MERCHANT-SECRET": secret,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      merchant_api_key: apiKey,
+      intent: "CYBERSOURCE",
+      mode: "payment",
+      entry_mode: "raw",
+      currency: "PKR",
+      amount: toSafepayMinorUnits(amount),
+      metadata: { order_id: orderId },
+      include_fees: false,
+    }),
   });
 
-  if (!res.ok) {
-    const text = await res.text();
+  if (!sessionResponse.ok) {
+    const text = await sessionResponse.text();
     throw new Error(`Safepay session creation failed: ${text}`);
   }
 
-  const data = await res.json();
-  const token = data?.data?.token as string;
-  if (!token) throw new Error("No token in Safepay response");
+  const sessionData = await sessionResponse.json();
+  const token = sessionData?.data?.tracker?.token as string | undefined;
+  if (!token) throw new Error("No tracker token in Safepay session response");
 
-  const redirectUrl = `${baseUrl.replace("api.", "")}/checkout?token=${token}`;
-  return { token, redirectUrl };
+  // Customer details are optional in the v3 flow. Avoid extra PII requests or
+  // placing customer data in the checkout URL.
+  void customerEmail;
+  void customerName;
+  return createCheckoutLink({
+    bookingId,
+    token,
+    orderId,
+    appUrl,
+    redirectPath,
+    cancelPath,
+    source,
+  });
 }
 
 const HEX_RE = /^[0-9a-f]+$/i;
+const MAX_PREVIOUS_WEBHOOK_SECRET_GRACE_MS = 72 * 60 * 60 * 1000;
+
+function getWebhookSigningSecrets(now = Date.now()): string[] {
+  const currentSecret = process.env.SAFEPAY_WEBHOOK_SECRET ?? "";
+  if (!currentSecret) return [];
+
+  const secrets = [currentSecret];
+  const previousSecret = process.env.SAFEPAY_WEBHOOK_SECRET_PREVIOUS ?? "";
+  const previousUntilText = process.env.SAFEPAY_WEBHOOK_SECRET_PREVIOUS_UNTIL ?? "";
+  const previousUntil = Date.parse(previousUntilText);
+  const hasValidPreviousUntil =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(previousUntilText) &&
+    Number.isFinite(previousUntil) &&
+    new Date(previousUntil).toISOString() === previousUntilText;
+
+  // Keep the prior key only for an explicit, bounded rotation window. This
+  // allows already-queued events to drain without leaving an old key accepted
+  // indefinitely if the environment variable is forgotten.
+  if (
+    previousSecret &&
+    hasValidPreviousUntil &&
+    previousUntil > now &&
+    previousUntil - now <= MAX_PREVIOUS_WEBHOOK_SECRET_GRACE_MS &&
+    previousSecret !== currentSecret
+  ) {
+    secrets.push(previousSecret);
+  }
+
+  return secrets;
+}
 
 export interface SafepayRefundResult {
   success: true;
+  state: "TRACKER_REFUNDED";
   raw: unknown;
 }
 
@@ -111,16 +230,15 @@ export interface SafepayRefundResult {
  * outside a real browser session. The SDK's Cancel resource defines
  * refund/reverse/void as POST requests to
  * /order/payments/v3/{tracker}/refund|reversal|void — a different API
- * generation (v3) than the v1 endpoint createCheckoutSession uses above,
  * with the tracker passed as a URL path segment rather than a body field.
  * (The sibling `reverse` and `void` actions exist too; semantics vs. refund
  * aren't confirmed, so they're not used here.)
  *
- * Not yet confirmed: the exact body schema beyond amount/currency. The SDK
- * types request bodies generically rather than per-method, so `reason`
- * below is a best guess, not a confirmed field. This is far stronger than
- * the previous /order/v1/refund guess, but still run one real refund
- * against the Safepay sandbox before fully trusting this in production.
+ * The current Safepay refund guide documents amount/currency as the request
+ * body and `data.tracker.state === "TRACKER_REFUNDED"` as the full-refund
+ * response. Safepay expects minor units, so the helper converts whole PKR to
+ * paisas. Do not treat any other 2xx response as a completed refund. The
+ * merchant sandbox flow still needs an end-to-end confirmation before launch.
  *
  * Callers must not treat a thrown error here as proof the money wasn't
  * refunded, and must not treat a resolved promise as proof it was — always
@@ -130,11 +248,9 @@ export interface SafepayRefundResult {
 export async function refundPayment({
   transactionId,
   amount,
-  reason = "Booking cancelled",
 }: {
   transactionId: string;
   amount: number;
-  reason?: string;
 }): Promise<SafepayRefundResult> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
@@ -148,9 +264,8 @@ export async function refundPayment({
         "X-SFPY-MERCHANT-SECRET": secret,
       },
       body: JSON.stringify({
-        amount: Math.round(amount),
+        amount: toSafepayMinorUnits(amount),
         currency: "PKR",
-        reason,
       }),
     }
   );
@@ -161,11 +276,18 @@ export async function refundPayment({
   }
 
   const data = await res.json();
-  return { success: true, raw: data };
+  const state = (data as { data?: { tracker?: { state?: unknown } } })?.data?.tracker?.state;
+  if (state !== "TRACKER_REFUNDED") {
+    throw new Error(
+      `Safepay refund did not confirm a full refund (tracker state: ${typeof state === "string" ? state : "unknown"}).`,
+    );
+  }
+
+  return { success: true, state, raw: data };
 }
 
 /**
- * Verify the HMAC-SHA256 signature Safepay sends on webhook calls.
+ * Verify the HMAC-SHA512 signature Safepay currently documents for webhooks.
  *
  * Security notes:
  * - The signature parameter is validated as a hex string before any Buffer
@@ -178,41 +300,34 @@ export async function verifyWebhookSignature(
   payload: string,
   signature: string,
 ): Promise<boolean> {
-  // Reject immediately if the signature is absent or not valid hex.
-  if (!signature || !HEX_RE.test(signature)) return false;
+  // SHA-512 produces 64 bytes represented as exactly 128 hexadecimal chars.
+  if (signature.length !== 128 || !HEX_RE.test(signature)) return false;
 
-  const secret =
-    process.env.SAFEPAY_WEBHOOK_SECRET ?? getSafepaySecret();
+  const secrets = getWebhookSigningSecrets();
+  if (secrets.length === 0) return false;
   const encoder = new TextEncoder();
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-
-  const signed = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(payload),
-  );
-
-  const expected = Array.from(new Uint8Array(signed))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
 
   try {
     const { timingSafeEqual } = await import("crypto");
     const sigBuf = Buffer.from(signature, "hex");
-    const expBuf = Buffer.from(expected, "hex");
+    if (sigBuf.length !== 64) return false;
 
-    // timingSafeEqual throws if buffers have different lengths.
-    // The length check here prevents that and avoids a timing leak.
-    if (sigBuf.length === 0 || sigBuf.length !== expBuf.length) return false;
+    let verified = false;
+    for (const secret of secrets) {
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(secret),
+        { name: "HMAC", hash: "SHA-512" },
+        false,
+        ["sign"],
+      );
+      const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+      const expected = Buffer.from(new Uint8Array(signed));
+      // Compare every active key to avoid revealing which rotation key matched.
+      verified = timingSafeEqual(sigBuf, expected) || verified;
+    }
 
-    return timingSafeEqual(sigBuf, expBuf);
+    return verified;
   } catch {
     return false;
   }

@@ -1,21 +1,25 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/mobile/refresh/route.ts
 //
-// Accepts a still-valid (or recently-expired) NextAuth JWT from a mobile
-// client and returns a new token with a fresh 30-day expiry.
+// Accepts a still-valid NextAuth session token from a mobile client and
+// returns a new token with the shared mobile session lifetime. Auth.js tokens
+// are encrypted JWE values; decode authenticates/decrypts the token and checks
+// its expiry, so expired tokens require a fresh sign-in.
 //
 // This route is automatically CSRF-exempt because the middleware skips CSRF
 // checks for any request that carries a Bearer token (see src/proxy.ts).
 //
-// Rate limit: 10 refresh calls per user per hour.  That's generous enough
-// for normal use (proactive refreshes happen at most once per session load)
-// and tight enough to prevent token-farming abuse.
+// Rate limit: 10 refresh calls per user per hour. The client refreshes near
+// expiry and when returning to the foreground, rather than parsing token bytes.
 
 import { type NextRequest, NextResponse } from "next/server";
 import { decode, encode } from "next-auth/jwt";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { MOBILE_SESSION_MAX_AGE_SECONDS } from "@hostello/shared";
 
-const MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const MAX_MOBILE_SESSION_TOKEN_LENGTH = 4_096;
+const MAX_USER_ID_LENGTH = 128;
 
 type MobileJwtPayload = {
   id?: unknown;
@@ -33,6 +37,9 @@ export async function POST(req: NextRequest) {
       );
     }
     const rawToken = authHeader.slice(7);
+    if (!rawToken || rawToken.length > MAX_MOBILE_SESSION_TOKEN_LENGTH) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
 
     const secret = process.env.AUTH_SECRET;
     if (!secret) {
@@ -49,10 +56,9 @@ export async function POST(req: NextRequest) {
       ? "__Secure-authjs.session-token"
       : "authjs.session-token";
 
-    // -- 2. Decode and verify the token signature ---------------------------
-    // decode() from next-auth/jwt verifies the HMAC signature.
-    // An expired token still decodes successfully — expiry is a soft check
-    // so we can issue a replacement even if it lapsed recently.
+    // -- 2. Authenticate and decrypt the Auth.js JWE -------------------------
+    // decode() also enforces the token's expiry. Expired credentials cannot
+    // be refreshed and must be replaced by a new sign-in.
     let decoded: Awaited<ReturnType<typeof decode>>;
     try {
       decoded = await decode({ token: rawToken, secret, salt });
@@ -61,14 +67,20 @@ export async function POST(req: NextRequest) {
     }
 
     const tokenPayload = decoded as MobileJwtPayload | null;
-    if (!tokenPayload?.id || typeof tokenPayload.tokenVersion !== "number") {
+    if (
+      typeof tokenPayload?.id !== "string" ||
+      tokenPayload.id.length < 1 ||
+      tokenPayload.id.length > MAX_USER_ID_LENGTH ||
+      !Number.isSafeInteger(tokenPayload.tokenVersion) ||
+      (tokenPayload.tokenVersion as number) < 0
+    ) {
       return NextResponse.json(
         { error: "Invalid token payload" },
         { status: 401 }
       );
     }
 
-    const userId = tokenPayload.id as string;
+    const userId = tokenPayload.id;
 
     // -- 3. Rate limit per user, not per IP ---------------------------------
     const rl = await rateLimit(`refresh:${userId}`, {
@@ -127,12 +139,15 @@ export async function POST(req: NextRequest) {
       },
       secret,
       salt,
-      maxAge: MAX_AGE_SECONDS,
+      maxAge: MOBILE_SESSION_MAX_AGE_SECONDS,
     });
 
-    return NextResponse.json({ data: { token: newToken } });
+    return NextResponse.json(
+      { data: { token: newToken, expiresInSeconds: MOBILE_SESSION_MAX_AGE_SECONDS } },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (err) {
-    console.error("[POST /api/auth/mobile/refresh]", err);
+    console.error("[POST /api/auth/mobile/refresh]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

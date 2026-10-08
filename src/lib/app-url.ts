@@ -35,14 +35,14 @@ export function getAppUrl() {
   throw new Error("CRITICAL: APP_URL environment variable is not configured for production.");
 }
 
-export function getRequestOrigin(request: Request) {
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-
-  if (forwardedProto && forwardedHost) {
-    return normalizeUrl(`${forwardedProto}://${forwardedHost}`);
+/**
+ * Returns the trusted configured app origin for links and provider redirects.
+ * Do not derive security-sensitive destinations from request Host headers.
+ */
+export function getAppOrigin() {
+  const appUrl = new URL(getAppUrl());
+  if (process.env.NODE_ENV === "production" && appUrl.protocol !== "https:") {
+    throw new Error("CRITICAL: APP_URL must use HTTPS in production.");
   }
-
-  return normalizeUrl(new URL(request.url).origin);
+  return appUrl.origin;
 }

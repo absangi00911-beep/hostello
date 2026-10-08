@@ -10,6 +10,7 @@ interface PriceAlertEmailProps {
   newPrice: number;
   targetPrice: number;
   unsubscribeUrl: string;
+  emailPreferencesUrl?: string;
 }
 
 function formatPrice(n: number) {
@@ -28,6 +29,7 @@ export function priceAlertEmail({
   newPrice,
   targetPrice,
   unsubscribeUrl,
+  emailPreferencesUrl,
 }: PriceAlertEmailProps) {
   const escapedUserName = escapeHtml(userName);
   const escapedHostelName = escapeHtml(hostelName);
@@ -64,6 +66,7 @@ export function priceAlertEmail({
     <p style="margin:0;font-size:12px;color:#A68B5B;">
       You received this because a hostel matched your price alert on HostelLo. Manage your alerts in your profile settings.
       <a href="${unsubscribeUrl}" style="color:#0D3B2E;">Unsubscribe from price alerts</a>
+      ${emailPreferencesUrl ? `<br><a href="${emailPreferencesUrl}" style="color:#0D3B2E;">Turn off all price alert emails</a>` : ""}
     </p>
   `;
 

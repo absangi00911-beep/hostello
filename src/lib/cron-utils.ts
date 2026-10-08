@@ -2,6 +2,8 @@
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { createOperationalLogContext, logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
 
 export interface CronResult {
   /** Human-readable summary of what ran */
@@ -21,7 +23,8 @@ export interface CronResult {
  */
 export async function runCronJob(
   name: string,
-  handler: () => Promise<CronResult>,
+  handler: (logContext: OperationalLogContext) => Promise<CronResult>,
+  logContext: OperationalLogContext = createOperationalLogContext(),
 ): Promise<NextResponse> {
   const startedAt = Date.now();
 
@@ -32,24 +35,18 @@ export async function runCronJob(
   });
 
   try {
-    const result = await handler();
+    const result = await handler(logContext);
     const durationMs = Date.now() - startedAt;
 
-    // Structured log — parsed by Axiom / Vercel log drain
-    console.log(
-      JSON.stringify({
-        event:      "cron.success",
-        cron:       name,
-        durationMs,
-        timestamp:  new Date().toISOString(),
-        ...result,
-      }),
-    );
+    logOperationalEvent("info", "cron.success", {
+      cron: name,
+      duration_ms: durationMs,
+      ...toSafeLogAttributes(result),
+    }, logContext);
 
-    // Record last successful run in KV (CronLog table) for health checks
-    void recordCronRun(name, "success", durationMs).catch(() => {
-      // Non-fatal — health check degrades gracefully without this
-    });
+    // Await the health write: fire-and-forget work may be stopped when the
+    // serverless function returns, leaving /api/health/crons falsely stale.
+    await persistCronRunSafely(name, "success", durationMs, undefined, logContext);
 
     return NextResponse.json({
       ...result,
@@ -58,32 +55,61 @@ export async function runCronJob(
     });
   } catch (err) {
     const durationMs = Date.now() - startedAt;
-    const message    = err instanceof Error ? err.message : String(err);
+    const safeSummary = getSafeErrorSummary(err);
 
-    console.error(
-      JSON.stringify({
-        event:      "cron.error",
-        cron:       name,
-        durationMs,
-        timestamp:  new Date().toISOString(),
-        error:      message,
-      }),
-    );
+    logOperationalEvent("error", "cron.error", {
+      cron: name,
+      duration_ms: durationMs,
+      error_name: safeSummary.name,
+      ...(safeSummary.code ? { error_code: safeSummary.code } : {}),
+      ...(safeSummary.status ? { error_status: safeSummary.status } : {}),
+    }, logContext);
 
     // Capture in Sentry with cron name as tag for filtering
     Sentry.withScope((scope) => {
       scope.setTag("cron", name);
       scope.setExtra("durationMs", durationMs);
+      scope.setExtra("requestId", logContext.request_id);
+      if (logContext.trace_id) scope.setExtra("traceId", logContext.trace_id);
       Sentry.captureException(err);
     });
 
-    void recordCronRun(name, "error", durationMs, message).catch(() => {});
+    await persistCronRunSafely(name, "error", durationMs, "Cron job failed", logContext);
 
     return NextResponse.json(
-      { error: "Cron job failed", cron: name, details: message },
+      { error: "Cron job failed", cron: name },
       { status: 500 },
     );
   }
+}
+
+async function persistCronRunSafely(
+  name: string,
+  status: "success" | "error",
+  durationMs: number,
+  error?: string,
+  logContext?: OperationalLogContext,
+) {
+  try {
+    await recordCronRun(name, status, durationMs, error);
+  } catch (logError) {
+    const summary = getSafeErrorSummary(logError);
+    logOperationalEvent("error", "cron.health_log_failure", {
+      cron: name,
+      status,
+      error_name: summary.name,
+      ...(summary.code ? { error_code: summary.code } : {}),
+      ...(summary.status ? { error_status: summary.status } : {}),
+    }, logContext);
+  }
+}
+
+function toSafeLogAttributes(result: CronResult): Record<string, string | number | boolean | null> {
+  return Object.fromEntries(
+    Object.entries(result).filter(([, value]) =>
+      value === null || ["string", "number", "boolean"].includes(typeof value),
+    ),
+  ) as Record<string, string | number | boolean | null>;
 }
 
 /** Upserts a CronLog record so the health endpoint can verify recency */

@@ -1,106 +1,100 @@
-// Path: src/app/api/roommates/[id]/route.test.ts
-//
-// Note: as of this writing, this route.ts (POST) and
-// src/app/api/roommates/[id]/report/route.ts are byte-for-byte identical —
-// both implement "report a post." A bare POST to a resource's own /[id] isn't
-// a natural spot for a "report" action (GET for viewing, PATCH/DELETE for
-// edit/remove would be the expected shapes there), which suggests this file
-// may have been meant to hold something else — most plausibly a DELETE for
-// the post's own author, or an admin moderation action, given there's
-// currently no way for anyone to remove a roommate post at all once it
-// exists. See the session summary. Covered here regardless, since until
-// that's resolved this file's actual behavior is exactly the report route's.
-
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-vi.mock("@/lib/auth/config", () => ({
+const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
+  postDeleteMany: vi.fn(),
+  rateLimit: vi.fn(),
 }));
 
+vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/db", () => ({
-  db: {
-    roommatePost: {
-      findUnique: vi.fn(),
-    },
-    roommateReport: {
-      upsert: vi.fn(),
-    },
-  },
+  db: { roommatePost: { deleteMany: mocks.postDeleteMany } },
 }));
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: mocks.rateLimit }));
 
-import { POST } from "./route";
+import { DELETE } from "@/app/api/roommates/[id]/route";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 
+const POST_ID = "rmp_1";
+
 function session(userId: string) {
-  return { user: { id: userId } } as any;
+  return { user: { id: userId } } as unknown as Awaited<ReturnType<typeof auth>>;
 }
 
-function ctx(id: string) {
+function request() {
+  return new NextRequest(`https://hostello.pk/api/roommates/${POST_ID}`, { method: "DELETE" });
+}
+
+function context(id = POST_ID) {
   return { params: Promise.resolve({ id }) };
 }
 
-function req(body: unknown) {
-  return new NextRequest("https://hostello.test/api/roommates/rmp_1", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-}
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
-describe("POST /api/roommates/[id]", () => {
-  it("returns 401 with no session", async () => {
-    vi.mocked(auth).mockResolvedValue(null as any);
-
-    const res = await POST(req({ reason: "spam" }), ctx("rmp_1"));
-
-    expect(res.status).toBe(401);
+describe("DELETE /api/roommates/[id]", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.postDeleteMany.mockResolvedValue({ count: 1 });
+    mocks.rateLimit.mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60_000 });
   });
 
-  it("returns 400 when reason is missing", async () => {
-    vi.mocked(auth).mockResolvedValue(session("usr_reporter"));
+  it("requires a signed-in user", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(null);
 
-    const res = await POST(req({}), ctx("rmp_1"));
+    const response = await DELETE(request(), context());
 
-    expect(res.status).toBe(400);
+    expect(response.status).toBe(401);
+    expect(db.roommatePost.deleteMany).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when the post doesn't exist", async () => {
-    vi.mocked(auth).mockResolvedValue(session("usr_reporter"));
-    vi.mocked(db.roommatePost.findUnique).mockResolvedValue(null);
+  it("returns 404 for a missing post", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(session("author-1"));
+    vi.mocked(db.roommatePost.deleteMany).mockResolvedValueOnce({ count: 0 } as any);
 
-    const res = await POST(req({ reason: "spam" }), ctx("nonexistent"));
+    const response = await DELETE(request(), context());
 
-    expect(res.status).toBe(404);
+    expect(response.status).toBe(404);
+    expect(db.roommatePost.deleteMany).toHaveBeenCalledWith({
+      where: { id: POST_ID, userId: "author-1" },
+    });
   });
 
-  it("rejects reporting your own post", async () => {
-    vi.mocked(auth).mockResolvedValue(session("usr_author"));
-    vi.mocked(db.roommatePost.findUnique).mockResolvedValue({ userId: "usr_author" } as any);
+  it("does not reveal or delete another user's post", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(session("other-user"));
+    vi.mocked(db.roommatePost.deleteMany).mockResolvedValueOnce({ count: 0 } as any);
 
-    const res = await POST(req({ reason: "spam" }), ctx("rmp_1"));
+    const response = await DELETE(request(), context());
 
-    expect(res.status).toBe(400);
-    expect(db.roommateReport.upsert).not.toHaveBeenCalled();
+    expect(response.status).toBe(404);
+    expect(db.roommatePost.deleteMany).toHaveBeenCalledWith({
+      where: { id: POST_ID, userId: "other-user" },
+    });
   });
 
-  it("creates a report from a different user", async () => {
-    vi.mocked(auth).mockResolvedValue(session("usr_reporter"));
-    vi.mocked(db.roommatePost.findUnique).mockResolvedValue({ userId: "usr_author" } as any);
-    vi.mocked(db.roommateReport.upsert).mockResolvedValue({} as any);
+  it("deletes the post owned by the signed-in user", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(session("author-1"));
 
-    const res = await POST(req({ reason: "Fake profile" }), ctx("rmp_1"));
+    const response = await DELETE(request(), context());
 
-    expect(db.roommateReport.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { postId_reporterId: { postId: "rmp_1", reporterId: "usr_reporter" } },
-      }),
-    );
-    expect(res.status).toBe(200);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(db.roommatePost.deleteMany).toHaveBeenCalledWith({
+      where: { id: POST_ID, userId: "author-1" },
+    });
+  });
+
+  it("rate-limits deletion before looking up a post", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(session("author-1"));
+    mocks.rateLimit.mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: Date.now() + 60_000 });
+
+    const response = await DELETE(request(), context());
+
+    expect(response.status).toBe(429);
+    expect(Number(response.headers.get("Retry-After"))).toBeGreaterThan(0);
+    expect(mocks.rateLimit).toHaveBeenCalledWith("roommate-post-delete:author-1", {
+      limit: 30,
+      windowMs: 60_000,
+    });
+    expect(db.roommatePost.deleteMany).not.toHaveBeenCalled();
   });
 });

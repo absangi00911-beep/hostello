@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
 
 const VALID_PLATFORMS = ["ios", "android"] as const;
 
@@ -13,13 +15,25 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
-  const { token, platform } = body as { token?: string; platform?: string };
+  const limit = await rateLimit(`device-token:${session.user.id}`, {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!limit.ok) return NextResponse.json({ error: "Too many device registrations. Try again later." }, { status: 429 });
 
-  if (!token || typeof token !== "string") {
+  const body = await readBoundedJson(req, 2_048);
+  if (!body.ok) {
+    return NextResponse.json({ error: body.error }, { status: body.status });
+  }
+  if (!body.data || typeof body.data !== "object" || Array.isArray(body.data)) {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+  const { token, platform } = body.data as { token?: unknown; platform?: unknown };
+
+  if (typeof token !== "string" || token.length < 1 || token.length > 1_024) {
     return NextResponse.json({ error: "token is required" }, { status: 400 });
   }
-  if (!platform || !VALID_PLATFORMS.includes(platform as (typeof VALID_PLATFORMS)[number])) {
+  if (typeof platform !== "string" || !VALID_PLATFORMS.includes(platform as (typeof VALID_PLATFORMS)[number])) {
     return NextResponse.json({ error: "platform must be 'ios' or 'android'" }, { status: 400 });
   }
 
@@ -44,10 +58,32 @@ export async function DELETE(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
-  const queryToken = new URL(req.url).searchParams.get("token");
-  const token = typeof body.token === "string" ? body.token : queryToken;
-  if (!token) return NextResponse.json({ error: "token is required" }, { status: 400 });
+  const limit = await rateLimit(`device-token:${session.user.id}`, {
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Too many device-token changes. Try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.max(1, Math.ceil((limit.resetAt - Date.now()) / 1000))) },
+      },
+    );
+  }
+
+  const body = await readBoundedJson(req, 2_048);
+  if (!body.ok) {
+    return NextResponse.json({ error: body.error }, { status: body.status });
+  }
+  const bodyData = body.data && typeof body.data === "object" && !Array.isArray(body.data)
+    ? body.data as Record<string, unknown>
+    : {};
+  const url = new URL(req.url);
+  const queryToken = url.searchParams.get("token");
+  const token = typeof bodyData.token === "string" ? bodyData.token : queryToken;
+  if (url.search.length > 1_200) return NextResponse.json({ error: "Invalid token." }, { status: 400 });
+  if (!token || token.length > 1_024) return NextResponse.json({ error: "token is required" }, { status: 400 });
 
   // Only delete if it belongs to this user
   await db.deviceToken.deleteMany({

@@ -1,10 +1,14 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/reset-password/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hash } from "bcryptjs";
+import { hashPasswordResetToken } from "@/lib/password-reset-token";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 import { rateLimit, getIp } from "@/lib/rate-limit";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { newPasswordSchema } from "@/lib/validations";
 
 // --- Session Invalidation Pattern ------------------------------------------
 // When a user's password changes (either via reset-password or change-password),
@@ -33,12 +37,8 @@ import { rateLimit, getIp } from "@/lib/rate-limit";
 // ----------------------------------------------------------------------------
 
 const schema = z.object({
-  token: z.string().min(1),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Include at least one uppercase letter")
-    .regex(/[0-9]/, "Include at least one number"),
+  token: z.string().regex(/^[a-f0-9]{64}$/i, "Invalid or expired link."),
+  password: newPasswordSchema,
 });
 
 export async function POST(req: NextRequest) {
@@ -57,8 +57,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const parsed = schema.safeParse(body);
+    const body = await readBoundedJson(req, 2_048);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = schema.safeParse(body.data);
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? "Invalid request." },
@@ -68,34 +71,34 @@ export async function POST(req: NextRequest) {
 
     const { token, password } = parsed.data;
 
-    const record = await db.passwordResetToken.findUnique({
-      where: { token },
+    const tokenHash = hashPasswordResetToken(token);
+    // Accept outstanding links created before token hashing was introduced.
+    // New reset requests persist only the SHA-256 digest.
+    const record = await db.passwordResetToken.findFirst({
+      where: { OR: [{ token: tokenHash }, { token }] },
       include: { user: { select: { id: true } } },
     });
 
-    if (!record) {
+    if (!record || record.usedAt || record.expiresAt <= new Date()) {
       return NextResponse.json(
         { error: "Invalid or expired link." },
-        { status: 400 },
-      );
-    }
-    if (record.usedAt) {
-      return NextResponse.json(
-        { error: "This link has already been used." },
-        { status: 400 },
-      );
-    }
-    if (record.expiresAt < new Date()) {
-      return NextResponse.json(
-        { error: "This link has expired. Request a new one." },
         { status: 400 },
       );
     }
 
     const hashed = await hash(password, 12);
 
-    await db.$transaction([
-      db.user.update({
+    const usedAt = new Date();
+    const updated = await db.$transaction(async (tx) => {
+      // Claim the token and change the password in one transaction. The
+      // conditional write allows only one concurrent request to win.
+      const claim = await tx.passwordResetToken.updateMany({
+        where: { id: record.id, usedAt: null, expiresAt: { gt: usedAt } },
+        data: { usedAt },
+      });
+      if (claim.count !== 1) return false;
+
+      await tx.user.update({
         where: { id: record.userId },
         data: {
           password: hashed,
@@ -103,12 +106,16 @@ export async function POST(req: NextRequest) {
           // See comment block above for mechanism and why this is needed.
           tokenVersion: { increment: 1 },
         },
-      }),
-      db.passwordResetToken.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+      });
+      return true;
+    });
+
+    if (!updated) {
+      return NextResponse.json(
+        { error: "Invalid or expired link." },
+        { status: 400 },
+      );
+    }
 
     // Clear in-process token-version cache for immediate effect on this instance.
     // Other instances will detect revocation on their next session check via Redis.
@@ -124,7 +131,7 @@ export async function POST(req: NextRequest) {
       message: "Password updated. You can now sign in.",
     });
   } catch (err) {
-    console.error("[POST /api/auth/reset-password]", err);
+    console.error("[POST /api/auth/reset-password]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong." },
       { status: 500 },

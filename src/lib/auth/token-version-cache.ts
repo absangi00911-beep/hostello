@@ -1,6 +1,7 @@
 // Path: src/lib/auth/token-version-cache.ts
 
 import { Redis } from "@upstash/redis";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
 /**
  * Token version cache using Upstash Redis.
@@ -50,7 +51,7 @@ export async function getTokenVersion(userId: string): Promise<number | null> {
     const version = await redisClient.get<number>(`${KEY_PREFIX}${userId}`);
     return version ?? null;
   } catch (error) {
-    console.error("[token-version-cache] Failed to get version:", error);
+    console.error("[token-version-cache] Failed to get version:", getSafeErrorSummary(error));
     return null;
   }
 }
@@ -66,7 +67,7 @@ export async function setTokenVersion(userId: string, version: number): Promise<
 
     await redisClient.set(`${KEY_PREFIX}${userId}`, version, { ex: TTL_SECONDS });
   } catch (error) {
-    console.error("[token-version-cache] Failed to set version:", error);
+    console.error("[token-version-cache] Failed to set version:", getSafeErrorSummary(error));
     // Non-fatal: next request will fetch from DB
   }
 }
@@ -85,7 +86,7 @@ export async function invalidateTokenVersion(userId: string): Promise<void> {
 
     await redisClient.del(`${KEY_PREFIX}${userId}`);
   } catch (error) {
-    console.error("[token-version-cache] Failed to invalidate version:", error);
+    console.error("[token-version-cache] Failed to invalidate version:", getSafeErrorSummary(error));
     // Non-fatal: cache will naturally expire after TTL
   }
 }

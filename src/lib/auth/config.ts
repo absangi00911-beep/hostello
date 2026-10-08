@@ -1,23 +1,17 @@
+import { createJwtCallback } from "@/lib/auth/auth-callbacks";
+import { authorizeCredentials } from "@/lib/auth/credentials-authorize";
 // Path: src/lib/auth/config.ts
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { compare } from "bcryptjs";
-import { z } from "zod";
 import { db } from "@/lib/db";
-import { rateLimit } from "@/lib/rate-limit";
 import {
   getTokenVersion,
   setTokenVersion,
   invalidateTokenVersion,
 } from "@/lib/auth/token-version-cache";
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
 
 // -- Token-version cache ----------------------------------------------------
 // Purpose: Reduces DB round-trips on every auth() call while detecting
@@ -81,49 +75,7 @@ const credentialsProvider = Credentials({
     email: { label: "Email", type: "email" },
     password: { label: "Password", type: "password" },
   },
-  authorize: async (credentials) => {
-    const parsed = loginSchema.safeParse(credentials);
-    if (!parsed.success) return null;
-
-    const { email, password } = parsed.data;
-
-    // Brute-force protection. This authorize() signature only receives
-    // credentials, not the request, so this is keyed by the submitted email
-    // rather than IP — that still stops the most common pattern (many
-    // passwords tried against one account) without changing the signature
-    // on a security-critical path based on an unverified API assumption.
-    const rl = await rateLimit(`login:${email}`, { limit: 5, windowMs: 15 * 60 * 1000 });
-    if (!rl.ok) {
-      throw new Error("Too many login attempts. Please wait a few minutes and try again.");
-    }
-
-    try {
-      const user = await db.user.findUnique({ where: { email } });
-      if (!user?.password) return null;
-
-      const valid = await compare(password, user.password);
-      if (!valid) return null;
-
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.avatar,
-        role: user.role,
-        emailVerified: user.emailVerified,
-        // Pass tokenVersion to the JWT callback via the user object.
-        // NextAuth type augmentation in types/index.ts makes this field valid.
-        tokenVersion: user.tokenVersion,
-      };
-    } catch (err) {
-      // Distinguish between auth failures and infrastructure failures.
-      // DB timeout / connection error should not look like "wrong password".
-      console.error("[auth] Database error during authorization:", err);
-      throw new Error(
-        "Authentication service unavailable. Try again shortly."
-      );
-    }
-  },
+  authorize: (credentials, request) => authorizeCredentials(credentials, request),
 });
 
 const googleProvider =
@@ -195,39 +147,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     // -- jwt ----------------------------------------------------------------
-    // Runs whenever a JWT is created (sign-in) or accessed (request).
-    // The `user` object is only populated on initial sign-in.
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        // `user.emailVerified` is Date | null for both Credentials and OAuth users.
-        token.emailVerified = user.emailVerified ?? null;
-        // tokenVersion defaults to 0 for all new users (Credentials or OAuth).
-        // It is only incremented on password change / reset.
-        token.tokenVersion = user.tokenVersion ?? 0;
-      }
-      return token;
-    },
+    // A stale tokenVersion returns null, so Auth.js removes the session cookie
+    // before any route can use an old role claim.
+    jwt: createJwtCallback(validateTokenVersion),
 
     // -- session ------------------------------------------------------------
-    // Runs on every auth() or useSession() call.
-    // Validates tokenVersion to detect password resets across all instances.
-    async session({ session, token }) {
-      if (token.id && token.tokenVersion !== undefined) {
-        const isValid = await validateTokenVersion(
-          token.id as string,
-          token.tokenVersion as number,
-        );
-        if (!isValid) {
-          // Returning an empty id forces NextAuth to treat the session as invalid.
-          // The client receives a session with no user id, which should redirect to login.
-          return { ...session, user: { ...session.user, id: "" } };
-        }
-      }
+    // Runs after the JWT callback accepts the token.
+    session({ session, token }) {
       session.user.id   = token.id as string;
       session.user.role = token.role as "STUDENT" | "OWNER" | "ADMIN";
       return session;
     },
   },
-});
+});

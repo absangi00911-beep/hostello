@@ -35,6 +35,7 @@
  */
 
 import { randomInt } from "crypto";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
 interface SendSmsOptions {
   to: string; // Phone number in E.164 format: +92XXXXXXXXXX or formatted
@@ -77,24 +78,23 @@ export function generateOTP(): string {
  * Implementation: Raw fetch to Twilio API (manual integration, no SDK).
  * See module docstring for upgrade path to official SDK if needed.
  *
- * Error handling:
- * - Development (no Twilio key): Logs to console
- * - Production (Twilio error): Throws error, caller must handle
- * - Network errors: Propagated to caller (no automatic retry)
+ * When Twilio is unavailable, only non-sensitive diagnostics are logged.
+ * OTPs, phone numbers, provider response bodies, and authorization headers
+ * must never be written to application logs.
  */
 export async function sendSms({ to, message }: SendSmsOptions): Promise<SendSmsResult> {
-  // In development without Twilio credentials, just log
-  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-    console.warn(`[sms] Development mode - would send to ${to}:\n${message}`);
-    return { success: true, dev: true };
-  }
-
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
-  if (!fromNumber) {
-    return { success: false, error: "Twilio phone number not configured" };
+  if (!accountSid || !authToken || !fromNumber) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[sms] Twilio is not configured in production.");
+      return { success: false, error: "SMS delivery is unavailable." };
+    }
+
+    console.info("[sms] Skipped send because Twilio is not configured.");
+    return { success: true, dev: true };
   }
 
   try {
@@ -129,17 +129,22 @@ export async function sendSms({ to, message }: SendSmsOptions): Promise<SendSmsR
     };
 
     if (!response.ok) {
-      const error = json.error_message || `Twilio error: ${json.error_code}`;
-      console.error("[sms] Twilio API error:", error);
-      return { success: false, error };
+      console.error(
+        "[sms] Twilio rejected a message:",
+        getSafeErrorSummary({
+          name: "TwilioError",
+          code: json.error_code,
+          status: response.status,
+        }),
+      );
+      return { success: false, error: "SMS delivery failed." };
     }
 
-    console.log(`[sms] Message sent to ${normalized}, SID: ${json.sid}`);
+    console.info("[sms] Message sent successfully.");
     return { success: true };
   } catch (err) {
-    const error = err instanceof Error ? err.message : "Unknown error";
-    console.error("[sms] Failed to send SMS:", error);
-    return { success: false, error };
+    console.error("[sms] Message delivery failed:", getSafeErrorSummary(err));
+    return { success: false, error: "SMS delivery failed." };
   }
 }
 

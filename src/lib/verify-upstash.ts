@@ -1,92 +1,65 @@
-// Path: src/lib/verify-upstash.ts
+/** Verify requests delivered by Upstash QStash. */
 
-/**
- * Utility to verify Upstash QStash requests
- * 
- * Upstash signs all webhook requests with a signature. This helps verify
- * that requests actually came from Upstash (defense in depth).
- * 
- * We also accept Bearer token auth as a fallback.
- */
-
+import { Receiver } from "@upstash/qstash";
+import { timingSafeEqual } from "node:crypto";
 import { type NextRequest } from "next/server";
-import crypto from "crypto";
 
 interface VerifyOptions {
-  /**
-   * If true, will accept Authorization Bearer token as fallback
-   * Set via: CRON_SECRET environment variable
-   */
+  /** Accept the shared CRON_SECRET Bearer credential as a fallback. */
   acceptBearerToken?: boolean;
 }
 
-/**
- * Verify Upstash QStash request signature or Bearer token
- * @throws Error if verification fails
- */
-export async function verifyUpstashRequest(
-  request: NextRequest,
-  options: VerifyOptions = {}
-) {
-  const { acceptBearerToken = true } = options;
+function hasValidBearerToken(request: NextRequest): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+  const authorization = request.headers.get("authorization");
 
-  // Method 1: Try Bearer token verification (simpler, works with custom schedules)
-  if (acceptBearerToken) {
-    const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || !authorization) return false;
 
-    if (cronSecret && authHeader) {
-      const { timingSafeEqual } = await import("crypto");
-      const a = Buffer.from(authHeader);
-      const b = Buffer.from(`Bearer ${cronSecret}`);
-      if (a.length === b.length && timingSafeEqual(a, b)) {
-        return true;
-      }
-    }
-  }
-
-  // Method 2: Try Upstash signature verification (more secure)
-  const signature = request.headers.get("upstash-signature");
-  const signingKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
-
-  if (!signature || !signingKey) {
-    // If we couldn't verify with bearer token and don't have signature keys,
-    // we need at least one method to succeed
-    if (!acceptBearerToken) {
-      throw new Error("Request verification failed: No valid signature provided");
-    }
-    // Bearer token method already failed above, so we fail here
-    throw new Error(
-      "Request verification failed: Invalid or missing authorization"
-    );
-  }
-
-  // Verify Upstash signature
-  try {
-    const body = await request.clone().text();
-    const hash = crypto
-      .createHmac("sha256", signingKey)
-      .update(body)
-      .digest("base64");
-
-    const { timingSafeEqual } = await import("crypto");
-    const hashBuf = Buffer.from(hash, "base64");
-    const sigBuf = Buffer.from(signature, "base64");
-    if (hashBuf.length !== sigBuf.length || !timingSafeEqual(hashBuf, sigBuf)) {
-      throw new Error("Invalid Upstash signature");
-    }
-
-    return true;
-  } catch (error) {
-    throw new Error(
-      `Upstash signature verification failed: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+  const provided = Buffer.from(authorization);
+  const expected = Buffer.from(`Bearer ${cronSecret}`);
+  return provided.length === expected.length && timingSafeEqual(provided, expected);
 }
 
 /**
- * Get request metadata for logging
+ * Verify a QStash-signed JWT, including its endpoint URL, validity window, and
+ * raw-body hash. A static Bearer secret remains available for manual/legacy
+ * schedulers when explicitly enabled by the caller.
  */
+export async function verifyUpstashRequest(
+  request: NextRequest,
+  options: VerifyOptions = {},
+): Promise<true> {
+  const { acceptBearerToken = true } = options;
+  const signature = request.headers.get("upstash-signature");
+  const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
+  const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
+
+  if (signature && currentSigningKey && nextSigningKey) {
+    try {
+      const receiver = new Receiver({
+        currentSigningKey,
+        nextSigningKey,
+        devMode: false,
+      });
+      const isValid = await receiver.verify({
+        signature,
+        body: await request.clone().text(),
+        url: request.url,
+        upstashRegion: request.headers.get("upstash-region") ?? undefined,
+      });
+
+      if (isValid) return true;
+    } catch {
+      // A present but invalid QStash signature must not fall back to a static token.
+      throw new Error("Request verification failed");
+    }
+  }
+
+  if (acceptBearerToken && hasValidBearerToken(request)) return true;
+  throw new Error("Request verification failed");
+}
+
+/** Get non-secret request metadata for diagnostics. */
 export function getUpstashMetadata(request: NextRequest) {
   return {
     signature: request.headers.get("upstash-signature") ? "✓ Present" : "✗ Missing",

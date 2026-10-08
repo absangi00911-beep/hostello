@@ -1,8 +1,24 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/notifications/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { markNotificationAsRead } from "@/lib/notifications";
+import { rateLimit } from "@/lib/rate-limit";
+import { isBoundedRouteParam } from "@/lib/route-params";
+
+async function checkNotificationWriteLimit(userId: string) {
+  const quota = await rateLimit(`notifications:write:${userId}`, { limit: 60, windowMs: 60_000 });
+  if (quota.ok) return null;
+
+  return NextResponse.json(
+    { error: "Too many notification requests. Please try again shortly." },
+    {
+      status: 429,
+      headers: { "Retry-After": String(Math.max(1, Math.ceil((quota.resetAt - Date.now()) / 1000))) },
+    },
+  );
+}
 
 export async function PUT(
   req: NextRequest,
@@ -17,34 +33,27 @@ export async function PUT(
       );
     }
 
+    const limitResponse = await checkNotificationWriteLimit(session.user.id);
+    if (limitResponse) return limitResponse;
+
     const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid notification." }, { status: 400 });
+    }
 
-    // Verify ownership
-    const notification = await db.notification.findUnique({
-      where: { id },
-    });
-
-    if (!notification) {
+    const updated = await markNotificationAsRead(id, session.user.id);
+    if (updated.count !== 1) {
       return NextResponse.json(
         { error: "Notification not found." },
         { status: 404 }
       );
     }
 
-    if (notification.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Unauthorized." },
-        { status: 403 }
-      );
-    }
-
-    await markNotificationAsRead(id, session.user.id);
-
     return NextResponse.json({
       message: "Notification marked as read.",
     });
   } catch (err) {
-    console.error(`[PUT /api/notifications/[id]]`, err);
+    console.error(`[PUT /api/notifications/[id]]`, getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Failed to update notification." },
       { status: 500 }
@@ -65,36 +74,29 @@ export async function DELETE(
       );
     }
 
+    const limitResponse = await checkNotificationWriteLimit(session.user.id);
+    if (limitResponse) return limitResponse;
+
     const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid notification." }, { status: 400 });
+    }
 
-    // Verify ownership
-    const notification = await db.notification.findUnique({
-      where: { id },
+    const deleted = await db.notification.deleteMany({
+      where: { id, userId: session.user.id },
     });
-
-    if (!notification) {
+    if (deleted.count !== 1) {
       return NextResponse.json(
         { error: "Notification not found." },
         { status: 404 }
       );
     }
 
-    if (notification.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Unauthorized." },
-        { status: 403 }
-      );
-    }
-
-    await db.notification.delete({
-      where: { id },
-    });
-
     return NextResponse.json({
       message: "Notification deleted.",
     });
   } catch (err) {
-    console.error(`[DELETE /api/notifications/[id]]`, err);
+    console.error(`[DELETE /api/notifications/[id]]`, getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Failed to delete notification." },
       { status: 500 }

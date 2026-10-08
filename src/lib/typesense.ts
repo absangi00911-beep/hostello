@@ -3,6 +3,7 @@
 import { Client as TypesenseClient } from "typesense";
 import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
 import type { SearchParams } from "typesense/lib/Typesense/Documents";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
 let typesenseClient: TypesenseClient | null = null;
 
@@ -191,9 +192,9 @@ export async function initializeHostelCollection() {
 export async function indexHostel(document: HostelDocument) {
   try {
     await getClient().collections(HOSTEL_COLLECTION_NAME).documents().upsert(document);
-    console.log(`✓ Indexed hostel: ${document.name}`);
+    console.log("✓ Indexed hostel");
   } catch (error) {
-    console.error(`✗ Failed to index hostel ${document.id}:`, error);
+    console.error("✗ Failed to index hostel:", getSafeErrorSummary(error));
     throw error;
   }
 }
@@ -217,7 +218,7 @@ export async function indexHostelsBatch(documents: HostelDocument[]) {
 
     return results;
   } catch (error) {
-    console.error("✗ Failed to batch index hostels:", error);
+    console.error("✗ Failed to batch index hostels:", getSafeErrorSummary(error));
     throw error;
   }
 }
@@ -228,9 +229,9 @@ export async function indexHostelsBatch(documents: HostelDocument[]) {
 export async function removeHostelFromIndex(hostelId: string) {
   try {
     await getClient().collections(HOSTEL_COLLECTION_NAME).documents(hostelId).delete();
-    console.log(`✓ Removed hostel from index: ${hostelId}`);
+    console.log("✓ Removed hostel from index");
   } catch (error) {
-    console.error(`✗ Failed to remove hostel ${hostelId}:`, error);
+    console.error("✗ Failed to remove hostel from index:", getSafeErrorSummary(error));
     throw error;
   }
 }
@@ -323,7 +324,7 @@ export async function searchHostels(
       .search(searchParams);
     return results as unknown as TypesenseSearchResult<HostelDocument>;
   } catch (error) {
-    console.error("✗ Search failed:", error);
+    console.error("✗ Search failed:", getSafeErrorSummary(error));
     throw error;
   }
 }
@@ -337,7 +338,7 @@ export async function deleteHostelCollection() {
     await getClient().collections(HOSTEL_COLLECTION_NAME).delete();
     console.log(`✓ Deleted collection "${HOSTEL_COLLECTION_NAME}"`);
   } catch (error) {
-    console.error(`✗ Failed to delete collection:`, error);
+    console.error("✗ Failed to delete collection:", getSafeErrorSummary(error));
     throw error;
   }
 }
@@ -355,7 +356,7 @@ export async function getCollectionStats() {
       documentCount: collection.num_documents,
     };
   } catch (error) {
-    console.error("✗ Failed to get collection stats:", error);
+    console.error("✗ Failed to get collection stats:", getSafeErrorSummary(error));
     throw error;
   }
 }

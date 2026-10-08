@@ -1,8 +1,13 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/reviews/mine/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@/generated/client";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { parsePagination } from "@/lib/pagination";
+import { rateLimit } from "@/lib/rate-limit";
+
+const MAX_SEARCH_LENGTH = 200;
 
 /**
  * GET /api/reviews/mine
@@ -31,11 +36,27 @@ export async function GET(req: NextRequest) {
     }
 
     const url   = new URL(req.url);
-    const page  = Math.max(1, parseInt(url.searchParams.get("page")  ?? "1",  10) || 1);
-    const limit = Math.min(50, parseInt(url.searchParams.get("limit") ?? "20", 10) || 20);
-    const skip  = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(url.searchParams, { defaultLimit: 20, maxLimit: 50 });
     const filter = url.searchParams.get("filter"); // pending | replied | flagged
     const search = url.searchParams.get("search")?.trim();
+
+    if (url.search.length > 4_096 || (search !== undefined && search.length > MAX_SEARCH_LENGTH)) {
+      return NextResponse.json({ error: "Search query is too long." }, { status: 400 });
+    }
+
+    const listLimit = await rateLimit(`reviews:mine:${session.user.id}`, {
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (!listLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many review-list requests. Please slow down." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((listLimit.resetAt - Date.now()) / 1000))) },
+        },
+      );
+    }
 
     // Ownership only — used for stats, which should stay stable regardless
     // of which tab is active. The tab/search filter is layered on top of
@@ -133,7 +154,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[GET /api/reviews/mine]", err);
+    console.error("[GET /api/reviews/mine]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong." },
       { status: 500 }

@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/auth/signup/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
@@ -8,7 +9,9 @@ import { welcomeEmail } from "@/lib/email-templates/welcome";
 import { verificationEmail } from "@/lib/email-templates/verification";
 import { rateLimit, getIp } from "@/lib/rate-limit";
 import { randomBytes } from "crypto";
-import { getRequestOrigin } from "@/lib/app-url";
+import { hashOneTimeToken } from "@/lib/one-time-token";
+import { getAppOrigin } from "@/lib/app-url";
+import { readBoundedJson } from "@/lib/bounded-json";
 
 export async function POST(req: NextRequest) {
   // 5 signups per IP per hour
@@ -18,11 +21,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const parsed = signupSchema.safeParse(body);
+    const body = await readBoundedJson(req, 8_192);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = signupSchema.safeParse(body.data);
 
     if (!parsed.success) {
-      console.error("[signup] Validation errors:", parsed.error.flatten());
+      console.error("[signup] Validation failed:", getSafeErrorSummary(parsed.error));
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.flatten() },
         { status: 400 }
@@ -53,7 +59,7 @@ export async function POST(req: NextRequest) {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    const origin = getRequestOrigin(req);
+    const origin = getAppOrigin();
 
     // Generate and store a verification token, then send the email.
     // Both are fire-and-forget — a failure never breaks signup.
@@ -66,14 +72,14 @@ export async function POST(req: NextRequest) {
         const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 h
 
         await db.verificationToken.create({
-          data: { token, identifier: email, expires },
+          data: { token: hashOneTimeToken(token), identifier: email, expires },
         });
 
         const verifyUrl = `${origin}/api/auth/verify-email?token=${token}`;
         const verifyTemplate = verificationEmail({ name: user.name, verifyUrl });
         await sendEmail({ to: user.email, ...verifyTemplate });
       } catch (err) {
-        console.error("[signup] Failed to send verification email:", err);
+        console.error("[signup] Failed to send verification email:", getSafeErrorSummary(err));
       }
     })();
 
@@ -86,7 +92,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err) {
-    console.error("[POST /api/auth/signup]", err);
+    console.error("[POST /api/auth/signup]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

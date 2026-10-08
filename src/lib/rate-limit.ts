@@ -1,6 +1,8 @@
 // Path: src/lib/rate-limit.ts
 
 import { Redis } from "@upstash/redis";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { getTrustedClientIp } from "@/lib/client-ip";
 import { Ratelimit, type Duration } from "@upstash/ratelimit";
 
 interface Entry {
@@ -119,7 +121,7 @@ export async function rateLimit(
       resetAt: result.reset,
     };
   } catch (error) {
-    console.error("[rate-limit] Upstash request failed:", error);
+    console.error("[rate-limit] Upstash request failed:", getSafeErrorSummary(error));
 
     if (process.env.NODE_ENV === "production") {
       // Redis is unavailable. Fall back to per-instance in-memory rate limiting
@@ -134,21 +136,7 @@ export async function rateLimit(
   }
 }
 
-/**
- * Extract a stable IP string from a Next.js request.
- * Prioritises Cloudflare CF-Connecting-IP (cannot be spoofed),
- * then the leftmost X-Forwarded-For entry (the original client IP).
- */
+/** Extract the client IP from the trusted deployment boundary for rate limits. */
 export function getIp(req: Request): string {
-  const cfIp = req.headers.get("cf-connecting-ip");
-  if (cfIp) return cfIp.trim();
-
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const ips = forwarded.split(",").map((ip) => ip.trim());
-    const leftmost = ips[0];
-    if (leftmost && leftmost !== "unknown") return leftmost;
-  }
-
-  return req.headers.get("x-real-ip") ?? "unknown";
+  return getTrustedClientIp(req) ?? "unknown";
 }

@@ -3,13 +3,16 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
+import { createOperationalLogContext } from "@/lib/operational-logger";
 
 export async function POST(req: NextRequest) {
-  const verificationError = await verifyUpstashRequest(req);
-  if (verificationError !== true) {
+  try {
+    await verifyUpstashRequest(req);
+  } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const logContext = createOperationalLogContext(req);
   return runCronJob("cleanup-tokens", async () => {
     const now = new Date();
 
@@ -28,5 +31,5 @@ export async function POST(req: NextRequest) {
       resetTokens: resetTokens.count,
       verifTokens: verifTokens.count,
     };
-  });
+  }, logContext);
 }

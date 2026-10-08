@@ -1,125 +1,86 @@
-// Path: src/app/api/reviews/[id]/reply/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { z } from "zod";
-
-const replySchema = z.object({
-  ownerReply: z.string().min(10, "Reply must be at least 10 characters").max(1000),
-});
-
-/**
- * PATCH /api/reviews/[id]/reply
- * Allows a hostel owner to add or update their reply to a review.
- */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
-
-    const review = await db.review.findUnique({
-      where: { id },
-      include: {
-        hostel: { select: { ownerId: true } },
-      },
-    });
-
-    if (!review) {
-      return NextResponse.json({ error: "Review not found." }, { status: 404 });
-    }
-
-    const isOwner = review.hostel.ownerId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json(
-        { error: "Only the hostel owner can reply to reviews." },
-        { status: 403 }
-      );
-    }
-
-    const body = await req.json();
-    const parsed = replySchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Invalid reply." },
-        { status: 400 }
-      );
-    }
-
-    const updated = await db.review.update({
-      where: { id },
-      data: {
-        ownerReply: parsed.data.ownerReply,
-        repliedAt: new Date(),
-      },
-      select: {
-        id: true,
-        ownerReply: true,
-        repliedAt: true,
-      },
-    });
-
-    return NextResponse.json({ data: updated, message: "Reply saved." });
-  } catch (err) {
-    console.error("[PATCH /api/reviews/[id]/reply]", err);
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
-  }
-}
+import { indexSingleHostel } from "@/lib/typesense-sync";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { rateLimit } from "@/lib/rate-limit";
+import { isBoundedRouteParam } from "@/lib/route-params";
 
 /**
- * DELETE /api/reviews/[id]/reply
- * Allows a hostel owner to remove their reply.
+ * DELETE /api/reviews/[id]
+ * Admin moderation endpoint for removing a review.
  */
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { id } = await params;
-
-    const review = await db.review.findUnique({
-      where: { id },
-      include: {
-        hostel: { select: { ownerId: true } },
-      },
-    });
-
-    if (!review) {
-      return NextResponse.json({ error: "Review not found." }, { status: 404 });
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const isOwner = review.hostel.ownerId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
-
-    if (!isOwner && !isAdmin) {
+    const moderationLimit = await rateLimit(`admin-review-delete:${session.user.id}`, {
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (!moderationLimit.ok) {
       return NextResponse.json(
-        { error: "Only the hostel owner can remove a reply." },
-        { status: 403 }
+        { error: "Too many review moderation actions. Try again shortly." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((moderationLimit.resetAt - Date.now()) / 1000))) },
+        },
       );
     }
 
-    await db.review.update({
-      where: { id },
-      data: { ownerReply: null, repliedAt: null },
+    const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid review." }, { status: 400 });
+    }
+    const deleted = await db.$transaction(async (tx) => {
+      const review = await tx.review.findUnique({
+        where: { id },
+        select: { id: true, hostelId: true },
+      });
+      if (!review) return null;
+
+      await tx.review.delete({ where: { id: review.id } });
+
+      const aggregate = await tx.review.aggregate({
+        where: { hostelId: review.hostelId },
+        _avg: { rating: true },
+        _count: { rating: true },
+      });
+      const reviewCount = typeof aggregate._count === "number"
+        ? aggregate._count
+        : aggregate._count.rating;
+
+      await tx.hostel.update({
+        where: { id: review.hostelId },
+        data: {
+          rating: aggregate._avg.rating ?? 0,
+          reviewCount,
+        },
+      });
+
+      return { hostelId: review.hostelId };
     });
 
-    return NextResponse.json({ message: "Reply removed." });
+    if (!deleted) {
+      return NextResponse.json({ error: "Review not found." }, { status: 404 });
+    }
+
+    void indexSingleHostel(deleted.hostelId).catch((err) => {
+      console.warn("[DELETE /api/reviews/[id]] Typesense sync failed:", getSafeErrorSummary(err));
+    });
+
+    return NextResponse.json({ message: "Review deleted." });
   } catch (err) {
-    console.error("[DELETE /api/reviews/[id]/reply]", err);
+    console.error("[DELETE /api/reviews/[id]]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

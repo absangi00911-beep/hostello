@@ -2,20 +2,22 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createCheckoutSession } from "@/lib/safepay";
-import { getRequestOrigin } from "@/lib/app-url";
+import { getAppOrigin } from "@/lib/app-url";
 import { PLANS } from "@/config/plans";
+import { rateLimit } from "@/lib/rate-limit";
 
 /** GET — return current plan + subscription info */
 export async function GET(_req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "OWNER") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     select: {
       plan: true,
       subscription: {
-        select: { status: true, startDate: true, endDate: true, paymentRef: true },
+        select: { status: true, startDate: true, endDate: true },
       },
       _count: { select: { hostels: true } },
     },
@@ -32,9 +34,18 @@ export async function GET(_req: NextRequest) {
  * POST — initiate a Pro upgrade payment via Safepay.
  * Creates a PENDING subscription and returns a Safepay checkout URL.
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "OWNER") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const rl = await rateLimit(`owner-subscription:${session.user.id}`, {
+    limit: 3,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Too many checkout attempts. Try again later." }, { status: 429 });
+  }
 
   const user = await db.user.findUnique({
     where:  { id: session.user.id },
@@ -45,7 +56,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Already on Pro plan" }, { status: 409 });
   }
 
-  const appUrl = getRequestOrigin(req);
+  const appUrl = getAppOrigin();
 
   // Create or update the pending subscription record
   const subscription = await db.subscription.upsert({
@@ -57,7 +68,7 @@ export async function POST(req: NextRequest) {
   // Create a Safepay checkout session for PKR 3,000
   const checkout = await createCheckoutSession({
     bookingId:   subscription.id,
-    amount:      PLANS.PRO.price * 100,    // Safepay expects paise/smallest unit
+    amount:      PLANS.PRO.price,         // helper converts whole PKR to paisas
     orderId:     `sub_${subscription.id}`, // prefixed so webhook can identify it
     customerName:  user?.name  ?? "",
     customerEmail: user?.email ?? "",

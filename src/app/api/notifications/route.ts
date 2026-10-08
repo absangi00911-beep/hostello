@@ -1,18 +1,33 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/notifications/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { parsePagination } from "@/lib/pagination";
 import { getUnreadCount, markAllNotificationsAsRead } from "@/lib/notifications";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { rateLimit } from "@/lib/rate-limit";
+
+function rateLimitResponse(resetAt: number) {
+  return NextResponse.json(
+    { error: "Too many notification requests. Please try again shortly." },
+    {
+      status: 429,
+      headers: { "Retry-After": String(Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))) },
+    },
+  );
+}
 
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const quota = await rateLimit(`notifications:list:${session.user.id}`, { limit: 60, windowMs: 60_000 });
+    if (!quota.ok) return rateLimitResponse(quota.resetAt);
+
     const url = new URL(req.url);
-    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10) || 20));
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(url.searchParams, { defaultLimit: 20, maxLimit: 100 });
 
     const where = { userId: session.user.id };
     const [notifications, total, unreadCount] = await Promise.all([
@@ -35,7 +50,7 @@ export async function GET(req: NextRequest) {
       hasMore: skip + notifications.length < total,
     });
   } catch (err) {
-    console.error("[GET /api/notifications]", err);
+    console.error("[GET /api/notifications]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -45,8 +60,14 @@ export async function PUT(req: NextRequest) {
     const session = await auth();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
-    if (body?.action !== "read-all") {
+    const quota = await rateLimit(`notifications:read-all:${session.user.id}`, { limit: 5, windowMs: 60_000 });
+    if (!quota.ok) return rateLimitResponse(quota.resetAt);
+
+    const body = await readBoundedJson(req, 1_024);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    if (!body.data || typeof body.data !== "object" || Array.isArray(body.data) || (body.data as Record<string, unknown>).action !== "read-all") {
       return NextResponse.json({ error: "Invalid action." }, { status: 400 });
     }
 
@@ -54,7 +75,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ message: "All notifications marked as read." });
   } catch (err) {
-    console.error("[PUT /api/notifications]", err);
+    console.error("[PUT /api/notifications]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

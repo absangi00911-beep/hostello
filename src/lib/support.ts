@@ -6,17 +6,17 @@ import { sendEmail, escapeHtml } from "./email";
 import { emailLayout, emailRow } from "./email-templates/layout";
 
 export const contactSchema = z.object({
-  name: z.string().min(2, "Enter your name"),
-  email: z.string().email("Enter a valid email"),
-  subject: z.string().min(5, "Enter a subject"),
-  message: z.string().min(20, "Message must be at least 20 characters"),
+  name: z.string().min(2, "Enter your name").max(100),
+  email: z.string().email("Enter a valid email").max(254),
+  subject: z.string().min(5, "Enter a subject").max(200),
+  message: z.string().min(20, "Message must be at least 20 characters").max(5_000),
 });
 
 export const reportSchema = z.object({
   type: z.enum(["listing", "review", "payment", "safety", "other"]),
-  description: z.string().min(20, "Please describe the issue in at least 20 characters"),
-  url: z.string().url("Enter a valid URL").optional().or(z.literal("")),
-  email: z.string().email("Enter a valid email").optional().or(z.literal("")),
+  description: z.string().min(20, "Please describe the issue in at least 20 characters").max(5_000),
+  url: z.string().max(2_048).url("Enter a valid URL").optional().or(z.literal("")),
+  email: z.string().max(254).email("Enter a valid email").optional().or(z.literal("")),
 });
 
 export type ContactInput = z.infer<typeof contactSchema>;

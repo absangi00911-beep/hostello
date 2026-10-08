@@ -169,10 +169,19 @@ export function parseJazzCashCallback(
 ): JazzCashCallbackResult {
   const config = getConfig();
 
-  const received = (data.pp_SecureHash ?? "").toUpperCase();
-  const expected = computeSecureHash(data, config.integritySalt);
+  if (!config.integritySalt) {
+    throw new Error("JazzCash is not configured: integrity salt is required to verify callbacks.");
+  }
 
-  if (!received || received !== expected) {
+  const received = (data.pp_SecureHash ?? "").toUpperCase();
+  if (!/^[0-9A-F]{64}$/.test(received)) {
+    throw new Error("JazzCash: invalid secure hash format.");
+  }
+  const expected = computeSecureHash(data, config.integritySalt);
+  const receivedBytes = Buffer.from(received, "hex");
+  const expectedBytes = Buffer.from(expected, "hex");
+
+  if (receivedBytes.length !== expectedBytes.length || !crypto.timingSafeEqual(receivedBytes, expectedBytes)) {
     throw new Error("JazzCash: secure hash mismatch — possible tampering");
   }
 

@@ -1,7 +1,10 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/favorites/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { parsePagination } from "@/lib/pagination";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * GET /api/favorites
@@ -15,16 +18,42 @@ import { db } from "@/lib/db";
  * Each hostel includes the same fields as GET /api/hostels search results
  * so the SavedHostelCard component can render without a separate fetch.
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const favorites = await db.favorite.findMany({
-      where:   { userId: session.user.id },
+    if (req.nextUrl.search.length > 1_024) {
+      return NextResponse.json({ error: "Query is too long." }, { status: 400 });
+    }
+
+    const { page, limit, skip } = parsePagination(req.nextUrl.searchParams, {
+      defaultLimit: 20,
+      maxLimit: 50,
+    });
+    const listLimit = await rateLimit(`favorites:list:${session.user.id}`, {
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (!listLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many saved-hostel requests. Please slow down." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((listLimit.resetAt - Date.now()) / 1000))) },
+        },
+      );
+    }
+
+    const where = { userId: session.user.id, hostel: { status: "ACTIVE" as const } };
+    const [favorites, total] = await Promise.all([
+      db.favorite.findMany({
+      where,
       orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
       include: {
         hostel: {
           select: {
@@ -44,21 +73,24 @@ export async function GET(_req: NextRequest) {
             reviewCount:  true,
             capacity:     true,
             rooms:        true,
-            status:       true,
           },
         },
       },
+      }),
+      db.favorite.count({ where }),
+    ]);
+
+    const activeFavorites = favorites.map((favorite) => favorite.hostel);
+
+    return NextResponse.json({
+      data: activeFavorites,
+      total,
+      page,
+      limit,
+      hasMore: skip + activeFavorites.length < total,
     });
-
-    // Filter out hostels that were deleted or suspended after being saved.
-    // Don't surface SUSPENDED or DRAFT hostels in the student's saved list.
-    const activeFavorites = favorites
-      .filter((f) => f.hostel.status === "ACTIVE")
-      .map((f) => f.hostel);
-
-    return NextResponse.json({ data: activeFavorites });
   } catch (err) {
-    console.error("[GET /api/favorites]", err);
+    console.error("[GET /api/favorites]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong." },
       { status: 500 }

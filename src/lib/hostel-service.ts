@@ -1,25 +1,24 @@
 // Path: src/lib/hostel-service.ts
 
-import { db } from "@/lib/db";
+import { Prisma } from "@/generated/client";
 import { sendEmail } from "@/lib/email";
 import { newListingAdminEmail } from "@/lib/email-templates/new-listing";
 import { slugify } from "@/lib/utils";
 import type { HostelCreateInput } from "@/lib/validations";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
 /**
- * Shared hostel creation service used by both POST /api/hostels and POST /api/hostels/create.
- * 
+ * Creates a hostel record inside the caller's transaction. Notification is
+ * deliberately handled after commit by the route.
+ *
  * Handles:
  * - Slug generation with collision detection
  * - Database record creation
- * - Admin notification email (fire-and-forget, never blocks response)
  */
 export async function createHostelRecord(
+  client: Pick<Prisma.TransactionClient, "hostel">,
   ownerId: string,
-  ownerName: string,
-  ownerEmail: string,
-  data: HostelCreateInput,
-  body: Record<string, unknown>
+  data: HostelCreateInput
 ) {
   // Generate a unique slug
   const baseSlug = slugify(data.name);
@@ -29,7 +28,7 @@ export async function createHostelRecord(
 
   while (
     attempt < MAX_SLUG_ATTEMPTS &&
-    (await db.hostel.findUnique({ where: { slug }, select: { id: true } }))
+    (await client.hostel.findUnique({ where: { slug }, select: { id: true } }))
   ) {
     attempt++;
     slug = `${baseSlug}-${attempt}`;
@@ -40,7 +39,7 @@ export async function createHostelRecord(
     slug = `${baseSlug}-${Date.now()}`;
   }
 
-  const hostel = await db.hostel.create({
+  return client.hostel.create({
     data: {
       name: data.name,
       slug,
@@ -58,15 +57,26 @@ export async function createHostelRecord(
       maxStay: data.maxStay ?? null,
       amenities: data.amenities,
       rules: data.rules ?? [],
-      images: Array.isArray(body.images) ? body.images : [],
-      coverImage: typeof body.coverImage === "string" ? body.coverImage : null,
+      images: data.images ?? [],
+      coverImage: data.coverImage ?? null,
       status: "PENDING_REVIEW",
       ownerId,
     },
     select: { id: true, slug: true, name: true, status: true, city: true, pricePerMonth: true },
   });
+}
 
-  // Notify admin of new listing — fire and forget, never blocks the response
+export function notifyAdminOfNewListing(
+  ownerName: string,
+  ownerEmail: string,
+  hostel: {
+    id: string;
+    name: string;
+    city: string;
+    pricePerMonth: number;
+  },
+) {
+  // Notify admin only after the listing transaction has committed.
   void sendEmail(
     newListingAdminEmail({
       ownerName,
@@ -76,7 +86,12 @@ export async function createHostelRecord(
       city: hostel.city,
       pricePerMonth: hostel.pricePerMonth,
     })
-  ).catch((err) => console.error("[hostel-service] Admin notification failed:", err));
+  ).catch((err) =>
+    console.error(
+      "[hostel-service] Admin notification failed:",
+      getSafeErrorSummary(err),
+    ),
+  );
 
   return hostel;
 }

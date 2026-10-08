@@ -1,8 +1,11 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/hostels/mine/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@/generated/client";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { parsePagination } from "@/lib/pagination";
+import { rateLimit } from "@/lib/rate-limit";
 
 const HOSTEL_STATUSES = ["DRAFT", "PENDING_REVIEW", "ACTIVE", "SUSPENDED"] as const;
 const HOSTEL_STATUS_VALUES: readonly string[] = HOSTEL_STATUSES;
@@ -28,7 +31,7 @@ function isHostelStatus(value: string): value is HostelStatusFilter {
  * Query params:
  *   status  - filter by status (optional)
  *   page    - 1-indexed page number (default: 1)
- *   limit   - results per page (default: 50, max: 100)
+ *   limit   - results per page (default: 50, max: 100); page offsets are capped at 10,000
  *
  * Response:
  *   { data: Hostel[], total: number, page: number, limit: number }
@@ -46,9 +49,11 @@ export async function GET(req: NextRequest) {
 
     const url    = new URL(req.url);
     const statusParam = url.searchParams.get("status") ?? undefined;
-    const page   = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
-    const limit  = Math.min(100, parseInt(url.searchParams.get("limit") ?? "50", 10) || 50);
-    const skip   = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(url.searchParams, { defaultLimit: 50, maxLimit: 100 });
+
+    if (url.search.length > 1_024 || (statusParam !== undefined && statusParam.length > 32)) {
+      return NextResponse.json({ error: "Invalid hostel filters." }, { status: 400 });
+    }
 
     let status: HostelStatusFilter | undefined;
     if (statusParam) {
@@ -59,6 +64,20 @@ export async function GET(req: NextRequest) {
         );
       }
       status = statusParam;
+    }
+
+    const listLimit = await rateLimit(`hostels:mine:${session.user.id}`, {
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (!listLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many listing requests. Please slow down." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, Math.ceil((listLimit.resetAt - Date.now()) / 1000))) },
+        },
+      );
     }
 
     const where: Prisma.HostelWhereInput = {
@@ -110,7 +129,7 @@ export async function GET(req: NextRequest) {
       hasMore: skip + hostels.length < total,
     });
   } catch (err) {
-    console.error("[GET /api/hostels/mine]", err);
+    console.error("[GET /api/hostels/mine]", getSafeErrorSummary(err));
     return NextResponse.json(
       { error: "Something went wrong." },
       { status: 500 }

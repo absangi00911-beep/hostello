@@ -1,3 +1,4 @@
+import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/conversations/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
@@ -5,6 +6,9 @@ import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { createNotification } from "@/lib/notifications";
 import { z } from "zod";
+import { readBoundedJson } from "@/lib/bounded-json";
+import { parsePagination } from "@/lib/pagination";
+import { isBoundedRouteParam } from "@/lib/route-params";
 
 const messageSchema = z.object({
   content: z.string().min(1, "Message cannot be empty").max(2000),
@@ -15,7 +19,7 @@ const messageSchema = z.object({
  * Returns all messages in a conversation, marking unread ones as read.
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -24,10 +28,27 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await params;
+    const rl = await rateLimit(`list-msg:${session.user.id}`, {
+      limit: 120,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.ok) return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
 
-    const conversation = await db.conversation.findUnique({
-      where: { id },
+    if (req.nextUrl.search.length > 1_024) {
+      return NextResponse.json({ error: "Query is too long." }, { status: 400 });
+    }
+    const { page, limit, skip } = parsePagination(req.nextUrl.searchParams, {
+      defaultLimit: 50,
+      maxLimit: 100,
+    });
+
+    const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid conversation." }, { status: 400 });
+    }
+
+    const conversation = await db.conversation.findFirst({
+      where: { id, participants: { some: { userId: session.user.id } } },
       include: {
         hostel: { select: { name: true, slug: true, coverImage: true } },
         participants: {
@@ -38,12 +59,6 @@ export async function GET(
             },
           },
         },
-        messages: {
-          orderBy: { createdAt: "asc" },
-          include: {
-            sender: { select: { id: true, name: true, avatar: true } },
-          },
-        },
       },
     });
 
@@ -52,9 +67,21 @@ export async function GET(
     }
 
     const userIds = conversation.participants.map((p) => p.userId);
-    if (!userIds.includes(session.user.id) && session.user.role !== "ADMIN") {
+    if (!userIds.includes(session.user.id)) {
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
+
+    const messageWhere = { conversationId: id };
+    const [messagesDesc, messageTotal] = await Promise.all([
+      db.message.findMany({
+        where: messageWhere,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip,
+        take: limit,
+        include: { sender: { select: { id: true, name: true, avatar: true } } },
+      }),
+      db.message.count({ where: messageWhere }),
+    ]);
 
     // Most relevant booking between these two people at this hostel, for the
     // context card in the thread header. Best-effort: a conversation can
@@ -83,9 +110,19 @@ export async function GET(
       data: { read: true },
     });
 
-    return NextResponse.json({ data: { ...conversation, booking } });
+    return NextResponse.json({
+      data: {
+        ...conversation,
+        messages: messagesDesc.reverse(),
+        booking,
+        messageTotal,
+        messagePage: page,
+        messageLimit: limit,
+        messageHasMore: skip + messagesDesc.length < messageTotal,
+      },
+    });
   } catch (err) {
-    console.error("[GET /api/conversations/[id]]", err);
+    console.error("[GET /api/conversations/[id]]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
@@ -117,11 +154,14 @@ export async function POST(
     }
 
     const { id } = await params;
+    if (!isBoundedRouteParam(id)) {
+      return NextResponse.json({ error: "Invalid conversation." }, { status: 400 });
+    }
 
     // Fetch hostelId alongside participants so the notification can link
     // directly to the hostel the conversation is about.
-    const conversation = await db.conversation.findUnique({
-      where: { id },
+    const conversation = await db.conversation.findFirst({
+      where: { id, participants: { some: { userId: session.user.id } } },
       select: {
         id: true,
         hostelId: true,
@@ -140,8 +180,11 @@ export async function POST(
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }
 
-    const body = await req.json();
-    const parsed = messageSchema.safeParse(body);
+    const body = await readBoundedJson(req, 4_096);
+    if (!body.ok) {
+      return NextResponse.json({ error: body.error }, { status: body.status });
+    }
+    const parsed = messageSchema.safeParse(body.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -188,17 +231,18 @@ export async function POST(
         title:    message.sender.name,   // sender name as title (messaging app convention)
         message:  preview,
         hostelId: conversation.hostelId, // lets the UI deep-link to the right hostel
+        conversationId: id,             // push-only context for the mobile tap route
       }).catch((err) =>
         console.error(
-          `[conversations/${id}] Failed to notify recipient ${recipientId}:`,
-          err
+          "[conversations] Notification delivery failed:",
+          getSafeErrorSummary(err),
         )
       );
     }
 
     return NextResponse.json({ data: message }, { status: 201 });
   } catch (err) {
-    console.error("[POST /api/conversations/[id]]", err);
+    console.error("[POST /api/conversations/[id]]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

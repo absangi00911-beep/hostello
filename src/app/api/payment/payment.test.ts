@@ -1,530 +1,531 @@
 // Path: src/app/api/payment/payment.test.ts
-
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import crypto from "crypto";
 
-// ── Env vars — must be set before any module imports ─────────────────────────
-// Use vi.stubEnv so values are restored between test files
-vi.stubEnv("JAZZCASH_MERCHANT_ID",    "TEST_MERCHANT");
-vi.stubEnv("JAZZCASH_PASSWORD",       "TEST_PASSWORD");
-vi.stubEnv("JAZZCASH_INTEGRITY_SALT", "test_salt_1234");
-vi.stubEnv("JAZZCASH_ENV",            "sandbox");
-vi.stubEnv("EASYPAISA_STORE_ID",      "TEST_STORE");
-vi.stubEnv("EASYPAISA_HASH_KEY",      "1234567890123456");
-vi.stubEnv("EASYPAISA_ENV",           "sandbox");
-vi.stubEnv("SAFEPAY_SECRET_KEY",      "test_safepay_secret");
-vi.stubEnv("SAFEPAY_WEBHOOK_SECRET",  "test_webhook_secret");
-vi.stubEnv("SAFEPAY_ENV",             "sandbox");
-vi.stubEnv("NEXT_PUBLIC_APP_URL",     "https://hostello.pk");
+const mocks = vi.hoisted(() => ({
+  bookingFindUnique: vi.fn(),
+  bookingUpdateMany: vi.fn(),
+  subscriptionFindUnique: vi.fn(),
+  subscriptionUpdateMany: vi.fn(),
+  userUpdate: vi.fn(),
+  paymentMethods: [
+    { value: "safepay", enabled: true },
+    { value: "jazzcash", enabled: true },
+    { value: "easypaisa", enabled: false },
+  ],
+}));
 
-// ── Module mocks ──────────────────────────────────────────────────────────────
+vi.stubEnv("JAZZCASH_MERCHANT_ID", "TEST_MERCHANT");
+vi.stubEnv("JAZZCASH_PASSWORD", "TEST_PASSWORD");
+vi.stubEnv("JAZZCASH_INTEGRITY_SALT", "test_salt_1234");
+vi.stubEnv("JAZZCASH_ENV", "sandbox");
+vi.stubEnv("SAFEPAY_SECRET", "test_safepay_secret");
+vi.stubEnv("SAFEPAY_API_KEY", "sec_test_key");
+vi.stubEnv("SAFEPAY_WEBHOOK_SECRET", "test_webhook_secret");
+vi.stubEnv("NEXT_PUBLIC_SAFEPAY_ENV", "sandbox");
+vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://hostello.pk");
 
 vi.mock("@/lib/db", () => ({
   db: {
     booking: {
-      findUnique: vi.fn(),
-      update:     vi.fn(),
-      updateMany: vi.fn(),
+      findUnique: mocks.bookingFindUnique,
+      update: vi.fn(),
+      updateMany: mocks.bookingUpdateMany,
     },
+    subscription: {
+      findUnique: mocks.subscriptionFindUnique,
+      updateMany: mocks.subscriptionUpdateMany,
+    },
+    user: { update: mocks.userUpdate },
+    $transaction: vi.fn(async (work: (tx: unknown) => Promise<unknown>) => work({
+      subscription: { updateMany: mocks.subscriptionUpdateMany },
+      user: { update: mocks.userUpdate },
+    })),
   },
 }));
 
-vi.mock("@/lib/email", () => ({
-  sendEmail: vi.fn().mockResolvedValue(undefined),
-}));
-
+vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("@/lib/email-templates/booking-status", () => ({
   bookingStatusEmail: vi.fn().mockReturnValue({ subject: "test", html: "test" }),
 }));
-
 vi.mock("@/lib/app-url", () => ({
   getAppUrl: () => "https://hostello.pk",
+  getAppOrigin: () => "https://hostello.pk",
 }));
+vi.mock("@/lib/gateway-ip-allowlist", () => ({ verifyGatewayIp: vi.fn().mockReturnValue(null) }));
+vi.mock("@/lib/jazzcash", () => ({ parseJazzCashCallback: vi.fn() }));
+vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/lib/payment-methods", () => ({ PAYMENT_METHODS: mocks.paymentMethods }));
 
-vi.mock("@/lib/gateway-ip-allowlist", () => ({
-  verifyGatewayIp: vi.fn().mockReturnValue(null), // null = allowed
-}));
-
-// Mock parseJazzCashCallback directly — the real impl reads JAZZCASH_INTEGRITY_SALT
-// at module init time (before vi.stubEnv takes effect). We control its return value
-// per-test instead, keeping tests independent from gateway crypto internals.
-vi.mock("@/lib/jazzcash", () => ({
-  parseJazzCashCallback: vi.fn(),
-  createJazzCashSession: vi.fn(),
-}));
-
-// ── Imports ───────────────────────────────────────────────────────────────────
-import { POST as callbackPOST, GET as callbackGET } from "@/app/api/payment/callback/route";
+import { GET as callbackGET, POST as callbackPOST } from "@/app/api/payment/callback/route";
 import { POST as webhookPOST } from "@/app/api/payment/webhook/route";
-import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
-
-// ── Fixtures ──────────────────────────────────────────────────────────────────
+import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
+import { parseJazzCashCallback } from "@/lib/jazzcash";
 
 const BOOKING_ID = "cltest0000000000000000001";
-const TXN_ID     = "T000111222333";
+const JAZZCASH_TXN = "T000111222333";
+const TRACKER = "track_test_payment";
+const WEBHOOK_SECRET = process.env.SAFEPAY_WEBHOOK_SECRET!;
 
 function makeBooking(overrides: Record<string, unknown> = {}) {
   return {
-    id:            BOOKING_ID,
-    total:         12000,
-    status:        "PENDING",
-    paymentStatus: "UNPAID",
-    transactionId: null,
-    user:   { name: "Ali Khan",     email: "ali@example.com" },
-    hostel: { name: "Green Valley", slug:  "green-valley" },
+    id: BOOKING_ID,
+    total: 12000,
+    status: "PENDING",
+    paymentStatus: "PENDING",
+    paymentMethod: "safepay",
+    transactionId: TRACKER,
+    userId: "user-1",
+    user: { name: "Ali Khan", email: "ali@example.com" },
+    hostel: { name: "Green Valley", slug: "green-valley" },
     ...overrides,
   };
 }
 
-// ── JazzCash helpers ──────────────────────────────────────────────────────────
-// We mock parseJazzCashCallback, so the request body is irrelevant for these tests.
-// We only need a valid NextRequest shape with the right query params.
-
-import { parseJazzCashCallback } from "@/lib/jazzcash";
-
-function jazzCashRequest(bookingId = BOOKING_ID): NextRequest {
-  return new NextRequest(
-    `https://hostello.pk/api/payment/callback?provider=jazzcash&bookingId=${bookingId}`,
-    {
-      method:  "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body:    "pp_TxnRefNo=T000111222333&pp_ResponseCode=000&pp_Amount=1200000&pp_SecureHash=MOCK",
-    },
-  );
-}
-
-// ── Safepay webhook helpers ───────────────────────────────────────────────────
-
-const WEBHOOK_SECRET = process.env.SAFEPAY_WEBHOOK_SECRET!;
-
-async function signSafepayPayload(payload: string): Promise<string> {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(WEBHOOK_SECRET),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
-  return Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function makeSafepayEvent(amount = 12000, orderId = BOOKING_ID) {
+function makeSafepayEvent({
+  type = "payment.succeeded",
+  amount = 1_200_000,
+  orderId = BOOKING_ID,
+  tracker = TRACKER,
+  currency = "PKR",
+  state = "TRACKER_ENDED",
+}: {
+  type?: string;
+  amount?: number;
+  orderId?: string;
+  tracker?: string;
+  currency?: string;
+  state?: string;
+} = {}) {
   return JSON.stringify({
-    type: "payment:success",
+    token: "evt_test",
+    version: "2.0.0",
+    merchant_api_key: "sec_test_key",
+    type,
     data: {
-      order_id:       orderId,
-      transaction_id: TXN_ID,
+      tracker,
+      state,
       amount,
+      currency,
+      metadata: { order_id: orderId },
     },
   });
 }
 
-async function safepayRequest(payload: string): Promise<NextRequest> {
-  const sig = await signSafepayPayload(payload);
-  return new NextRequest("https://hostello.pk/api/payment/webhook", {
-    method:  "POST",
-    headers: {
-      "content-type":    "application/json",
-      "x-sfpy-signature": sig,
+function makeJazzCashRequest(bookingId = BOOKING_ID) {
+  return new NextRequest(
+    `https://hostello.pk/api/payment/callback?provider=jazzcash&bookingId=${bookingId}`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: "pp_TxnRefNo=T000111222333&pp_ResponseCode=000&pp_Amount=1200000&pp_SecureHash=MOCK",
     },
+  );
+}
+
+async function safepayRequest(payload: string) {
+  const signature = crypto.createHmac("sha512", WEBHOOK_SECRET).update(payload).digest("hex");
+  return new NextRequest("https://hostello.pk/api/payment/webhook", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-sfpy-signature": signature },
     body: payload,
   });
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// JAZZCASH CALLBACK
-// ═════════════════════════════════════════════════════════════════════════════
-
-describe("JazzCash callback — /api/payment/callback?provider=jazzcash", () => {
+describe("JazzCash callback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(db.booking.update).mockResolvedValue(
-      makeBooking({ paymentStatus: "PAID", status: "CONFIRMED" }) as any,
-    );
-    // Default: valid signature, success code, correct amount
+    mocks.paymentMethods[1].enabled = true;
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ paymentMethod: "jazzcash", transactionId: null }));
+    mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });
     vi.mocked(parseJazzCashCallback).mockReturnValue({
-      success:         true,
-      txnRefNo:        TXN_ID,
-      responseCode:    "000",
+      success: true,
+      txnRefNo: JAZZCASH_TXN,
+      responseCode: "000",
       responseMessage: "Transaction Processed Successfully",
-      amount:          12000,
+      amount: 12000,
     });
   });
 
-  it("confirms booking on valid signature + success code", async () => {
-    const req = jazzCashRequest();
-    const res = await callbackPOST(req);
+  it("confirms only a matching pending booking and redirects to its real confirmation route", async () => {
+    const response = await callbackPOST(makeJazzCashRequest());
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain(`/booking/${BOOKING_ID}/confirmation`);
+    expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ paymentMethod: "jazzcash", paymentStatus: "PENDING", status: "PENDING" }),
+      data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED", transactionId: JAZZCASH_TXN }),
+    }));
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+  });
 
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/payment/success");
-    expect(db.booking.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED" }),
-      }),
+  it("rejects signed-provider callbacks while that payment method is disabled", async () => {
+    mocks.paymentMethods[1].enabled = false;
+
+    const response = await callbackPOST(makeJazzCashRequest());
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("payment=unavailable");
+    expect(parseJazzCashCallback).not.toHaveBeenCalled();
+    expect(mocks.bookingFindUnique).not.toHaveBeenCalled();
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("keeps browser GET returns read-only and requires the signed POST callback to settle", async () => {
+    const response = await callbackGET(new NextRequest(
+      `https://hostello.pk/api/payment/callback?provider=jazzcash&bookingId=${BOOKING_ID}&pp_ResponseCode=000`,
+    ));
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      `https://hostello.pk/booking/${BOOKING_ID}/payment?payment=pending`,
     );
+    expect(parseJazzCashCallback).not.toHaveBeenCalled();
+    expect(mocks.bookingFindUnique).not.toHaveBeenCalled();
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("sends confirmation email after successful payment", async () => {
-    const req = jazzCashRequest();
-    await callbackPOST(req);
+  it("rejects a callback when a configured gateway IP allowlist fails", async () => {
+    vi.mocked(verifyGatewayIp).mockReturnValueOnce("Request IP is not allowed");
 
-    expect(sendEmail).toHaveBeenCalled();
-  });
+    const response = await callbackPOST(makeJazzCashRequest());
 
-  it("throws on tampered / invalid hash — parseJazzCashCallback throws", async () => {
-    vi.mocked(parseJazzCashCallback).mockImplementation(() => {
-      throw new Error("JazzCash: secure hash mismatch — possible tampering");
-    });
-
-    const req = jazzCashRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=error");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("redirects to failed URL on non-000 response code", async () => {
-    vi.mocked(parseJazzCashCallback).mockReturnValue({
-      success:         false,
-      txnRefNo:        "",
-      responseCode:    "113",
-      responseMessage: "Insufficient Funds",
-      amount:          12000,
-    });
-
-    const req = jazzCashRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=failed");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("rejects if paid amount differs by more than 1 PKR", async () => {
-    vi.mocked(parseJazzCashCallback).mockReturnValue({
-      success:         true,
-      txnRefNo:        TXN_ID,
-      responseCode:    "000",
-      responseMessage: "Transaction Processed Successfully",
-      amount:          9000, // booking total is 12000
-    });
-
-    const req = jazzCashRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=error");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("is idempotent — skips update if booking already PAID", async () => {
-    vi.mocked(db.booking.findUnique).mockResolvedValue(
-      makeBooking({ paymentStatus: "PAID", status: "CONFIRMED" }) as any,
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(
+      `https://hostello.pk/booking/${BOOKING_ID}/payment?payment=error`,
     );
-
-    const req = jazzCashRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/payment/success");
-    expect(db.booking.update).not.toHaveBeenCalled();
+    expect(parseJazzCashCallback).not.toHaveBeenCalled();
+    expect(mocks.bookingFindUnique).not.toHaveBeenCalled();
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("redirects to error if bookingId is missing from URL", async () => {
-    const req = new NextRequest(
-      "https://hostello.pk/api/payment/callback?provider=jazzcash",
-      { method: "POST", body: "" },
-    );
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=error");
-  });
-
-  it("also handles GET callbacks (some sandbox environments)", async () => {
-    const req = new NextRequest(
+  it("rejects an oversized JazzCash callback before parsing or settling it", async () => {
+    const request = new NextRequest(
       `https://hostello.pk/api/payment/callback?provider=jazzcash&bookingId=${BOOKING_ID}`,
-    );
-    const res = await callbackGET(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/payment/success");
-  });
-});
-
-// ═════════════════════════════════════════════════════════════════════════════
-// EASYPAISA CALLBACK
-// ═════════════════════════════════════════════════════════════════════════════
-
-describe("EasyPaisa callback — /api/payment/callback?provider=easypaisa", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(db.booking.update).mockResolvedValue(
-      makeBooking({ paymentStatus: "PAID", status: "CONFIRMED" }) as any,
-    );
-  });
-
-  function easypaisaRequest(
-    overrides: Record<string, string> = {},
-    bookingId = BOOKING_ID,
-  ): NextRequest {
-    const params: Record<string, string> = {
-      orderRefNum:   bookingId,
-      TransactionID: TXN_ID,
-      amount:        "12000.00",
-      responseCode:  "0000",
-      responseDesc:  "Txn Successful",
-      ...overrides,
-    };
-    const body = new URLSearchParams(params).toString();
-    return new NextRequest(
-      `https://hostello.pk/api/payment/callback?provider=easypaisa&bookingId=${bookingId}`,
       {
-        method:  "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        body,
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          "content-length": String(16 * 1024 + 1),
+        },
+        body: "pp_TxnRefNo=too-large",
       },
     );
-  }
 
-  it("confirms booking on success code 0000 with matching orderRefNum", async () => {
-    const req = easypaisaRequest();
-    const res = await callbackPOST(req);
+    const response = await callbackPOST(request);
 
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/payment/success");
-    expect(db.booking.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED" }),
-      }),
-    );
+    expect(response.status).toBe(413);
+    expect(parseJazzCashCallback).not.toHaveBeenCalled();
+    expect(mocks.bookingFindUnique).not.toHaveBeenCalled();
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("redirects to failed on non-0000 response code", async () => {
-    const req = easypaisaRequest({ responseCode: "0001", responseDesc: "Failed" });
-    const res = await callbackPOST(req);
+  it("does not revive a cancelled booking when a delayed success callback arrives", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({
+      paymentMethod: "jazzcash",
+      transactionId: null,
+      status: "CANCELLED",
+    }));
 
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=failed");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
+    await callbackPOST(makeJazzCashRequest());
 
-  it("rejects replay attack — orderRefNum does not match bookingId", async () => {
-    // Attacker sends a valid EasyPaisa callback for a different booking
-    const req = easypaisaRequest({ orderRefNum: "clother000000000000000001" });
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=failed");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("rejects if paid amount differs by more than 1 PKR", async () => {
-    const req = easypaisaRequest({ amount: "5000.00" }); // booking is 12000
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=error");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("is idempotent — skips update if booking already PAID", async () => {
-    vi.mocked(db.booking.findUnique).mockResolvedValue(
-      makeBooking({ paymentStatus: "PAID", status: "CONFIRMED" }) as any,
-    );
-
-    const req = easypaisaRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("/payment/success");
-    expect(db.booking.update).not.toHaveBeenCalled();
-  });
-
-  it("redirects to error when booking is not found in DB", async () => {
-    vi.mocked(db.booking.findUnique).mockResolvedValue(null);
-
-    const req = easypaisaRequest();
-    const res = await callbackPOST(req);
-
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toContain("payment=error");
-  });
-});
-
-// ═════════════════════════════════════════════════════════════════════════════
-// SAFEPAY WEBHOOK
-// ═════════════════════════════════════════════════════════════════════════════
-
-describe("Safepay webhook — /api/payment/webhook", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
-  });
-
-  it("confirms booking on valid signature + payment:success event", async () => {
-    const payload = makeSafepayEvent();
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
-
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.received).toBe(true);
-    expect(db.booking.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED" }),
-      }),
-    );
-  });
-
-  it("rejects webhook with missing signature header", async () => {
-    const payload = makeSafepayEvent();
-    const req     = new NextRequest("https://hostello.pk/api/payment/webhook", {
-      method:  "POST",
-      headers: { "content-type": "application/json" },
-      body:    payload,
-    });
-    const res = await webhookPOST(req);
-
-    expect(res.status).toBe(401);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("rejects webhook with tampered signature", async () => {
-    const payload = makeSafepayEvent();
-    const req     = new NextRequest("https://hostello.pk/api/payment/webhook", {
-      method:  "POST",
-      headers: {
-        "content-type":     "application/json",
-        "x-sfpy-signature": "deadbeef".repeat(8), // wrong signature
-      },
-      body: payload,
-    });
-    const res = await webhookPOST(req);
-
-    expect(res.status).toBe(401);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("rejects tampered payload — signature valid but body changed", async () => {
-    const payload = makeSafepayEvent();
-    const sig     = await signSafepayPayload(payload);
-
-    // Change the amount in the body AFTER signing
-    const tamperedPayload = payload.replace('"amount":12000', '"amount":1');
-
-    const req = new NextRequest("https://hostello.pk/api/payment/webhook", {
-      method:  "POST",
-      headers: {
-        "content-type":     "application/json",
-        "x-sfpy-signature": sig,
-      },
-      body: tamperedPayload,
-    });
-    const res = await webhookPOST(req);
-
-    expect(res.status).toBe(401);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("rejects if paid amount differs by more than 1 PKR", async () => {
-    const payload = makeSafepayEvent(9000); // booking total is 12000
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
-
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toContain("mismatch");
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("accepts amount within ±1 PKR tolerance (rounding)", async () => {
-    const payload = makeSafepayEvent(11999.5); // 0.5 PKR under — should pass
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
-
-    expect(res.status).toBe(200);
-    expect(db.booking.updateMany).toHaveBeenCalled();
-  });
-
-  it("is idempotent — returns 200 if booking already PAID without re-updating", async () => {
-    // updateMany returns count: 0 — booking was already PAID
-    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 0 } as any);
-
-    const payload = makeSafepayEvent();
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
-
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.received).toBe(true);
-    // email should NOT be sent again
+    expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ paymentStatus: "PAID", transactionId: JAZZCASH_TXN }),
+    }));
+    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when booking does not exist", async () => {
-    vi.mocked(db.booking.findUnique).mockResolvedValue(null);
-
-    const payload = makeSafepayEvent();
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
-
-    expect(res.status).toBe(404);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
+  it("does not settle a booking for a different provider", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ paymentMethod: "safepay" }));
+    const response = await callbackPOST(makeJazzCashRequest());
+    expect(response.headers.get("location")).toContain("payment=error");
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("silently ignores non-payment:success event types", async () => {
-    const payload = JSON.stringify({ type: "payment:refund", data: {} });
-    const req     = await safepayRequest(payload);
-    const res     = await webhookPOST(req);
+  it("rejects a bad signature result and an incorrect amount", async () => {
+    vi.mocked(parseJazzCashCallback).mockImplementation(() => { throw new Error("bad hash"); });
+    await callbackPOST(makeJazzCashRequest());
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
 
-    expect(res.status).toBe(200);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
-  });
-
-  it("returns 400 if amount field is missing from event data", async () => {
-    const payload = JSON.stringify({
-      type: "payment:success",
-      data: { order_id: BOOKING_ID, transaction_id: TXN_ID },
-      // amount intentionally omitted
+    vi.mocked(parseJazzCashCallback).mockReturnValue({
+      success: true,
+      txnRefNo: JAZZCASH_TXN,
+      responseCode: "000",
+      responseMessage: "ok",
+      amount: 9000,
     });
-    const req = await safepayRequest(payload);
-    const res = await webhookPOST(req);
-
-    expect(res.status).toBe(400);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
+    await callbackPOST(makeJazzCashRequest());
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
   });
+});
 
-  it("returns 400 if order_id is missing", async () => {
-    const payload = JSON.stringify({
-      type: "payment:success",
-      data: { amount: 12000 }, // no order_id
+describe("EasyPaisa callback", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("fails closed because the redirect response has no verifiable signature", async () => {
+    const body = new URLSearchParams({
+      orderRefNum: BOOKING_ID,
+      amount: "12000.00",
+      responseCode: "0000",
+    }).toString();
+    const request = new NextRequest(
+      `https://hostello.pk/api/payment/callback?provider=easypaisa&bookingId=${BOOKING_ID}`,
+      { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body },
+    );
+    const response = await callbackPOST(request);
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("payment=unavailable");
+    expect(mocks.bookingFindUnique).not.toHaveBeenCalled();
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("Safepay webhook", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(sendEmail).mockResolvedValue({ success: true } as any);
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking());
+    mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "PENDING",
+      paymentRef: TRACKER,
     });
-    const req = await safepayRequest(payload);
-    const res = await webhookPOST(req);
-
-    expect(res.status).toBe(400);
-    expect(db.booking.updateMany).not.toHaveBeenCalled();
+    mocks.subscriptionUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.userUpdate.mockResolvedValue({});
   });
 
-  it("sends confirmation email once after successful payment", async () => {
-    const payload = makeSafepayEvent();
-    const req     = await safepayRequest(payload);
-    await webhookPOST(req);
-
-    // Allow micro-task queue to flush fire-and-forget email
-    await new Promise((r) => setTimeout(r, 0));
-
+  it("confirms a v2 payment.succeeded event after verifying SHA-512 and paisa amount", async () => {
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: BOOKING_ID,
+        paymentMethod: "safepay",
+        paymentStatus: "PENDING",
+        transactionId: TRACKER,
+      }),
+      data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED", transactionId: TRACKER }),
+    }));
     expect(sendEmail).toHaveBeenCalledTimes(1);
+    const paymentEvent = log.mock.calls
+      .map(([line]) => JSON.parse(String(line)))
+      .find((record) => record.event === "booking.payment_confirmed");
+    expect(paymentEvent).toMatchObject({
+      severity: "INFO",
+      request_id: expect.any(String),
+      attributes: { booking_id: BOOKING_ID, booking_status: "CONFIRMED" },
+    });
+    expect(JSON.stringify(paymentEvent)).not.toContain(TRACKER);
+    expect(JSON.stringify(paymentEvent)).not.toContain("ali@example.com");
+    log.mockRestore();
+  });
+
+  it("logs a resolved email-provider rejection without recipient or tracker data", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(sendEmail).mockResolvedValue({ success: false, error: "Email delivery failed." } as any);
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    await vi.waitFor(() => expect(log).toHaveBeenCalled());
+
+    const event = log.mock.calls
+      .map(([line]) => JSON.parse(String(line)))
+      .find((record) => record.event === "notification.dispatch_failed");
+    expect(response.status).toBe(200);
+    expect(event).toMatchObject({
+      severity: "ERROR",
+      attributes: {
+        notification_type: "BOOKING_CONFIRMED_EMAIL",
+        booking_id: BOOKING_ID,
+        reason: "provider_rejected",
+      },
+    });
+    expect(JSON.stringify(event)).not.toContain("ali@example.com");
+    expect(JSON.stringify(event)).not.toContain(TRACKER);
+    log.mockRestore();
+  });
+
+  it("rejects missing and invalid webhook signatures", async () => {
+    const payload = makeSafepayEvent();
+    const missing = await webhookPOST(new NextRequest("https://hostello.pk/api/payment/webhook", {
+      method: "POST", headers: { "content-type": "application/json" }, body: payload,
+    }));
+    const invalid = await webhookPOST(new NextRequest("https://hostello.pk/api/payment/webhook", {
+      method: "POST", headers: { "content-type": "application/json", "x-sfpy-signature": "ab".repeat(64) }, body: payload,
+    }));
+    expect(missing.status).toBe(401);
+    expect(invalid.status).toBe(401);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects tampered amount, wrong currency, and mismatched tracker", async () => {
+    const tampered = await webhookPOST(await safepayRequest(makeSafepayEvent({ amount: 1_200_001 })));
+    const wrongCurrency = await webhookPOST(await safepayRequest(makeSafepayEvent({ currency: "USD" })));
+    const wrongTracker = await webhookPOST(await safepayRequest(makeSafepayEvent({ tracker: "track_other" })));
+    expect(tampered.status).toBe(400);
+    expect(wrongCurrency.status).toBe(400);
+    expect(wrongTracker.status).toBe(409);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed success events and non-terminal tracker states", async () => {
+    const missingOrder = JSON.stringify({
+      type: "payment.succeeded",
+      merchant_api_key: "sec_test_key",
+      data: { tracker: TRACKER, state: "TRACKER_ENDED", amount: 1_200_000, currency: "PKR", metadata: {} },
+    });
+    const noTerminalState = makeSafepayEvent({ state: "TRACKER_STARTED" });
+    const first = await webhookPOST(await safepayRequest(missingOrder));
+    const second = await webhookPOST(await safepayRequest(noTerminalState));
+    expect(first.status).toBe(400);
+    expect(second.status).toBe(400);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("records a late payment against a cancelled booking without confirming it", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ status: "CANCELLED" }));
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).toMatchObject({ paymentStatus: "PAID", transactionId: TRACKER });
+    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("does not change a refunded booking after a late payment event", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({
+      status: "CANCELLED",
+      paymentStatus: "REFUNDED",
+    }));
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).toBe(409);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("marks the matching pending tracker failed so a fresh checkout can be created", async () => {
+    const payload = makeSafepayEvent({ type: "payment.failed", state: "TRACKER_ENROLLED" });
+    const response = await webhookPOST(await safepayRequest(payload));
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ paymentStatus: "PENDING", transactionId: TRACKER }),
+      data: { paymentStatus: "FAILED", transactionId: TRACKER },
+    }));
+  });
+
+  it("rejects a successful Safepay event for a booking assigned to another provider", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ paymentMethod: "jazzcash" }));
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+
+    expect(response.status).toBe(409);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("ignores a failed Safepay event for a booking assigned to another provider", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({
+      paymentMethod: "jazzcash",
+      transactionId: null,
+    }));
+
+    const response = await webhookPOST(await safepayRequest(
+      makeSafepayEvent({ type: "payment.failed" }),
+    ));
+
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("accepts a legacy booking without a payment method as Safepay's default", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ paymentMethod: null }));
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ paymentMethod: null }),
+    }));
+  });
+
+  it("ignores a stale payment.failed event for an older tracker", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ transactionId: "track_current" }));
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent({ type: "payment.failed" })));
+    expect(response.status).toBe(200);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("does not reprocess the same successful tracker or silently accept a second charge", async () => {
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({ paymentStatus: "PAID", status: "CONFIRMED" }));
+    const duplicate = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(duplicate.status).toBe(200);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+
+    mocks.bookingFindUnique.mockResolvedValue(makeBooking({
+      paymentStatus: "PAID",
+      status: "CONFIRMED",
+      transactionId: "track_first_charge",
+    }));
+    const secondCharge = await webhookPOST(await safepayRequest(makeSafepayEvent({ tracker: "track_second_charge" })));
+    expect(secondCharge.status).toBe(409);
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("activates a pending Pro upgrade only when the recorded tracker and price match", async () => {
+    const payload = makeSafepayEvent({ amount: 300_000, orderId: "sub_sub-1" });
+    const response = await webhookPOST(await safepayRequest(payload));
+    expect(response.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "sub-1", status: "PENDING", paymentRef: TRACKER },
+    }));
+    expect(mocks.userUpdate).toHaveBeenCalledWith({ where: { id: "owner-1" }, data: { plan: "PRO" } });
+  });
+
+  it("does not activate a subscription with the wrong amount or tracker", async () => {
+    const wrongAmount = await webhookPOST(await safepayRequest(
+      makeSafepayEvent({ amount: 299_900, orderId: "sub_sub-1" }),
+    ));
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "PENDING",
+      paymentRef: "track_another",
+    });
+    const wrongTracker = await webhookPOST(await safepayRequest(
+      makeSafepayEvent({ amount: 300_000, orderId: "sub_sub-1" }),
+    ));
+    expect(wrongAmount.status).toBe(400);
+    expect(wrongTracker.status).toBe(409);
+    expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+  });
+
+  it("treats an already-active subscription with the same tracker as an idempotent retry", async () => {
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "ACTIVE",
+      paymentRef: TRACKER,
+    });
+    const response = await webhookPOST(await safepayRequest(
+      makeSafepayEvent({ amount: 300_000, orderId: "sub_sub-1" }),
+    ));
+    expect(response.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+  });
+
+  it("ignores unrelated signed events and rejects unknown bookings", async () => {
+    const ignored = await webhookPOST(await safepayRequest(JSON.stringify({
+      type: "payment.refunded",
+      merchant_api_key: "sec_test_key",
+      data: {},
+    })));
+    expect(ignored.status).toBe(200);
+    mocks.bookingFindUnique.mockResolvedValue(null);
+    const missing = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(missing.status).toBe(404);
   });
 });

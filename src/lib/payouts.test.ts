@@ -9,6 +9,7 @@ vi.mock("@/lib/db", () => ({
     booking: {
       findMany: vi.fn(),
       updateMany: vi.fn(),
+      aggregate: vi.fn(),
     },
     payout: {
       create: vi.fn(),
@@ -35,15 +36,12 @@ const OWNER_ID = "usr_owner_0000000000000001";
 const ADMIN_ID = "usr_admin_0000000000000001";
 const PAYOUT_ID = "pay_0000000000000000000001";
 
-function makeBooking(overrides = {}) {
+function makeOwnerDetails(overrides = {}) {
   return {
-    id: "bkg_0000000000000000000001",
-    hostelId: "hst_0000000000000000000001",
-    total: 30000,
-    status: "COMPLETED",
-    paymentStatus: "PAID",
-    payoutId: null,
-    checkOut: new Date("2026-06-01T00:00:00.000Z"),
+    role: "OWNER",
+    bankAccountTitle: "Jane Owner",
+    bankAccountNumber: "PK00HABB0000000000000000",
+    bankName: "HBL",
     ...overrides,
   };
 }
@@ -64,8 +62,14 @@ function makePayout(overrides = {}) {
 
 /** Build a transaction mock that executes the callback with the given tx object. */
 function mockTransaction(tx: any) {
-  vi.mocked(db.$transaction).mockImplementation(async (cb: any) => cb(tx));
-  return tx;
+  const transaction = {
+    ...tx,
+    user: tx.user ?? {
+      findUnique: vi.fn().mockResolvedValue(makeOwnerDetails()),
+    },
+  };
+  vi.mocked(db.$transaction).mockImplementation(async (cb: any) => cb(transaction));
+  return transaction;
 }
 
 beforeEach(() => {
@@ -102,18 +106,18 @@ describe("getEligibleBookings", () => {
 
 describe("createPayoutBatch", () => {
   it("throws when there are no eligible bookings", async () => {
-    vi.mocked(db.booking.findMany).mockResolvedValue([]);
+    mockTransaction({
+      payout: { create: vi.fn().mockResolvedValue(makePayout()) },
+      booking: { updateMany: vi.fn().mockResolvedValue({ count: 0 }), aggregate: vi.fn() },
+    });
 
     await expect(createPayoutBatch(OWNER_ID, ADMIN_ID)).rejects.toThrow(
       "No eligible bookings to pay out",
     );
-    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(db.$transaction).toHaveBeenCalled();
   });
 
   it("creates a payout, claims the eligible bookings, and sums their totals", async () => {
-    const bookings = [makeBooking({ id: "b1", total: 30000 }), makeBooking({ id: "b2", total: 45000 })];
-    vi.mocked(db.booking.findMany).mockResolvedValue(bookings as any);
-
     const tx = mockTransaction({
       payout: {
         create: vi.fn().mockResolvedValue(makePayout()),
@@ -121,7 +125,7 @@ describe("createPayoutBatch", () => {
       },
       booking: {
         updateMany: vi.fn().mockResolvedValue({ count: 2 }),
-        findMany: vi.fn().mockResolvedValue(bookings),
+        aggregate: vi.fn().mockResolvedValue({ _sum: { total: 75000 } }),
       },
     });
 
@@ -130,9 +134,28 @@ describe("createPayoutBatch", () => {
     expect(tx.payout.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ ownerId: OWNER_ID, createdBy: ADMIN_ID, status: "PENDING" }) }),
     );
+    expect(tx.user.findUnique).toHaveBeenCalledWith({
+      where: { id: OWNER_ID },
+      select: {
+        role: true,
+        bankAccountTitle: true,
+        bankAccountNumber: true,
+        bankName: true,
+      },
+    });
     expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ["b1", "b2"] }, payoutId: null },
+      where: expect.objectContaining({
+        hostel: { ownerId: OWNER_ID },
+        status: { in: ["CONFIRMED", "COMPLETED"] },
+        paymentStatus: "PAID",
+        payoutId: null,
+        checkOut: expect.objectContaining({ lte: expect.any(Date) }),
+      }),
       data: { payoutId: PAYOUT_ID },
+    });
+    expect(tx.booking.aggregate).toHaveBeenCalledWith({
+      where: { payoutId: PAYOUT_ID },
+      _sum: { total: true },
     });
     expect(tx.payout.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { amount: 75000 } }),
@@ -141,32 +164,48 @@ describe("createPayoutBatch", () => {
   });
 
   it("throws when every eligible booking was already claimed by a concurrent batch", async () => {
-    const bookings = [makeBooking({ id: "b1" })];
-    vi.mocked(db.booking.findMany).mockResolvedValue(bookings as any);
-
     mockTransaction({
       payout: { create: vi.fn().mockResolvedValue(makePayout()) },
       booking: {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }), // lost the race
-        findMany: vi.fn(),
+        aggregate: vi.fn(),
       },
     });
 
-    await expect(createPayoutBatch(OWNER_ID, ADMIN_ID)).rejects.toThrow(
-      "already claimed by another payout batch",
-    );
+    await expect(createPayoutBatch(OWNER_ID, ADMIN_ID)).rejects.toThrow("another batch may have claimed them");
   });
 
-  it("sums only the bookings actually claimed, not the initial eligibility read (partial-race case)", async () => {
-    // Three were eligible when read, but only two were still unclaimed by the time
-    // the conditional update ran — the third lost the race to another batch.
-    const bookings = [
-      makeBooking({ id: "b1", total: 10000 }),
-      makeBooking({ id: "b2", total: 20000 }),
-      makeBooking({ id: "b3", total: 99999 }),
-    ];
-    vi.mocked(db.booking.findMany).mockResolvedValue(bookings as any);
+  it.each([
+    ["account title", { bankAccountTitle: "   " }],
+    ["account number", { bankAccountNumber: null }],
+    ["bank name", { bankName: null }],
+  ])("does not create or claim a batch when the owner is missing %s", async (_field, missingDetail) => {
+    const tx = mockTransaction({
+      user: { findUnique: vi.fn().mockResolvedValue(makeOwnerDetails(missingDetail)) },
+      payout: { create: vi.fn() },
+      booking: { updateMany: vi.fn(), aggregate: vi.fn() },
+    });
 
+    await expect(createPayoutBatch(OWNER_ID, ADMIN_ID)).rejects.toThrow("complete all payout bank details");
+
+    expect(tx.payout.create).not.toHaveBeenCalled();
+    expect(tx.booking.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a payout target that is not a current owner", async () => {
+    const tx = mockTransaction({
+      user: { findUnique: vi.fn().mockResolvedValue(makeOwnerDetails({ role: "STUDENT" })) },
+      payout: { create: vi.fn() },
+      booking: { updateMany: vi.fn(), aggregate: vi.fn() },
+    });
+
+    await expect(createPayoutBatch(OWNER_ID, ADMIN_ID)).rejects.toThrow("Payout owner not found");
+
+    expect(tx.payout.create).not.toHaveBeenCalled();
+    expect(tx.booking.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("sums only bookings actually claimed by this payout batch", async () => {
     const tx = mockTransaction({
       payout: {
         create: vi.fn().mockResolvedValue(makePayout()),
@@ -174,8 +213,7 @@ describe("createPayoutBatch", () => {
       },
       booking: {
         updateMany: vi.fn().mockResolvedValue({ count: 2 }),
-        // Only b1 and b2 actually ended up attached to this payout.
-        findMany: vi.fn().mockResolvedValue([bookings[0], bookings[1]]),
+        aggregate: vi.fn().mockResolvedValue({ _sum: { total: 30000 } }),
       },
     });
 
@@ -273,18 +311,25 @@ describe("markPayoutPaid", () => {
 
 describe("getPendingBalance", () => {
   it("sums totals of all eligible bookings", async () => {
-    vi.mocked(db.booking.findMany).mockResolvedValue([
-      makeBooking({ total: 30000 }),
-      makeBooking({ total: 15000 }),
-    ] as any);
+    vi.mocked(db.booking.aggregate).mockResolvedValue({ _sum: { total: 45000 } } as any);
 
     const balance = await getPendingBalance(OWNER_ID);
 
     expect(balance).toBe(45000);
+    expect(db.booking.aggregate).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        hostel: { ownerId: OWNER_ID },
+        status: { in: ["CONFIRMED", "COMPLETED"] },
+        paymentStatus: "PAID",
+        checkOut: expect.objectContaining({ lte: expect.any(Date) }),
+        payoutId: null,
+      }),
+      _sum: { total: true },
+    }));
   });
 
   it("returns 0 when there are no eligible bookings", async () => {
-    vi.mocked(db.booking.findMany).mockResolvedValue([]);
+    vi.mocked(db.booking.aggregate).mockResolvedValue({ _sum: { total: null } } as any);
 
     const balance = await getPendingBalance(OWNER_ID);
 
