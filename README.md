@@ -45,10 +45,11 @@ npm start
 | Command | Does |
 |---|---|
 | `npm run dev` | Start the web app (Turbopack) |
-| `npm run build` | Run pending migrations, generate the Prisma client, build |
+| `npm run build` | Generate the Prisma client and build; does not apply migrations |
 | `npm run test` | Vitest unit/integration tests |
 | `npm run e2e` | Playwright E2E — refuses to run against anything that looks like a production/shared database |
 | `npm run migrate:new` | Create a new Prisma migration (required before any schema change) |
+| `npm run db:migrate:deploy` | Apply committed migrations to the configured database; production CI runs this against Vercel's production environment |
 | `npm run db:studio` | Prisma Studio |
 | `npm run db:seed` | Seed local data |
 | `npm run lint` | ESLint |
