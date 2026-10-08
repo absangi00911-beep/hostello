@@ -1,111 +1,64 @@
-/**
- * Schedule Upstash QStash cron jobs
- *
- * This script creates recurring jobs in Upstash QStash for:
- * 1. Mark Completed Stays - Daily at 00:00 UTC
- * 2. Cancel Abandoned Payments - Every 5 minutes
- * 3. Check Price Alerts - Every 6 hours
- */
+/** Register or update Hostello's recurring jobs in Upstash QStash. */
 
-const QSTASH_TOKEN = process.env.QSTASH_TOKEN;
-const QSTASH_URL = process.env.QSTASH_URL || "https://qstash-us-east-1.upstash.io";
-const APP_URL = process.env.APP_URL || "https://hostello.pk";
+import { Client } from "@upstash/qstash";
+import { CRON_SCHEDULES } from "../src/lib/cron-schedules";
 
-if (!QSTASH_TOKEN) {
-  throw new Error("QSTASH_TOKEN environment variable is required");
-}
-
-interface JobConfig {
-  name: string;
-  schedule: string;
-  endpoint: string;
-  description: string;
-}
-
-const jobs: JobConfig[] = [
-  {
-    name: "mark-completed-stays",
-    schedule: "0 0 * * *", // Daily at 00:00 UTC
-    endpoint: "/api/cron/mark-completed-stays",
-    description: "Mark bookings as completed after checkout",
-  },
-  {
-    name: "cancel-abandoned-payments",
-    schedule: "*/5 * * * *", // Every 5 minutes
-    endpoint: "/api/cron/cancel-abandoned-payments",
-    description: "Cancel bookings stuck in PENDING for 30+ minutes",
-  },
-  {
-    name: "check-price-alerts",
-    schedule: "0 0 */6 * * *", // Every 6 hours (0 0 */6 * * UTC)
-    endpoint: "/api/cron/check-price-alerts",
-    description: "Check price alerts and send notifications",
-  },
-];
+const qstashToken = process.env.QSTASH_TOKEN;
+const qstashUrl = process.env.QSTASH_URL;
+const cronSecret = process.env.CRON_SECRET;
+const appUrl = (process.env.APP_URL || "https://hostello.pk").replace(/\/+$/, "");
 
 async function scheduleJobs() {
-  console.log("🔄 Scheduling Upstash QStash cron jobs...\n");
-  console.log(`App URL: ${APP_URL}\n`);
+  if (!qstashToken) throw new Error("QSTASH_TOKEN environment variable is required");
+  if (!cronSecret) throw new Error("CRON_SECRET environment variable is required");
 
-  if (!QSTASH_TOKEN) {
-    console.error("❌ QSTASH_TOKEN not set in environment variables");
-    process.exit(1);
+  const parsedAppUrl = new URL(appUrl);
+  if (parsedAppUrl.protocol !== "https:") {
+    throw new Error("APP_URL must use HTTPS so QStash can securely call the app");
   }
 
-  for (const job of jobs) {
+  const client = new Client({
+    token: qstashToken,
+    ...(qstashUrl ? { baseUrl: qstashUrl } : {}),
+    enableTelemetry: false,
+  });
+  let failedJobs = 0;
+
+  console.log("Scheduling Hostello's QStash cron jobs");
+  console.log(`App URL: ${appUrl}`);
+
+  for (const [name, job] of Object.entries(CRON_SCHEDULES)) {
+    const destination = new URL(job.endpoint, `${appUrl}/`).toString();
+    const scheduleId = `hostello-${name}`;
+
     try {
-      const url = `${APP_URL}${job.endpoint}`;
-
-      console.log(`Scheduling ${job.name}...`);
-      console.log(`  Destination: ${url}`);
-      console.log(`  Cron: ${job.schedule}`);
-
-      // Try using the publishJSON method which might handle scheduling
-      // QStash SDK might not have a direct schedules method, try raw fetch instead
-      const response = await fetch(`${QSTASH_URL}/v2/schedules`, {
+      const result = await client.schedules.create({
+        scheduleId,
+        destination,
+        cron: job.cron,
         method: "POST",
         headers: {
-          Authorization: `Bearer ${QSTASH_TOKEN}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${cronSecret}`,
         },
-        body: JSON.stringify({
-          destination: url,
-          cron: job.schedule,
-          method: "POST",
-        }),
       });
 
-      const responseText = await response.text();
-
-      if (!response.ok) {
-        throw new Error(`${response.status}: ${responseText}`);
-      }
-
-      console.log(`✅ ${job.name}`);
-      console.log(`   Schedule: ${job.schedule}`);
-      console.log(`   Description: ${job.description}\n`);
+      console.log(`✓ ${name}: ${job.cron} UTC → ${destination} (${result.scheduleId})`);
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("409") || error.message.includes("already")) {
-          console.log(`✅ ${job.name} (already scheduled)\n`);
-        } else {
-          console.error(`❌ Failed to schedule ${job.name}:`);
-          console.error(`   Error: ${error.message}\n`);
-        }
-      } else {
-        console.error(`❌ Unexpected error scheduling ${job.name}:`, error);
-      }
+      failedJobs += 1;
+      const errorName = error instanceof Error ? error.name : "UnknownError";
+      console.error(`✗ ${name}: schedule registration failed (${errorName})`);
     }
   }
 
-  console.log("📋 Job scheduling complete!");
-  console.log("\n✨ Next steps:");
-  console.log("1. Go to https://console.upstash.com/qstash");
-  console.log("2. Click 'Schedules' to verify all jobs are listed");
-  console.log("3. Monitor 'Requests' tab to see execution logs");
+  if (failedJobs > 0) {
+    throw new Error(`${failedJobs} of ${Object.keys(CRON_SCHEDULES).length} cron schedules failed`);
+  }
+
+  console.log(`All ${Object.keys(CRON_SCHEDULES).length} cron schedules are registered.`);
+  console.log("Confirm the schedules and recent deliveries in the Upstash QStash console.");
 }
 
-scheduleJobs().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
+scheduleJobs().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : "Cron schedule registration failed");
+  process.exitCode = 1;
 });
