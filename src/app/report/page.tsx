@@ -61,18 +61,18 @@ export default function ReportPage() {
               <AlertTriangle
                 size={18}
                 strokeWidth={1.5}
-                className="text-[var(--color-warning)]"
+                className="text-[color:var(--color-warning)]"
                 aria-hidden="true"
               />
             </div>
             <h1
-              className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+              className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 
             >
               Report an issue
             </h1>
           </div>
-          <p className="text-[var(--text-body)] text-[var(--color-text-muted)] leading-relaxed">
+          <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] leading-relaxed">
             Help us keep HostelLo safe. We review all reports within 48 hours
             and take action on verified issues.
           </p>
@@ -83,16 +83,16 @@ export default function ReportPage() {
             <CheckCircle2
               size={40}
               strokeWidth={1.5}
-              className="text-[var(--color-success)] mx-auto"
+              className="text-[color:var(--color-success)] mx-auto"
               aria-hidden="true"
             />
             <h2
-              className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
+              className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]"
 
             >
               Report submitted
             </h2>
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
               We review all reports within 48 hours. Thank you for helping keep
               HostelLo trustworthy.
             </p>
@@ -102,7 +102,7 @@ export default function ReportPage() {
             {error && (
               <div
                 role="alert"
-                className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]"
+                className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]"
               >
                 {error}
               </div>
@@ -112,7 +112,7 @@ export default function ReportPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="rp-type"
-                className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+                className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
               >
                 What are you reporting?
               </label>
@@ -134,10 +134,10 @@ export default function ReportPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="rp-url"
-                className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+                className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
               >
                 Hostel page URL{" "}
-                <span className="text-[var(--color-text-muted)] font-[400]">(optional)</span>
+                <span className="text-[color:var(--color-text-muted)] font-[400]">(optional)</span>
               </label>
               <input
                 id="rp-url"
@@ -147,7 +147,7 @@ export default function ReportPage() {
                 placeholder="https://hostello.pk/hostels/..."
                 className={inputCls}
               />
-              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                 Paste the link to the hostel page if applicable.
               </p>
             </div>
@@ -156,7 +156,7 @@ export default function ReportPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="rp-desc"
-                className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+                className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
               >
                 Description
               </label>
@@ -170,14 +170,14 @@ export default function ReportPage() {
                 placeholder="Describe what you experienced or observed. Be as specific as possible — include dates, names, or any evidence you have."
                 className={`${inputCls} h-auto resize-none py-2.5`}
               />
-              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                 {description.length} characters · minimum 30
               </p>
             </div>
 
             {/* Note on anonymous reporting */}
             <div className="rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-4 py-3">
-              <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                 Reports are reviewed by the HostelLo moderation team. Your
                 identity is not shared with the reported party.
               </p>
@@ -186,7 +186,7 @@ export default function ReportPage() {
             <button
               type="submit"
               disabled={loading || !type || description.length < 30}
-              className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading && (
                 <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />

@@ -27,10 +27,13 @@ export function ListingLocationPicker({
   const markerRef = useRef<LeafletMarker | null>(null);
   const placeMarkerRef = useRef<((lat: number, lng: number, pan?: boolean) => void) | null>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
 
   const [locating, setLocating] = useState(false);
   const hasPin = latitude !== "" && longitude !== "";
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   // Init map once. Re-reads latitude/longitude only to decide the *initial*
   // center — after that, the map owns marker position via click/drag, and
@@ -177,7 +180,7 @@ export function ListingLocationPicker({
           type="button"
           onClick={useCurrentLocation}
           disabled={locating}
-          className="absolute top-3 right-3 z-[1000] inline-flex items-center gap-1.5 rounded-full bg-[var(--color-bg-card)] px-3 py-1.5 text-[var(--text-caption)] font-[600] text-[var(--color-text-body)] shadow-[var(--shadow-md)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)] disabled:opacity-60"
+          className="absolute top-3 right-3 z-[1000] inline-flex items-center gap-1.5 rounded-[var(--radius-full)] bg-[var(--color-bg-card)] px-3 py-1.5 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-body)] shadow-[var(--shadow-md)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)] disabled:opacity-60"
         >
           <LocateFixed
             size={13}
@@ -193,10 +196,10 @@ export function ListingLocationPicker({
         <MapPin
           size={15}
           strokeWidth={1.5}
-          className="text-[var(--color-primary)] mt-0.5 shrink-0"
+          className="text-[color:var(--color-primary)] mt-0.5 shrink-0"
           aria-hidden="true"
         />
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           {hasPin
             ? `Pin set at ${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)}. Drag it or click elsewhere on the map to adjust.`
             : "Click anywhere on the map to drop a pin at your hostel's location, or use your current location."}

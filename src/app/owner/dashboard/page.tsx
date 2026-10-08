@@ -10,6 +10,7 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { InlineError, PageSpinner, StatusBadge, formatPKR } from "@/components/ui/shared";
 
 /* -- Stat tile — horizontal: label left, number right ------- */
@@ -28,65 +29,21 @@ function StatTile({
     <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-5 py-4 shadow-[var(--shadow-xs)]">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-          <Icon size={17} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
+          <Icon size={17} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
         </div>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">{label}</p>
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{label}</p>
       </div>
       {loading ? (
         <div className="h-7 w-8 skeleton rounded-[var(--radius-sm)]" />
       ) : (
         <p
-          className="owner-metric-value text-[var(--text-h3)] font-[700] leading-none text-[var(--color-text-heading)]"
+          className="owner-metric-value text-[length:var(--text-h3)] font-[700] leading-none text-[color:var(--color-text-heading)]"
 
         >
           {value}
         </p>
       )}
     </div>
-  );
-}
-
-/* -- Recent bookings row ----------------------------------- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function BookingRow({ booking }: { booking: any }) {
-  return (
-    <tr className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]">
-      <td className="py-3.5 pr-4">
-        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate max-w-[140px]">
-          {booking.user?.name ?? "—"}
-        </p>
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate max-w-[140px]">
-          {booking.user?.email}
-        </p>
-      </td>
-      <td className="py-3.5 pr-4">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[160px]">
-          {booking.hostel?.name}
-        </p>
-      </td>
-      <td className="py-3.5 pr-4 whitespace-nowrap">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-          {format(new Date(booking.checkIn), "d MMM")} →{" "}
-          {format(new Date(booking.checkOut), "d MMM yyyy")}
-        </p>
-      </td>
-      <td className="py-3.5 pr-4 whitespace-nowrap">
-        <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
-          {formatPKR(booking.total)}
-        </span>
-      </td>
-      <td className="py-3.5 pr-4">
-        <StatusBadge variant={booking.status.toLowerCase() as any} />
-      </td>
-      <td className="py-3.5">
-        <Link
-          href={`/owner/bookings?id=${booking.id}`}
-          className="text-[var(--text-caption)] text-[var(--color-text-link)] hover:underline"
-        >
-          View
-        </Link>
-      </td>
-    </tr>
   );
 }
 
@@ -142,19 +99,16 @@ export default function OwnerDashboardPage() {
       {listings.length === 0 && !loadingListings && (
         <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-primary)]/25 bg-[var(--color-primary-faint)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+            <h2 className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
               Start by adding your first listing
             </h2>
-            <p className="mt-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               Share your hostel details to begin receiving student requests.
             </p>
           </div>
-          <Link
-            href="/owner/listings/new"
-            className="inline-flex h-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-white hover:bg-[var(--color-action-dark)] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-          >
-            Add listing
-          </Link>
+          <Button asChild size="default" className="shrink-0">
+            <Link href="/owner/listings/new">Add listing</Link>
+          </Button>
         </div>
       )}
 
@@ -162,14 +116,14 @@ export default function OwnerDashboardPage() {
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border-subtle)]">
           <h2
-            className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
+            className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]"
 
           >
             Recent bookings
           </h2>
           <Link
             href="/owner/bookings"
-            className="flex items-center gap-1 text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline"
+            className="flex items-center gap-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline"
           >
             View all
             <ArrowRight size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -182,13 +136,13 @@ export default function OwnerDashboardPage() {
           </div>
         ) : bookings.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <Clock size={32} strokeWidth={1.5} className="text-[var(--color-text-muted)] mx-auto mb-2" aria-hidden="true" />
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+            <Clock size={32} strokeWidth={1.5} className="text-[color:var(--color-text-muted)] mx-auto mb-2" aria-hidden="true" />
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
               Booking requests will appear here after students submit a request.
             </p>
             <Link
               href="/owner/listings"
-              className="mt-2 inline-flex text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+              className="mt-2 inline-flex text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] hover:underline"
             >
               Review your listings
             </Link>
@@ -201,7 +155,7 @@ export default function OwnerDashboardPage() {
                   {["Student", "Hostel", "Dates", "Total", "Status", ""].map((h) => (
                     <th
                       key={h}
-                      className="px-0 pb-2.5 pt-3 pr-4 first:pl-5 last:pl-0 last:pr-5 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)]"
+                      className="px-0 pb-2.5 pt-3 pr-4 first:pl-5 last:pl-0 last:pr-5 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)]"
                     >
                       {h}
                     </th>
@@ -212,25 +166,25 @@ export default function OwnerDashboardPage() {
                 {bookings.slice(0, 10).map((b: any) => (
                   <tr key={b.id} className="hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]">
                     <td className="py-3.5 pl-5 pr-4">
-                      <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate max-w-[140px]">
+                      <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] truncate max-w-[140px]">
                         {b.user?.name ?? "—"}
                       </p>
-                      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate max-w-[140px]">
+                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate max-w-[140px]">
                         {b.user?.email}
                       </p>
                     </td>
                     <td className="py-3.5 pr-4">
-                      <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[160px]">
+                      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] truncate max-w-[160px]">
                         {b.hostel?.name}
                       </p>
                     </td>
                     <td className="py-3.5 pr-4 whitespace-nowrap">
-                      <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                         {format(new Date(b.checkIn), "d MMM")} → {format(new Date(b.checkOut), "d MMM yyyy")}
                       </p>
                     </td>
                     <td className="py-3.5 pr-4 whitespace-nowrap">
-                      <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
+                      <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
                         {formatPKR(b.total)}
                       </span>
                     </td>
@@ -240,7 +194,7 @@ export default function OwnerDashboardPage() {
                     <td className="py-3.5 pr-5">
                       <Link
                         href={`/owner/bookings`}
-                        className="text-[var(--text-caption)] text-[var(--color-text-link)] hover:underline"
+                        className="text-[length:var(--text-caption)] text-[color:var(--color-text-link)] hover:underline"
                       >
                         View
                       </Link>

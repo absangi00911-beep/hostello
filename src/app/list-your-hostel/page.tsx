@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { auth } from "@/lib/auth/config";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 import { Footer } from "@/components/Footer";
 import { PLANS } from "@/config/plans";
@@ -116,7 +117,7 @@ function OwnerLandingNav({
             <a
               key={href}
               href={href}
-              className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[var(--color-text-heading)]"
+              className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[color:var(--color-text-heading)]"
             >
               {label}
             </a>
@@ -126,7 +127,7 @@ function OwnerLandingNav({
         <div className="flex items-center gap-3 sm:gap-5">
           <Link
             href={isOwner ? "/owner/dashboard" : "/login"}
-            className="hidden text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[var(--color-text-heading)] sm:inline-block"
+            className="hidden text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[color:var(--color-text-heading)] sm:inline-block"
           >
             {isOwner ? "Dashboard" : "Login"}
           </Link>
@@ -158,7 +159,7 @@ function Hero({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
 
       <div className="container-app relative flex min-h-[560px] flex-col justify-center py-16 sm:min-h-[600px] md:min-h-[640px] md:py-24">
         <div className="max-w-2xl">
-          <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
+          <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
             For hostel owners
           </p>
 
@@ -194,15 +195,15 @@ function Hero({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
                 <ShieldCheck
                   size={20}
                   strokeWidth={1.5}
-                  className="text-[var(--color-primary-deep)]"
+                  className="text-[color:var(--color-primary-deep)]"
                   aria-hidden="true"
                 />
               </div>
               <div>
-                <p className="text-[var(--text-body-sm)] font-[700] text-[var(--color-text-heading)]">
+                <p className="text-[length:var(--text-body-sm)] font-[700] text-[color:var(--color-text-heading)]">
                   Verified listings
                 </p>
-                <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                   Every hostel is reviewed before students can book
                 </p>
               </div>
@@ -226,13 +227,13 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-primary-deep)]">
+      <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
         {eyebrow}
       </p>
-      <h2 className="mt-2 font-heading text-[var(--text-h2)] font-[600] text-[var(--color-text-heading)]">
+      <h2 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
         {heading}
       </h2>
-      <p className="mt-3 text-[var(--text-body)] text-[var(--color-text-muted)]">{sub}</p>
+      <p className="mt-3 text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">{sub}</p>
     </div>
   );
 }
@@ -250,25 +251,24 @@ function BenefitsSection() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-                <Icon
-                  size={20}
-                  strokeWidth={1.5}
-                  className="text-[var(--color-primary-deep)]"
-                  aria-hidden="true"
-                />
-              </div>
-              <h3 className="mt-4 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
-                {title}
-              </h3>
-              <p className="mt-2 text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                {body}
-              </p>
-            </div>
+            <Card key={title} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
+              <CardContent className="p-0">
+                <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
+                  <Icon
+                    size={20}
+                    strokeWidth={1.5}
+                    className="text-[color:var(--color-primary-deep)]"
+                    aria-hidden="true"
+                  />
+                </div>
+                <h3 className="mt-4 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
+                  {title}
+                </h3>
+                <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                  {body}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -292,27 +292,29 @@ function HowItWorksSection() {
 
         <div className="mt-12 grid gap-8 md:grid-cols-3 md:gap-6">
           {STEPS.map(({ icon: Icon, title, body }, index) => (
-            <div key={title} className="relative">
-              <div className="flex items-center gap-3">
-                <span className="font-heading text-[2rem] font-[600] text-[var(--color-primary)]/30">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-bg-card)] shadow-[var(--shadow-xs)]">
-                  <Icon
-                    size={16}
-                    strokeWidth={1.5}
-                    className="text-[var(--color-primary-deep)]"
-                    aria-hidden="true"
-                  />
+            <Card key={title} className="relative border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-3">
+                  <span className="font-heading text-[2rem] font-[600] text-[color:var(--color-primary)]/30">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-bg-card)] shadow-[var(--shadow-xs)]">
+                    <Icon
+                      size={16}
+                      strokeWidth={1.5}
+                      className="text-[color:var(--color-primary-deep)]"
+                      aria-hidden="true"
+                    />
+                  </div>
                 </div>
-              </div>
-              <h3 className="mt-3 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
-                {title}
-              </h3>
-              <p className="mt-2 max-w-[42ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                {body}
-              </p>
-            </div>
+                <h3 className="mt-3 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
+                  {title}
+                </h3>
+                <p className="mt-2 max-w-[42ch] text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                  {body}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -321,7 +323,7 @@ function HowItWorksSection() {
 }
 
 /* ── Pricing ─────────────────────────────────────────────── */
-function PricingSection({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
+function PricingSection({ ctaHref }: { ctaHref: string }) {
   return (
     <section id="pricing" className="scroll-mt-16 bg-[var(--color-bg-page)] py-16 md:py-24">
       <div className="container-app">
@@ -333,69 +335,73 @@ function PricingSection({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
 
         <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
           {/* Free */}
-          <div className="flex flex-col rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
-            <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)]">
-              {PLANS.FREE.label}
-            </p>
-            <p className="mt-1 font-heading text-[2.25rem] font-[700] text-[var(--color-text-heading)]">
-              Free
-            </p>
-            <ul className="mt-5 flex-1 space-y-2.5">
-              {PLANS.FREE.perks.map((perk) => (
-                <li key={perk} className="flex items-start gap-2">
-                  <Check
-                    size={15}
-                    strokeWidth={2.5}
-                    className="mt-0.5 shrink-0 text-[var(--color-primary)]"
-                    aria-hidden="true"
-                  />
-                  <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
-                    {perk}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <Button asChild variant="secondary" size="lg" className="mt-6">
-              <Link href={ctaHref}>Get started free</Link>
-            </Button>
-          </div>
+          <Card className="flex flex-col border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
+            <CardContent className="flex flex-1 flex-col p-0">
+              <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]">
+                {PLANS.FREE.label}
+              </p>
+              <p className="mt-1 font-heading text-[2.25rem] font-[700] text-[color:var(--color-text-heading)]">
+                Free
+              </p>
+              <ul className="mt-5 flex-1 space-y-2.5">
+                {PLANS.FREE.perks.map((perk) => (
+                  <li key={perk} className="flex items-start gap-2">
+                    <Check
+                      size={15}
+                      strokeWidth={2.5}
+                      className="mt-0.5 shrink-0 text-[color:var(--color-primary)]"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
+                      {perk}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="secondary" size="lg" className="mt-6">
+                <Link href={ctaHref}>Get started free</Link>
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Pro */}
-          <div className="relative flex flex-col rounded-[var(--radius-xl)] border border-[var(--color-primary)] bg-[var(--color-bg-card)] p-6 shadow-[0_0_0_3px_#ae2f3426]">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)] px-3 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-white">
-                <Zap size={10} strokeWidth={2.5} aria-hidden="true" />
-                Recommended
-              </span>
-            </div>
-            <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)]">
-              {PLANS.PRO.label}
-            </p>
-            <div className="mt-1 flex items-baseline gap-1">
-              <span className="font-heading text-[2.25rem] font-[700] text-[var(--color-text-heading)]">
-                {formatPKR(PLANS.PRO.price)}
-              </span>
-              <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">/mo</span>
-            </div>
-            <ul className="mt-5 flex-1 space-y-2.5">
-              {PLANS.PRO.perks.map((perk) => (
-                <li key={perk} className="flex items-start gap-2">
-                  <Check
-                    size={15}
-                    strokeWidth={2.5}
-                    className="mt-0.5 shrink-0 text-[var(--color-primary)]"
-                    aria-hidden="true"
-                  />
-                  <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
-                    {perk}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <Button asChild size="lg" className="mt-6">
-              <Link href={ctaHref}>Go Pro</Link>
-            </Button>
-          </div>
+          <Card className="relative flex flex-col border-[var(--color-primary)] bg-[var(--color-bg-card)] p-6 shadow-[0_0_0_3px_#ae2f3426]">
+            <CardContent className="flex flex-1 flex-col p-0">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)] px-3 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-[color:var(--color-text-inverse)]">
+                  <Zap size={10} strokeWidth={2.5} aria-hidden="true" />
+                  Recommended
+                </span>
+              </div>
+              <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]">
+                {PLANS.PRO.label}
+              </p>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className="font-heading text-[2.25rem] font-[700] text-[color:var(--color-text-heading)]">
+                  {formatPKR(PLANS.PRO.price)}
+                </span>
+                <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">/mo</span>
+              </div>
+              <ul className="mt-5 flex-1 space-y-2.5">
+                {PLANS.PRO.perks.map((perk) => (
+                  <li key={perk} className="flex items-start gap-2">
+                    <Check
+                      size={15}
+                      strokeWidth={2.5}
+                      className="mt-0.5 shrink-0 text-[color:var(--color-primary)]"
+                      aria-hidden="true"
+                    />
+                    <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
+                      {perk}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Button asChild size="lg" className="mt-6">
+                <Link href={ctaHref}>Go Pro</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
@@ -418,14 +424,16 @@ function FaqSection() {
 
         <div className="mx-auto mt-12 max-w-2xl divide-y divide-[var(--color-border-subtle)] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]">
           {FAQS.map(({ q, a }) => (
-            <div key={q} className="p-5 sm:p-6">
-              <h3 className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">
-                {q}
-              </h3>
-              <p className="mt-2 text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                {a}
-              </p>
-            </div>
+            <Card key={q} className="border-0 bg-transparent shadow-none">
+              <CardContent className="p-5 sm:p-6">
+                <h3 className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">
+                  {q}
+                </h3>
+                <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                  {a}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -438,10 +446,10 @@ function FinalCta({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) 
   return (
     <section className="bg-[var(--color-primary)] py-16 md:py-20">
       <div className="container-app flex flex-col items-center gap-6 text-center">
-        <h2 className="max-w-xl font-heading text-[var(--text-h2)] font-[600] text-white">
+        <h2 className="max-w-xl font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-inverse)]">
           Ready to fill your rooms?
         </h2>
-        <p className="max-w-md text-[var(--text-body)] text-white/90">
+        <p className="max-w-md text-[length:var(--text-body)] text-[color:var(--color-text-inverse)]">
           Join hostel owners across Pakistan who are already listing on HostelLo.
         </p>
         <Button asChild size="lg" className="shadow-[var(--shadow-md)]">
@@ -470,7 +478,7 @@ export default async function ListYourHostelPage() {
         <Hero ctaHref={ctaHref} ctaLabel={ctaLabel} />
         <BenefitsSection />
         <HowItWorksSection />
-        <PricingSection ctaHref={ctaHref} ctaLabel={ctaLabel} />
+        <PricingSection ctaHref={ctaHref} />
         <FaqSection />
         <FinalCta ctaHref={ctaHref} ctaLabel={ctaLabel} />
       </main>

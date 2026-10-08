@@ -18,7 +18,7 @@ const PAD_BOTTOM = 28;
 export function VerificationThroughputChart({ data }: { data: ThroughputPoint[] }) {
   if (data.length < 2) {
     return (
-      <div className="flex h-[260px] items-center justify-center text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+      <div className="flex h-[260px] items-center justify-center text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
         Not enough data yet in this range to chart a trend.
       </div>
     );
@@ -44,7 +44,7 @@ export function VerificationThroughputChart({ data }: { data: ThroughputPoint[] 
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-4 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+      <div className="mb-3 flex items-center gap-4 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-[var(--color-border-strong)]" aria-hidden="true" />
           Submissions

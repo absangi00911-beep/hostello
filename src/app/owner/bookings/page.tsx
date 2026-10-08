@@ -67,7 +67,7 @@ function BookingActions({
 
   if (booking.status !== "PENDING") {
     return (
-      <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] italic">
+      <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] italic">
         {booking.status === "CONFIRMED" ? "Confirmed" :
          booking.status === "COMPLETED" ? "Completed" : "Cancelled"}
       </span>
@@ -79,7 +79,7 @@ function BookingActions({
       <button
         onClick={() => onAction(booking.id, "confirm")}
         disabled={loading}
-        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-success-bg)] border border-[var(--color-success)]/30 text-[var(--text-caption)] font-[600] text-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-white transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-success-bg)] border border-[var(--color-success)]/30 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-success)] hover:bg-[var(--color-success)] hover:text-[color:var(--color-text-inverse)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
       >
         {loading ? <Loader2 size={10} className="animate-spin" aria-hidden="true" /> : null}
         Confirm
@@ -91,7 +91,7 @@ function BookingActions({
           }
         }}
         disabled={loading}
-        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.3)] text-[var(--text-caption)] font-[600] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.3)] text-[length:var(--text-caption)] font-[600] text-[color:var(--color-error)] hover:bg-[var(--color-error)] hover:text-[color:var(--color-text-inverse)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
       >
         Decline
       </button>
@@ -157,15 +157,15 @@ export default function OwnerBookingsPage() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="h-9 appearance-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-3 pr-8 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
+            className="h-9 appearance-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-3 pr-8 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
           >
             {STATUS_OPTIONS.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <ChevronDown size={13} strokeWidth={1.5} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" aria-hidden="true" />
+          <ChevronDown size={13} strokeWidth={1.5} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" aria-hidden="true" />
         </div>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] ml-auto">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] ml-auto">
           {total} booking{total !== 1 ? "s" : ""}
         </p>
       </div>
@@ -184,7 +184,7 @@ export default function OwnerBookingsPage() {
               <thead>
                 <tr className="border-b border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)]">
                   {["Student","Hostel","Dates","Total","Status","Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap">
+                    <th key={h} className="px-4 py-3 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] whitespace-nowrap">
                       {h}
                     </th>
                   ))}
@@ -197,28 +197,28 @@ export default function OwnerBookingsPage() {
                     className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
                   >
                     <td className="px-4 py-3.5">
-                      <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] whitespace-nowrap">
+                      <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] whitespace-nowrap">
                         {b.user?.name ?? "—"}
                       </p>
-                      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                         {b.user?.email}
                       </p>
                     </td>
                     <td className="px-4 py-3.5">
-                      <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[140px]">
+                      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] truncate max-w-[140px]">
                         {b.hostel?.name}
                       </p>
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap">
-                      <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                         {format(new Date(b.checkIn), "d MMM")} → {format(new Date(b.checkOut), "d MMM yy")}
                       </p>
-                      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                         {b.months} mo · {b.guests} guest{b.guests !== 1 ? "s" : ""}
                       </p>
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap">
-                      <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
+                      <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
                         {formatPKR(b.total)}
                       </span>
                     </td>

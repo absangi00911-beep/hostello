@@ -1,9 +1,10 @@
 "use client";
 
 // Path: src/components/hostel/ImageGallery.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useRef, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, type RefObject } from "react";
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight, Grid2x2, Images } from "lucide-react";
+import { useModalFocus } from "@/components/ui/use-modal-focus";
 
 /* -- Types ------------------------------------------------- */
 interface ImageGalleryProps {
@@ -22,40 +23,45 @@ interface LightboxProps {
   hostelName: string;
   startIndex: number;
   onClose: () => void;
+  returnFocusRef: RefObject<HTMLElement | null>;
 }
 
-function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
+function Lightbox({ images, hostelName, startIndex, onClose, returnFocusRef }: LightboxProps) {
   const [current, setCurrent] = useState(startIndex);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const prev = useCallback(() =>
     setCurrent((i) => (i === 0 ? images.length - 1 : i - 1)), [images.length]);
   const next = useCallback(() =>
     setCurrent((i) => (i === images.length - 1 ? 0 : i + 1)), [images.length]);
 
-  /* Keyboard navigation */
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "ArrowLeft")  prev();
-      if (e.key === "ArrowRight") next();
-      if (e.key === "Escape")     onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [prev, next, onClose]);
+  useModalFocus({
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+    returnFocusRef,
+    onEscape: onClose,
+  });
 
-  /* Lock body scroll */
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prevOverflow; };
-  }, []);
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      prev();
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      next();
+    }
+  }
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={`Photo gallery for ${hostelName}`}
       className="fixed inset-0 z-[100] flex flex-col bg-[#0d0e0f]/97"
+      onKeyDown={handleKeyDown}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0 border-b border-white/[0.08]">
@@ -73,6 +79,7 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
           {current + 1} / {images.length}
         </span>
         <button
+          ref={closeButtonRef}
           onClick={onClose}
           aria-label="Close gallery"
           className="flex items-center justify-center rounded-full transition-colors bg-white/[0.08] text-white/70 hover:bg-white/[0.16]"
@@ -123,22 +130,18 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
       {images.length > 1 && (
         <div
           className="shrink-0 flex gap-2 overflow-x-auto px-4 py-3 border-t border-white/[0.08]"
-          role="tablist"
+          role="group"
           aria-label="Photo thumbnails"
         >
           {images.map((src, i) => (
             <button
               key={src}
-              role="tab"
-              aria-selected={i === current}
+              aria-pressed={i === current}
               aria-label={`Go to photo ${i + 1}`}
               onClick={() => setCurrent(i)}
-              className="relative shrink-0 rounded overflow-hidden transition-all"
+              className={`relative shrink-0 rounded overflow-hidden transition-all ${i === current ? "outline outline-2 outline-[var(--color-primary)]" : ""}`}
               style={{
                 width: 64, height: 48,
-                outline: i === current
-                  ? "2px solid var(--color-primary)"
-                  : "2px solid transparent",
                 outlineOffset: 1,
                 opacity: i === current ? 1 : 0.45,
               }}
@@ -163,6 +166,13 @@ function Lightbox({ images, hostelName, startIndex, onClose }: LightboxProps) {
 /* -- Main gallery grid ------------------------------------- */
 export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const lightboxReturnFocusRef = useRef<HTMLElement | null>(null);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+
+  function openLightbox(index: number, event: MouseEvent<HTMLButtonElement>) {
+    lightboxReturnFocusRef.current = event.currentTarget;
+    setLightboxIndex(index);
+  }
 
   /* Fallback — no images uploaded yet */
   if (!images || images.length === 0) {
@@ -173,7 +183,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
       >
         <Images
           size={36}
-          strokeWidth={1} className="text-[var(--color-text-placeholder)]"
+          strokeWidth={1} className="text-[color:var(--color-text-placeholder)]"
           aria-hidden="true"
         />
         <p style={{
@@ -188,21 +198,19 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
 
   const cover    = images[0];
   const side     = images.slice(1, 3);
-  const hasMore  = images.length > 3;
-  const moreCount = images.length - 3;
 
   return (
     <>
       {/* -- Grid layout ----------------------------------- */}
       <div
-        className="w-full overflow-hidden border-b border-[var(--color-border-subtle)]"
+        className="relative w-full overflow-hidden rounded-[var(--radius-xl)] border-b border-[var(--color-border-subtle)]"
         role="region"
         aria-label={`Photos of ${hostelName}`}
       >
         {/* Single image */}
         {images.length === 1 && (
           <button
-            onClick={() => setLightboxIndex(0)}
+            onClick={(event) => openLightbox(0, event)}
             className="relative block aspect-[4/3] w-full sm:aspect-[16/9] lg:h-[480px] lg:aspect-auto"
             aria-label={`Open photo of ${hostelName}`}
           >
@@ -223,7 +231,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
             {images.map((src, i) => (
               <button
                 key={src}
-                onClick={() => setLightboxIndex(i)}
+                onClick={(event) => openLightbox(i, event)}
                 className="relative overflow-hidden"
                 style={{ borderRight: i === 0 ? "2px solid var(--color-bg-page)" : undefined }}
                 aria-label={`Photo ${i + 1} of ${hostelName}`}
@@ -248,7 +256,7 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
           >
             {/* Cover — spans full left column */}
             <button
-              onClick={() => setLightboxIndex(0)}
+              onClick={(event) => openLightbox(0, event)}
               className="relative overflow-hidden"
               style={{ gridRow: "1 / 3" }}
               aria-label={`Cover photo of ${hostelName}`}
@@ -266,18 +274,13 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
             {/* Right column — 2 tiles */}
             {side.map((src, i) => {
               const globalIndex = i + 1;
-              const isLastVisible = i === 1 && hasMore;
 
               return (
                 <button
                   key={src}
-                  onClick={() => setLightboxIndex(globalIndex)}
+                  onClick={(event) => openLightbox(globalIndex, event)}
                   className="relative overflow-hidden group"
-                  aria-label={
-                    isLastVisible
-                      ? `View all ${images.length} photos`
-                      : `Photo ${globalIndex + 1} of ${hostelName}`
-                  }
+                  aria-label={`Photo ${globalIndex + 1} of ${hostelName}`}
                 >
                   <Image
                     src={src}
@@ -286,44 +289,22 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                     sizes="25vw"
                   />
-                  {isLastVisible && (
-                    <div
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0d0e0f]/62"
-                    >
-                      <Grid2x2 size={22} strokeWidth={1.5} className="text-white" aria-hidden="true" />
-                      <span style={{
-                        fontSize: "var(--text-body-sm)",
-                        fontWeight: 600,
-                        color: "#fff",
-                      }}>
-                        +{moreCount} more
-                      </span>
-                    </div>
-                  )}
                 </button>
               );
             })}
           </div>
         )}
 
-        {/* See all button */}
+        {/* "See all" overlays the mosaic itself, bottom-right — Airbnb's
+            actual placement, not a separate bar underneath */}
         {images.length >= 3 && (
-          <div className="flex justify-end px-4 py-2 bg-[var(--color-bg-raised)]">
-            <button
-              onClick={() => setLightboxIndex(0)}
-              className="flex items-center gap-2 rounded-full px-4 py-1.5 transition-colors hover:bg-[var(--color-bg-overlay)]"
-              style={{
-                border: "1px solid var(--color-border-default)",
-                background: "var(--color-bg-card)",
-                fontSize: "var(--text-caption)",
-                fontWeight: 600,
-                color: "var(--color-text-body)",
-              }}
-            >
-              <Grid2x2 size={13} strokeWidth={1.5} aria-hidden="true" />
-              See all {images.length} photos
-            </button>
-          </div>
+          <button
+            onClick={(event) => openLightbox(0, event)}
+            className="absolute bottom-3 right-3 z-10 flex items-center gap-2 rounded-[var(--radius-full)] border border-[var(--color-border-strong)] bg-[var(--color-bg-card)] px-4 py-2 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-heading)] shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--color-bg-overlay)]"
+          >
+            <Grid2x2 size={14} strokeWidth={1.75} aria-hidden="true" />
+            Show all {images.length} photos
+          </button>
         )}
       </div>
 
@@ -333,7 +314,8 @@ export function ImageGallery({ images, hostelName }: ImageGalleryProps) {
           images={images}
           hostelName={hostelName}
           startIndex={clamp(lightboxIndex, 0, images.length - 1)}
-          onClose={() => setLightboxIndex(null)}
+          onClose={closeLightbox}
+          returnFocusRef={lightboxReturnFocusRef}
         />
       )}
     </>

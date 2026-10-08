@@ -91,18 +91,18 @@ export default async function UniversityPage({
         {/* ── Hero header ──────────────────────────────────── */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary-faint)] px-3 py-1.5 mb-4">
-            <GraduationCap size={14} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
-            <span className="text-[11px] font-[600] text-[var(--color-primary-deep)] tracking-wide uppercase">
+            <GraduationCap size={14} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
+            <span className="text-[11px] font-[600] text-[color:var(--color-primary-deep)] tracking-wide uppercase">
               {uni.shortName}
             </span>
           </div>
 
-          <h1 className="text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
+          <h1 className="text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-2"
               style={{ fontFamily: "var(--font-heading)" }}>
             Student hostels near {uni.shortName}
           </h1>
 
-          <div className="flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <div className="flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             <MapPin size={14} strokeWidth={1.5} aria-hidden="true" />
             <span>{uni.name}</span>
             {uni.area && (
@@ -133,7 +133,7 @@ export default async function UniversityPage({
             <div className="text-center">
               <Link
                 href={`/hostels/in/${uni.city.toLowerCase()}`}
-                className="inline-flex items-center gap-2 h-10 px-6 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)] transition-colors"
+                className="inline-flex items-center gap-2 h-10 px-6 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] hover:border-[var(--color-primary)] hover:text-[color:var(--color-primary-deep)] transition-colors"
               >
                 See all hostels in {uni.city}
                 <ArrowRight size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -142,11 +142,11 @@ export default async function UniversityPage({
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Building2 size={36} strokeWidth={1} className="text-[var(--color-text-muted)] mb-4" aria-hidden="true" />
-            <p className="text-[var(--text-body)] font-[500] text-[var(--color-text-body)] mb-1">
+            <Building2 size={36} strokeWidth={1} className="text-[color:var(--color-text-muted)] mb-4" aria-hidden="true" />
+            <p className="text-[length:var(--text-body)] font-[500] text-[color:var(--color-text-body)] mb-1">
               No listings yet in {uni.city}
             </p>
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
               Check back soon — we're growing fast.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default async function UniversityPage({
         {/* ── Other universities in same city ──────────────── */}
         {sisterUnis.length > 0 && (
           <div className="mt-12 pt-8 border-t border-[var(--color-border-subtle)]">
-            <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] mb-3">
+            <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] mb-3">
               Other universities in {uni.city}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -163,7 +163,7 @@ export default async function UniversityPage({
                 <Link
                   key={s.shortName}
                   href={`/university/${universityToSlug(s.shortName)}`}
-                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)] transition-colors"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[color:var(--color-primary-deep)] transition-colors"
                 >
                   <GraduationCap size={12} strokeWidth={1.5} aria-hidden="true" />
                   {s.shortName}

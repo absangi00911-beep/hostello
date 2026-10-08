@@ -55,8 +55,8 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         className={cn(
           "absolute right-4 top-4 rounded-[var(--radius-sm)]",
-          "text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)]",
-          "hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]",
+          "text-[color:var(--color-text-muted)] transition-colors duration-[var(--transition-fast)]",
+          "hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]",
           "focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-1",
           "disabled:pointer-events-none",
           "p-1"
@@ -102,7 +102,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-[var(--text-h4)] font-[600] leading-none tracking-tight text-[var(--color-text-heading)]",
+      "text-[length:var(--text-h4)] font-[600] leading-none tracking-tight text-[color:var(--color-text-heading)]",
       className
     )}
     {...props}
@@ -116,7 +116,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-[var(--text-body-sm)] text-[var(--color-text-muted)]", className)}
+    className={cn("text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]", className)}
     {...props}
   />
 ))

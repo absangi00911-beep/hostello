@@ -1,27 +1,15 @@
 // Path: src/app/booking/[id]/review/page.tsx
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
+import { db } from "@/lib/db";
+import { isBoundedRouteParam } from "@/lib/route-params";
 import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-async function getBooking(id: string, userId: string) {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/bookings/${id}`, {
-      cache: "no-store",
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) return null;
-    const json = await res.json();
-    // Guard: only the booking owner can view this
-    if (json.data?.userId !== userId) return null;
-    return json.data;
-  } catch {
-    return null;
-  }
-}
+const MAX_BOOKING_ID_LENGTH = 64;
 
 export default async function ReviewBookingPage({
   params,
@@ -32,9 +20,37 @@ export default async function ReviewBookingPage({
   if (!session) redirect("/login");
 
   const { id } = await params;
-  const booking = await getBooking(id, session.user.id);
+  if (!isBoundedRouteParam(id, MAX_BOOKING_ID_LENGTH)) notFound();
+
+  const booking = await db.booking.findFirst({
+    where: { id, userId: session.user.id },
+    select: {
+      id: true,
+      checkIn: true,
+      checkOut: true,
+      months: true,
+      guests: true,
+      total: true,
+      status: true,
+      paymentStatus: true,
+      hostel: {
+        select: {
+          name: true,
+          slug: true,
+          city: true,
+          area: true,
+          coverImage: true,
+        },
+      },
+    },
+  });
 
   if (!booking) notFound();
+  const bookingSummary = {
+    ...booking,
+    checkIn: booking.checkIn.toISOString(),
+    checkOut: booking.checkOut.toISOString(),
+  };
 
   // If already paid, skip to confirmation
   if (booking.paymentStatus === "PAID" || booking.status === "CONFIRMED") {
@@ -46,15 +62,12 @@ export default async function ReviewBookingPage({
     return (
       <BookingStepLayout step={1} backHref={`/hostels/${booking.hostel.slug}`}>
         <div className="text-center py-12 space-y-4">
-          <p className="text-[var(--text-h5)] font-[600] text-[var(--color-error)]">
+          <p className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-error)]">
             This booking was cancelled
           </p>
-          <Link
-            href={`/hostels/${booking.hostel.slug}`}
-            className="inline-flex h-10 items-center px-5 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-          >
-            Back to hostel
-          </Link>
+          <Button asChild>
+            <Link href={`/hostels/${booking.hostel.slug}`}>Back to hostel</Link>
+          </Button>
         </div>
       </BookingStepLayout>
     );
@@ -68,25 +81,25 @@ export default async function ReviewBookingPage({
       {/* Heading */}
       <div className="mb-6">
         <h1
-          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)] mb-1"
+          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)] mb-1"
 
         >
           Review your booking
         </h1>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           Confirm your dates, room, guests, and total before moving to secure payment.
         </p>
       </div>
 
       {/* Booking summary card */}
-      <BookingSummaryCard booking={booking} showPaymentHint />
+      <BookingSummaryCard booking={bookingSummary} showPaymentHint />
 
       {/* Cancellation policy */}
       <div className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-4 py-3 space-y-1">
-        <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+        <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
           Cancellation policy
         </p>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] leading-relaxed">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] leading-relaxed">
           You can cancel this booking before the owner confirms it. After
           confirmation, cancellations are subject to the hostel's terms.
         </p>
@@ -97,10 +110,10 @@ export default async function ReviewBookingPage({
         <ShieldCheck
           size={16}
           strokeWidth={1.5}
-          className="text-[var(--color-action)] mt-0.5 shrink-0"
+          className="text-[color:var(--color-action)] mt-0.5 shrink-0"
           aria-hidden="true"
         />
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
           Payment is processed securely via Safepay. HostelLo never stores
           your card details.
         </p>
@@ -108,13 +121,12 @@ export default async function ReviewBookingPage({
 
       {/* CTA */}
       <div className="mt-8">
-        <Link
-          href={`/booking/${id}/payment`}
-          className="inline-flex w-full items-center justify-center gap-2 h-12 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body)] font-[600] text-[var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-        >
-          Confirm and pay
-          <ArrowRight size={18} strokeWidth={1.5} aria-hidden="true" />
-        </Link>
+        <Button asChild className="w-full h-12 text-[length:var(--text-body)]">
+          <Link href={`/booking/${id}/payment`}>
+            Confirm and pay
+            <ArrowRight size={18} strokeWidth={1.5} aria-hidden="true" />
+          </Link>
+        </Button>
       </div>
     </BookingStepLayout>
   );

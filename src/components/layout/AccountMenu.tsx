@@ -4,6 +4,8 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,18 +79,12 @@ export function AccountMenu() {
   if (!session) {
     return (
       <div className="flex items-center gap-2">
-        <Link
-          href="/login"
-          className="hidden sm:inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
-        >
-          Sign in
-        </Link>
-        <Link
-          href="/register"
-          className="inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] bg-[var(--color-action)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-        >
-          Register
-        </Link>
+        <Button asChild variant="secondary" size="sm" className="hidden rounded-[var(--radius-md)] sm:inline-flex">
+          <Link href="/login">Sign in</Link>
+        </Button>
+        <Button asChild size="sm" className="rounded-[var(--radius-md)]">
+          <Link href="/register">Register</Link>
+        </Button>
       </div>
     );
   }
@@ -107,29 +103,23 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          className="flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex h-9 w-auto items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 hover:bg-[var(--color-bg-overlay)]"
           aria-label="Account menu"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] text-[var(--text-body-sm)] font-[600] select-none overflow-hidden">
-            {user.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.image}
-                alt={user.name ?? ""}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              initials
-            )}
-          </span>
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
           <ChevronDown
             size={14}
             strokeWidth={1.5}
-            className="text-[var(--color-text-muted)] hidden sm:block"
+            className="text-[color:var(--color-text-muted)] hidden sm:block"
             aria-hidden="true"
           />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -138,10 +128,10 @@ export function AccountMenu() {
         className="w-56 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-1 shadow-[var(--shadow-lg)]"
       >
         <div className="px-3 py-2 mb-1">
-          <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate">
+          <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] truncate">
             {user.name}
           </p>
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate">
             {user.email}
           </p>
         </div>
@@ -161,7 +151,7 @@ export function AccountMenu() {
           >
             <Link
               href={href}
-              className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-heading)]"
+              className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] cursor-pointer hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-heading)]"
             >
               <Icon size={15} strokeWidth={1.5} aria-hidden="true" />
               {label}
@@ -174,7 +164,7 @@ export function AccountMenu() {
 
         <DropdownMenuItem
           onSelect={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-error)] cursor-pointer hover:bg-[var(--color-error-bg)]"
+          className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[length:var(--text-body-sm)] text-[color:var(--color-error)] cursor-pointer hover:bg-[var(--color-error-bg)]"
         >
           <LogOut size={15} strokeWidth={1.5} aria-hidden="true" />
           Sign out

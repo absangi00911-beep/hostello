@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { inputCls } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ReviewDialogProps {
   hostelId: string;
@@ -63,8 +64,8 @@ function StarPicker({
             strokeWidth={1.5}
             className={`transition-colors duration-[var(--transition-fast)] ${
               n <= (hovered || value)
-                ? "text-[var(--color-primary)] fill-[var(--color-primary)]"
-                : "text-[var(--color-border-strong)]"
+                ? "text-[color:var(--color-primary)] fill-[var(--color-primary)]"
+                : "text-[color:var(--color-border-strong)]"
             }`}
             aria-hidden="true"
           />
@@ -124,7 +125,7 @@ export function ReviewDialog({
       <DialogContent className="max-w-[520px] rounded-[var(--radius-lg)] bg-[var(--color-bg-card)] border border-[var(--color-border-default)] shadow-[var(--shadow-xl)] p-7">
         <DialogHeader className="mb-5">
           <DialogTitle
-            className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] text-left"
+            className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] text-left"
 
           >
             Review {hostelName}
@@ -137,8 +138,8 @@ export function ReviewDialog({
         >
           {/* Overall rating */}
           <div className="space-y-2">
-            <p className="text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
-              Overall rating <span className="text-[var(--color-error)]">*</span>
+            <p className="text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
+              Overall rating <span className="text-[color:var(--color-error)]">*</span>
             </p>
             <StarPicker value={rating} onChange={setRating} label="Overall rating" />
           </div>
@@ -147,7 +148,7 @@ export function ReviewDialog({
           <div className="grid grid-cols-2 gap-3">
             {SUBCATEGORIES.map(({ key, label }) => (
               <div key={key} className="space-y-1.5">
-                <p className="text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)]">
+                <p className="text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)]">
                   {label}
                 </p>
                 <StarPicker
@@ -165,10 +166,10 @@ export function ReviewDialog({
           <div className="space-y-1.5">
             <label
               htmlFor="review-title"
-              className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+              className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
             >
               Title{" "}
-              <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] font-[400]">
+              <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] font-[400]">
                 (optional)
               </span>
             </label>
@@ -187,9 +188,9 @@ export function ReviewDialog({
           <div className="space-y-1.5">
             <label
               htmlFor="review-comment"
-              className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+              className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
             >
-              Review <span className="text-[var(--color-error)]">*</span>
+              Review <span className="text-[color:var(--color-error)]">*</span>
             </label>
             <textarea
               id="review-comment"
@@ -201,30 +202,24 @@ export function ReviewDialog({
               minLength={10}
               className={`${inputCls} h-auto resize-none py-2.5`}
             />
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] text-right">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] text-right">
               {comment.length} / 10 min
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 h-10 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-            >
+            <Button type="button" onClick={onClose} variant="outline" className="flex-1">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={!canSubmit || submitMutation.isPending}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed"
+              loading={submitMutation.isPending}
+              disabled={!canSubmit}
+              className="flex-1"
             >
-              {submitMutation.isPending && (
-                <Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-              )}
               {submitMutation.isPending ? "Submitting…" : "Submit review"}
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

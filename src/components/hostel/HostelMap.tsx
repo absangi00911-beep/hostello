@@ -3,6 +3,7 @@
 
 import { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
+import { escapeHtml } from "@hostello/shared";
 
 type LeafletMap = import("leaflet").Map;
 
@@ -11,6 +12,10 @@ interface HostelMapProps {
   longitude: number;
   hostelName: string;
   address: string;
+}
+
+export function buildHostelPopupHtml(hostelName: string, address: string): string {
+  return `<strong style="font-family:sans-serif;font-size:13px">${escapeHtml(hostelName)}</strong><br/><span style="font-size:12px;color:var(--color-text-muted)">${escapeHtml(address)}</span>`;
 }
 
 export function HostelMap({ latitude, longitude, hostelName, address }: HostelMapProps) {
@@ -74,7 +79,7 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
         L.marker([latitude, longitude], { icon: brandIcon })
           .addTo(map)
           .bindPopup(
-            `<strong style="font-family:sans-serif;font-size:13px">${hostelName}</strong><br/><span style="font-size:12px;color:#666">${address}</span>`,
+            buildHostelPopupHtml(hostelName, address),
             { maxWidth: 220 }
           )
           .openPopup();
@@ -138,10 +143,10 @@ export function HostelMap({ latitude, longitude, hostelName, address }: HostelMa
         <MapPin
           size={16}
           strokeWidth={1.5}
-          className="text-[var(--color-primary)] mt-0.5 shrink-0"
+          className="text-[color:var(--color-primary)] mt-0.5 shrink-0"
           aria-hidden="true"
         />
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
           {address}
         </p>
       </div>
@@ -155,13 +160,13 @@ export function NoMapAvailable({ address }: { address: string }) {
     <div className="space-y-4">
       <div className="flex h-[min(280px,65vw)] min-h-[220px] items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] sm:h-[280px]">
         <div className="text-center space-y-2">
-          <MapPin size={32} strokeWidth={1.5} className="text-[var(--color-text-muted)] mx-auto" aria-hidden="true" />
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">Map not available</p>
+          <MapPin size={32} strokeWidth={1.5} className="text-[color:var(--color-text-muted)] mx-auto" aria-hidden="true" />
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">Map not available</p>
         </div>
       </div>
       <div className="flex items-start gap-2.5">
-        <MapPin size={16} strokeWidth={1.5} className="text-[var(--color-primary)] mt-0.5 shrink-0" aria-hidden="true" />
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">{address}</p>
+        <MapPin size={16} strokeWidth={1.5} className="text-[color:var(--color-primary)] mt-0.5 shrink-0" aria-hidden="true" />
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">{address}</p>
       </div>
     </div>
   );

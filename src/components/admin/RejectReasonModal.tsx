@@ -1,9 +1,10 @@
 "use client";
 // Path: src/components/admin/RejectReasonModal.tsx
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { X, Loader2 } from "lucide-react";
 import { inputCls } from "@/components/ui/input";
+import { useModalFocus } from "@/components/ui/use-modal-focus";
 import { cn } from "@/lib/utils";
 
 const QUICK_REASONS = [
@@ -32,6 +33,7 @@ export function RejectReasonModal({
 }: RejectReasonModalProps) {
   const [reason, setReason] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const isSuspend = action === "suspend";
   const title     = isSuspend ? "Suspend listing" : "Reactivate listing";
@@ -39,21 +41,11 @@ export function RejectReasonModal({
     ? "Provide a reason. This will be sent to the owner by email."
     : "Reactivating will make this listing visible again.";
 
-  useEffect(() => { textareaRef.current?.focus(); }, []);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !loading) onCancel();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onCancel, loading]);
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, []);
+  useModalFocus({
+    dialogRef,
+    initialFocusRef: textareaRef,
+    onEscape: () => { if (!loading) onCancel(); },
+  });
 
   function handleConfirm() {
     const trimmed = reason.trim();
@@ -74,6 +66,7 @@ export function RejectReasonModal({
 
       {/* Modal */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -86,11 +79,11 @@ export function RejectReasonModal({
             <div>
               <h2
                 id="modal-title"
-                className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]"
+                className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]"
               >
                 {title}
               </h2>
-              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
+              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-0.5">
                 {hostelName}
               </p>
             </div>
@@ -98,7 +91,7 @@ export function RejectReasonModal({
               onClick={onCancel}
               disabled={loading}
               aria-label="Close"
-              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
+              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[color:var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]"
             >
               <X size={16} strokeWidth={1.5} aria-hidden="true" />
             </button>
@@ -106,7 +99,7 @@ export function RejectReasonModal({
 
           {/* Body */}
           <div className="px-5 py-4 space-y-4">
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
               {subtitle}
             </p>
 
@@ -114,7 +107,7 @@ export function RejectReasonModal({
               <>
                 {/* Quick reasons */}
                 <div className="space-y-1.5">
-                  <p className="text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
+                  <p className="text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
                     Quick reasons
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -124,10 +117,10 @@ export function RejectReasonModal({
                         type="button"
                         onClick={() => { setReason(r); textareaRef.current?.focus(); }}
                         className={cn(
-                          "h-7 px-2.5 rounded-full border text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)]",
+                          "h-7 px-2.5 rounded-full border text-[length:var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)]",
                           reason === r
-                            ? "border-[var(--color-error)] bg-[var(--color-error-bg)] text-[var(--color-error)]"
-                            : "border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-body)]"
+                            ? "border-[var(--color-error)] bg-[var(--color-error-bg)] text-[color:var(--color-error)]"
+                            : "border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] text-[color:var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[color:var(--color-text-body)]"
                         )}
                       >
                         {r}
@@ -140,9 +133,9 @@ export function RejectReasonModal({
                 <div className="space-y-1.5">
                   <label
                     htmlFor="reason"
-                    className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]"
+                    className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]"
                   >
-                    Reason <span className="text-[var(--color-error)]" aria-hidden="true">*</span>
+                    Reason <span className="text-[color:var(--color-error)]" aria-hidden="true">*</span>
                   </label>
                   <textarea
                     id="reason"
@@ -154,7 +147,7 @@ export function RejectReasonModal({
                     className={cn(inputCls, "h-auto resize-none py-2.5")}
                     disabled={loading}
                   />
-                  <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                  <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                     {reason.trim().length} chars · shown in the email to the owner
                   </p>
                 </div>
@@ -168,7 +161,7 @@ export function RejectReasonModal({
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
+              className="h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]"
             >
               Cancel
             </button>
@@ -177,9 +170,9 @@ export function RejectReasonModal({
               onClick={handleConfirm}
               disabled={!canSubmit || loading}
               className={cn(
-                "inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white transition-colors duration-[var(--transition-base)] disabled:opacity-50",
+                "inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] disabled:opacity-50",
                 isSuspend
-                  ? "bg-[var(--color-error)] hover:bg-[oklch(0.45_0.16_22)]"
+                  ? "bg-[var(--color-error)] hover:opacity-90"
                   : "bg-[var(--color-action)] hover:bg-[var(--color-action-dark)]"
               )}
             >

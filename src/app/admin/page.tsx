@@ -81,7 +81,7 @@ function CompletenessBar({ score }: { score: number }) {
           style={{ width: `${score}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-[var(--text-caption)] font-[600] text-[var(--color-text-body)] w-8 text-right">
+      <span className="text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-body)] w-8 text-right">
         {score}%
       </span>
     </div>
@@ -112,7 +112,7 @@ function AdminActions({
     <button
       onClick={onClick}
       disabled={loading}
-      className={`inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border text-[var(--text-caption)] font-[600] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap ${colorClass}`}
+      className={`inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border text-[length:var(--text-caption)] font-[600] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap ${colorClass}`}
     >
       {loading && (
         <Loader2 size={10} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
@@ -127,17 +127,17 @@ function AdminActions({
         {btn(
           "Review",
           () => onReview(hostel.id, hostel.name),
-          "border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)]",
+          "border-[var(--color-border-default)] text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)]",
         )}
         {btn(
           "Approve",
           () => onApprove(hostel.id),
-          "border-[var(--color-action)]/40 text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
+          "border-[var(--color-action)]/40 text-[color:var(--color-action)] hover:bg-[var(--color-action)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-action)]",
         )}
         {btn(
           "Reject",
           () => onSuspend(hostel.id, hostel.name),
-          "border-[oklch(0.52_0.18_22_/_0.4)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white hover:border-[var(--color-error)]",
+          "border-[oklch(0.52_0.18_22_/_0.4)] text-[color:var(--color-error)] hover:bg-[var(--color-error)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-error)]",
         )}
       </div>
     );
@@ -147,7 +147,7 @@ function AdminActions({
     return btn(
       "Suspend",
       () => onSuspend(hostel.id, hostel.name),
-      "border-[oklch(0.52_0.18_22_/_0.4)] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white hover:border-[var(--color-error)]",
+      "border-[oklch(0.52_0.18_22_/_0.4)] text-[color:var(--color-error)] hover:bg-[var(--color-error)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-error)]",
     );
   }
 
@@ -155,7 +155,7 @@ function AdminActions({
     return btn(
       "Reactivate",
       () => onActivate(hostel.id, hostel.name),
-      "border-[var(--color-action)]/40 text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)]",
+      "border-[var(--color-action)]/40 text-[color:var(--color-action)] hover:bg-[var(--color-action)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-action)]",
     );
   }
 
@@ -278,22 +278,22 @@ export default function AdminListingsPage() {
       <div className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-[1.55rem] sm:text-[1.8rem] md:text-[2rem] font-[900] leading-[1.08] tracking-[-0.045em] text-[var(--color-text-heading)]">
+            <h1 className="font-heading text-[1.55rem] sm:text-[1.8rem] md:text-[2rem] font-[900] leading-[1.08] tracking-[-0.045em] text-[color:var(--color-text-heading)]">
               Hostel Moderation
             </h1>
-            <p className="mt-1 text-[0.76rem] sm:text-[0.8125rem] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-[0.76rem] sm:text-[0.8125rem] text-[color:var(--color-text-muted)]">
               Pending Reviews ({stats?.data.pendingApproval ?? "…"})
             </p>
           </div>
           <div className="relative w-full max-w-[320px]">
-            <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" aria-hidden="true" />
+            <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" aria-hidden="true" />
             <input
               type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search hostels or owner IDs…"
               aria-label="Search hostels or owner IDs"
-              className="w-full h-10 rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-9 pr-3 text-[0.8125rem] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
+              className="w-full h-10 rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-9 pr-3 text-[0.8125rem] text-[color:var(--color-text-body)] placeholder:text-[color:var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15"
             />
           </div>
         </div>
@@ -302,44 +302,44 @@ export default function AdminListingsPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4">
               <div className="flex items-start justify-between">
-                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Total Listings</p>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-secondary-brand-container)]">
-                  <Building2 size={16} strokeWidth={1.5} className="text-[var(--color-secondary-brand)]" aria-hidden="true" />
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">Total Listings</p>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-raised)]">
+                  <Building2 size={16} strokeWidth={1.5} className="text-[color:var(--color-text-heading)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[var(--color-text-heading)]">{stats.data.totalListings.toLocaleString()}</p>
+              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[color:var(--color-text-heading)]">{stats.data.totalListings.toLocaleString()}</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4">
               <div className="flex items-start justify-between">
-                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Pending Approval</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">Pending Approval</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
-                  <ClipboardList size={16} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
+                  <ClipboardList size={16} strokeWidth={1.5} className="text-[color:var(--color-primary-deep)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[var(--color-text-heading)]">{stats.data.pendingApproval}</p>
+              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[color:var(--color-text-heading)]">{stats.data.pendingApproval}</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border-l-[3px] border-l-[var(--color-error)] border-y border-r border-y-[var(--color-border-subtle)] border-r-[var(--color-border-subtle)] bg-[var(--color-error-bg)] p-4">
               <div className="flex items-start justify-between">
-                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-error-text)]">Flagged for Review</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-error-text)]">Flagged for Review</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-card)]">
-                  <AlertTriangle size={16} strokeWidth={1.5} className="text-[var(--color-error)]" aria-hidden="true" />
+                  <AlertTriangle size={16} strokeWidth={1.5} className="text-[color:var(--color-error)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[var(--color-error)]">{stats.data.flaggedCount}</p>
-              <p className="mt-0.5 text-[0.68rem] text-[var(--color-error-text)]">pending, under {FLAGGED_THRESHOLD}% complete</p>
+              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[color:var(--color-error)]">{stats.data.flaggedCount}</p>
+              <p className="mt-0.5 text-[0.68rem] text-[color:var(--color-error-text)]">pending, under {FLAGGED_THRESHOLD}% complete</p>
             </div>
 
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4">
               <div className="flex items-start justify-between">
-                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)]">Newly Published</p>
+                <p className="text-[0.68rem] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">Newly Published</p>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-success-bg)]">
-                  <Sparkles size={16} strokeWidth={1.5} className="text-[var(--color-success-text)]" aria-hidden="true" />
+                  <Sparkles size={16} strokeWidth={1.5} className="text-[color:var(--color-success-text)]" aria-hidden="true" />
                 </div>
               </div>
-              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[var(--color-text-heading)]">
-                +{stats.data.newlyPublished} <span className="text-[0.8rem] font-[500] text-[var(--color-text-muted)]">last {stats.data.newlyPublishedWindowDays}d</span>
+              <p className="mt-3 font-heading text-[1.5rem] sm:text-[1.75rem] font-[800] leading-none tracking-[-0.04em] text-[color:var(--color-text-heading)]">
+                +{stats.data.newlyPublished} <span className="text-[0.8rem] font-[500] text-[color:var(--color-text-muted)]">last {stats.data.newlyPublishedWindowDays}d</span>
               </p>
             </div>
           </div>
@@ -354,8 +354,8 @@ export default function AdminListingsPage() {
               aria-current={tab === value ? "true" : undefined}
               className={`h-9 px-3 sm:px-4 text-[0.72rem] sm:text-[0.8125rem] font-[600] border-b-2 transition-all duration-[var(--transition-fast)] whitespace-nowrap ${
                 tab === value
-                  ? "border-[var(--color-primary)] text-[var(--color-text-heading)]"
-                  : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-body)]"
+                  ? "border-[var(--color-primary)] text-[color:var(--color-text-heading)]"
+                  : "border-transparent text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)]"
               }`}
             >
               {label}
@@ -363,7 +363,7 @@ export default function AdminListingsPage() {
           ))}
         </div>
 
-        <p className="text-[0.75rem] sm:text-[0.8125rem] text-[var(--color-text-muted)]">
+        <p className="text-[0.75rem] sm:text-[0.8125rem] text-[color:var(--color-text-muted)]">
           {isLoading ? "Loading…" : `${total} listing${total !== 1 ? "s" : ""}`}
         </p>
 
@@ -395,7 +395,7 @@ export default function AdminListingsPage() {
                         href={`/hostels/${hostel.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+                        className="inline-flex items-center gap-1 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
                       >
                         <span className="truncate">{hostel.name}</span>
                         <ExternalLink size={11} strokeWidth={1.5} className="shrink-0 opacity-50" aria-hidden="true" />
@@ -404,17 +404,17 @@ export default function AdminListingsPage() {
                     <StatusBadge variant={HOSTEL_STATUS_BADGES[hostel.status]} />
                   </div>
 
-                  <div className="mt-3 grid gap-2 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                  <div className="mt-3 grid gap-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                     <div className="flex items-start justify-between gap-3">
-                      <span className="text-[var(--color-text-muted)]">Owner</span>
+                      <span className="text-[color:var(--color-text-muted)]">Owner</span>
                       <div className="text-right">
-                        <p className="font-[500] text-[var(--color-text-body)] truncate max-w-[170px]">{hostel.owner.name}</p>
+                        <p className="font-[500] text-[color:var(--color-text-body)] truncate max-w-[170px]">{hostel.owner.name}</p>
                         <p className="truncate max-w-[170px]">{hostel.owner.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>City</span>
-                      <span className="text-[var(--color-text-body)]">{hostel.city}</span>
+                      <span className="text-[color:var(--color-text-body)]">{hostel.city}</span>
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <span>Submitted</span>
@@ -448,7 +448,7 @@ export default function AdminListingsPage() {
                       {["Hostel","Owner","City","Submitted","Status","Completeness","Actions"].map((h) => (
                         <th
                           key={h}
-                          className="px-4 py-2.5 text-left text-[var(--text-label)] font-[700] uppercase tracking-[0.04em] text-[var(--color-text-muted)] whitespace-nowrap"
+                          className="px-4 py-2.5 text-left text-[length:var(--text-label)] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-text-muted)] whitespace-nowrap"
                         >
                           {h}
                         </th>
@@ -467,28 +467,28 @@ export default function AdminListingsPage() {
                               href={`/hostels/${hostel.slug}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)] flex items-center gap-1 max-w-[180px] truncate"
+                              className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)] flex items-center gap-1 max-w-[180px] truncate"
                             >
                               {hostel.name}
                               <ExternalLink size={11} strokeWidth={1.5} className="shrink-0 opacity-50" aria-hidden="true" />
                             </Link>
                             {hostel.verified && (
-                              <ShieldCheck size={13} strokeWidth={1.5} className="text-[var(--color-primary)] shrink-0" aria-label="Verified" />
+                              <ShieldCheck size={13} strokeWidth={1.5} className="text-[color:var(--color-primary)] shrink-0" aria-label="Verified" />
                             )}
                           </div>
                         </td>
 
                         <td className="px-4 py-2.5">
-                          <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[140px]">{hostel.owner.name}</p>
-                          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate max-w-[140px]">{hostel.owner.email}</p>
+                          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] truncate max-w-[140px]">{hostel.owner.name}</p>
+                          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate max-w-[140px]">{hostel.owner.email}</p>
                         </td>
 
                         <td className="px-4 py-2.5">
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">{hostel.city}</span>
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{hostel.city}</span>
                         </td>
 
                         <td className="px-4 py-2.5 whitespace-nowrap">
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                             {format(new Date(hostel.createdAt), "d MMM yyyy")}
                           </span>
                         </td>

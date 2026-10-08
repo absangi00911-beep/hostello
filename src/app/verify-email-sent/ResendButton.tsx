@@ -35,7 +35,7 @@ export function ResendVerificationButton() {
 
   if (sent) {
     return (
-      <p className="text-[var(--text-body-sm)] text-[var(--color-success)]">
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-success)]">
         Verification email resent.
       </p>
     );
@@ -44,12 +44,12 @@ export function ResendVerificationButton() {
   return (
     <div className="space-y-2">
       {error && (
-        <p className="text-[var(--text-body-sm)] text-[var(--color-error)]">{error}</p>
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error)]">{error}</p>
       )}
       <button
         onClick={handleResend}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none disabled:opacity-50"
       >
         {loading && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
         {loading ? "Sending…" : "Resend verification email"}

@@ -7,12 +7,12 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AuthCardLayout,
   FormField,
   inputCls,
-  primaryBtnCls,
 } from "@/components/auth/AuthCardLayout";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -66,7 +66,7 @@ function LoginForm() {
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
+            className="text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
           >
             Register
           </Link>
@@ -78,7 +78,7 @@ function LoginForm() {
         {error && (
           <div
             role="alert"
-            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[var(--color-error)]/20 px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]"
+            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[var(--color-error)]/20 px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]"
           >
             {error}
           </div>
@@ -113,10 +113,12 @@ function LoginForm() {
               disabled={loading}
               className={`${inputCls} pr-10`}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)]"
               aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? (
@@ -124,7 +126,7 @@ function LoginForm() {
               ) : (
                 <Eye size={16} strokeWidth={1.5} aria-hidden="true" />
               )}
-            </button>
+            </Button>
           </div>
         </FormField>
 
@@ -132,23 +134,16 @@ function LoginForm() {
         <div className="flex justify-end -mt-1">
           <Link
             href="/forgot-password"
-            className="text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
+            className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
           >
             Forgot password?
           </Link>
         </div>
 
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || !email || !password}
-          className={`${primaryBtnCls} mt-2`}
-        >
-          {loading && (
-            <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-          )}
+        <Button type="submit" loading={loading} disabled={loading || !email || !password} className="mt-2 w-full">
           {loading ? "Signing in…" : "Sign in"}
-        </button>
+        </Button>
       </form>
     </AuthCardLayout>
   );

@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MapPin, AlertCircle } from "lucide-react";
+import { escapeHtml } from "@hostello/shared";
 import { formatPKR } from "@/components/ui/shared";
 import type { HostelCardData } from "./HostelCard";
 import type { Map as LeafletMap, Marker } from "leaflet";
@@ -10,6 +11,11 @@ import type { Map as LeafletMap, Marker } from "leaflet";
 interface SearchMapProps {
   hostels: HostelCardData[];
   city?: string;
+  /** Hostel id currently hovered in the results list — highlights the
+   *  matching pin. Pass alongside onMarkerHover for the reverse direction
+   *  (hovering a pin highlights its card) to get full map/list sync. */
+  hoveredHostelId?: string | null;
+  onMarkerHover?: (hostelId: string | null) => void;
 }
 
 /* ── Helpers ─────────────────────────────────────────────── */
@@ -48,9 +54,23 @@ function getCenter(
 }
 
 /* ── Popup HTML ──────────────────────────────────────────── */
-function buildPopupHtml(hostel: HostelCardData): string {
-  const img = hostel.coverImage
-    ? `<img src="${hostel.coverImage}" alt="${hostel.name}" style="width:100%;height:90px;object-fit:cover;border-radius:6px 6px 0 0;display:block;margin:0 0 8px;">`
+function getSafePopupImageUrl(imageUrl: string | null | undefined): string | null {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith("/") && !imageUrl.startsWith("//")) return imageUrl;
+
+  try {
+    return new URL(imageUrl).protocol === "https:" ? imageUrl : null;
+  } catch {
+    return null;
+  }
+}
+
+export function buildPopupHtml(hostel: HostelCardData): string {
+  const safeImageUrl = getSafePopupImageUrl(hostel.coverImage);
+  const safeName = escapeHtml(hostel.name);
+  const safeSlug = encodeURIComponent(hostel.slug);
+  const img = safeImageUrl
+    ? `<img src="${escapeHtml(safeImageUrl)}" alt="${safeName}" style="width:100%;height:90px;object-fit:cover;border-radius:6px 6px 0 0;display:block;margin:0 0 8px;">`
     : "";
   const verified = hostel.verified
     ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--color-success-text);background:var(--color-success-bg);padding:1px 6px;border-radius:20px;">✓ Verified</span>`
@@ -63,8 +83,8 @@ function buildPopupHtml(hostel: HostelCardData): string {
     <div style="width:200px;font-family:sans-serif;line-height:1.4;">
       ${img}
       <div style="padding: ${img ? "0 8px 8px" : "8px"}">
-        <a href="/hostels/${hostel.slug}" style="font-size:13px;font-weight:700;color:var(--color-text-heading);text-decoration:none;display:block;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${hostel.name}
+        <a href="/hostels/${safeSlug}" style="font-size:13px;font-weight:700;color:var(--color-text-heading);text-decoration:none;display:block;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${safeName}
         </a>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">
           ${verified}
@@ -73,7 +93,7 @@ function buildPopupHtml(hostel: HostelCardData): string {
         <div style="font-size:14px;font-weight:700;color:var(--color-primary);">
           ${formatPKR(hostel.pricePerMonth)}<span style="font-size:11px;font-weight:400;color:var(--color-text-muted);">/mo</span>
         </div>
-        <a href="/hostels/${hostel.slug}" style="display:block;margin-top:8px;text-align:center;background:var(--color-primary);color:#fff;font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-decoration:none;">
+        <a href="/hostels/${safeSlug}" style="display:block;margin-top:8px;text-align:center;background:var(--color-primary);color:#fff;font-size:12px;font-weight:600;padding:5px 0;border-radius:6px;text-decoration:none;">
           View details
         </a>
       </div>
@@ -81,29 +101,68 @@ function buildPopupHtml(hostel: HostelCardData): string {
   `.trim();
 }
 
+/* ── Marker icon — price pill, reused for initial render and hover updates ── */
+function buildMarkerIcon(L: typeof import("leaflet"), hostel: HostelCardData, highlighted: boolean) {
+  const priceLabel = `Rs.${Math.round(hostel.pricePerMonth / 1000)}k`;
+  const isVerified = hostel.verified;
+
+  return L.divIcon({
+    html: `
+      <div style="
+        display:inline-flex;align-items:center;gap:3px;
+        background:${highlighted ? "var(--color-primary-deep)" : isVerified ? "var(--color-primary)" : "var(--color-text-muted)"};
+        color:#fff;
+        font-size:${highlighted ? "12px" : "11px"};font-weight:700;
+        padding:${highlighted ? "4px 9px" : "3px 7px"};
+        border-radius:12px;
+        border:2px solid #fff;
+        box-shadow:${highlighted ? "0 4px 14px rgba(0,0,0,0.35)" : "0 2px 6px rgba(0,0,0,0.25)"};
+        white-space:nowrap;
+        cursor:pointer;
+        transition:background 120ms ease, box-shadow 120ms ease;
+      ">${priceLabel}</div>
+    `,
+    className: "",
+    iconAnchor: [20, 14],
+    popupAnchor: [0, -16],
+  });
+}
+
 /* ── Component ───────────────────────────────────────────── */
-export function SearchMap({ hostels, city }: SearchMapProps) {
+export function SearchMap({ hostels, city, hoveredHostelId = null, onMarkerHover }: SearchMapProps) {
   const mapRef        = useRef<HTMLDivElement>(null);
   const mapInstance   = useRef<LeafletMap | null>(null);
-  const markersRef    = useRef<Marker[]>([]);
+  const markersRef    = useRef<Map<string, Marker>>(new Map());
+  const leafletRef    = useRef<typeof import("leaflet") | null>(null);
+  const onMarkerHoverRef = useRef(onMarkerHover);
   const [error, setError]       = useState(false);
   const [noCoords, setNoCoords] = useState(false);
 
   const mappable = getMappableHostels(hostels);
 
   useEffect(() => {
+    onMarkerHoverRef.current = onMarkerHover;
+  }, [onMarkerHover]);
+
+  useEffect(() => {
     if (!mapRef.current) return;
+    let disposed = false;
+    let createdMap: LeafletMap | null = null;
+    const markers = markersRef.current;
+    setError(false);
+    setNoCoords(false);
 
     // Destroy previous instance on re-render
     if (mapInstance.current) {
       mapInstance.current.remove();
       mapInstance.current = null;
-      markersRef.current  = [];
+      markersRef.current.clear();
     }
 
     async function init() {
       try {
         const L = (await import("leaflet")).default;
+        if (disposed || !mapRef.current?.isConnected) return;
 
         delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
@@ -116,6 +175,8 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
           scrollWheelZoom: false,
           zoomControl: true,
         });
+        createdMap = map;
+        mapInstance.current = map;
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -124,34 +185,12 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
 
         if (mappable.length === 0) {
           setNoCoords(true);
-          mapInstance.current = map;
           return;
         }
 
         // Price label markers
         mappable.forEach((hostel) => {
-          const priceLabel = `Rs.${Math.round(hostel.pricePerMonth / 1000)}k`;
-          const isVerified = hostel.verified;
-
-          const icon = L.divIcon({
-            html: `
-              <div style="
-                display:inline-flex;align-items:center;gap:3px;
-                background:${isVerified ? "var(--color-primary)" : "var(--color-text-muted)"};
-                color:#fff;
-                font-size:11px;font-weight:700;
-                padding:3px 7px;
-                border-radius:12px;
-                border:2px solid #fff;
-                box-shadow:0 2px 6px rgba(0,0,0,0.25);
-                white-space:nowrap;
-                cursor:pointer;
-              ">${priceLabel}</div>
-            `,
-            className: "",
-            iconAnchor: [20, 14],
-            popupAnchor: [0, -16],
-          });
+          const icon = buildMarkerIcon(L, hostel, hostel.id === hoveredHostelId);
 
           const marker = L.marker([hostel.latitude!, hostel.longitude!], { icon })
             .addTo(map)
@@ -160,35 +199,64 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
               minWidth: 200,
               closeButton: true,
               className: "hostello-popup",
-            });
+            })
+            .on("mouseover", () => onMarkerHoverRef.current?.(hostel.id))
+            .on("mouseout", () => onMarkerHoverRef.current?.(null));
 
-          markersRef.current.push(marker);
+          markersRef.current.set(hostel.id, marker);
         });
 
         // Fit map to all markers
         if (mappable.length > 1) {
-          const group = L.featureGroup(markersRef.current);
+          const group = L.featureGroup(Array.from(markers.values()));
           map.fitBounds(group.getBounds().pad(0.15));
         }
 
-        mapInstance.current = map;
+        leafletRef.current = L;
       } catch (err) {
-        console.warn("[SearchMap] Leaflet failed:", err);
-        setError(true);
+        createdMap?.remove();
+        if (mapInstance.current === createdMap) mapInstance.current = null;
+        createdMap = null;
+        markers.clear();
+        if (!disposed) {
+          console.warn("[SearchMap] Leaflet failed:", err);
+          setError(true);
+        }
       }
     }
 
     init();
 
     return () => {
-      if (mapInstance.current) {
+      disposed = true;
+      if (createdMap) {
+        createdMap.remove();
+        if (mapInstance.current === createdMap) mapInstance.current = null;
+        createdMap = null;
+        markers.clear();
+      } else if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
-        markersRef.current  = [];
+        markers.clear();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hostels.map((h) => h.id).join(",")]);
+
+  // Card → pin sync. Deliberately its own effect, separate from map init
+  // above — re-styling one marker's icon on hover shouldn't tear down and
+  // rebuild the whole map on every mouse movement in the results list.
+  useEffect(() => {
+    const L = leafletRef.current;
+    if (!L) return;
+    markersRef.current.forEach((marker, id) => {
+      const hostel = mappable.find((h) => h.id === id);
+      if (!hostel) return;
+      marker.setIcon(buildMarkerIcon(L, hostel, id === hoveredHostelId));
+      marker.setZIndexOffset(id === hoveredHostelId ? 1000 : 0);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoveredHostelId]);
 
   // Leaflet CSS
   useEffect(() => {
@@ -205,8 +273,8 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
         className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
         style={{ height: 520 }}
       >
-        <AlertCircle size={24} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <AlertCircle size={24} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           Map could not be loaded
         </p>
       </div>
@@ -246,8 +314,8 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
         <div
           className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[var(--radius-xl)] pointer-events-none bg-[var(--color-bg-page)]/85"
         >
-          <MapPin size={28} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] text-center max-w-[220px]">
+          <MapPin size={28} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] text-center max-w-[220px]">
             These listings don't have coordinates yet. Switch to list view to browse them.
           </p>
         </div>
@@ -256,7 +324,7 @@ export function SearchMap({ hostels, city }: SearchMapProps) {
       {/* Marker legend */}
       {mappable.length > 0 && (
         <div
-          className="absolute bottom-3 left-3 z-[400] flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-[var(--text-caption)]"
+          className="absolute bottom-3 left-3 z-[400] flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-[length:var(--text-caption)]"
           style={{
             background:  "var(--color-bg-card)",
             border:      "1px solid var(--color-border-subtle)",

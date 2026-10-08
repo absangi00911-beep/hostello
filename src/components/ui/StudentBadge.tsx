@@ -12,7 +12,7 @@ export function StudentBadge({ size = "sm", className = "" }: Props) {
     <span
       className={`inline-flex items-center gap-1 rounded-full border font-[500]
         border-[var(--color-primary-light)] bg-[var(--color-primary-faint)]
-        text-[var(--color-primary-deep)]
+        text-[color:var(--color-primary-deep)]
         ${isMd ? "h-6 px-2.5 text-[12px]" : "h-5 px-2 text-[11px]"}
         ${className}`}
       aria-label="Verified student"

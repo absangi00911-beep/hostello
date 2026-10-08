@@ -38,13 +38,13 @@ function Section({
     >
       <div className="mb-5">
         <h2
-          className={`text-[var(--text-h5)] font-[600] ${danger ? "text-[var(--color-error)]" : "text-[var(--color-text-heading)]"}`}
+          className={`text-[length:var(--text-h5)] font-[600] ${danger ? "text-[color:var(--color-error)]" : "text-[color:var(--color-text-heading)]"}`}
 
         >
           {title}
         </h2>
         {description && (
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] mt-0.5">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mt-0.5">
             {description}
           </p>
         )}
@@ -57,7 +57,7 @@ function Section({
 function SaveBtn({ loading, label = "Save changes" }: { loading: boolean; label?: string }) {
   return (
     <button type="submit" disabled={loading}
-      className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50">
+      className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50">
       {loading && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
       {loading ? "Saving…" : label}
     </button>
@@ -115,15 +115,15 @@ function PersonalInfo({ profile }: { profile: any }) {
           className="relative h-14 w-14 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center overflow-hidden cursor-pointer shrink-0 hover:opacity-80 transition-opacity">
           {avatar
             ? <img src={avatar} alt="Avatar" className="h-full w-full object-cover" />
-            : <span className="text-[var(--color-primary-deep)] text-lg font-[600] select-none">{initials || "?"}</span>}
+            : <span className="text-[color:var(--color-primary-deep)] text-lg font-[600] select-none">{initials || "?"}</span>}
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <Loader2 size={16} strokeWidth={1.5} className="text-white animate-spin" aria-hidden="true" />
+              <Loader2 size={16} strokeWidth={1.5} className="text-[color:var(--color-text-inverse)] animate-spin" aria-hidden="true" />
             </div>
           )}
         </button>
         <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-          className="text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline disabled:opacity-50">
+          className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline disabled:opacity-50">
           {uploading ? "Uploading…" : "Change photo"}
         </button>
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only"
@@ -131,23 +131,23 @@ function PersonalInfo({ profile }: { profile: any }) {
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="os-name" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Full name</label>
+        <label htmlFor="os-name" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Full name</label>
         <input id="os-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
       </div>
       <div className="space-y-1.5">
-          <label htmlFor="os-email" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Email</label>
+          <label htmlFor="os-email" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Email</label>
         <div className="flex items-center gap-2">
           <input id="os-email" type="email" value={profile?.email ?? ""} readOnly className={`${inputCls} opacity-60 cursor-not-allowed`} />
-          {profile?.emailVerified && <ShieldCheck size={16} strokeWidth={1.5} className="text-[var(--color-success)] shrink-0" />}
+          {profile?.emailVerified && <ShieldCheck size={16} strokeWidth={1.5} className="text-[color:var(--color-success)] shrink-0" />}
         </div>
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="os-bio" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Bio <span className="text-[var(--color-text-muted)] font-[400]">(optional)</span></label>
+        <label htmlFor="os-bio" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Bio <span className="text-[color:var(--color-text-muted)] font-[400]">(optional)</span></label>
         <textarea id="os-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
           placeholder="Describe yourself or your business" className={`${inputCls} h-auto resize-none py-2.5`} />
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="os-city" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">City <span className="text-[var(--color-text-muted)] font-[400]">(optional)</span></label>
+        <label htmlFor="os-city" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">City <span className="text-[color:var(--color-text-muted)] font-[400]">(optional)</span></label>
         <input id="os-city" type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Lahore" className={inputCls} />
       </div>
       <SaveBtn loading={saving} />
@@ -185,7 +185,7 @@ function ChangePassword() {
 
   const eye = (
     <button type="button" onClick={() => setShowPw((v) => !v)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors"
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors"
       aria-label={showPw ? "Hide" : "Show"}>
       {showPw ? <EyeOff size={15} strokeWidth={1.5} aria-hidden="true" /> : <Eye size={15} strokeWidth={1.5} aria-hidden="true" />}
     </button>
@@ -193,14 +193,14 @@ function ChangePassword() {
 
   return (
     <form onSubmit={handleSave} className="space-y-4 max-w-[380px]">
-      {error && <p role="alert" className="text-[var(--text-body-sm)] text-[var(--color-error)]">{error}</p>}
+      {error && <p role="alert" className="text-[length:var(--text-body-sm)] text-[color:var(--color-error)]">{error}</p>}
       {[
         { id: "cp-curr", label: "Current password", val: curr, set: setCurr, ac: "current-password" },
         { id: "cp-new",  label: "New password",     val: newPw, set: setNewPw, ac: "new-password" },
         { id: "cp-conf", label: "Confirm password", val: conf,  set: setConf,  ac: "new-password" },
       ].map(({ id, label, val, set, ac }) => (
         <div key={id} className="space-y-1.5">
-          <label htmlFor={id} className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">{label}</label>
+          <label htmlFor={id} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">{label}</label>
           <div className="relative">
             <input id={id} type={showPw ? "text" : "password"} value={val}
               onChange={(e) => set(e.target.value)} autoComplete={ac} required
@@ -234,18 +234,18 @@ function DangerZone() {
 
   return (
     <div className="space-y-4">
-      <p className="text-[var(--text-body-sm)] text-[var(--color-error-text)] leading-relaxed">
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)] leading-relaxed">
         Permanently deletes your account, all your listings, bookings, reviews, and messages. This cannot be undone.
       </p>
       <div className="space-y-1.5">
-        <label htmlFor="dz-confirm" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
+        <label htmlFor="dz-confirm" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
           Type <strong>DELETE</strong> to confirm
         </label>
         <input id="dz-confirm" type="text" value={input} onChange={(e) => setInput(e.target.value)}
           placeholder="DELETE" autoComplete="off" spellCheck="false" className={inputCls} />
       </div>
       <button onClick={handleDelete} disabled={input !== "DELETE" || loading}
-        className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-error)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[oklch(0.44_0.17_22)] active:scale-[0.97] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+        className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-error)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-inverse)] hover:opacity-90 active:scale-[0.97] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
         {loading && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
         Delete my account
       </button>

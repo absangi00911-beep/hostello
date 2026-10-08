@@ -5,6 +5,8 @@ import { Navbar } from "./Navbar";
 
 type TestRole = "STUDENT" | "OWNER" | "ADMIN";
 
+const mocks = vi.hoisted(() => ({ suspendCitySelector: false }));
+
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
 }));
@@ -35,7 +37,10 @@ vi.mock("./layout/AccountMenu", () => ({
 }));
 
 vi.mock("./layout/CitySelector", () => ({
-  CitySelector: () => <button>City</button>,
+  CitySelector: () => {
+    if (mocks.suspendCitySelector) throw new Promise(() => undefined);
+    return <button>City</button>;
+  },
 }));
 
 function mockSession(role: TestRole) {
@@ -59,6 +64,17 @@ function mockSession(role: TestRole) {
 describe("Navbar mobile tabs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.suspendCitySelector = false;
+  });
+
+  it("keeps a readable city label in the prerender fallback", () => {
+    mockSession("STUDENT");
+    mocks.suspendCitySelector = true;
+
+    const markup = renderToStaticMarkup(<Navbar />);
+
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain(">All cities</span>");
   });
 
   it("shows student mobile tabs for students", () => {

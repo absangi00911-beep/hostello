@@ -36,11 +36,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   const pageNumbers = getPageNumbers();
 
   const btnBase =
-    "inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 disabled:opacity-40 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center h-8 min-w-8 px-2 rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 disabled:opacity-40 disabled:cursor-not-allowed";
   const btnInactive =
-    "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]";
+    "text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]";
   const btnActive =
-    "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]";
+    "bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)]";
 
   return (
     <nav
@@ -63,7 +63,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         p === "ellipsis" ? (
           <span
             key={`ellipsis-${i}`}
-            className="inline-flex h-8 w-8 items-center justify-center text-[var(--color-text-muted)] text-[var(--text-body-sm)] select-none"
+            className="inline-flex h-8 w-8 items-center justify-center text-[color:var(--color-text-muted)] text-[length:var(--text-body-sm)] select-none"
             aria-hidden="true"
           >
             …

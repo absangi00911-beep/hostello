@@ -1,24 +1,23 @@
+// Path: src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { twMerge } from "tailwind-merge";
 
-// Design system swap (WanderStay spec): Plus Jakarta Sans for headings,
-// Be Vietnam Pro for body/labels — referenced in globals.css as
-// --font-heading / --font-body. next/font self-hosts the files at build
-// time: no external request from the browser, no layout shift.
-const dmSans = DM_Sans({
+// Airbnb-style pairing: one clean geometric/humanist sans throughout —
+// headline weight from size/weight, not a second display face.
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
-  weight: ["400", "500", "700"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const beVietnamPro = Be_Vietnam_Pro({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-be-vietnam-pro",
-  weight: ["400", "500", "700"],
+  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -40,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f8f9fa",
+  themeColor: "#fafafa",
 };
 
 export default function RootLayout({
@@ -52,9 +51,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className= "relative"
+      className="relative"
     >
-      <body className={twMerge(`${dmSans.variable} ${beVietnamPro.variable} ${jetbrainsMono.variable} "antialiased bg-[#EAEEFE]"` )}>
+      <body className={twMerge(`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`)}>
         <Providers>{children}</Providers>
       </body>
     </html>

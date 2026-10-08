@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Plus, Building2, Pencil, ExternalLink, Loader2 } from "lucide-react";
+import { Plus, Building2, Pencil, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import {
   EmptyState,
@@ -14,6 +14,8 @@ import {
   StatusBadge,
   formatPKR,
 } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface OwnerHostel {
   id: string;
@@ -43,38 +45,41 @@ function StatusAction({
 }) {
   if (hostel.status === "ACTIVE") {
     return (
-      <button
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={() => onAction(hostel.id, "DRAFT")}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)] hover:border-[var(--color-warning)] hover:text-[var(--color-warning)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
+        loading={loading}
+        className="h-7 px-2.5"
       >
-        {loading && <Loader2 size={11} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
         Take offline
-      </button>
+      </Button>
     );
   }
   if (hostel.status === "DRAFT") {
     return (
-      <button
+      <Button
+        size="sm"
         onClick={() => onAction(hostel.id, "PENDING_REVIEW")}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-action)] text-[var(--text-caption)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50"
+        loading={loading}
+        className="h-7 px-2.5"
       >
-        {loading && <Loader2 size={11} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
         Submit for review
-      </button>
+      </Button>
     );
   }
   if (hostel.status === "PENDING_REVIEW") {
     return (
-      <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] italic">
+      <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] italic">
         Under review
       </span>
     );
   }
   if (hostel.status === "SUSPENDED") {
     return (
-      <span className="text-[var(--text-caption)] text-[var(--color-error)]">
+      <span className="text-[length:var(--text-caption)] text-[color:var(--color-error)]">
         Suspended by admin
       </span>
     );
@@ -93,7 +98,7 @@ function ListingCard({
   actionLoading: boolean;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4">
+    <Card className="flex flex-col gap-4 p-4 sm:flex-row">
       {/* Thumbnail */}
       <div className="relative h-24 w-full sm:h-20 sm:w-32 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]">
         {hostel.coverImage ? (
@@ -107,7 +112,7 @@ function ListingCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <Building2 size={20} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
+            <Building2 size={20} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
           </div>
         )}
       </div>
@@ -117,44 +122,40 @@ function ListingCard({
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h3
-              className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
+              className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]"
 
             >
               {hostel.name}
             </h3>
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               {hostel.city}{hostel.area ? `, ${hostel.area}` : ""}
             </p>
           </div>
           <StatusBadge variant={hostel.status.toLowerCase() as any} />
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
-          <span className="font-[600] text-[var(--color-primary-deep)]">{formatPKR(hostel.pricePerMonth)}/mo</span>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+          <span className="font-[600] text-[color:var(--color-primary-deep)]">{formatPKR(hostel.pricePerMonth)}/mo</span>
           <span>{hostel.rooms} rooms · {hostel.capacity} capacity</span>
           {hostel.reviewCount > 0 && <span>★ {hostel.rating.toFixed(1)} ({hostel.reviewCount})</span>}
         </div>
 
         {/* Actions row */}
-        <div className="flex items-center gap-2 flex-wrap pt-1">
-          <Link
-            href={`/owner/listings/${hostel.id}/edit`}
-            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-          >
-            <Pencil size={11} strokeWidth={1.5} aria-hidden="true" />
-            Edit
-          </Link>
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <Button asChild variant="secondary" size="sm" className="h-7 px-2.5">
+            <Link href={`/owner/listings/${hostel.id}/edit`}>
+              <Pencil size={11} strokeWidth={1.5} aria-hidden="true" />
+              Edit
+            </Link>
+          </Button>
 
           {hostel.status === "ACTIVE" && (
-            <Link
-              href={`/hostels/${hostel.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-            >
-              <ExternalLink size={11} strokeWidth={1.5} aria-hidden="true" />
-              View live
-            </Link>
+            <Button asChild variant="secondary" size="sm" className="h-7 px-2.5">
+              <Link href={`/hostels/${hostel.slug}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink size={11} strokeWidth={1.5} aria-hidden="true" />
+                View live
+              </Link>
+            </Button>
           )}
 
           <StatusAction
@@ -164,7 +165,7 @@ function ListingCard({
           />
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -215,17 +216,16 @@ export default function OwnerListingsPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           {listings.length} listing{listings.length !== 1 ? "s" : ""}
         </p>
-        {/* Primary CTA — action green, consistent with all CTAs in the app */}
-        <Link
-          href="/owner/listings/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] hover:-translate-y-px hover:shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-        >
-          <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
-          Add new listing
-        </Link>
+        {/* Primary CTA — accent color, consistent with all CTAs in the app */}
+        <Button asChild size="default" className="gap-2">
+          <Link href="/owner/listings/new">
+            <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
+            Add new listing
+          </Link>
+        </Button>
       </div>
 
       {/* List */}
@@ -235,13 +235,12 @@ export default function OwnerListingsPage() {
           heading="No listings yet"
           description="Add your first hostel to start receiving bookings."
           action={
-            <Link
-              href="/owner/listings/new"
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-            >
-              <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
-              Add your first listing
-            </Link>
+            <Button asChild size="default" className="gap-2">
+              <Link href="/owner/listings/new">
+                <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
+                Add your first listing
+              </Link>
+            </Button>
           }
         />
       ) : (

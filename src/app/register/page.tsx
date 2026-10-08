@@ -7,12 +7,12 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Loader2, Eye, EyeOff, GraduationCap, Building2 } from "lucide-react";
+import { Eye, EyeOff, GraduationCap, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AuthCardLayout,
   FormField,
   inputCls,
-  primaryBtnCls,
 } from "@/components/auth/AuthCardLayout";
 
 type Role = "STUDENT" | "OWNER";
@@ -47,7 +47,7 @@ function PasswordStrength({ password }: { password: string }) {
           />
         ))}
       </div>
-      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
         {score > 0 ? labels[score - 1] : ""}
       </p>
     </div>
@@ -139,7 +139,7 @@ function RegisterForm() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
+            className="text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
           >
             Sign in
           </Link>
@@ -151,7 +151,7 @@ function RegisterForm() {
         {apiError && (
           <div
             role="alert"
-            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]"
+            className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[var(--color-error)]/20 px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]"
           >
             {apiError}
           </div>
@@ -159,7 +159,7 @@ function RegisterForm() {
 
         {/* Role toggle — student vs owner */}
         <div>
-          <p className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-2">
+          <p className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)] mb-2">
             How will you use HostelLo?
           </p>
           <div
@@ -207,21 +207,21 @@ function RegisterForm() {
                   size={16}
                   strokeWidth={1.5}
                   className={`pointer-events-none ${
-                    role === value ? "text-[var(--color-action)]" : "text-[var(--color-text-muted)]"
+                    role === value ? "text-[color:var(--color-action)]" : "text-[color:var(--color-text-muted)]"
                   }`}
                   aria-hidden="true"
                 />
                 <span className="min-w-0">
                   <span
-                    className={`block text-[var(--text-body-sm)] font-[500] ${
+                    className={`block text-[length:var(--text-body-sm)] font-[500] ${
                       role === value
-                        ? "text-[var(--color-action-dark)]"
-                        : "text-[var(--color-text-body)]"
+                        ? "text-[color:var(--color-action-dark)]"
+                        : "text-[color:var(--color-text-body)]"
                     }`}
                   >
                     {label}
                   </span>
-                  <span className="mt-0.5 block text-[var(--text-caption)] leading-tight text-[var(--color-text-muted)]">
+                  <span className="mt-0.5 block text-[length:var(--text-caption)] leading-tight text-[color:var(--color-text-muted)]">
                     {description}
                   </span>
                 </span>
@@ -279,10 +279,12 @@ function RegisterForm() {
               aria-invalid={!!errors.password}
               className={`${inputCls} pr-10`}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setShowPw((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)]"
               aria-label={showPw ? "Hide password" : "Show password"}
             >
               {showPw ? (
@@ -290,40 +292,33 @@ function RegisterForm() {
               ) : (
                 <Eye size={16} strokeWidth={1.5} aria-hidden="true" />
               )}
-            </button>
+            </Button>
           </div>
           {/* Strength indicator — visible as user types, no error state */}
           <PasswordStrength password={password} />
         </FormField>
 
         {/* Terms note */}
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] text-center">
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] text-center">
           By registering, you agree to our{" "}
-          <Link href="/terms" className="text-[var(--color-text-link)] hover:underline">
+          <Link href="/terms" className="text-[color:var(--color-text-link)] hover:underline">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-[var(--color-text-link)] hover:underline">
+          <Link href="/privacy" className="text-[color:var(--color-text-link)] hover:underline">
             Privacy Policy
           </Link>
           .
         </p>
 
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading || !name || !email || !password}
-          className={primaryBtnCls}
-        >
-          {loading && (
-            <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-          )}
+        <Button type="submit" loading={loading} disabled={loading || !name || !email || !password} className="w-full">
           {loading
             ? "Creating account…"
             : role === "OWNER"
               ? "Create owner account"
               : "Create student account"}
-        </button>
+        </Button>
       </form>
     </AuthCardLayout>
   );

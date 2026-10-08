@@ -72,12 +72,12 @@ function StatCard({
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
       <div className="flex items-center justify-between">
-        <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-muted)]">{label}</p>
-        <Icon size={17} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
+        <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-muted)]">{label}</p>
+        <Icon size={17} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
       </div>
-      <p className="owner-metric-value mt-1.5 flex items-baseline gap-1.5 font-heading text-[var(--text-h3)] font-[800] text-[var(--color-text-heading)]">
+      <p className="owner-metric-value mt-1.5 flex items-baseline gap-1.5 font-heading text-[length:var(--text-h3)] font-[800] text-[color:var(--color-text-heading)]">
         {value}
-        {sub && <span className="text-[var(--text-caption)] font-[600] text-[var(--color-text-muted)]">{sub}</span>}
+        {sub && <span className="text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-muted)]">{sub}</span>}
       </p>
     </div>
   );
@@ -130,7 +130,7 @@ function ReplyForm({
 
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] p-4 space-y-3">
-      <p className="flex items-center gap-1.5 text-[var(--text-body-sm)] font-[700] text-[var(--color-text-heading)]">
+      <p className="flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[700] text-[color:var(--color-text-heading)]">
         <MessageSquare size={14} strokeWidth={1.5} aria-hidden="true" />
         {existing ? "Edit Reply" : "Draft Response"}
       </p>
@@ -152,7 +152,7 @@ function ReplyForm({
               }
             }}
             disabled={deleteMutation.isPending}
-            className="mr-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-[var(--text-caption)] font-[500] text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
+            className="mr-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] text-[length:var(--text-caption)] font-[500] text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
           >
             <Trash2 size={12} strokeWidth={1.5} aria-hidden="true" />
             Remove
@@ -160,14 +160,14 @@ function ReplyForm({
         )}
         <button
           onClick={onDone}
-          className="h-9 px-3 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+          className="h-9 px-3 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
         >
           Cancel
         </button>
         <button
           onClick={() => saveMutation.mutate()}
           disabled={!text.trim() || saveMutation.isPending}
-          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[600] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50"
         >
           {saveMutation.isPending && <Loader2 size={13} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
           {existing ? "Update Reply" : "Post Reply"}
@@ -191,14 +191,14 @@ function ReviewCard({ review }: { review: Review }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[13px] font-[700] text-[var(--color-primary-deep)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[13px] font-[700] text-[color:var(--color-primary-deep)]">
             {initials}
           </div>
           <div>
-            <p className="text-[var(--text-body-sm)] font-[700] text-[var(--color-text-heading)]">
+            <p className="text-[length:var(--text-body-sm)] font-[700] text-[color:var(--color-text-heading)]">
               {review.user.name}
             </p>
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               {review.stay
                 ? `Stayed ${format(new Date(review.stay.checkIn), "MMM d")} – ${format(new Date(review.stay.checkOut), "MMM d")} · ${review.stay.months} ${review.stay.months === 1 ? "month" : "months"}`
                 : timeAgo}
@@ -206,10 +206,10 @@ function ReviewCard({ review }: { review: Review }) {
             </p>
           </div>
         </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[var(--text-caption)] font-[600] ${
+        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[length:var(--text-caption)] font-[600] ${
           review.ownerReply
-            ? "bg-[var(--color-success-bg)] text-[var(--color-success-text)]"
-            : "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]"
+            ? "bg-[var(--color-success-bg)] text-[color:var(--color-success-text)]"
+            : "bg-[var(--color-warning-bg)] text-[color:var(--color-warning-text)]"
         }`}>
           {review.ownerReply ? "Replied" : "Pending Reply"}
         </span>
@@ -223,18 +223,18 @@ function ReviewCard({ review }: { review: Review }) {
               key={n}
               size={14}
               strokeWidth={1.5}
-              className={n <= review.rating ? "text-[var(--color-primary)] fill-[var(--color-primary)]" : "text-[var(--color-border-strong)]"}
+              className={n <= review.rating ? "text-[color:var(--color-primary)] fill-[var(--color-primary)]" : "text-[color:var(--color-border-strong)]"}
             />
           ))}
         </div>
-        <span className="text-[var(--text-body-sm)] font-[700] text-[var(--color-text-body)]">{review.rating.toFixed(1)} Overall</span>
+        <span className="text-[length:var(--text-body-sm)] font-[700] text-[color:var(--color-text-body)]">{review.rating.toFixed(1)} Overall</span>
       </div>
 
       {/* Content */}
       {review.title && (
-        <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">{review.title}</p>
+        <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">{review.title}</p>
       )}
-      <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed">{review.comment}</p>
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed">{review.comment}</p>
 
       {/* Subratings — only the categories your review model actually has */}
       {hasSubratings && (
@@ -242,9 +242,9 @@ function ReviewCard({ review }: { review: Review }) {
           {SUBCATEGORIES.filter(({ key }) => review[key] > 0).map(({ key, label }) => (
             <span
               key={key}
-              className="rounded-full bg-[var(--color-bg-sidebar)] px-2.5 py-1 text-[var(--text-caption)] text-[var(--color-text-body)]"
+              className="rounded-full bg-[var(--color-bg-sidebar)] px-2.5 py-1 text-[length:var(--text-caption)] text-[color:var(--color-text-body)]"
             >
-              {label}: <strong className="font-[700] text-[var(--color-primary)]">{review[key]}/5</strong>
+              {label}: <strong className="font-[700] text-[color:var(--color-primary)]">{review[key]}/5</strong>
             </span>
           ))}
         </div>
@@ -253,8 +253,8 @@ function ReviewCard({ review }: { review: Review }) {
       {/* Existing reply */}
       {review.ownerReply && !replying && (
         <div className="ml-4 pl-4 border-l-2 border-[var(--color-border-default)] space-y-1">
-          <p className="text-[var(--text-caption)] font-[700] text-[var(--color-text-muted)] uppercase tracking-wide">Your reply</p>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed">{review.ownerReply}</p>
+          <p className="text-[length:var(--text-caption)] font-[700] text-[color:var(--color-text-muted)] uppercase tracking-wide">Your reply</p>
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed">{review.ownerReply}</p>
         </div>
       )}
 
@@ -264,7 +264,7 @@ function ReviewCard({ review }: { review: Review }) {
       ) : (
         <button
           onClick={() => setReplying(true)}
-          className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
+          className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
         >
           <MessageSquare size={14} strokeWidth={1.5} aria-hidden="true" />
           {review.ownerReply ? "Edit reply" : "Reply"}
@@ -312,7 +312,7 @@ export default function OwnerReviewsPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
         Monitor and respond to student feedback across your properties.
       </p>
 
@@ -335,7 +335,7 @@ export default function OwnerReviewsPage() {
             icon={ThumbsUp}
             label="Response Rate"
             value={stats.responseRate !== null ? `${stats.responseRate.toFixed(0)}%` : "—"}
-            sub={stats.responseRate !== null && stats.responseRate < 80 ? <span className="text-[var(--color-error)]">Needs attention</span> : undefined}
+            sub={stats.responseRate !== null && stats.responseRate < 80 ? <span className="text-[color:var(--color-error)]">Needs attention</span> : undefined}
           />
           <StatCard
             icon={Smile}
@@ -353,10 +353,10 @@ export default function OwnerReviewsPage() {
               key={key}
               onClick={() => setFilter(key)}
               aria-pressed={filter === key}
-              className={`h-9 px-3.5 rounded-full text-[var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
+              className={`h-9 px-3.5 rounded-full text-[length:var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
                 filter === key
-                  ? "bg-[var(--color-primary)] text-white"
-                  : "border border-[var(--color-border-default)] text-[var(--color-text-body)] hover:bg-[var(--color-bg-overlay)]"
+                  ? "bg-[var(--color-primary)] text-[color:var(--color-text-inverse)]"
+                  : "border border-[var(--color-border-default)] text-[color:var(--color-text-body)] hover:bg-[var(--color-bg-overlay)]"
               }`}
             >
               {label}{key === "pending" && stats ? ` (${stats.total - stats.repliedCount})` : ""}
@@ -364,14 +364,14 @@ export default function OwnerReviewsPage() {
           ))}
         </div>
         <div className="relative ml-auto w-full max-w-[260px]">
-          <Search size={14} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" aria-hidden="true" />
+          <Search size={14} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]" aria-hidden="true" />
           <input
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search reviews…"
             aria-label="Search reviews"
-            className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-1.5 pl-8 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)]"
+            className="w-full rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-1.5 pl-8 pr-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] placeholder:text-[color:var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)]"
           />
         </div>
       </div>

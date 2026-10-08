@@ -1,8 +1,10 @@
 "use client";
 
+// Path: src/app/owner/analytics/page.tsx
+
 import { useQuery } from "@tanstack/react-query";
 import { Eye, TrendingUp, Banknote } from "lucide-react";
-import { formatPKR, PageSpinner } from "@/components/ui/shared";
+import { formatPKR, PageSpinner, InlineError } from "@/components/ui/shared";
 
 interface AnalyticsData {
   totalViews: number;
@@ -28,17 +30,17 @@ function StatCard({
     <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
       <div className="flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-          <Icon size={16} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
+          <Icon size={16} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
         </div>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">{label}</p>
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{label}</p>
       </div>
       <p
-        className="owner-metric-value text-[var(--text-h3)] font-[700] leading-none text-[var(--color-text-heading)]"
+        className="owner-metric-value text-[length:var(--text-h3)] font-[700] leading-none text-[color:var(--color-text-heading)]"
 
       >
         {value}
       </p>
-      {sub && <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{sub}</p>}
+      {sub && <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{sub}</p>}
     </div>
   );
 }
@@ -52,7 +54,7 @@ function BarChart({ data }: { data: AnalyticsData["byMonth"] }) {
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
-      <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] mb-4">
+      <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] mb-4">
         Booking requests — last 6 months
       </p>
       <svg
@@ -115,7 +117,7 @@ export default function OwnerAnalyticsPage() {
 
   if (isLoading) return <PageSpinner />;
   if (isError || !data) {
-    return <p className="text-[var(--color-text-muted)]">Failed to load analytics.</p>;
+    return <InlineError message="Couldn't load your analytics. Try refreshing the page." />;
   }
 
   return (
@@ -143,7 +145,15 @@ export default function OwnerAnalyticsPage() {
       </div>
 
       {/* Bar chart */}
-      {data.byMonth.length > 0 && <BarChart data={data.byMonth} />}
+      {data.byMonth.length > 0 ? (
+        <BarChart data={data.byMonth} />
+      ) : (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-8 text-center">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            Booking history will appear here once requests start coming in.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+// Path: src/components/hostel/CompareTray.tsx
+
 import { useRouter } from "next/navigation";
 import { X, ArrowRight, BarChart2 } from "lucide-react";
 
@@ -28,18 +30,18 @@ export function CompareTray({ items, onRemove, onClear }: Props) {
     <div
       role="region"
       aria-label="Hostel comparison tray"
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100vw-2rem)] max-w-2xl"
+      className="fixed bottom-20 left-1/2 z-40 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 md:bottom-4"
     >
       <div className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] shadow-[var(--shadow-lg)] px-4 py-3">
         {/* Icon */}
-        <BarChart2 size={18} strokeWidth={1.5} className="text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+        <BarChart2 size={18} strokeWidth={1.5} className="text-[color:var(--color-primary)] shrink-0" aria-hidden="true" />
 
         {/* Selected hostels */}
         <div className="flex flex-1 flex-wrap gap-2 min-w-0">
           {items.map((item) => (
             <span
               key={item.id}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary-faint)] px-2.5 py-1 text-[11px] font-[500] text-[var(--color-primary-deep)] max-w-[160px]"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary-faint)] px-2.5 py-1 text-[11px] font-[500] text-[color:var(--color-primary-deep)] max-w-[160px]"
             >
               <span className="truncate">{item.name}</span>
               <button
@@ -56,7 +58,7 @@ export function CompareTray({ items, onRemove, onClear }: Props) {
           {Array.from({ length: 3 - items.length }).map((_, i) => (
             <span
               key={`empty-${i}`}
-              className="inline-flex h-7 w-24 items-center justify-center rounded-full border border-dashed border-[var(--color-border-default)] text-[11px] text-[var(--color-text-muted)]"
+              className="inline-flex h-7 w-24 items-center justify-center rounded-full border border-dashed border-[var(--color-border-default)] text-[11px] text-[color:var(--color-text-muted)]"
               aria-hidden="true"
             >
               + add hostel
@@ -68,14 +70,14 @@ export function CompareTray({ items, onRemove, onClear }: Props) {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onClear}
-            className="text-[11px] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors"
+            className="text-[11px] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors"
           >
             Clear
           </button>
           <button
             onClick={handleCompare}
             disabled={items.length < 2}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-[12px] font-[500] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--color-primary-deep)] transition-colors"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-[color:var(--color-text-inverse)] text-[12px] font-[500] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--color-primary-deep)] transition-colors"
           >
             Compare
             <ArrowRight size={13} strokeWidth={2} aria-hidden="true" />

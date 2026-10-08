@@ -68,32 +68,44 @@ function AdminBookingActions({
   booking,
   onAction,
   onRefund,
+  onManualRefund,
   loading,
   refunding,
 }: {
   booking: BookingRow;
   onAction: (id: string, action: AdminBookingAction) => void;
   onRefund: (id: string) => void;
+  onManualRefund: (id: string) => void;
   loading: boolean;
   refunding: boolean;
 }) {
   if (booking.status === "CANCELLED" && booking.paymentStatus === "PAID") {
     return (
-      <button
-        onClick={() => onRefund(booking.id)}
-        disabled={refunding}
-        title="This booking was paid and then cancelled — process the refund."
-        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.68_0.15_72_/_0.4)] text-[var(--text-caption)] font-[600] text-[var(--color-warning-text)] hover:bg-[var(--color-warning)] hover:text-white hover:border-[var(--color-warning)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
-      >
-        {refunding && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
-        Process refund
-      </button>
+      <div className="flex flex-col items-start gap-1.5">
+        <button
+          onClick={() => onRefund(booking.id)}
+          disabled={refunding}
+          title="Ask Safepay to refund this cancelled booking."
+          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.68_0.15_72_/_0.4)] text-[length:var(--text-caption)] font-[600] text-[color:var(--color-warning-text)] hover:bg-[var(--color-warning)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-warning)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+        >
+          {refunding && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
+          Attempt Safepay refund
+        </button>
+        <button
+          onClick={() => onManualRefund(booking.id)}
+          disabled={refunding}
+          title="Use only after checking Safepay and completing the refund there."
+          className="text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-muted)] underline underline-offset-2 disabled:opacity-50"
+        >
+          Record completed manual refund
+        </button>
+      </div>
     );
   }
 
   if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
     return (
-      <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] italic">
+      <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] italic">
         {booking.status.toLowerCase()}
       </span>
     );
@@ -105,7 +117,7 @@ function AdminBookingActions({
         <button
           onClick={() => onAction(booking.id, "confirm")}
           disabled={loading}
-          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[var(--text-caption)] font-[600] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-action)] hover:bg-[var(--color-action)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
         >
           {loading && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
           Confirm
@@ -114,7 +126,7 @@ function AdminBookingActions({
       <button
         onClick={() => onAction(booking.id, "cancel")}
         disabled={loading}
-        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.52_0.18_22_/_0.4)] text-[var(--text-caption)] font-[600] text-[var(--color-error)] hover:bg-[var(--color-error)] hover:text-white hover:border-[var(--color-error)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[oklch(0.52_0.18_22_/_0.4)] text-[length:var(--text-caption)] font-[600] text-[color:var(--color-error)] hover:bg-[var(--color-error)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-error)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
       >
         Cancel
       </button>
@@ -168,19 +180,27 @@ export default function AdminBookingsPage() {
 
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const refundMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, manualConfirmation = false }: { id: string; manualConfirmation?: boolean }) => {
       setRefundingId(id);
-      const res = await fetch(`/api/admin/bookings/${id}/refund`, { method: "PATCH" });
+      const res = await fetch(`/api/admin/bookings/${id}/refund`, {
+        method: "PATCH",
+        ...(manualConfirmation && {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ manualConfirmation: true }),
+        }),
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Refund failed");
-      return json as { data: unknown; automatic: boolean };
+      return json as { data: unknown; automatic: boolean; manualConfirmed?: boolean };
     },
-    onSuccess: ({ automatic }) => {
-      if (automatic) {
+    onSuccess: ({ automatic, manualConfirmed }) => {
+      if (manualConfirmed) {
+        toast.success("Manual refund recorded and the student notified.");
+      } else if (automatic) {
         toast.success("Refund processed automatically through Safepay.");
       } else {
         toast.warning(
-          "Refund recorded on our side — the automatic Safepay call didn't go through. Complete it manually in the Safepay dashboard.",
+          "Safepay did not confirm the refund. The booking remains marked paid. Check the Safepay dashboard; record a manual refund only after it is completed there.",
           { duration: 10000 },
         );
       }
@@ -205,7 +225,7 @@ export default function AdminBookingsPage() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="h-9 appearance-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-3 pr-8 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
+            className="h-9 appearance-none rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-3 pr-8 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
           >
             {STATUS_OPTIONS.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
@@ -213,11 +233,11 @@ export default function AdminBookingsPage() {
           </select>
           <ChevronDown
             size={13} strokeWidth={1.5}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]"
             aria-hidden="true"
           />
         </div>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] ml-auto">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] ml-auto">
           {total} booking{total !== 1 ? "s" : ""}
         </p>
       </div>
@@ -232,7 +252,7 @@ export default function AdminBookingsPage() {
                 <thead>
                   <tr className="border-b border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)]">
                     {["Student","Hostel","Owner","Dates","Total","Status","Actions"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap">
+                      <th key={h} className="px-4 py-3 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] whitespace-nowrap">
                         {h}
                       </th>
                     ))}
@@ -245,24 +265,24 @@ export default function AdminBookingsPage() {
                       className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
                     >
                       <td className="px-4 py-3.5">
-                        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] whitespace-nowrap truncate max-w-[120px]">{b.user?.name ?? "—"}</p>
-                        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate max-w-[120px]">{b.user?.email}</p>
+                        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] whitespace-nowrap truncate max-w-[120px]">{b.user?.name ?? "—"}</p>
+                        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate max-w-[120px]">{b.user?.email}</p>
                       </td>
                       <td className="px-4 py-3.5">
-                        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[130px]">{b.hostel?.name}</p>
-                        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{b.hostel?.city}</p>
+                        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] truncate max-w-[130px]">{b.hostel?.name}</p>
+                        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{b.hostel?.city}</p>
                       </td>
                       <td className="px-4 py-3.5">
-                        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] truncate max-w-[120px]">{b.user?.email}</p>
+                        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] truncate max-w-[120px]">{b.user?.email}</p>
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                           {format(new Date(b.checkIn), "d MMM")} → {format(new Date(b.checkOut), "d MMM yy")}
                         </p>
-                        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{b.months} mo</p>
+                        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{b.months} mo</p>
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
+                        <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
                           {formatPKR(b.total)}
                         </span>
                       </td>
@@ -276,7 +296,12 @@ export default function AdminBookingsPage() {
                         <AdminBookingActions
                           booking={b}
                           onAction={(id, action) => actionMutation.mutate({ id, action })}
-                          onRefund={(id) => refundMutation.mutate(id)}
+                          onRefund={(id) => refundMutation.mutate({ id })}
+                          onManualRefund={(id) => {
+                            if (window.confirm("Confirm that you completed this refund in the Safepay dashboard. The student will be notified.")) {
+                              refundMutation.mutate({ id, manualConfirmation: true });
+                            }
+                          }}
                           loading={actingId === b.id}
                           refunding={refundingId === b.id}
                         />

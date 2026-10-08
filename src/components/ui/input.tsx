@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
  * (e.g. FilterSidebar selects, AuthCardLayout).
  */
 export const inputCls =
-  "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-[var(--color-error)] aria-[invalid=true]:ring-[var(--color-error)]/12"
+  "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] placeholder:text-[color:var(--color-text-placeholder)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-[var(--color-error)] aria-[invalid=true]:ring-[var(--color-error)]/12"
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 

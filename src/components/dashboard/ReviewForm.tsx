@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ArrowLeft, Star, Loader2, Building2, MapPin } from "lucide-react";
+import { ArrowLeft, Star, Building2, MapPin } from "lucide-react";
 import { inputCls } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -73,8 +73,8 @@ function StarPicker({
             strokeWidth={1.5}
             className={`transition-colors duration-[var(--transition-fast)] ${
               n <= (hovered || value)
-                ? "text-[var(--color-primary)] fill-[var(--color-primary)]"
-                : "text-[var(--color-border-strong)]"
+                ? "text-[color:var(--color-primary)] fill-[var(--color-primary)]"
+                : "text-[color:var(--color-border-strong)]"
             }`}
             aria-hidden="true"
           />
@@ -130,16 +130,16 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
     <div>
       <Link
         href="/dashboard/bookings"
-        className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+        className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
       >
         <ArrowLeft size={15} strokeWidth={2} aria-hidden="true" />
         Back to Bookings
       </Link>
 
-      <h1 className="mt-3 font-heading text-[var(--text-h1)] font-[800] text-[var(--color-text-heading)]">
+      <h1 className="mt-3 font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
         {existingReview ? "Edit Your Review" : "Leave a Review"}
       </h1>
-      <p className="mt-1 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+      <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
         Your feedback helps fellow students find their perfect stay.
       </p>
 
@@ -154,24 +154,24 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
               <Image src={hostel.coverImage} alt={hostel.name} fill className="object-cover" sizes="280px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
-                <Building2 size={24} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
+                <Building2 size={24} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
               </div>
             )}
           </div>
           <div className="p-4">
-            <p className="text-[var(--text-body)] font-[700] text-[var(--color-text-heading)]">{hostel.name}</p>
-            <p className="mt-0.5 flex items-center gap-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-body)] font-[700] text-[color:var(--color-text-heading)]">{hostel.name}</p>
+            <p className="mt-0.5 flex items-center gap-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               <MapPin size={11} strokeWidth={2} aria-hidden="true" />
               {hostel.city}
             </p>
             <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] divide-y divide-[var(--color-border-subtle)]">
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-[var(--text-caption)] font-[600] uppercase tracking-wide text-[var(--color-text-muted)]">Check-in</span>
-                <span className="text-[var(--text-caption)] font-[700] text-[var(--color-text-heading)]">{format(new Date(booking.checkIn), "MMM d, yyyy")}</span>
+                <span className="text-[length:var(--text-caption)] font-[600] uppercase tracking-wide text-[color:var(--color-text-muted)]">Check-in</span>
+                <span className="text-[length:var(--text-caption)] font-[700] text-[color:var(--color-text-heading)]">{format(new Date(booking.checkIn), "MMM d, yyyy")}</span>
               </div>
               <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-[var(--text-caption)] font-[600] uppercase tracking-wide text-[var(--color-text-muted)]">Check-out</span>
-                <span className="text-[var(--text-caption)] font-[700] text-[var(--color-text-heading)]">{format(new Date(booking.checkOut), "MMM d, yyyy")}</span>
+                <span className="text-[length:var(--text-caption)] font-[600] uppercase tracking-wide text-[color:var(--color-text-muted)]">Check-out</span>
+                <span className="text-[length:var(--text-caption)] font-[700] text-[color:var(--color-text-heading)]">{format(new Date(booking.checkOut), "MMM d, yyyy")}</span>
               </div>
             </div>
           </div>
@@ -181,21 +181,21 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-7 space-y-6">
           {/* Overall */}
           <div className="space-y-2">
-            <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">Overall Experience</h2>
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">How would you rate your stay overall?</p>
+            <h2 className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">Overall Experience</h2>
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">How would you rate your stay overall?</p>
             <div className="pt-1">
               <StarPicker value={rating} onChange={setRating} label="Overall rating" size={30} />
             </div>
           </div>
 
           <div className="border-t border-[var(--color-border-subtle)] pt-6 space-y-3">
-            <h3 className="text-[var(--text-label)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+            <h3 className="text-[length:var(--text-label)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
               Detailed Ratings
             </h3>
             <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
               {SUBCATEGORIES.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between gap-3">
-                  <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">{label}</span>
+                  <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">{label}</span>
                   <StarPicker
                     value={subcategory[key]}
                     onChange={(v) => setSubcategory((prev) => ({ ...prev, [key]: v }))}
@@ -208,8 +208,8 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
           </div>
 
           <div className="border-t border-[var(--color-border-subtle)] pt-6 space-y-2">
-            <h3 className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">Tell us about your stay</h3>
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <h3 className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">Tell us about your stay</h3>
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               Share your favorite moments, what could be improved, and tips for future students.
             </p>
             <textarea
@@ -221,7 +221,7 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
               minLength={10}
               className={`${inputCls} h-auto resize-none py-2.5`}
             />
-            <p className="text-right text-[var(--text-caption)] text-[var(--color-text-muted)]">{comment.length} / 10 min</p>
+            <p className="text-right text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{comment.length} / 10 min</p>
 
             <input
               type="text"
@@ -235,8 +235,8 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
 
           <div className="border-t border-[var(--color-border-subtle)] pt-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">Recommend to others?</p>
-              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">Would you suggest this hostel to a friend?</p>
+              <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">Recommend to others?</p>
+              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">Would you suggest this hostel to a friend?</p>
             </div>
             <button
               type="button"
@@ -244,10 +244,10 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
               role="switch"
               aria-checked={recommend}
               aria-label={recommend ? "Recommends this hostel" : "Does not recommend this hostel"}
-              className={`relative flex h-6 w-10 shrink-0 items-center rounded-full border-0 transition-colors duration-[150ms] ease-out focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 ${recommend ? "bg-[var(--color-action)]" : "bg-[var(--color-border-strong)]"}`}
+              className={`relative flex h-6 w-10 shrink-0 items-center rounded-[var(--radius-full)] border-0 transition-colors duration-[150ms] ease-out focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 ${recommend ? "bg-[var(--color-action)]" : "bg-[var(--color-border-strong)]"}`}
             >
               <span
-                className={`absolute h-4 w-4 rounded-full bg-white shadow-[var(--shadow-sm)] transition-transform duration-[150ms] ease-out ${recommend ? "translate-x-5" : "translate-x-1"}`}
+                className={`absolute h-4 w-4 rounded-[var(--radius-full)] bg-white shadow-[var(--shadow-sm)] transition-transform duration-[150ms] ease-out ${recommend ? "translate-x-5" : "translate-x-1"}`}
               />
             </button>
           </div>
@@ -255,7 +255,7 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
           <div className="border-t border-[var(--color-border-subtle)] pt-6 flex items-center justify-end gap-3">
             <Link
               href="/dashboard/bookings"
-              className="inline-flex h-10 items-center px-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+              className="inline-flex h-10 items-center px-4 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
             >
               Cancel
             </Link>

@@ -1,7 +1,9 @@
+// Path: src/app/compare/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PhotoImage } from "@/components/landing/PhotoImage";
 import { db } from "@/lib/db";
 import { formatPKR } from "@/components/ui/shared";
 import { Check, X, ShieldCheck, Star, ArrowLeft } from "lucide-react";
@@ -41,9 +43,10 @@ function isDiff<T>(val: T, allVals: T[]) {
 
 function Cell({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) {
   return (
-    <td className={`px-5 py-3.5 text-center text-[var(--text-body-sm)] align-middle
-      ${highlight ? "bg-[#FFF8E1]" : ""}`}
-      style={highlight ? { background: "var(--color-warning-faint, #FFF8E1)" } : {}}>
+    <td
+      className="px-5 py-3.5 text-center text-[length:var(--text-body-sm)] align-middle"
+      style={highlight ? { background: "var(--color-warning-bg)" } : undefined}
+    >
       {children}
     </td>
   );
@@ -75,13 +78,13 @@ export default async function ComparePage({
         <div className="flex items-center gap-3 mb-6">
           <Link
             href="/hostels"
-            className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors"
+            className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors"
           >
             <ArrowLeft size={15} strokeWidth={1.5} aria-hidden="true" />
             Back to search
           </Link>
-          <span className="text-[var(--color-border-default)]">/</span>
-          <h1 className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
+          <span className="text-[color:var(--color-border-default)]">/</span>
+          <h1 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
             Comparing {hostels.length} hostels
           </h1>
         </div>
@@ -91,25 +94,29 @@ export default async function ComparePage({
             {/* Column headers */}
             <thead>
               <tr className="border-b border-[var(--color-border-subtle)]">
-                <th className="px-5 py-4 text-left text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)] w-36">
+                <th className="px-5 py-4 text-left text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)] w-36">
                   Feature
                 </th>
                 {hostels.map((h) => (
                   <th key={h.id} className="px-5 py-4 text-center">
                     {h.coverImage && (
-                      <img
-                        src={h.coverImage} alt=""
-                        className="w-full h-24 object-cover rounded-[var(--radius-md)] mb-3"
-                        aria-hidden="true"
-                      />
+                      <div className="relative mb-3 h-24 w-full overflow-hidden rounded-[var(--radius-md)]">
+                        <PhotoImage
+                          src={h.coverImage}
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 50vw, 120px"
+                          className="object-cover"
+                        />
+                      </div>
                     )}
                     <Link
                       href={`/hostels/${h.slug}`}
-                      className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors line-clamp-2"
+                      className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] hover:text-[color:var(--color-primary)] transition-colors line-clamp-2"
                     >
                       {h.name}
                     </Link>
-                    <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
+                    <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-0.5">
                       {h.area}, {h.city}
                     </p>
                   </th>
@@ -120,10 +127,10 @@ export default async function ComparePage({
             <tbody className="divide-y divide-[var(--color-border-subtle)]">
               {/* Price */}
               <tr>
-                <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Price/mo</td>
+                <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">Price/mo</td>
                 {hostels.map((h) => (
                   <Cell key={h.id} highlight={isDiff(h.pricePerMonth, prices)}>
-                    <span className="font-[700] text-[var(--color-primary-deep)]">
+                    <span className="font-[700] text-[color:var(--color-primary-deep)]">
                       {formatPKR(h.pricePerMonth)}
                     </span>
                   </Cell>
@@ -132,7 +139,7 @@ export default async function ComparePage({
 
               {/* Gender */}
               <tr>
-                <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">For</td>
+                <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">For</td>
                 {hostels.map((h) => (
                   <Cell key={h.id} highlight={isDiff(h.gender, genders)}>
                     {h.gender === "MALE" ? "Boys" : h.gender === "FEMALE" ? "Girls" : "Mixed"}
@@ -142,17 +149,17 @@ export default async function ComparePage({
 
               {/* Rating */}
               <tr>
-                <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Rating</td>
+                <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">Rating</td>
                 {hostels.map((h) => (
                   <Cell key={h.id} highlight={isDiff(h.rating, ratings)}>
                     {h.reviewCount > 0 ? (
                       <span className="inline-flex items-center gap-1 justify-center">
-                        <Star size={13} strokeWidth={1.5} className="text-[var(--color-primary)]" fill="currentColor" aria-hidden="true" />
+                        <Star size={13} strokeWidth={1.5} className="text-[color:var(--color-primary)]" fill="currentColor" aria-hidden="true" />
                         <span className="font-[600]">{h.rating.toFixed(1)}</span>
-                        <span className="text-[var(--color-text-muted)] text-[11px]">({h.reviewCount})</span>
+                        <span className="text-[color:var(--color-text-muted)] text-[11px]">({h.reviewCount})</span>
                       </span>
                     ) : (
-                      <span className="text-[var(--color-text-muted)] text-[11px]">No reviews</span>
+                      <span className="text-[color:var(--color-text-muted)] text-[11px]">No reviews</span>
                     )}
                   </Cell>
                 ))}
@@ -160,16 +167,16 @@ export default async function ComparePage({
 
               {/* Safety */}
               <tr>
-                <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Safety</td>
+                <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">Safety</td>
                 {hostels.map((h, i) => (
                   <Cell key={h.id} highlight={isDiff(safetyScores[i], safetyScores)}>
                     {safetyScores[i] != null ? (
                       <span className="inline-flex items-center gap-1 justify-center">
-                        <ShieldCheck size={13} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
+                        <ShieldCheck size={13} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
                         <span className="font-[600]">{safetyScores[i]!.toFixed(1)}</span>
                       </span>
                     ) : (
-                      <span className="text-[var(--color-text-muted)] text-[11px]">—</span>
+                      <span className="text-[color:var(--color-text-muted)] text-[11px]">—</span>
                     )}
                   </Cell>
                 ))}
@@ -177,7 +184,7 @@ export default async function ComparePage({
 
               {/* Rooms */}
               <tr>
-                <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">Rooms</td>
+                <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">Rooms</td>
                 {hostels.map((h) => (
                   <Cell key={h.id}>{h.rooms ?? "—"}</Cell>
                 ))}
@@ -188,14 +195,14 @@ export default async function ComparePage({
                 const vals = hostels.map((h) => h.amenities.includes(amenity));
                 return (
                   <tr key={amenity}>
-                    <td className="px-5 py-3.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] font-[500]">
+                    <td className="px-5 py-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] font-[500]">
                       {AMENITY_LABELS[amenity] ?? amenity}
                     </td>
                     {hostels.map((h, i) => (
                       <Cell key={h.id} highlight={isDiff(vals[i], vals)}>
                         {vals[i]
-                          ? <Check size={16} strokeWidth={2.5} className="mx-auto text-[var(--color-primary)]" aria-label="Yes" />
-                          : <X    size={16} strokeWidth={2}   className="mx-auto text-[var(--color-text-muted)] opacity-30" aria-label="No" />}
+                          ? <Check size={16} strokeWidth={2.5} className="mx-auto text-[color:var(--color-primary)]" aria-label="Yes" />
+                          : <X    size={16} strokeWidth={2}   className="mx-auto text-[color:var(--color-text-muted)] opacity-30" aria-label="No" />}
                       </Cell>
                     ))}
                   </tr>
@@ -209,7 +216,7 @@ export default async function ComparePage({
                   <td key={h.id} className="px-5 py-4 text-center">
                     <Link
                       href={`/hostels/${h.slug}`}
-                      className="inline-flex h-9 items-center px-5 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-[var(--text-body-sm)] font-[500] hover:bg-[var(--color-primary-deep)] transition-colors"
+                      className="inline-flex h-9 items-center px-5 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-[color:var(--color-text-inverse)] text-[length:var(--text-body-sm)] font-[500] hover:bg-[var(--color-primary-deep)] transition-colors"
                     >
                       View hostel
                     </Link>

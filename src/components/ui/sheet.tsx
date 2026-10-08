@@ -1,5 +1,7 @@
 "use client"
 
+// Path: src/components/ui/sheet.tsx
+
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -19,7 +21,7 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     className={cn(
       // Warm scrim — consistent with DialogOverlay
-      "fixed inset-0 z-50 bg-[#191c1d]/55 backdrop-blur-[1px]",
+      "fixed inset-0 z-50 bg-[var(--color-text-heading)]/55 backdrop-blur-[1px]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
@@ -76,8 +78,8 @@ const SheetContent = React.forwardRef<
       <SheetPrimitive.Close
         className={cn(
           "absolute right-4 top-4 rounded-[var(--radius-sm)] p-1",
-          "text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)]",
-          "hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]",
+          "text-[color:var(--color-text-muted)] transition-colors duration-[var(--transition-fast)]",
+          "hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]",
           "focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-1",
           "disabled:pointer-events-none"
         )}
@@ -119,7 +121,7 @@ const SheetTitle = React.forwardRef<
   <SheetPrimitive.Title
     ref={ref}
     className={cn(
-      "text-[var(--text-h4)] font-[600] leading-none text-[var(--color-text-heading)]",
+      "text-[length:var(--text-h4)] font-[600] leading-none text-[color:var(--color-text-heading)]",
       className
     )}
     {...props}
@@ -133,7 +135,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Description
     ref={ref}
-    className={cn("text-[var(--text-body-sm)] text-[var(--color-text-muted)]", className)}
+    className={cn("text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]", className)}
     {...props}
   />
 ))

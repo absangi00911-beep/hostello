@@ -1,6 +1,11 @@
 // Path: src/components/hostel/ReviewList.tsx
 import { Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Avatar as AvatarPrimitive,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/avatar";
 
 interface ReviewUser {
   id: string;
@@ -35,7 +40,7 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   const pct = (score / 5) * 100;
   return (
     <div className="flex items-center gap-3">
-      <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] w-24 shrink-0">
+      <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] w-24 shrink-0">
         {label}
       </span>
       <div
@@ -51,14 +56,15 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] w-6 text-right shrink-0">
+      <span className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] w-6 text-right shrink-0">
         {score > 0 ? score.toFixed(1) : "–"}
       </span>
     </div>
   );
 }
 
-/* -- User avatar ------------------------------------------- */
+/* -- User avatar — thin (user, size) wrapper around the real Avatar
+      primitive, so call sites here stay a one-liner ------------------- */
 function Avatar({ user, size = 36 }: { user: ReviewUser; size?: number }) {
   const initials = user.name
     .split(" ")
@@ -68,27 +74,12 @@ function Avatar({ user, size = 36 }: { user: ReviewUser; size?: number }) {
     .slice(0, 2);
 
   return (
-    <div
-      className="shrink-0 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center overflow-hidden"
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      {user.avatar ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.avatar}
-          alt=""
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <span
-          className="text-[var(--color-primary-deep)] font-[600] select-none"
-          style={{ fontSize: size * 0.38 }}
-        >
-          {initials}
-        </span>
-      )}
-    </div>
+    <AvatarPrimitive style={{ width: size, height: size }} className="shrink-0" aria-hidden="true">
+      <AvatarImage src={user.avatar ?? undefined} alt="" />
+      <AvatarFallback style={{ fontSize: size * 0.38 }}>
+        {initials}
+      </AvatarFallback>
+    </AvatarPrimitive>
   );
 }
 
@@ -104,10 +95,10 @@ function ReviewCard({ review }: { review: ReviewData }) {
       <div className="flex items-start gap-3 mb-3">
         <Avatar user={review.user} />
         <div className="min-w-0 flex-1">
-          <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate">
+          <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] truncate">
             {review.user.name}
           </p>
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             {timeAgo}
           </p>
         </div>
@@ -116,10 +107,10 @@ function ReviewCard({ review }: { review: ReviewData }) {
           <Star
             size={13}
             strokeWidth={1.5}
-            className="text-[var(--color-primary)] fill-[var(--color-primary)]"
+            className="text-[color:var(--color-primary)] fill-[var(--color-primary)]"
             aria-hidden="true"
           />
-          <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)]">
+          <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">
             {review.rating}
           </span>
         </div>
@@ -127,27 +118,27 @@ function ReviewCard({ review }: { review: ReviewData }) {
 
       {/* Title */}
       {review.title && (
-        <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] mb-1">
+        <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] mb-1">
           {review.title}
         </p>
       )}
 
       {/* Comment */}
-      <p className="text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed">
+      <p className="text-[length:var(--text-body)] text-[color:var(--color-text-body)] leading-relaxed">
         {review.comment}
       </p>
 
       {/* Owner reply — indented below */}
       {review.ownerReply && (
         <div className="mt-4 ml-6 pl-4 border-l-2 border-[var(--color-border-default)]">
-          <p className="text-[var(--text-caption)] font-[600] text-[var(--color-text-muted)] mb-1 uppercase tracking-wide">
+          <p className="text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-muted)] mb-1 uppercase tracking-wide">
             Owner reply
           </p>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed">
             {review.ownerReply}
           </p>
           {review.repliedAt && (
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-1">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-1">
               {formatDistanceToNow(new Date(review.repliedAt), {
                 addSuffix: true,
               })}
@@ -171,13 +162,13 @@ export function ReviewList({
         <Star
           size={32}
           strokeWidth={1.5}
-          className="text-[var(--color-text-muted)] mx-auto mb-3"
+          className="text-[color:var(--color-text-muted)] mx-auto mb-3"
           aria-hidden="true"
         />
-        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] mb-1">
+        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] mb-1">
           No reviews yet
         </p>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           Reviews appear after a completed stay.
         </p>
       </div>
@@ -199,7 +190,7 @@ export function ReviewList({
           {/* Overall rating — large number */}
           <div className="flex flex-col items-center justify-center shrink-0 sm:pr-5 sm:border-r sm:border-[var(--color-border-subtle)]">
             <span
-              className="text-[3rem] font-[800] leading-none text-[var(--color-text-heading)]"
+              className="text-[3rem] font-[800] leading-none text-[color:var(--color-text-heading)]"
 
             >
               {overallRating.toFixed(1)}
@@ -208,10 +199,10 @@ export function ReviewList({
               <Star
                 size={14}
                 strokeWidth={1.5}
-                className="text-[var(--color-primary)] fill-[var(--color-primary)]"
+                className="text-[color:var(--color-primary)] fill-[var(--color-primary)]"
                 aria-hidden="true"
               />
-              <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+              <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                 {reviewCount} review{reviewCount !== 1 ? "s" : ""}
               </span>
             </div>
@@ -237,7 +228,7 @@ export function ReviewList({
       </div>
 
       {reviewCount > reviews.length && (
-        <p className="mt-4 text-center text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="mt-4 text-center text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           Showing {reviews.length} of {reviewCount} reviews.
         </p>
       )}

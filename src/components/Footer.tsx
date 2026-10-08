@@ -37,29 +37,29 @@ export function Footer() {
 
   return (
     <footer
-      className="relative hidden overflow-hidden border-t border-white/10 bg-[var(--color-text-heading)] md:block"
+      className="hidden border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] md:block"
       aria-label="Site footer"
     >
       <div className="container-app py-14 md:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.4fr_1fr_1fr] md:gap-16">
           {/* Col 1 — Brand */}
           <div className="space-y-5">
-            <Logo className="[&>span]:text-white" />
-            <p className="max-w-[280px] font-heading text-[1.35rem] leading-tight text-white">
+            <Logo className="[&>span]:text-[color:var(--color-text-heading)]" />
+            <p className="max-w-[280px] font-heading text-[length:var(--text-h3)] leading-tight text-[color:var(--color-text-heading)]">
               Find your room.<br />
               Not a phone number.
             </p>
-            <p className="text-[var(--text-body-sm)] leading-relaxed text-white/60">
+            <p className="text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
               Verified student hostels, clear monthly prices, and a simpler way to move closer to campus.
             </p>
-            <p className="text-[var(--text-caption)] font-[600] uppercase tracking-[0.08em] text-[var(--color-primary-light)]">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
               Pakistan only · Prices in PKR
             </p>
           </div>
 
           {/* Col 2 — Navigation */}
           <div className="space-y-3">
-            <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/50">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">
               Explore
             </p>
             <ul className="space-y-3" role="list">
@@ -67,7 +67,7 @@ export function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-[var(--text-body-sm)] text-white/75 transition-colors duration-[var(--transition-fast)] hover:text-white"
+                    className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[color:var(--color-primary)]"
                   >
                     {label}
                   </Link>
@@ -78,7 +78,7 @@ export function Footer() {
 
           {/* Col 3 — Legal & Contact */}
           <div className="space-y-3">
-            <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/50">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">
               Help & legal
             </p>
             <ul className="space-y-3" role="list">
@@ -86,7 +86,7 @@ export function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-[var(--text-body-sm)] text-white/75 transition-colors duration-[var(--transition-fast)] hover:text-white"
+                    className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] hover:text-[color:var(--color-primary)]"
                   >
                     {label}
                   </Link>
@@ -97,11 +97,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 flex flex-col justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-[var(--text-caption)] text-white/50">
+        <div className="mt-12 flex flex-col justify-between gap-3 border-t border-[var(--color-border-default)] pt-6 sm:flex-row">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             © {new Date().getFullYear()} HostelLo. All rights reserved.
           </p>
-          <p className="text-[var(--text-caption)] text-white/50">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             Built for Pakistani students, by Pakistanis.
           </p>
         </div>

@@ -1,9 +1,11 @@
+// Path: src/components/owner/BlockedDatesManager.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { CalendarOff, Trash2, Plus, Loader2 } from "lucide-react";
+import { CalendarOff, Trash2, Plus, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BlockedRange {
   id: string;
@@ -12,15 +14,23 @@ interface BlockedRange {
   reason: string | null;
 }
 
+interface BlockedRangesResponse {
+  data: BlockedRange[];
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
+}
+
 interface Props {
   hostelId: string;
 }
 
 const inputCls =
-  "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all";
+  "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all";
 
 const labelCls =
-  "block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-1.5";
+  "block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)] mb-1.5";
 
 export function BlockedDatesManager({ hostelId }: Props) {
   const qc = useQueryClient();
@@ -28,6 +38,7 @@ export function BlockedDatesManager({ hostelId }: Props) {
   const [end, setEnd]       = useState("");
   const [reason, setReason] = useState("");
   const [error, setError]   = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const tomorrow = (() => {
     const d = new Date();
@@ -36,11 +47,17 @@ export function BlockedDatesManager({ hostelId }: Props) {
   })();
 
   // Fetch existing blocked ranges
-  const { data, isLoading } = useQuery<{ data: BlockedRange[] }>({
-    queryKey: ["blocked-dates", hostelId],
+  const { data, isLoading, isFetching } = useQuery<BlockedRangesResponse>({
+    queryKey: ["blocked-dates", hostelId, page],
     queryFn: () =>
-      fetch(`/api/owner/hostels/${hostelId}/blocked-dates`).then((r) => r.json()),
+      fetch(`/api/owner/hostels/${hostelId}/blocked-dates?page=${page}&limit=20`).then((r) => r.json()),
   });
+
+  useEffect(() => {
+    if (!data) return;
+    const lastPage = Math.max(1, Math.ceil(data.total / data.limit));
+    if (page > lastPage) setPage(lastPage);
+  }, [data, page]);
 
   // Add a range
   const addMutation = useMutation({
@@ -52,6 +69,7 @@ export function BlockedDatesManager({ hostelId }: Props) {
       }).then((r) => r.json()),
     onSuccess: (json) => {
       if (json.error) { setError(json.error); return; }
+      setPage(1);
       qc.invalidateQueries({ queryKey: ["blocked-dates", hostelId] });
       setStart(""); setEnd(""); setReason(""); setError(null);
     },
@@ -81,13 +99,13 @@ export function BlockedDatesManager({ hostelId }: Props) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-          <CalendarOff size={16} strokeWidth={1.5} className="text-[var(--color-primary)]" aria-hidden="true" />
+          <CalendarOff size={16} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+          <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
             Blocked dates
           </p>
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             Block dates for renovations, Ramadan break, or any closure period.
           </p>
         </div>
@@ -95,49 +113,78 @@ export function BlockedDatesManager({ hostelId }: Props) {
 
       {/* Existing ranges */}
       {isLoading ? (
-        <div className="flex items-center gap-2 py-3 text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-2 py-3 text-[color:var(--color-text-muted)]">
           <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
-          <span className="text-[var(--text-body-sm)]">Loading…</span>
+          <span className="text-[length:var(--text-body-sm)]">Loading…</span>
         </div>
-      ) : data?.data.length === 0 ? (
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] py-2 mb-4">
+      ) : data?.total === 0 ? (
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] py-2 mb-4">
           No blocked dates — your calendar is fully open.
         </p>
       ) : (
-        <ul className="space-y-2 mb-5" aria-label="Blocked date ranges">
-          {data?.data.map((range) => (
-            <li
-              key={range.id}
-              className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] px-3 py-2.5"
-            >
-              <div className="min-w-0">
-                <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
-                  {format(parseISO(range.startDate), "d MMM yyyy")}
-                  {" → "}
-                  {format(parseISO(range.endDate), "d MMM yyyy")}
-                </p>
-                {range.reason && (
-                  <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate">
-                    {range.reason}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => deleteMutation.mutate(range.id)}
-                disabled={deleteMutation.isPending}
-                aria-label={`Remove blocked range starting ${format(parseISO(range.startDate), "d MMM")}`}
-                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:bg-[var(--color-error-bg)] hover:text-[var(--color-error-text)] transition-colors disabled:opacity-40"
+        <>
+          <ul className="space-y-2 mb-5" aria-label="Blocked date ranges">
+            {data?.data.map((range) => (
+              <li
+                key={range.id}
+                className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] px-3 py-2.5"
               >
-                <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
+                <div className="min-w-0">
+                  <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)]">
+                    {format(parseISO(range.startDate), "d MMM yyyy")}
+                    {" → "}
+                    {format(parseISO(range.endDate), "d MMM yyyy")}
+                  </p>
+                  {range.reason && (
+                    <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate">
+                      {range.reason}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => deleteMutation.mutate(range.id)}
+                  disabled={deleteMutation.isPending}
+                  aria-label={`Remove blocked range starting ${format(parseISO(range.startDate), "d MMM")}`}
+                  className="shrink-0 flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[color:var(--color-text-muted)] hover:bg-[var(--color-error-bg)] hover:text-[color:var(--color-error-text)] transition-colors disabled:opacity-40"
+                >
+                  <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          {data && data.total > data.limit && (
+            <div className="mb-5 flex items-center justify-between gap-3 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+              <span>{data.total} blocked ranges · Page {page}</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={page === 1 || isFetching}
+                  aria-label="Previous blocked-date page"
+                >
+                  <ChevronLeft size={14} aria-hidden="true" />
+                  Previous
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPage((current) => current + 1)}
+                  disabled={!data.hasMore || isFetching}
+                  aria-label="Next blocked-date page"
+                >
+                  Next
+                  <ChevronRight size={14} aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Add new range */}
       <div className="border-t border-[var(--color-border-subtle)] pt-4 space-y-3">
-        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
+        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)]">
           Add a blocked range
         </p>
 
@@ -171,7 +218,7 @@ export function BlockedDatesManager({ hostelId }: Props) {
 
         <div>
           <label htmlFor="block-reason" className={labelCls}>
-            Reason <span className="font-[400] text-[var(--color-text-muted)]">(optional)</span>
+            Reason <span className="font-[400] text-[color:var(--color-text-muted)]">(optional)</span>
           </label>
           <input
             id="block-reason"
@@ -185,21 +232,20 @@ export function BlockedDatesManager({ hostelId }: Props) {
         </div>
 
         {error && (
-          <p className="text-[var(--text-body-sm)] text-[var(--color-error-text)]" role="alert">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]" role="alert">
             {error}
           </p>
         )}
 
-        <button
+        <Button
           onClick={handleAdd}
-          disabled={addMutation.isPending || !start || !end}
-          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-primary)] text-white text-[var(--text-body-sm)] font-[500] hover:bg-[var(--color-primary-deep)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          loading={addMutation.isPending}
+          disabled={!start || !end}
+          size="sm"
         >
-          {addMutation.isPending
-            ? <Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-            : <Plus    size={14} strokeWidth={2}   aria-hidden="true" />}
+          {!addMutation.isPending && <Plus size={14} strokeWidth={2} aria-hidden="true" />}
           Block dates
-        </button>
+        </Button>
       </div>
     </div>
   );
