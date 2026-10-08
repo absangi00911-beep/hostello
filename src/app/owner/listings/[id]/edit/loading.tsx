@@ -15,7 +15,7 @@ export default function EditListingLoading() {
       {/* Progress bar skeleton */}
       <div className="mb-8 space-y-2">
         <div
-          className="h-1 w-full rounded-full bg-[var(--color-bg-overlay)]"
+          className="h-1 w-full rounded-[var(--radius-full)] bg-[var(--color-bg-overlay)]"
         />
         <div
           className="h-3 w-32 rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]"

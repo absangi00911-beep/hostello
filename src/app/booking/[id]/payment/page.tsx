@@ -4,10 +4,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, CreditCard, ShieldCheck, Lock } from "lucide-react";
+import { CreditCard, ShieldCheck, Lock } from "lucide-react";
 import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
 import { PageSpinner, RecoveryNotice } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
 
 type PaymentMethod = "safepay" | "jazzcash" | "easypaisa";
 
@@ -126,13 +127,9 @@ export default function PaymentPage() {
           title="Payment details unavailable"
           message={fetchErr}
           primaryAction={
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
-            >
+            <Button onClick={() => window.location.reload()}>
               Try again
-            </button>
+            </Button>
           }
         />
       </BookingStepLayout>
@@ -147,12 +144,12 @@ export default function PaymentPage() {
       {/* Heading */}
       <div className="mb-6">
         <h1
-          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)] mb-1"
+          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)] mb-1"
 
         >
           Choose payment method
         </h1>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           Select how you'd like to pay for your booking.
         </p>
       </div>
@@ -209,17 +206,17 @@ export default function PaymentPage() {
                 <CreditCard
                   size={18}
                   strokeWidth={1.5}
-                  className="text-[var(--color-text-muted)]"
+                  className="text-[color:var(--color-text-muted)]"
                   aria-hidden="true"
                 />
               </span>
 
               {/* Labels */}
               <div className="flex-1 min-w-0">
-                <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+                <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
                   {label}
                 </p>
-                <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                   {description}
                 </p>
               </div>
@@ -230,14 +227,14 @@ export default function PaymentPage() {
 
       {/* Safepay redirect notice */}
       {selected === "safepay" && (
-        <p className="mt-4 text-[var(--text-body-sm)] text-[var(--color-text-muted)] text-center">
+        <p className="mt-4 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] text-center">
           You'll be redirected to Safepay to complete payment securely.
         </p>
       )}
 
       {/* Cancellation policy */}
       <div className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-4 py-3">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] leading-relaxed">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] leading-relaxed">
           Your booking request will be sent to the owner after payment. They
           have 24 hours to confirm. If they decline, you'll receive a full
           refund.
@@ -245,7 +242,7 @@ export default function PaymentPage() {
       </div>
 
       {/* Trust row */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+      <div className="mt-4 flex items-center justify-center gap-4 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
         <span className="flex items-center gap-1">
           <Lock size={12} strokeWidth={1.5} aria-hidden="true" />
           Encrypted
@@ -258,16 +255,14 @@ export default function PaymentPage() {
 
       {/* Pay button */}
       <div className="mt-8">
-        <button
+        <Button
           onClick={handlePay}
-          disabled={paying || !PAYMENT_OPTIONS.find((o) => o.id === selected)?.enabled}
-          className="inline-flex w-full items-center justify-center gap-2 h-12 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body)] font-[600] text-[var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
+          loading={paying}
+          disabled={!PAYMENT_OPTIONS.find((o) => o.id === selected)?.enabled}
+          className="w-full h-12 text-[length:var(--text-body)]"
         >
-          {paying ? (
-            <Loader2 size={18} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-          ) : null}
           {paying ? "Redirecting to Safepay…" : "Proceed to payment"}
-        </button>
+        </Button>
       </div>
     </BookingStepLayout>
   );

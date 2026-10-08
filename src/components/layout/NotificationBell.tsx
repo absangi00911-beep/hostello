@@ -39,13 +39,13 @@ export function NotificationBell() {
           ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`
           : "Notifications"
       }
-      className="relative flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
+      className="relative flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]"
     >
       <Bell size={18} strokeWidth={1.5} aria-hidden="true" />
       {unreadCount > 0 && (
         <span
           aria-hidden="true"
-          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-action)] px-1 text-[10px] font-600 leading-none text-[var(--color-text-inverse)]"
+          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-action)] px-1 text-[10px] font-[600] leading-none text-[color:var(--color-text-inverse)]"
         >
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>

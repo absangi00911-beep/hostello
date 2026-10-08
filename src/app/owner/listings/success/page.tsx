@@ -37,24 +37,24 @@ export default async function ListingSuccessPage({
 
   return (
     <div className="mx-auto max-w-2xl py-8 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[var(--radius-full)] bg-[var(--color-primary-faint)]">
         <PartyPopper
           size={36}
           strokeWidth={1.5}
-          className="text-[var(--color-primary)]"
+          className="text-[color:var(--color-primary)]"
           aria-hidden="true"
         />
       </div>
 
-      <h1 className="owner-success-heading mt-6 font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)]">
+      <h1 className="owner-success-heading mt-6 font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)]">
         {name ? `${name} has been submitted!` : "Your listing has been submitted!"}
       </h1>
-      <p className="mx-auto mt-3 max-w-md text-[var(--text-body)] text-[var(--color-text-muted)]">
+      <p className="mx-auto mt-3 max-w-md text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
         Our team reviews every listing before it goes live. You'll get an email as soon as it's approved and visible to students searching HostelLo.
       </p>
 
       <div className="mt-10 text-left">
-        <h2 className="text-[var(--text-label)] font-[700] uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
+        <h2 className="text-[length:var(--text-label)] font-[700] uppercase tracking-[0.06em] text-[color:var(--color-text-muted)]">
           While you wait
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-3">
@@ -68,14 +68,14 @@ export default async function ListingSuccessPage({
                 <Icon
                   size={17}
                   strokeWidth={1.5}
-                  className="text-[var(--color-primary)]"
+                  className="text-[color:var(--color-primary)]"
                   aria-hidden="true"
                 />
               </div>
-              <p className="mt-3 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+              <p className="mt-3 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
                 {title}
               </p>
-              <p className="mt-1 text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+              <p className="mt-1 text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
                 {body}
               </p>
             </Link>
@@ -94,7 +94,7 @@ export default async function ListingSuccessPage({
         </Button>
       </div>
       {slug && (
-        <p className="mt-3 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+        <p className="mt-3 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
           The preview link works now, but students won't see it in search until it's approved.
         </p>
       )}

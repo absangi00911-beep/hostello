@@ -1,13 +1,14 @@
 "use client";
 // Path: src/components/admin/HostelReviewDrawer.tsx
 
-import { useEffect } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import { X, MapPin, Users, BedDouble, Star, ShieldCheck, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { PageSpinner, InlineError } from "@/components/ui/shared";
 import { computeListingCompleteness, FLAGGED_THRESHOLD } from "@/lib/listingCompleteness";
+import { useModalFocus } from "@/components/ui/use-modal-focus";
 
 interface HostelDetail {
   id: string;
@@ -59,19 +60,9 @@ export function HostelReviewDrawer({
   status,
   actionLoading,
 }: HostelReviewDrawerProps) {
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, []);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  useModalFocus({ dialogRef, initialFocusRef: closeButtonRef, onEscape: onClose });
 
   const { data, isLoading, isError } = useQuery<{ data: HostelDetail }>({
     queryKey: ["admin-hostel-detail", hostelId],
@@ -95,6 +86,7 @@ export function HostelReviewDrawer({
 
       {/* Drawer */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={`Review listing: ${hostelName}`}
@@ -103,17 +95,18 @@ export function HostelReviewDrawer({
         {/* Drawer header */}
         <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4 border-b border-[var(--color-border-subtle)]">
           <div className="min-w-0">
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mb-0.5">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mb-0.5">
               Reviewing listing
             </p>
-            <h2 className="truncate text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">
+            <h2 className="truncate text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">
               {hostelName}
             </h2>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             aria-label="Close review panel"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[color:var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]"
           >
             <X size={16} strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -147,7 +140,7 @@ export function HostelReviewDrawer({
                         sizes="140px"
                       />
                       {i === 0 && hostel.coverImage === src && (
-                        <span className="absolute left-1 top-1 rounded-sm px-1 text-[9px] font-[700] leading-4 bg-[var(--color-primary)] text-white">
+                        <span className="absolute left-1 top-1 rounded-sm px-1 text-[9px] font-[700] leading-4 bg-[var(--color-primary)] text-[color:var(--color-text-inverse)]">
                           Cover
                         </span>
                       )}
@@ -155,7 +148,7 @@ export function HostelReviewDrawer({
                   ))}
                   {hostel.images.length > 6 && (
                     <div
-                      className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--text-caption)] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-[var(--color-border-subtle)]"
+                      className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-[var(--color-border-subtle)]"
                       style={{ width: 140, height: 96 }}
                     >
                       +{hostel.images.length - 6} more
@@ -164,7 +157,7 @@ export function HostelReviewDrawer({
                 </div>
               ) : (
                 <div
-                  className="mx-4 mt-4 flex items-center justify-center rounded-[var(--radius-md)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-dashed border-[var(--color-border-default)]"
+                  className="mx-4 mt-4 flex items-center justify-center rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] bg-[var(--color-bg-overlay)] border border-dashed border-[var(--color-border-default)]"
                   style={{ height: 96 }}
                 >
                   No photos uploaded
@@ -182,10 +175,10 @@ export function HostelReviewDrawer({
                     key={label}
                     className="flex flex-col items-center py-3 px-2 text-center bg-[var(--color-bg-sidebar)]"
                   >
-                    <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+                    <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
                       {value}
                     </span>
-                    <span className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
+                    <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-0.5">
                       {label}
                     </span>
                   </div>
@@ -199,11 +192,11 @@ export function HostelReviewDrawer({
                 return (
                   <section className="px-4 pt-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                      <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                         Listing completeness
                       </h3>
                       <span
-                        className={`text-[var(--text-body-sm)] font-[700] ${isFlagged ? "text-[var(--color-error)]" : "text-[var(--color-success)]"}`}
+                        className={`text-[length:var(--text-body-sm)] font-[700] ${isFlagged ? "text-[color:var(--color-error)]" : "text-[color:var(--color-success)]"}`}
                       >
                         {score}%
                       </span>
@@ -211,15 +204,15 @@ export function HostelReviewDrawer({
                     <div className="space-y-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-3">
                       {factors.map((f) => (
                         <div key={f.label} className="flex items-center justify-between gap-3">
-                          <span className="text-[var(--text-caption)] text-[var(--color-text-body)]">{f.label}</span>
-                          <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                          <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-body)]">{f.label}</span>
+                          <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                             {f.hint} · {f.points}/{f.max}
                           </span>
                         </div>
                       ))}
                     </div>
                     {isFlagged && (
-                      <p className="text-[var(--text-caption)] text-[var(--color-error)]">
+                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-error)]">
                         Below {FLAGGED_THRESHOLD}% — consider requesting more detail before publishing.
                       </p>
                     )}
@@ -229,7 +222,7 @@ export function HostelReviewDrawer({
 
               {/* Section: Details */}
               <section className="px-4 pt-4 space-y-3">
-                <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                   Details
                 </h3>
                 <dl className="space-y-2">
@@ -240,10 +233,10 @@ export function HostelReviewDrawer({
                     { label: "Beds",    icon: <BedDouble size={13} />, value: `${hostel.capacity} total` },
                   ].map(({ label, icon, value }) => (
                     <div key={label} className="flex gap-2 items-start">
-                      <span className="mt-0.5 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true">
+                      <span className="mt-0.5 shrink-0 text-[color:var(--color-text-muted)]" aria-hidden="true">
                         {icon}
                       </span>
-                      <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                      <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                         {value}
                       </span>
                     </div>
@@ -253,25 +246,25 @@ export function HostelReviewDrawer({
 
               {/* Section: Description */}
               <section className="px-4 pt-4 space-y-2">
-                <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                   Description
                 </h3>
-                <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed whitespace-pre-wrap">
-                  {hostel.description || <em className="text-[var(--color-text-muted)]">No description provided.</em>}
+                <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed whitespace-pre-wrap">
+                  {hostel.description || <em className="text-[color:var(--color-text-muted)]">No description provided.</em>}
                 </p>
               </section>
 
               {/* Section: Amenities */}
               {hostel.amenities.length > 0 && (
                 <section className="px-4 pt-4 space-y-2">
-                  <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                  <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                     Amenities ({hostel.amenities.length})
                   </h3>
                   <div className="flex flex-wrap gap-1.5">
                     {hostel.amenities.map((a) => (
                       <span
                         key={a}
-                        className="inline-flex h-6 items-center px-2.5 rounded-full text-[var(--text-caption)] font-[500] bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)] border border-[var(--color-primary-light)]"
+                        className="inline-flex h-6 items-center px-2.5 rounded-full text-[length:var(--text-caption)] font-[500] bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)] border border-[var(--color-primary-light)]"
                       >
                         {a}
                       </span>
@@ -283,13 +276,13 @@ export function HostelReviewDrawer({
               {/* Section: Rules */}
               {hostel.rules.length > 0 && (
                 <section className="px-4 pt-4 space-y-2">
-                  <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                  <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                     House rules
                   </h3>
                   <ul className="space-y-1">
                     {hostel.rules.map((r) => (
-                      <li key={r} className="flex gap-2 text-[var(--text-body-sm)] text-[var(--color-text-body)]">
-                        <span className="text-[var(--color-text-muted)]" aria-hidden="true">·</span>
+                      <li key={r} className="flex gap-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
+                        <span className="text-[color:var(--color-text-muted)]" aria-hidden="true">·</span>
                         {r}
                       </li>
                     ))}
@@ -299,32 +292,32 @@ export function HostelReviewDrawer({
 
               {/* Section: Owner */}
               <section className="px-4 pt-4 pb-4 space-y-2">
-                <h3 className="text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-wide">
+                <h3 className="text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-wide">
                   Owner
                 </h3>
                 <div className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)]">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] flex items-center gap-1.5">
+                    <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] flex items-center gap-1.5">
                       {hostel.owner.name}
                       {hostel.verified && (
-                        <ShieldCheck size={13} className="text-[var(--color-success)]" aria-label="Verified listing" />
+                        <ShieldCheck size={13} className="text-[color:var(--color-success)]" aria-label="Verified listing" />
                       )}
                     </p>
-                    <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate">
+                    <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate">
                       {hostel.owner.email}
                     </p>
-                    <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-0.5">
+                    <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-0.5">
                       {hostel.owner._count.hostels} listing{hostel.owner._count.hostels !== 1 ? "s" : ""} total
                     </p>
                   </div>
-                  <Star size={15} strokeWidth={1.5} className="shrink-0 text-[var(--color-text-muted)]" aria-hidden="true" />
+                  <Star size={15} strokeWidth={1.5} className="shrink-0 text-[color:var(--color-text-muted)]" aria-hidden="true" />
                 </div>
 
                 <Link
                   href={`/hostels/${hostel.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[var(--text-caption)] font-[500] text-[var(--color-primary-deep)] transition-colors duration-[var(--transition-fast)] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[length:var(--text-caption)] font-[500] text-[color:var(--color-primary-deep)] transition-colors duration-[var(--transition-fast)] hover:underline"
                 >
                   <ExternalLink size={11} strokeWidth={1.5} aria-hidden="true" />
                   Open full listing page
@@ -341,7 +334,7 @@ export function HostelReviewDrawer({
             <button
               onClick={onSuspend}
               disabled={actionLoading}
-              className="flex-1 h-9 rounded-[var(--radius-md)] border border-[var(--color-error)] text-[var(--text-body-sm)] font-[600] text-[var(--color-error)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 hover:bg-[var(--color-error)] hover:text-white"
+              className="flex-1 h-9 rounded-[var(--radius-md)] border border-[var(--color-error)] text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-error)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 hover:bg-[var(--color-error)] hover:text-[color:var(--color-text-inverse)]"
             >
               Reject &amp; suspend
             </button>
@@ -349,7 +342,7 @@ export function HostelReviewDrawer({
             <button
               onClick={onApprove}
               disabled={actionLoading}
-              className="flex-1 h-9 rounded-[var(--radius-md)] text-[var(--text-body-sm)] font-[600] text-white bg-[var(--color-action)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 hover:bg-[var(--color-action-dark)]"
+              className="flex-1 h-9 rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] bg-[var(--color-action)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 hover:bg-[var(--color-action-dark)]"
             >
               Approve &amp; publish
             </button>

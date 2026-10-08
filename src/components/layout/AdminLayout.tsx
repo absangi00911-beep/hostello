@@ -11,6 +11,7 @@ import {
   Star,
   RefreshCw,
   ShieldCheck,
+  Flag,
   ChevronLeft,
   Wallet,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { href: "/admin/bookings",     label: "All bookings", icon: CalendarDays },
   { href: "/admin/payouts",      label: "Payouts",      icon: Wallet },
   { href: "/admin/reviews",      label: "Reviews",      icon: Star },
+  { href: "/admin/roommate-reports", label: "Roommate reports", icon: Flag },
   { href: "/admin/search",       label: "Sync search",  icon: RefreshCw },
 ];
 
@@ -54,7 +56,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
         {/* Logo + "Admin" badge */}
         <div className="flex h-16 items-center gap-3 px-5 border-b border-[var(--color-border-subtle)] shrink-0">
           <Logo size="compact" />
-          <span className="ml-auto text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-text-muted)] bg-[var(--color-bg-overlay)] px-2 py-0.5 rounded-[var(--radius-sm)]">
+          <span className="ml-auto text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)] bg-[var(--color-bg-overlay)] px-2 py-0.5 rounded-[var(--radius-sm)]">
             Admin
           </span>
         </div>
@@ -83,8 +85,8 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                         transition-colors duration-[var(--transition-fast)]
                         ${
                           isActive
-                            ? "bg-[var(--color-primary-light)] text-[var(--color-primary-deep)] font-[700] tracking-[-0.01em]"
-                            : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)]"
+                            ? "bg-[var(--color-primary-light)] text-[color:var(--color-primary-deep)] font-[700] tracking-[-0.01em]"
+                            : "text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)]"
                         }
                       `}
                     >
@@ -92,13 +94,13 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                         size={18}
                         strokeWidth={1.5}
                         aria-hidden="true"
-                        className={isActive ? "text-[var(--color-primary)]" : ""}
+                        className={isActive ? "text-[color:var(--color-primary)]" : ""}
                       />
-                      <span className="text-[var(--text-body-sm)] flex-1">
+                      <span className="text-[length:var(--text-body-sm)] flex-1">
                         {label}
                       </span>
                       {showBadge && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-warning)] px-1.5 text-[10px] font-[600] text-white">
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-warning)] px-1.5 text-[10px] font-[600] text-[color:var(--color-text-inverse)]">
                           {badgeCount}
                         </span>
                       )}
@@ -113,7 +115,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
         <div className="px-3 py-4 border-t border-[var(--color-border-subtle)] shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+            className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
           >
             <ChevronLeft size={15} strokeWidth={1.5} aria-hidden="true" />
             Back to site
@@ -124,7 +126,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
       {/* -- Main content ---------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
-          <h1 className="min-w-0 flex-1 truncate text-[var(--text-h5)] font-[800] tracking-[-0.03em] text-[var(--color-text-heading)]">
+          <h1 className="min-w-0 flex-1 truncate text-[length:var(--text-h5)] font-[800] tracking-[-0.03em] text-[color:var(--color-text-heading)]">
             {pageTitle}
           </h1>
           <div className="flex shrink-0 items-center gap-1">
@@ -156,10 +158,10 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                 key={href}
                 href={href}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex min-w-[76px] shrink-0 flex-col items-center justify-center gap-1 px-2 py-2.5 text-[var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
+                className={`flex min-w-[76px] shrink-0 flex-col items-center justify-center gap-1 px-2 py-2.5 text-[length:var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
                   isActive
-                    ? "text-[var(--color-primary)]"
-                    : "text-[var(--color-text-muted)]"
+                    ? "text-[color:var(--color-primary)]"
+                    : "text-[color:var(--color-text-muted)]"
                 }`}
               >
                 <Icon size={19} strokeWidth={1.5} aria-hidden="true" />

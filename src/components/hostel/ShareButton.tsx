@@ -1,5 +1,7 @@
 "use client";
 
+// Path: src/components/hostel/ShareButton.tsx
+
 import { Share2 } from "lucide-react";
 
 interface ShareButtonProps {
@@ -32,7 +34,7 @@ export function ShareButton({ url, name, price, variant = "card" }: ShareButtonP
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-3 py-1.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)]"
+        className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-3 py-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] transition-colors hover:border-[var(--color-primary)] hover:text-[color:var(--color-primary-deep)]"
         aria-label={`Share ${name} on WhatsApp`}
       >
         <Share2 size={14} strokeWidth={1.5} aria-hidden="true" />
@@ -44,7 +46,7 @@ export function ShareButton({ url, name, price, variant = "card" }: ShareButtonP
   return (
     <button
       onClick={handleShare}
-      className="absolute bottom-[56px] right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[var(--color-text-muted)] opacity-0 transition-opacity group-hover:opacity-100 hover:border-[var(--color-primary)] hover:text-[var(--color-primary-deep)] focus-visible:opacity-100"
+      className="absolute right-3 top-14 z-10 flex h-8 w-8 items-center justify-center rounded-[var(--radius-full)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[color:var(--color-text-muted)] opacity-0 shadow-[var(--shadow-xs)] transition-opacity group-hover:opacity-100 hover:border-[var(--color-primary)] hover:text-[color:var(--color-primary-deep)] focus-visible:opacity-100"
       aria-label={`Share ${name} on WhatsApp`}
     >
       <Share2 size={15} strokeWidth={1.5} aria-hidden="true" />

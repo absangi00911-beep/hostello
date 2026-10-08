@@ -5,12 +5,12 @@ type LogoSize = "standard" | "compact"
 
 const sizeConfig: Record<LogoSize, { dim: number; textCls: string }> = {
   standard: {
-    dim: 28,
-    textCls: "text-[1.125rem] font-[700] tracking-[-0.02em]",
+    dim: 30,
+    textCls: "text-[1.125rem] font-[700] tracking-[-0.05em]",
   },
   compact: {
-    dim: 22,
-    textCls: "text-[0.9375rem] font-[700] tracking-[-0.02em]",
+    dim: 24,
+    textCls: "text-[0.9375rem] font-[700] tracking-[-0.05em]",
   },
 }
 
@@ -35,39 +35,52 @@ export function Logo({ size = "standard", href = "/", className }: LogoProps) {
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-2 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-sm",
+        "flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2",
         className
       )}
     >
       <svg
         width={dim}
         height={dim}
-        viewBox="0 0 28 28"
+        viewBox="0 0 32 32"
         fill="none"
         aria-hidden="true"
         style={{ flexShrink: 0 }}
       >
-        <rect
-          x="2" y="8" width="16" height="18" rx="2"
-          fill="currentColor"
-          className="text-[var(--color-primary)]"
+        <defs>
+          <linearGradient id="hostello-mark" x1="5" x2="27" y1="4" y2="28" gradientUnits="userSpaceOnUse">
+            <stop stopColor="var(--color-primary)" />
+            <stop offset="1" stopColor="var(--color-primary-deep)" />
+          </linearGradient>
+        </defs>
+
+        <rect x="2.5" y="2.5" width="27" height="27" rx="9" fill="url(#hostello-mark)" />
+
+        <path
+          d="M9.2 22.2V11.2H12.8V14.8H19.2V11.2H22.8V22.2H19.2V18.2H12.8V22.2H9.2Z"
+          fill="white"
         />
-        <rect
-          x="10" y="2" width="16" height="18" rx="2"
-          fill="currentColor"
-          className="text-[var(--color-primary-deep)]"
-          opacity="0.7"
+
+        <path
+          d="M8.2 11.4L15.9 7.1L23.8 11.4"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <rect
-          x="6" y="16" width="4" height="6" rx="1"
-          fill="var(--color-bg-card)"
+
+        <path
+          d="M12.5 14.8H19.5"
+          stroke="rgba(255,255,255,0.88)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
         />
       </svg>
 
       <span
         className={cn(
           textCls,
-          "font-heading text-[var(--color-text-heading)] leading-none select-none"
+          "font-heading text-[color:var(--color-text-heading)] leading-none select-none"
         )}
       >
         HostelLo

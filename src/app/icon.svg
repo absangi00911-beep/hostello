@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="hostello-mark" x1="5" x2="27" y1="4" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c7334a" />
+      <stop offset="1" stop-color="#7a1f2e" />
+    </linearGradient>
+  </defs>
+  <rect x="2.5" y="2.5" width="27" height="27" rx="9" fill="url(#hostello-mark)" />
+  <path d="M9.2 22.2V11.2h3.6v3.6h6.4v-3.6h3.6v11h-3.6v-4h-6.4v4H9.2Z" fill="#fff" />
+  <path d="m8.2 11.4 7.7-4.3 7.9 4.3M12.5 14.8h7" stroke="#fff" stroke-opacity=".9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -31,10 +31,10 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Base
       "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-sm)] px-3 py-1.5",
-      "text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)]",
+      "text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]",
       "transition-all duration-[var(--transition-base)]",
       // Active — amber underline per design system spec
-      "data-[state=active]:bg-[var(--color-bg-card)] data-[state=active]:text-[var(--color-text-heading)]",
+      "data-[state=active]:bg-[var(--color-bg-card)] data-[state=active]:text-[color:var(--color-text-heading)]",
       "data-[state=active]:font-[600] data-[state=active]:shadow-[var(--shadow-xs)]",
       // Focus
       "focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-1",

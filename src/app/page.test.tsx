@@ -106,13 +106,18 @@ describe("HomePage role-based CTAs", () => {
     expect(markup).not.toContain("How it works");
   });
 
-  it("shows trust proof near the search experience", async () => {
+  it("shows a premium lifestyle hero with clear CTAs for anonymous visitors", async () => {
     mockedAuth.mockResolvedValue(null);
 
     const markup = renderToStaticMarkup(await HomePage());
 
+    expect(markup).toContain("Find a room you actually want to live in.");
+    expect(markup).toContain("List your hostel");
     expect(markup).toContain("Verified hostel listings");
     expect(markup).toContain("Real prices before you call");
     expect(markup).toContain("Secure booking handoff");
+    expect(markup).toContain("text-[color:var(--color-text-inverse)]");
+    expect(markup).toContain("text-[length:var(--text-body-sm)]");
+    expect(markup.match(/data-image-fallback/g)).toHaveLength(6);
   });
 });

@@ -30,6 +30,7 @@ interface OwnerRow {
   hasBankDetails: boolean;
   pendingBalance: number;
   payouts: PayoutRow[];
+  payoutHistoryTruncated: boolean;
 }
 
 const PAYOUT_STATUS_BADGES = {
@@ -43,11 +44,19 @@ export default function AdminPayoutsPage() {
   const [actingOwnerId, setActingOwnerId] = useState<string | null>(null);
   const [actingPayoutId, setActingPayoutId] = useState<string | null>(null);
   const [referenceDrafts, setReferenceDrafts] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError } = useQuery<{ data: OwnerRow[] }>({
-    queryKey: ["admin-payouts"],
+  const { data, isLoading, isError } = useQuery<{
+    data: OwnerRow[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+    payoutHistoryPerOwner: number;
+  }>({
+    queryKey: ["admin-payouts", page],
     queryFn: async () => {
-      const res = await fetch("/api/admin/payouts");
+      const res = await fetch(`/api/admin/payouts?page=${page}&limit=25`);
       if (!res.ok) throw new Error("Failed to load payouts");
       return res.json();
     },
@@ -101,12 +110,13 @@ export default function AdminPayoutsPage() {
   const allPayouts = owners
     .flatMap((o) => o.payouts.map((p) => ({ ...p, ownerName: o.name, ownerEmail: o.email })))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const truncatedHistory = owners.some((owner) => owner.payoutHistoryTruncated);
 
   return (
     <div className="space-y-8">
       {/* Pending balances */}
       <div>
-        <h2 className="text-[var(--text-heading-sm)] font-[600] text-[var(--color-text-heading)] mb-3">
+        <h2 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-3">
           Pending balances
         </h2>
 
@@ -125,7 +135,7 @@ export default function AdminPayoutsPage() {
                     {["Owner", "Bank details", "Pending balance", "Actions"].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap"
+                        className="px-4 py-3 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] whitespace-nowrap"
                       >
                         {h}
                       </th>
@@ -139,22 +149,22 @@ export default function AdminPayoutsPage() {
                       className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
                     >
                       <td className="px-4 py-3.5">
-                        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)]">
+                        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)]">
                           {owner.name ?? "—"}
                         </p>
-                        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{owner.email}</p>
+                        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{owner.email}</p>
                       </td>
                       <td className="px-4 py-3.5">
                         {owner.hasBankDetails ? (
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">On file</span>
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">On file</span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
+                          <span className="inline-flex items-center gap-1 text-[length:var(--text-body-sm)] text-[color:var(--color-warning-text)]">
                             <AlertTriangle size={13} aria-hidden="true" /> Missing
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
+                        <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
                           {formatPKR(owner.pendingBalance)}
                         </span>
                       </td>
@@ -163,7 +173,7 @@ export default function AdminPayoutsPage() {
                           onClick={() => generateMutation.mutate(owner.id)}
                           disabled={!owner.hasBankDetails || generateMutation.isPending}
                           title={owner.hasBankDetails ? undefined : "Owner hasn't added bank details yet"}
-                          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[var(--text-caption)] font-[600] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-action)] hover:bg-[var(--color-action)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {actingOwnerId === owner.id && generateMutation.isPending && (
                             <Loader2 size={10} className="animate-spin" aria-hidden="true" />
@@ -182,9 +192,14 @@ export default function AdminPayoutsPage() {
 
       {/* Payout history */}
       <div>
-        <h2 className="text-[var(--text-heading-sm)] font-[600] text-[var(--color-text-heading)] mb-3">
+        <h2 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-3">
           Payout batches
         </h2>
+        {truncatedHistory && (
+          <p className="mb-3 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+            Showing the latest {data?.payoutHistoryPerOwner ?? 20} batches per owner on this page.
+          </p>
+        )}
 
         {allPayouts.length === 0 ? (
           <EmptyState icon={Wallet} heading="No payouts yet" description="Generated batches will show up here." />
@@ -197,7 +212,7 @@ export default function AdminPayoutsPage() {
                     {["Owner", "Amount", "Status", "Created", "Reference", "Actions"].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap"
+                        className="px-4 py-3 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] whitespace-nowrap"
                       >
                         {h}
                       </th>
@@ -211,13 +226,13 @@ export default function AdminPayoutsPage() {
                       className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
                     >
                       <td className="px-4 py-3.5">
-                        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)]">
+                        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)]">
                           {payout.ownerName ?? "—"}
                         </p>
-                        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{payout.ownerEmail}</p>
+                        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{payout.ownerEmail}</p>
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)]">
+                        <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
                           {formatPKR(payout.amount)}
                         </span>
                       </td>
@@ -225,7 +240,7 @@ export default function AdminPayoutsPage() {
                         <StatusBadge variant={PAYOUT_STATUS_BADGES[payout.status]} />
                       </td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                        <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                           {format(new Date(payout.createdAt), "d MMM yy")}
                         </span>
                       </td>
@@ -238,10 +253,10 @@ export default function AdminPayoutsPage() {
                             onChange={(e) =>
                               setReferenceDrafts((prev) => ({ ...prev, [payout.id]: e.target.value }))
                             }
-                            className="h-7 w-32 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-2 text-[var(--text-caption)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)]"
+                            className="h-7 w-32 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-2 text-[length:var(--text-caption)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)]"
                           />
                         ) : (
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                             {payout.reference ?? "—"}
                           </span>
                         )}
@@ -256,7 +271,7 @@ export default function AdminPayoutsPage() {
                               })
                             }
                             disabled={markPaidMutation.isPending}
-                            className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[var(--text-caption)] font-[600] text-[var(--color-action)] hover:bg-[var(--color-action)] hover:text-white hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+                            className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] border border-[var(--color-action)]/40 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-action)] hover:bg-[var(--color-action)] hover:text-[color:var(--color-text-inverse)] hover:border-[var(--color-action)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
                           >
                             {actingPayoutId === payout.id && markPaidMutation.isPending && (
                               <Loader2 size={10} className="animate-spin" aria-hidden="true" />
@@ -273,6 +288,29 @@ export default function AdminPayoutsPage() {
           </div>
         )}
       </div>
+      {(page > 1 || data?.hasMore) && (
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page === 1}
+            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] disabled:opacity-50"
+          >
+            Previous owners
+          </button>
+          <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+            Owner page {page} of {Math.max(1, Math.ceil((data?.total ?? 0) / (data?.limit ?? 25)))}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((current) => current + 1)}
+            disabled={!data?.hasMore}
+            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] disabled:opacity-50"
+          >
+            Next owners
+          </button>
+        </div>
+      )}
     </div>
   );
 }

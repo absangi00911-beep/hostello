@@ -11,7 +11,7 @@ const Card = React.forwardRef<
       // No shadow by default — add shadow-[var(--shadow-sm)] (or stronger) via
       // className for a genuinely elevated moment (a modal-like surface, a
       // featured card). Most cards on a page full of cards don't need to float.
-      "rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[var(--color-text-body)]",
+      "rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[color:var(--color-text-body)]",
       className
     )}
     {...props}
@@ -38,7 +38,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-[var(--text-h5)] font-[600] leading-snug tracking-tight text-[var(--color-text-heading)]",
+      "text-[length:var(--text-h5)] font-[600] leading-snug tracking-tight text-[color:var(--color-text-heading)]",
       className
     )}
     {...props}
@@ -52,7 +52,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-[var(--text-body-sm)] text-[var(--color-text-muted)]", className)}
+    className={cn("text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]", className)}
     {...props}
   />
 ))

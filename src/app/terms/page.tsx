@@ -5,12 +5,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="space-y-3">
       <h2
-        className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
+        className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]"
 
       >
         {title}
       </h2>
-      <div className="space-y-2 text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed">
+      <div className="space-y-2 text-[length:var(--text-body)] text-[color:var(--color-text-body)] leading-relaxed">
         {children}
       </div>
     </section>
@@ -31,12 +31,12 @@ export default function TermsPage() {
         {/* Header */}
         <div className="mb-10">
           <h1
-            className="font-heading text-[var(--text-h1)] font-[700] text-[var(--color-text-heading)] tracking-[-0.025em] mb-3"
+            className="font-heading text-[length:var(--text-h1)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
 
           >
             Terms of service
           </h1>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             Last updated: {updated}
           </p>
         </div>
@@ -61,7 +61,7 @@ export default function TermsPage() {
             <p>
               You are responsible for keeping your login credentials secure.
               Notify us immediately at{" "}
-              <a href="mailto:support@hostello.pk" className="text-[var(--color-text-link)] hover:underline">
+              <a href="mailto:support@hostello.pk" className="text-[color:var(--color-text-link)] hover:underline">
                 support@hostello.pk
               </a>{" "}
               if you suspect unauthorised access.
@@ -181,11 +181,11 @@ export default function TermsPage() {
           <Section title="Contact">
             <p>
               For questions about these terms, contact us at{" "}
-              <a href="mailto:support@hostello.pk" className="text-[var(--color-text-link)] hover:underline">
+              <a href="mailto:support@hostello.pk" className="text-[color:var(--color-text-link)] hover:underline">
                 support@hostello.pk
               </a>{" "}
               or use the{" "}
-              <a href="/contact" className="text-[var(--color-text-link)] hover:underline">
+              <a href="/contact" className="text-[color:var(--color-text-link)] hover:underline">
                 contact form
               </a>
               .

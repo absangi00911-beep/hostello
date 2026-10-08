@@ -1,3 +1,4 @@
+/* Path: src/app/globals.css */
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
@@ -13,11 +14,6 @@
   --color-action-dark: var(--color-action-dark);
   --color-action-pressed: var(--color-action-pressed);
   --color-action-light: var(--color-action-light);
-
-  --color-secondary-brand: var(--color-secondary-brand);
-  --color-secondary-brand-container: var(--color-secondary-brand-container);
-  --color-tertiary-brand: var(--color-tertiary-brand);
-  --color-tertiary-brand-container: var(--color-tertiary-brand-container);
 
   --color-bg-page: var(--color-bg-page);
   --color-bg-card: var(--color-bg-card);
@@ -94,49 +90,75 @@
 
 
 
+#barba-wrapper,
+#barba-container {
+  min-height: 100%;
+}
+
+#barba-container {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+#barba-container.barba-ready {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+#barba-container.barba-leaving {
+  opacity: 0;
+  transform: translate3d(0, -10px, 0);
+}
+
+#barba-container.barba-entering {
+  opacity: 1;
+  transform: translate3d(0, 12px, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #barba-container {
+    transition: none;
+  }
+}
+
 @layer base {
   :root {
-    /* ── Brand Colors: terracotta accent, ink, and deep teal trust ── */
-    --color-primary:       #b54a3a;   /* buttons, icons, links, focus rings */
-    --color-primary-dark:  #923a2d;   /* hover */
-    --color-primary-deep:  #6f2c24;   /* high-contrast accent text */
-    --color-primary-light: #f2a08f;   /* hero accent and light-on-dark emphasis */
-    --color-primary-faint: #f8ddd7;   /* pale accent surface */
+    /* ── Brand Colors: Airbnb-style neutral field + one coral accent ──
+       Deliberately distinct from Airbnb's own Rausch (#FF385C) — same
+       warmth/weight, different hue, so this isn't a literal reskin. ── */
+    --color-primary:       #c7334a;   /* AA-readable accent for text and controls */
+    --color-primary-dark:  #b52f44;   /* hover state */
+    --color-primary-deep:  #7a1f2e;   /* high-contrast accent text */
+    --color-primary-light: #f7b8c2;   /* soft accent surface, rating badges */
+    --color-primary-faint: #fdf0f1;   /* faint accent surface, selected chips */
 
     /* ── Action / CTA ─────────────────────────────────────── */
-     /* Keep one clear action color across search, booking, and owner flows. */
-     --color-action:         #b54a3a;
-     --color-action-dark:    #923a2d;
-     --color-action-pressed: #6f2c24;
-     --color-action-light:   #f8ddd7;
+    --color-action:         #c7334a;
+    --color-action-dark:    #b52f44;
+    --color-action-pressed: #7a1f2e;
+    --color-action-light:   #fdf0f1;
 
-    /* ── Secondary / Tertiary (M3 roles, for reference & charts) ── */
-    --color-secondary-brand:           #245b5a;  /* Deep teal — trust and structural accents */
-    --color-secondary-brand-container: #bfe3df;
-    --color-tertiary-brand:            #2b806e;  /* Green-teal — success and price highlights */
-    --color-tertiary-brand-container:  #8fd4c4;
-
-    /* ── Backgrounds (M3 surface family) ──────────────────── */
-    --color-bg-page:    #f8f9fa;  /* surface / background */
-    --color-bg-card:    #ffffff;  /* surface-container-lowest */
-    --color-bg-sidebar: #f3f4f5;  /* surface-container-low */
-    --color-bg-raised:  #edeeef;  /* surface-container */
-    --color-bg-overlay: #e7e8e9;  /* surface-container-high */
+    /* ── Backgrounds (clean, mostly white — photo is the hero) ───── */
+    --color-bg-page:    #fafafa;  /* near-white; just enough lift for cards */
+    --color-bg-card:    #ffffff;  /* true white */
+    --color-bg-sidebar: #f7f7f7;  /* neutral sidebar / subtle sections */
+    --color-bg-raised:  #f2f2f2;  /* elevated surfaces */
+    --color-bg-overlay: #ebebeb;  /* overlay / image-loading blocks */
 
     /* ── Text ─────────────────────────────────────────────── */
-    --color-text-heading:     #191c1d;  /* on-surface */
-    --color-text-body:        #191c1d;  /* on-surface — same ink as heading; hierarchy via weight/size */
-    --color-text-muted:       #5b6268;  /* secondary copy */
-    --color-text-placeholder: #778188;  /* form placeholder */
-    --color-text-disabled:    #b9bec1;  /* disabled content */
+    --color-text-heading:     #222222;
+    --color-text-body:        #222222;
+    --color-text-muted:       #686868;  /* metadata rows, secondary copy */
+    --color-text-placeholder: #686868;
+    --color-text-disabled:    #c7c7c7;  /* disabled content */
     --color-text-inverse:     #ffffff;  /* on-primary */
-    --color-text-link:        #ae2f34;  /* primary */
+    --color-text-link:        #c7334a;
 
     /* ── Borders ──────────────────────────────────────────── */
-    /* Spec: "1px border in a lightened Navy tint (5% opacity)" for cards */
-    --color-border-default: #d8d6d6;  /* ~5% on-surface over surface, neutral */
-    --color-border-strong:  #8b9499;  /* form inputs, stronger dividers */
-    --color-border-subtle:  #e4e7e8;  /* quiet section and card borders */
+    --color-border-default: #dddddd;
+    --color-border-strong:  #b0b0b0;  /* form inputs, stronger dividers */
+    --color-border-subtle:  #ebebeb;  /* quiet section and card borders */
 
     /* ── Semantic ─────────────────────────────────────────── */
     /* Error: taken directly from the M3 export's error role */
@@ -161,7 +183,7 @@
 
     /* ── Typography ───────────────────────────────────────── */
     --font-heading: var(--font-plus-jakarta-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    --font-body:    var(--font-be-vietnam-pro), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-body:    var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --font-mono:    var(--font-jetbrains-mono), 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
 
     --text-display:  3.5rem;    /* 56px — beyond the defined scale, for one-off hero moments */
@@ -199,16 +221,16 @@
     --radius-md:    8px;   /* buttons, inputs, chips — spec's "standard" 0.5rem */
     --radius-lg:    12px;  /* cards, standard containers */
     --radius-xl:    16px;  /* larger containers, "Hero cards" per spec */
-    --radius-brand: 24px;  /* biggest brand moments — spec's outer xl */
+    --radius-brand: 16px;  /* hero moments — tightened from 24px for Airbnb's restraint */
     --radius-full:  9999px;
 
-    /* ── Shadows ("Organic Elevation" — soft, Navy-tinted, no pure black) ── */
-    --shadow-xs: 0 1px 2px rgb(25 28 29 / 0.06);
-    --shadow-sm: 0 1px 4px rgb(25 28 29 / 0.08),
-                 0 1px 2px rgb(25 28 29 / 0.04);
-    --shadow-md: 0 4px 20px rgb(25 28 29 / 0.15);   /* spec Level 1: 20px blur, 4px Y, 15% Navy */
-    --shadow-lg: 0 8px 40px rgb(25 28 29 / 0.18);    /* spec Level 2: 40px blur, 8px Y */
-    --shadow-xl: 0 16px 48px rgb(25 28 29 / 0.22);
+    /* ── Shadows — quiet elevation: mostly a border, shadow on hover ── */
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.06);
+    --shadow-sm: 0 2px 4px rgb(0 0 0 / 0.08),
+                 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-md: 0 6px 16px rgb(0 0 0 / 0.12);   /* quiet elevation, tighter blur */
+    --shadow-lg: 0 10px 30px rgb(0 0 0 / 0.15);    /* hover-state elevation */
+    --shadow-xl: 0 20px 50px rgb(0 0 0 / 0.18);
 
     /* ── Transitions ──────────────────────────────────────── */
     --transition-fast:   100ms;
@@ -235,64 +257,59 @@
        Maps shadcn token names to our values so existing
        shadcn/ui primitives render correctly.
     ──────────────────────────────────────────────────────── */
-    --background:          #f8f9fa;
-    --foreground:          #191c1d;
+    --background:          #fafafa;
+    --foreground:          #222222;
     --card:                #ffffff;
-    --card-foreground:     #191c1d;
-    --popover:             #edeeef;
-    --popover-foreground:  #191c1d;
-    --primary:             #b54a3a;
+    --card-foreground:     #222222;
+    --popover:             #ffffff;
+    --popover-foreground:  #222222;
+    --primary:             #c7334a;
     --primary-foreground:  #ffffff;
-    --secondary:           #f3f4f5;
-    --secondary-foreground:#191c1d;
-    --muted:               #f3f4f5;
-    --muted-foreground:    #5b6268;
-    --accent:              #f8ddd7;
-    --accent-foreground:   #6f2c24;
+    --secondary:           #f7f7f7;
+    --secondary-foreground:#222222;
+    --muted:               #f7f7f7;
+    --muted-foreground:    #686868;
+    --accent:              #fdf0f1;
+    --accent-foreground:   #7a1f2e;
     --destructive:         #ba1a1a;
     --destructive-foreground: #ffffff;
-    --border:              #d6dbdd;
-    --input:               #d6dbdd;
-    --ring:                #b54a3a;
+    --border:              #dddddd;
+    --input:               #dddddd;
+    --ring:                #c7334a;
     --radius:              8px;
   }
 
   /* ── Dark Mode ────────────────────────────────────────── */
-  /* The same terracotta and teal relationships, lifted for dark surfaces. */
+  /* The same relationships, lifted for dark surfaces — coral + neutrals. */
   .dark {
-    --color-primary:       #f2a08f;
-    --color-primary-dark:  #ffc1b3;
-    --color-primary-deep:  #f8ddd7;
-    --color-primary-light: #7a2f26;
-    --color-primary-faint: #51201b;
+    --color-primary:       #f2909f;
+    --color-primary-dark:  #f7b0bb;
+    --color-primary-deep:  #fbe0e4;
+    --color-primary-light: #6b2430;
+    --color-primary-faint: #3d1218;
 
-    --color-action:         #f2a08f;
-    --color-action-dark:    #ffc1b3;
-    --color-action-pressed: #f8ddd7;
-    --color-action-light:   #51201b;
+    --color-action:         #f2909f;
+    --color-action-dark:    #f7b0bb;
+    --color-action-pressed: #fbe0e4;
+    --color-action-light:   #3d1218;
 
-    --color-secondary-brand:           #8fc8c2;
-    --color-secondary-brand-container: #174845;
-    --color-tertiary-brand:            #73c8b0;
-    --color-tertiary-brand-container:  #1d5b4e;
+    --color-bg-page:    #151515;
+    --color-bg-card:    #1e1e1e;
+    --color-bg-sidebar: #101010;
+    --color-bg-raised:  #2a2a2a;
+    --color-bg-overlay: #333333;
 
-    --color-bg-page:    #151819;
-    --color-bg-card:    #181b1c;
-    --color-bg-sidebar: #0f1112;
-    --color-bg-raised:  #272a2b;
-    --color-bg-overlay: #303334;
+    --color-text-heading:     #fafafa;
+    --color-text-body:        #e5e5e5;
+    --color-text-muted:       #a8a8a8;
+    --color-text-placeholder: #a8a8a8;
+    --color-text-disabled:    #4d4d4d;
+    --color-text-inverse:     #151515;
+    --color-text-link:        #f2909f;
 
-    --color-text-heading:     #fafbfc;
-    --color-text-body:        #e4e6e7;
-    --color-text-muted:       #bdc7c8;
-    --color-text-placeholder: #849092;
-    --color-text-disabled:    #555f60;
-    --color-text-inverse:     #151819;
-    --color-text-link:        #f2a08f;
-
-    --color-border-default: #35393a;
-    --color-border-strong:  #474c4d;
-    --color-border-subtle:  #232627;
+    --color-border-default: #333333;
+    --color-border-strong:  #4a4a4a;
+    --color-border-subtle:  #222222;
 
     --color-error:      #ffb4ab;
     --color-error-bg:   #690005;
@@ -311,25 +328,25 @@
     --color-info-text:    #eef3fb;
 
     /* shadcn dark overrides */
-    --background:          #151819;
-    --foreground:          #fafbfc;
-    --card:                #181b1c;
-    --card-foreground:     #fafbfc;
-    --popover:             #272a2b;
-    --popover-foreground:  #fafbfc;
-    --primary:             #f2a08f;
-    --primary-foreground:  #51201b;
-    --secondary:           #272a2b;
-    --secondary-foreground:#e4e6e7;
-    --muted:               #272a2b;
-    --muted-foreground:    #c9b8b6;
-    --accent:              #481216;
-    --accent-foreground:   #ffdad8;
+    --background:          #151515;
+    --foreground:          #fafafa;
+    --card:                #1e1e1e;
+    --card-foreground:     #fafafa;
+    --popover:             #2a2a2a;
+    --popover-foreground:  #fafafa;
+    --primary:             #f2909f;
+    --primary-foreground:  #3d1218;
+    --secondary:           #2a2a2a;
+    --secondary-foreground:#e5e5e5;
+    --muted:               #2a2a2a;
+    --muted-foreground:    #a8a8a8;
+    --accent:              #3d1218;
+    --accent-foreground:   #fbe0e4;
     --destructive:         #ffb4ab;
     --destructive-foreground: #690005;
-    --border:              #35393a;
-    --input:               #35393a;
-    --ring:                #ffb3b0;
+    --border:              #333333;
+    --input:               #333333;
+    --ring:                #f2909f;
   }
 
   /* ── Base element styles ──────────────────────────────── */
@@ -482,49 +499,48 @@
     }
   }
 
-  /* Tailwind v4 can resolve text-size token classes as color utilities when
-     the variable name is untyped. Keep shell-specific typography explicit. */
-  .owner-shell :where([class~="text-[var(--text-display)]"]) {
+  /* Keep workspace heading and body sizes aligned with the design token scale. */
+  .owner-shell :where([class~="text-[length:var(--text-display)]"]) {
     font-size: var(--text-display) !important;
   }
 
-  .admin-shell :where([class~="text-[var(--text-display)]"]) {
+  .admin-shell :where([class~="text-[length:var(--text-display)]"]) {
     font-size: var(--text-display) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-h2)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-h2)]"]) {
     font-size: var(--text-h2) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-h3)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-h3)]"]) {
     font-size: var(--text-h3) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-h4)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-h4)]"]) {
     font-size: var(--text-h4) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-h5)]"], [class~="text-[var(--text-heading-sm)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-h5)]"]) {
     font-size: var(--text-h5) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-body-lg)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-body-lg)]"]) {
     font-size: var(--text-body-lg) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-body)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-body)]"]) {
     font-size: var(--text-body) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-body-sm)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-body-sm)]"]) {
     font-size: var(--text-body-sm) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-label)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-label)]"]) {
     font-size: var(--text-label) !important;
   }
 
-  .owner-shell :where([class~="text-[var(--text-caption)]"]) {
+  .owner-shell :where([class~="text-[length:var(--text-caption)]"]) {
     font-size: var(--text-caption) !important;
   }
 
@@ -686,9 +702,29 @@
   .hero-enter-delay-4 { animation-delay: 360ms; }
   .hero-enter-delay-5 { animation-delay: 450ms; }
 
+  .soft-glow {
+    animation: soft-glow 7s ease-in-out infinite alternate;
+  }
+
+  .float-slow {
+    animation: float-slow 12s ease-in-out infinite;
+  }
+
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: reveal-up 700ms var(--ease-out-quart) forwards;
+  }
+
+  .reveal-up-delay-1 { animation-delay: 120ms; }
+  .reveal-up-delay-2 { animation-delay: 220ms; }
+  .reveal-up-delay-3 { animation-delay: 320ms; }
+  .reveal-up-delay-4 { animation-delay: 420ms; }
+
   @keyframes hero-image-drift {
-    from { transform: scale(1.1); }
-    to { transform: scale(1.04); }
+    0% { transform: scale(1.1) translate3d(0, 0, 0); }
+    50% { transform: scale(1.04) translate3d(0, -8px, 0); }
+    100% { transform: scale(1.04) translate3d(0, 0, 0); }
   }
 
   @keyframes hero-enter {
@@ -696,6 +732,31 @@
       opacity: 0;
       transform: translateY(16px);
     }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes soft-glow {
+    0% {
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.08);
+    }
+    100% {
+      box-shadow: 0 20px 60px rgba(232, 67, 92, 0.10);
+    }
+  }
+
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes reveal-up {
     to {
       opacity: 1;
       transform: translateY(0);

@@ -14,6 +14,7 @@ import {
 import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
 import { PageSpinner, InlineError, RecoveryNotice } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const POLL_INTERVAL = 4_000; // 4s
@@ -102,27 +103,24 @@ export default function ConfirmationPage() {
               <Clock
                 size={32}
                 strokeWidth={1.5}
-                className="text-[var(--color-error)]"
+                className="text-[color:var(--color-error)]"
                 aria-hidden="true"
               />
             </span>
           </div>
           <h1
-            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
 
           >
             Booking cancelled
           </h1>
-          <p className="text-[var(--text-body)] text-[var(--color-text-muted)] max-w-[38ch] mx-auto">
-            This booking was cancelled. Any payment will be refunded within 5–7
-            business days.
+          <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] max-w-[38ch] mx-auto">
+            This booking was cancelled. If you made a payment, contact support
+            to check its refund status.
           </p>
-          <Link
-            href="/hostels"
-            className="inline-flex h-10 items-center px-5 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-          >
-            Find another hostel
-          </Link>
+          <Button asChild>
+            <Link href="/hostels">Find another hostel</Link>
+          </Button>
         </div>
       </BookingStepLayout>
     );
@@ -136,16 +134,16 @@ export default function ConfirmationPage() {
           <Loader2
             size={36}
             strokeWidth={1.5}
-            className="animate-spin text-[var(--color-primary)] mx-auto"
+            className="animate-spin text-[color:var(--color-primary)] mx-auto"
             aria-hidden="true"
           />
           <h1
-            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
 
           >
             Confirming your payment…
           </h1>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             This usually takes a few seconds. Please don't close this page.
           </p>
           <BookingSummaryCard booking={booking} />
@@ -164,12 +162,9 @@ export default function ConfirmationPage() {
             title="Payment pending"
             message="Your payment is still being verified. Check your bookings page for the latest status; it usually updates within a minute."
             primaryAction={
-              <Link
-                href="/dashboard/bookings"
-                className="inline-flex h-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
-              >
-                View my bookings
-              </Link>
+              <Button asChild>
+                <Link href="/dashboard/bookings">View my bookings</Link>
+              </Button>
             }
           />
           <BookingSummaryCard booking={booking} showPaymentHint />
@@ -191,7 +186,7 @@ export default function ConfirmationPage() {
               <CheckCircle2
                 size={48}
                 strokeWidth={1.5}
-                className="text-[var(--color-action)]"
+                className="text-[color:var(--color-action)]"
                 aria-hidden="true"
               />
             </span>
@@ -199,22 +194,22 @@ export default function ConfirmationPage() {
 
           <div>
             <h1
-              className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] mb-2"
+              className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-2"
 
             >
               Booking confirmed
             </h1>
-            <p className="text-[var(--text-body)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
               Your booking request has been sent to the owner.
             </p>
           </div>
 
           {/* Booking reference */}
           <div className="inline-flex flex-col items-center gap-1">
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               Booking reference
             </p>
-            <code className="ref-id text-[var(--text-body-sm)]">
+            <code className="ref-id text-[length:var(--text-body-sm)]">
               {bookingId.slice(0, 12).toUpperCase()}
             </code>
           </div>
@@ -226,7 +221,7 @@ export default function ConfirmationPage() {
         {/* What happens next */}
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-5">
           <h2
-            className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] mb-4"
+            className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] mb-4"
 
           >
             What happens next
@@ -247,10 +242,10 @@ export default function ConfirmationPage() {
               },
             ].map(({ icon: _Icon, text }, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[var(--text-caption)] font-[700] text-[var(--color-primary-deep)]">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-light)] text-[length:var(--text-caption)] font-[700] text-[color:var(--color-primary-deep)]">
                   {i + 1}
                 </span>
-                <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed">
+                <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed">
                   {text}
                 </p>
               </li>
@@ -260,12 +255,9 @@ export default function ConfirmationPage() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            href="/dashboard/bookings"
-            className="inline-flex flex-1 items-center justify-center h-11 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
-          >
-            View booking
-          </Link>
+          <Button asChild className="flex-1">
+            <Link href="/dashboard/bookings">View booking</Link>
+          </Button>
           <MessageOwnerButton bookingId={bookingId} hostelId={booking.hostelId} />
         </div>
       </div>
@@ -307,17 +299,14 @@ function MessageOwnerButton({
   }
 
   return (
-    <button
+    <Button
       onClick={handleMessage}
-      disabled={busy}
-      className="inline-flex flex-1 items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+      loading={busy}
+      variant="outline"
+      className="flex-1"
     >
-      {busy ? (
-        <Loader2 size={15} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-      ) : (
-        <MessageCircle size={15} strokeWidth={1.5} aria-hidden="true" />
-      )}
+      {!busy && <MessageCircle size={15} strokeWidth={1.5} aria-hidden="true" />}
       Message owner
-    </button>
+    </Button>
   );
 }

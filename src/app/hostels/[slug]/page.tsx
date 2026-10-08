@@ -27,6 +27,7 @@ import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 /* ── Data fetch — direct Prisma, no self-HTTP ───────────── */
 const getHostel = cache(async (slug: string) => {
@@ -102,11 +103,22 @@ function AmenityIcon({ name: _name }: { name: string }) {
     <CheckCircle2
       size={16}
       strokeWidth={1.5}
-      className="text-[var(--color-action)] shrink-0 mt-0.5"
+      className="text-[color:var(--color-action)] shrink-0 mt-0.5"
       aria-hidden="true"
     />
   );
 }
+
+/* ── Shared tab-trigger styling — was identically repeated 5x ──── */
+const TAB_TRIGGER_CLS =
+  "shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent " +
+  "text-[length:var(--text-body-sm)] font-[400] text-[color:var(--color-text-muted)] " +
+  "capitalize transition-all duration-[var(--transition-fast)] " +
+  "data-[state=active]:border-[var(--color-primary)] " +
+  "data-[state=active]:text-[color:var(--color-text-heading)] " +
+  "data-[state=active]:font-[600] " +
+  "hover:text-[color:var(--color-text-body)] " +
+  "focus-visible:outline-none";
 
 /* ── Page ─────────────────────────────────────────────────── */
 export default async function HostelDetailPage({
@@ -155,11 +167,11 @@ export default async function HostelDetailPage({
             <div className="mb-6">
               {/* City + status chips */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-2.5 py-0.5 rounded-full">
+                <span className="text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-2.5 py-0.5 rounded-full">
                   {hostel.city}{hostel.area ? `, ${hostel.area}` : ""}
                 </span>
                 {hostel.verified && (
-                  <span className="flex items-center gap-1 text-[var(--text-caption)] font-[600] text-[var(--color-primary-deep)] bg-[var(--color-primary-faint)] px-2.5 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-primary-deep)] bg-[var(--color-primary-faint)] px-2.5 py-0.5 rounded-full">
                     <ShieldCheck size={11} strokeWidth={1.5} aria-hidden="true" />
                     Verified
                   </span>
@@ -171,7 +183,7 @@ export default async function HostelDetailPage({
 
               {/* Hostel name — H2 */}
               <h1
-                className="hostel-detail-title mb-2 font-heading font-[700] text-[var(--color-text-heading)] leading-tight tracking-[-0.02em]"
+                className="hostel-detail-title mb-2 font-heading font-[700] text-[color:var(--color-text-heading)] leading-tight tracking-[-0.02em]"
 
               >
                 {hostel.name}
@@ -183,13 +195,13 @@ export default async function HostelDetailPage({
                   <Star
                     size={15}
                     strokeWidth={1.5}
-                    className="text-[var(--color-primary)] fill-[var(--color-primary)]"
+                    className="text-[color:var(--color-primary)] fill-[var(--color-primary)]"
                     aria-hidden="true"
                   />
-                  <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)]">
+                  <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">
                     {hostel.rating.toFixed(1)}
                   </span>
-                  <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                  <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                     ({hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""})
                   </span>
                 </div>
@@ -207,24 +219,17 @@ export default async function HostelDetailPage({
 
             {/* Owner info strip */}
             <div className="flex items-center gap-3 py-4 border-y border-[var(--color-border-subtle)] mb-6">
-              <div className="h-10 w-10 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center overflow-hidden shrink-0">
-                {hostel.owner.avatar ? (
-                  <Image
-                    src={hostel.owner.avatar}
-                    alt={hostel.owner.name}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                ) : (
-                  <User size={18} strokeWidth={1.5} className="text-[var(--color-primary-deep)]" aria-hidden="true" />
-                )}
-              </div>
+              <Avatar className="h-10 w-10 shrink-0 bg-[var(--color-primary-light)]">
+                <AvatarImage src={hostel.owner.avatar ?? undefined} alt={hostel.owner.name} />
+                <AvatarFallback className="bg-transparent">
+                  <User size={18} strokeWidth={1.5} className="text-[color:var(--color-primary-deep)]" aria-hidden="true" />
+                </AvatarFallback>
+              </Avatar>
               <div>
-                <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)]">
+                <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)]">
                   Listed by {hostel.owner.name}
                 </p>
-                <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                   {hostel.owner._count?.hostels ?? 1} listing{hostel.owner._count?.hostels !== 1 ? "s" : ""} on HostelLo
                 </p>
               </div>
@@ -251,50 +256,23 @@ export default async function HostelDetailPage({
               <TabsList className="flex w-max min-w-full max-w-full justify-start overflow-x-auto border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <TabsTrigger
                   value="details"
-                  className="
-                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
-                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                    capitalize transition-all duration-[var(--transition-fast)]
-                    data-[state=active]:border-[var(--color-primary)]
-                    data-[state=active]:text-[var(--color-text-heading)]
-                    data-[state=active]:font-[600]
-                    hover:text-[var(--color-text-body)]
-                    focus-visible:outline-none
-                  "
+                  className={TAB_TRIGGER_CLS}
                 >
                   Details
                 </TabsTrigger>
                 <TabsTrigger
                   value="rooms"
-                  className="
-                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
-                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                    capitalize transition-all duration-[var(--transition-fast)]
-                    data-[state=active]:border-[var(--color-primary)]
-                    data-[state=active]:text-[var(--color-text-heading)]
-                    data-[state=active]:font-[600]
-                    hover:text-[var(--color-text-body)]
-                    focus-visible:outline-none
-                  "
+                  className={TAB_TRIGGER_CLS}
                 >
                   Rooms
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="
-                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
-                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                    capitalize transition-all duration-[var(--transition-fast)]
-                    data-[state=active]:border-[var(--color-primary)]
-                    data-[state=active]:text-[var(--color-text-heading)]
-                    data-[state=active]:font-[600]
-                    hover:text-[var(--color-text-body)]
-                    focus-visible:outline-none
-                  "
+                  className={TAB_TRIGGER_CLS}
                 >
                   Reviews
                   {hostel.reviewCount > 0 && (
-                    <span className="ml-1.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                    <span className="ml-1.5 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                       ({hostel.reviewCount})
                     </span>
                   )}
@@ -302,16 +280,7 @@ export default async function HostelDetailPage({
                 {canViewRoommates && (
                   <TabsTrigger
                     value="roommates"
-                    className="
-                      shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
-                      text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                      capitalize transition-all duration-[var(--transition-fast)]
-                      data-[state=active]:border-[var(--color-primary)]
-                      data-[state=active]:text-[var(--color-text-heading)]
-                      data-[state=active]:font-[600]
-                      hover:text-[var(--color-text-body)]
-                      focus-visible:outline-none
-                    "
+                    className={TAB_TRIGGER_CLS}
                   >
                     <Users size={14} strokeWidth={1.5} aria-hidden="true" />
                     Roommates
@@ -319,16 +288,7 @@ export default async function HostelDetailPage({
                 )}
                 <TabsTrigger
                   value="location"
-                  className="
-                    shrink-0 h-11 px-4 rounded-none border-b-2 border-transparent
-                    text-[var(--text-body-sm)] font-[400] text-[var(--color-text-muted)]
-                    capitalize transition-all duration-[var(--transition-fast)]
-                    data-[state=active]:border-[var(--color-primary)]
-                    data-[state=active]:text-[var(--color-text-heading)]
-                    data-[state=active]:font-[600]
-                    hover:text-[var(--color-text-body)]
-                    focus-visible:outline-none
-                  "
+                  className={TAB_TRIGGER_CLS}
                 >
                   Location
                 </TabsTrigger>
@@ -337,7 +297,7 @@ export default async function HostelDetailPage({
               {/* ── Details tab ─────────────────────────── */}
               <TabsContent value="details" className="mt-0">
                 {/* Description */}
-                <p className="text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed mb-8 max-w-[68ch]">
+                <p className="text-[length:var(--text-body)] text-[color:var(--color-text-body)] leading-relaxed mb-8 max-w-[68ch]">
                   {hostel.description}
                 </p>
 
@@ -345,7 +305,7 @@ export default async function HostelDetailPage({
                 {hostel.amenities?.length > 0 && (
                   <div className="mb-8">
                     <h2
-                      className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
+                      className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-4"
 
                     >
                       Amenities
@@ -354,7 +314,7 @@ export default async function HostelDetailPage({
                       {hostel.amenities.map((amenity: string) => (
                         <div key={amenity} className="flex items-start gap-2.5">
                           <AmenityIcon name={amenity} />
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                             {amenity}
                           </span>
                         </div>
@@ -367,7 +327,7 @@ export default async function HostelDetailPage({
                 {hostel.rules?.length > 0 && (
                   <div>
                     <h2
-                      className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-4"
+                      className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-4"
 
                     >
                       House rules
@@ -378,10 +338,10 @@ export default async function HostelDetailPage({
                           <XCircle
                             size={16}
                             strokeWidth={1.5}
-                            className="text-[var(--color-text-muted)] shrink-0 mt-0.5"
+                            className="text-[color:var(--color-text-muted)] shrink-0 mt-0.5"
                             aria-hidden="true"
                           />
-                          <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                             {rule}
                           </span>
                         </li>
@@ -394,7 +354,7 @@ export default async function HostelDetailPage({
               {/* ── Rooms tab ───────────────────────────── */}
               <TabsContent value="rooms" className="mt-0">
                 {rooms.length === 0 ? (
-                  <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] py-8">
+                  <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] py-8">
                     No room details added yet.
                   </p>
                 ) : (
@@ -414,7 +374,7 @@ export default async function HostelDetailPage({
                               className="object-cover"
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center text-[var(--color-text-muted)]">
+                            <div className="flex h-full items-center justify-center text-[color:var(--color-text-muted)]">
                               <BedDouble size={28} strokeWidth={1.4} aria-hidden="true" />
                               <span className="sr-only">No photo available</span>
                             </div>
@@ -424,33 +384,33 @@ export default async function HostelDetailPage({
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <h3 className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)]">
+                              <h3 className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">
                                 {room.name}
                               </h3>
-                              <p className="mt-1 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+                              <p className="mt-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                                 {room.capacity} occupant{room.capacity !== 1 ? "s" : ""}
                               </p>
                             </div>
                             <div className="shrink-0 text-right">
-                              <p className="text-[var(--text-body)] font-[700] text-[var(--color-primary-deep)]">
+                              <p className="text-[length:var(--text-body)] font-[700] text-[color:var(--color-primary-deep)]">
                                 {formatPKR(room.pricePerMonth)}
                               </p>
-                              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">per month</p>
+                              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">per month</p>
                             </div>
                           </div>
 
                           {room.description && (
-                            <p className="mt-3 text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-body)]">
+                            <p className="mt-3 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-body)]">
                               {room.description}
                             </p>
                           )}
 
                           <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--color-border-subtle)] pt-3">
                             <span
-                              className={`inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500] ${
+                              className={`inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[500] ${
                                 room.available > 0
-                                  ? "text-[var(--color-success)]"
-                                  : "text-[var(--color-error)]"
+                                  ? "text-[color:var(--color-success)]"
+                                  : "text-[color:var(--color-error)]"
                               }`}
                             >
                               <CheckCircle2 size={14} strokeWidth={1.7} aria-hidden="true" />
@@ -461,7 +421,7 @@ export default async function HostelDetailPage({
                             {room.available > 0 && canRequestBooking && (
                               <Link
                                 href={`/hostels/${hostel.slug}?room=${encodeURIComponent(room.id)}#booking-panel`}
-                                className="inline-flex h-8 items-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[var(--text-caption)] font-[600] text-white no-underline transition-colors hover:bg-[var(--color-action-dark)] hover:no-underline"
+                                className="inline-flex h-8 items-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-inverse)] no-underline transition-colors hover:bg-[var(--color-action-dark)] hover:no-underline"
                               >
                                 Book this room
                               </Link>

@@ -43,11 +43,11 @@ export function DashboardTabs() {
             aria-label={label}
             title={label}
             className={`${mobileDuplicate ? "hidden sm:flex" : "flex"}
-              items-center gap-2 h-11 px-4 whitespace-nowrap border-b-2 text-[var(--text-body-sm)] transition-all duration-[var(--transition-fast)] shrink-0
+              items-center gap-2 h-11 px-4 whitespace-nowrap border-b-2 text-[length:var(--text-body-sm)] transition-all duration-[var(--transition-fast)] shrink-0
               ${
                 isActive
-                  ? "border-[var(--color-primary)] text-[var(--color-text-heading)] font-[600]"
-                  : "border-transparent text-[var(--color-text-muted)] font-[400] hover:text-[var(--color-text-body)]"
+                  ? "border-[var(--color-primary)] text-[color:var(--color-text-heading)] font-[600]"
+                  : "border-transparent text-[color:var(--color-text-muted)] font-[400] hover:text-[color:var(--color-text-body)]"
               }
             `}
           >

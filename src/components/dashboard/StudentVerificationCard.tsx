@@ -17,28 +17,28 @@ const STATUS_COPY = {
     body:    "Upload your university ID or enrolment letter. Verified students are trusted more by owners and get priority responses.",
     icon:    ShieldCheck,
     iconBg:  "bg-[var(--color-primary-faint)]",
-    iconColor: "text-[var(--color-primary)]",
+    iconColor: "text-[color:var(--color-primary)]",
   },
   PENDING: {
     heading: "Verification in review",
     body:    "We received your document and will review it within 24 hours. You'll get a notification once it's done.",
     icon:    Clock,
     iconBg:  "bg-[var(--color-warning-bg)]",
-    iconColor: "text-[var(--color-warning)]",
+    iconColor: "text-[color:var(--color-warning)]",
   },
   APPROVED: {
     heading: "You're a verified student",
     body:    "Your university ID has been verified. Your profile shows the verified badge to hostel owners.",
     icon:    ShieldCheck,
     iconBg:  "bg-[var(--color-success-bg)]",
-    iconColor: "text-[var(--color-success)]",
+    iconColor: "text-[color:var(--color-success)]",
   },
   REJECTED: {
     heading: "Verification not approved",
     body:    "Your document couldn't be verified. Please upload a clearer image of your university ID or enrolment letter.",
     icon:    XCircle,
     iconBg:  "bg-[var(--color-error-bg)]",
-    iconColor: "text-[var(--color-error)]",
+    iconColor: "text-[color:var(--color-error)]",
   },
 } satisfies Record<Status, unknown>;
 
@@ -59,24 +59,31 @@ export function StudentVerificationCard({ currentStatus, embedded = false }: Pro
     setError(null);
 
     try {
-      // 1. Upload the doc via the existing upload route
-      const form = new FormData();
-      form.append("file", file);
-      const upRes = await fetch("/api/upload", { method: "POST", body: form });
-      if (!upRes.ok) throw new Error("Upload failed");
-      const { url } = await upRes.json();
+      if (file.size === 0 || file.size > 4 * 1024 * 1024) {
+        throw new Error("Choose a file that is 4 MB or smaller.");
+      }
 
-      // 2. Submit the URL for admin review
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRequest = await fetch("/api/user/verify-student/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const upload = await uploadRequest.json();
+      if (!uploadRequest.ok) throw new Error(upload.error ?? "Upload preparation failed.");
+
+      // Only the private temporary object key is submitted for admin review.
       const subRes = await fetch("/api/user/verify-student", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ docUrl: url }),
+        body:    JSON.stringify({ docKey: upload.key }),
       });
-      if (!subRes.ok) throw new Error("Submission failed");
+      const submission = await subRes.json();
+      if (!subRes.ok) throw new Error(submission.error ?? "Submission failed.");
 
       setStatus("PENDING");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -96,18 +103,18 @@ export function StudentVerificationCard({ currentStatus, embedded = false }: Pro
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+            <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
               {cfg.heading}
             </p>
             {status === "APPROVED" && <StudentBadge />}
           </div>
 
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] leading-relaxed mb-4">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] leading-relaxed mb-4">
             {cfg.body}
           </p>
 
           {error && (
-            <p className="text-[var(--text-body-sm)] text-[var(--color-error-text)] mb-3" role="alert">
+            <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)] mb-3" role="alert">
               {error}
             </p>
           )}
@@ -126,17 +133,17 @@ export function StudentVerificationCard({ currentStatus, embedded = false }: Pro
               <label
                 htmlFor="verification-doc-upload"
                 className={`inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] cursor-pointer
-                  text-[var(--text-body-sm)] font-[500] transition-colors
+                  text-[length:var(--text-body-sm)] font-[500] transition-colors
                   ${uploading
-                    ? "bg-[var(--color-bg-sidebar)] text-[var(--color-text-muted)] pointer-events-none"
-                    : "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-deep)]"}`}
+                    ? "bg-[var(--color-bg-sidebar)] text-[color:var(--color-text-muted)] pointer-events-none"
+                    : "bg-[var(--color-primary)] text-[color:var(--color-text-inverse)] hover:bg-[var(--color-primary-deep)]"}`}
               >
                 {uploading
                   ? <><Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" /> Uploading…</>
                   : <><Upload  size={14} strokeWidth={1.5} aria-hidden="true" /> Upload ID / enrolment letter</>}
               </label>
-              <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] mt-2">
-                JPG, PNG, WebP or PDF · max 5 MB · your document is kept private
+              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] mt-2">
+                JPG, PNG, WebP or PDF · max 4 MB · stored privately for admin review
               </p>
             </>
           )}

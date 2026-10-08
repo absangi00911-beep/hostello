@@ -39,9 +39,19 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const session = await auth();
+  if (!session?.user?.id) return { title: "Edit listing" };
+
   const { id } = await params;
   const hostel = await getHostel(id);
-  return { title: hostel ? `Edit — ${hostel.name}` : "Edit listing" };
+  if (
+    !hostel ||
+    (hostel.ownerId !== session.user.id && session.user.role !== "ADMIN")
+  ) {
+    return { title: "Edit listing" };
+  }
+
+  return { title: `Edit — ${hostel.name}` };
 }
 
 export default async function EditListingPage({
@@ -84,16 +94,16 @@ export default async function EditListingPage({
     <div className="py-2">
       <div className="mb-8">
         <h1
-          className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]"
+          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
 
         >
           Edit listing
         </h1>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] mt-1">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mt-1">
           {hostel.name}
           {hostel.status === "ACTIVE" && (
             <span
-              className="ml-2 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-[600]"
+              className="ml-2 inline-flex items-center h-5 px-2 rounded-[var(--radius-full)] text-[10px] font-[600]"
               style={{
                 background: "var(--color-success-bg)",
                 color: "var(--color-success-text)",
@@ -104,7 +114,7 @@ export default async function EditListingPage({
           )}
           {hostel.status === "PENDING_REVIEW" && (
             <span
-              className="ml-2 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-[600]"
+              className="ml-2 inline-flex items-center h-5 px-2 rounded-[var(--radius-full)] text-[10px] font-[600]"
               style={{
                 background: "var(--color-warning-bg)",
                 color: "var(--color-warning-text)",

@@ -4,8 +4,10 @@
 
 import { SessionProvider } from "next-auth/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "framer-motion";
 import { useState } from "react";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { LenisProvider } from "@/components/LenisProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create a stable QueryClient instance per component lifecycle.
@@ -28,9 +30,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light">
-          {children}
-        </ThemeProvider>
+        <MotionConfig reducedMotion="user">
+          <ThemeProvider defaultTheme="light">
+            <LenisProvider>{children}</LenisProvider>
+          </ThemeProvider>
+        </MotionConfig>
       </QueryClientProvider>
     </SessionProvider>
   );

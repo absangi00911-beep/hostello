@@ -5,12 +5,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="space-y-3">
       <h2
-        className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]"
+        className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]"
 
       >
         {title}
       </h2>
-      <div className="space-y-2 text-[var(--text-body)] text-[var(--color-text-body)] leading-relaxed">
+      <div className="space-y-2 text-[length:var(--text-body)] text-[color:var(--color-text-body)] leading-relaxed">
         {children}
       </div>
     </section>
@@ -31,12 +31,12 @@ export default function PrivacyPage() {
         {/* Header */}
         <div className="mb-10">
           <h1
-            className="font-heading text-[var(--text-h1)] font-[700] text-[var(--color-text-heading)] tracking-[-0.025em] mb-3"
+            className="font-heading text-[length:var(--text-h1)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
 
           >
             Privacy policy
           </h1>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             Last updated: {updated}
           </p>
         </div>
@@ -56,19 +56,19 @@ export default function PrivacyPage() {
 
           <Section title="Data we collect">
             <p>
-              <strong className="font-[500] text-[var(--color-text-heading)]">Account data</strong> — name, email address, phone number (optional), and bcrypt-hashed password. We never store your password in plain text.
+              <strong className="font-[500] text-[color:var(--color-text-heading)]">Account data</strong> — name, email address, phone number (optional), and bcrypt-hashed password. We never store your password in plain text.
             </p>
             <p>
-              <strong className="font-[500] text-[var(--color-text-heading)]">Profile data</strong> — city, short bio, and profile photo (uploaded to Cloudflare R2).
+              <strong className="font-[500] text-[color:var(--color-text-heading)]">Profile data</strong> — city, short bio, and profile photo (uploaded to Cloudflare R2).
             </p>
             <p>
-              <strong className="font-[500] text-[var(--color-text-heading)]">Booking data</strong> — check-in and check-out dates, room selections, guest count, and payment records. Payment card details are processed by Safepay and never stored on HostelLo servers.
+              <strong className="font-[500] text-[color:var(--color-text-heading)]">Booking data</strong> — check-in and check-out dates, room selections, guest count, and payment records. Payment card details are processed by Safepay and never stored on HostelLo servers.
             </p>
             <p>
-              <strong className="font-[500] text-[var(--color-text-heading)]">Usage data</strong> — hostel views, search queries, favorites saved, and in-app messages. This data helps us improve search results and notify you of relevant price changes.
+              <strong className="font-[500] text-[color:var(--color-text-heading)]">Usage data</strong> — hostel views, search queries, favorites saved, and in-app messages. This data helps us improve search results and notify you of relevant price changes.
             </p>
             <p>
-              <strong className="font-[500] text-[var(--color-text-heading)]">Device data</strong> — IP address (used for rate limiting only, not stored long-term), browser type, and session tokens stored in HTTP-only cookies.
+              <strong className="font-[500] text-[color:var(--color-text-heading)]">Device data</strong> — IP address (used for rate limiting only, not stored long-term), browser type, and session tokens stored in HTTP-only cookies.
             </p>
           </Section>
 
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
             <p>
               To exercise these rights, use the account deletion feature in
               Settings or contact us at{" "}
-              <a href="mailto:privacy@hostello.pk" className="text-[var(--color-text-link)] hover:underline">
+              <a href="mailto:privacy@hostello.pk" className="text-[color:var(--color-text-link)] hover:underline">
                 privacy@hostello.pk
               </a>
               .
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
               HostelLo is intended for users aged 17 and above. We do not
               knowingly collect data from children under 13. If you believe a
               child has created an account, contact us at{" "}
-              <a href="mailto:privacy@hostello.pk" className="text-[var(--color-text-link)] hover:underline">
+              <a href="mailto:privacy@hostello.pk" className="text-[color:var(--color-text-link)] hover:underline">
                 privacy@hostello.pk
               </a>{" "}
               and we will delete it immediately.
@@ -164,11 +164,11 @@ export default function PrivacyPage() {
           <Section title="Contact">
             <p>
               Questions about privacy? Email{" "}
-              <a href="mailto:privacy@hostello.pk" className="text-[var(--color-text-link)] hover:underline">
+              <a href="mailto:privacy@hostello.pk" className="text-[color:var(--color-text-link)] hover:underline">
                 privacy@hostello.pk
               </a>{" "}
               or use the{" "}
-              <a href="/contact" className="text-[var(--color-text-link)] hover:underline">
+              <a href="/contact" className="text-[color:var(--color-text-link)] hover:underline">
                 contact form
               </a>
               .

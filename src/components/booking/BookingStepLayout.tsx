@@ -21,7 +21,7 @@ export function BookingStepLayout({
 
   return (
     <div className="min-h-dvh bg-[var(--color-bg-page)]">
-      {/* -- Top progress bar — 4px amber, full width ---- */}
+      {/* -- Top progress bar — full width, primary accent ---- */}
       <div
         className="fixed top-0 left-0 right-0 z-50 h-1 bg-[var(--color-border-subtle)]"
         role="progressbar"
@@ -43,7 +43,7 @@ export function BookingStepLayout({
           {backHref ? (
             <Link
               href={backHref}
-              className="flex items-center gap-1 text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
+              className="flex items-center gap-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 rounded-[var(--radius-sm)]"
             >
               <ChevronLeft size={16} strokeWidth={1.5} aria-hidden="true" />
               Back
@@ -55,9 +55,9 @@ export function BookingStepLayout({
           <div className="flex-1" />
 
           {/* Step counter */}
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             Step {step} of {TOTAL_STEPS} —{" "}
-            <span className="font-[500] text-[var(--color-text-body)]">
+            <span className="font-[500] text-[color:var(--color-text-body)]">
               {STEP_LABELS[step - 1]}
             </span>
           </p>

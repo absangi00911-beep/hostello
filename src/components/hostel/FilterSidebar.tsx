@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { inputCls } from "@/components/ui/input";
 import { CITIES, AMENITIES } from "@hostello/shared";
 
@@ -60,7 +61,7 @@ function FilterControls({
   }
 
   const labelCls =
-    "block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-2";
+    "block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)] mb-2";
 
   return (
     <div className={`flex flex-col gap-6 ${showApply ? "pb-24" : ""}`}>
@@ -85,7 +86,7 @@ function FilterControls({
           <ChevronDown
             size={14}
             strokeWidth={1.5}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)]"
             aria-hidden="true"
           />
         </div>
@@ -129,7 +130,7 @@ function FilterControls({
                 onChange={() => set("gender", value)}
                 className="sr-only"
               />
-              <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+              <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                 {label}
               </span>
             </label>
@@ -162,7 +163,7 @@ function FilterControls({
             aria-label="Minimum price"
             className={`${inputCls} text-center`}
           />
-          <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] shrink-0">–</span>
+          <span className="text-[color:var(--color-text-muted)] text-[length:var(--text-body-sm)] shrink-0">–</span>
           <input
             type="number"
             value={filters.maxPrice}
@@ -209,7 +210,7 @@ function FilterControls({
                   onChange={() => toggleAmenity(amenity)}
                   className="sr-only"
                 />
-                <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                   {amenity}
                 </span>
               </label>
@@ -220,7 +221,7 @@ function FilterControls({
         {ALL_AMENITIES.length > 12 && (
           <button
             onClick={() => setShowAllAmenities((v) => !v)}
-            className="mt-2 text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
+            className="mt-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none"
           >
             {showAllAmenities
               ? "Show less"
@@ -232,18 +233,12 @@ function FilterControls({
       {/* -- Mobile actions ---------------------- */}
       {showApply && (
         <div className="flex flex-col gap-2 pt-2 border-t border-[var(--color-border-subtle)] sticky bottom-0 bg-[var(--color-bg-card)] pb-2">
-          <button
-            onClick={onApply}
-            className="h-10 w-full rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
-          >
+          <Button onClick={onApply} className="w-full">
             Apply filters
-          </button>
-          <button
-            onClick={onReset}
-            className="h-10 w-full rounded-[var(--radius-md)] text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
-          >
+          </Button>
+          <Button onClick={onReset} variant="ghost" className="w-full">
             Reset filters
-          </button>
+          </Button>
         </div>
       )}
 
@@ -251,7 +246,7 @@ function FilterControls({
       {!showApply && (
         <button
           onClick={onReset}
-          className="text-left text-[var(--text-body-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)] focus-visible:underline focus-visible:outline-none"
+          className="text-left text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)] focus-visible:underline focus-visible:outline-none"
         >
           Reset filters
         </button>
@@ -276,7 +271,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
         aria-label="Search filters"
       >
         <div className="sticky top-20 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] mb-5"
+          <p className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-5"
 >
             Filters
           </p>
@@ -320,11 +315,11 @@ export function MobileFilterSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="lg:hidden inline-flex items-center gap-2 h-9 px-3 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)]">
+        <button className="lg:hidden inline-flex items-center gap-2 h-9 px-3 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)]">
           <SlidersHorizontal size={15} strokeWidth={1.5} aria-hidden="true" />
           Filters
           {activeCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1.5 text-[10px] font-[600] text-[var(--color-text-heading)]">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-[var(--radius-full)] bg-[var(--color-primary)] px-1.5 text-[10px] font-[600] text-[color:var(--color-text-inverse)]">
               {activeCount}
             </span>
           )}
@@ -336,7 +331,7 @@ export function MobileFilterSheet({
       >
         <SheetHeader className="mb-5">
           <SheetTitle
-            className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] text-left"
+            className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] text-left"
 
           >
             Filters

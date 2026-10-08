@@ -57,7 +57,7 @@ export async function generateMetadata({
   if (q) titleParts.push(`for ${q}`);
 
   return {
-    title: `${titleParts.join(" ")} | HostelLo`,
+    title: titleParts.join(" "),
     description:
       "Search verified student hostels by city, price, gender, and amenities.",
   };

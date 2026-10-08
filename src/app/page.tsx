@@ -1,6 +1,5 @@
 // Path: src/app/page.tsx
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -20,9 +19,18 @@ import { CITIES } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { HeroSearch } from "@/components/landing/HeroSearch";
+import {
+  CityGrid,
+  SectionCtaLink,
+  SectionFrame,
+  SectionHeading,
+  TrustProof,
+} from "@/components/landing/MarketingSections";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
+import { HeroSearch } from "@/components/landing/HeroSearch";
+import { PhotoImage } from "@/components/landing/PhotoImage";
 
 export const metadata: Metadata = {
   title: "HostelLo — Verified Student Hostels in Pakistan",
@@ -30,10 +38,8 @@ export const metadata: Metadata = {
     "Compare verified student hostels across Pakistan by city, university, monthly price, and amenities — all in one place.",
 };
 
-const STUDENT_HERO_IMAGE =
-  "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=2000&q=80&auto=format&fit=crop";
 const OWNER_CTA_IMAGE =
-  "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1800&q=80&auto=format&fit=crop";
+  "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1800&q=80";
 
 const FEATURED_CITIES = CITIES.slice(0, CITIES.length);
 
@@ -100,6 +106,84 @@ const OWNER_QUICK_LINKS = [
   },
 ] as const;
 
+const EXPERIENCE_FEATURES = [
+  {
+    title: "Live in the right part of the city",
+    body: "Compare nearby hostels by campus distance, transit access, and daily routine fit.",
+    icon: MapPin,
+  },
+  {
+    title: "Know the real monthly cost",
+    body: "See all-in pricing, Wi‑Fi, laundry, meals, and room details before you contact anyone.",
+    icon: Eye,
+  },
+  {
+    title: "Book with more confidence",
+    body: "Messaging, payment handoff, and verification are streamlined inside one trusted flow.",
+    icon: ShieldCheck,
+  },
+] as const;
+
+const PRODUCT_PILLARS = [
+  {
+    eyebrow: "01 · Discover",
+    title: "Compare hostels with real context",
+    body: "Filter by city, budget, room type, and campus distance so the shortlist is based on your actual life, not generic listings.",
+  },
+  {
+    eyebrow: "02 · Decide",
+    title: "See the details that matter before you book",
+    body: "From included utilities to room photos and verified management, every key decision point is visible before the first phone call.",
+  },
+  {
+    eyebrow: "03 · Move in",
+    title: "Book and manage the next step confidently",
+    body: "Message owners, confirm dates, and complete the handoff in one place without the usual scattered follow-up and uncertainty.",
+  },
+] as const;
+
+const LUXURY_CATEGORIES = [
+  {
+    title: "Budget-friendly private rooms",
+    body: "Cleaner, more secure spaces with rent clarity and practical amenities.",
+    image:
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    title: "Premium shared stays",
+    body: "Bright, social, well-located rooms optimized for student routines and campus life.",
+    image:
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    title: "Managed hostels near campus",
+    body: "Handpicked rooms with verified management, better safety, and easier move-in support.",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
+  },
+] as const;
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "The listing details were so clear that I booked within a day. No vague pricing, no confusing calls.",
+    name: "Mahnoor S.",
+    meta: "BA Economics, Lahore",
+  },
+  {
+    quote:
+      "It feels much more premium than the usual hostel apps. I could compare rooms, safety, and distance in minutes.",
+    name: "Ali R.",
+    meta: "Computer Science, Islamabad",
+  },
+  {
+    quote:
+      "Our hostel listings look polished and it gives students the confidence to reach out without the usual back-and-forth.",
+    name: "Ayesha K.",
+    meta: "Property owner, Multan",
+  },
+] as const;
+
 /* ── Data ────────────────────────────────────────────────── */
 async function getRecentHostels(): Promise<HostelCardData[]> {
   try {
@@ -115,121 +199,249 @@ async function getRecentHostels(): Promise<HostelCardData[]> {
   }
 }
 
-/* ── Section heading ─────────────────────────────────────── */
-function SectionHeading({
-  eyebrow,
-  heading,
-  sub,
-}: {
-  eyebrow: string;
-  heading: string;
-  sub: string;
-}) {
-  return (
-    <div className="mx-auto max-w-2xl text-center">
-      <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-primary-deep)]">
-        {eyebrow}
-      </p>
-      <h2 className="mt-2 font-heading text-[var(--text-h2)] font-[600] text-[var(--color-text-heading)]">
-        {heading}
-      </h2>
-      <p className="mt-3 text-[var(--text-body)] text-[var(--color-text-muted)]">{sub}</p>
-    </div>
-  );
-}
-
-function HeroTrustProof() {
-  const items = [
-    {
-      icon: ShieldCheck,
-      label: "Verified hostel listings",
-      description: "Reviewed before students book.",
-    },
-    {
-      icon: Eye,
-      label: "Real prices before you call",
-      description: "Monthly rent is visible upfront.",
-    },
-    {
-      icon: Lock,
-      label: "Secure booking handoff",
-      description: "Your booking stays tracked end to end.",
-    },
-  ];
-
-  return (
-    <div className="grid gap-2 border-t border-white/15 pt-4 sm:grid-cols-3" aria-label="HostelLo trust proof">
-      {items.map(({ icon: Icon, label, description }) => (
-        <div key={label} className="flex gap-2.5 sm:block">
-          <Icon size={17} strokeWidth={1.6} className="mt-0.5 shrink-0 text-white/80" aria-hidden="true" />
-          <div>
-            <p className="text-[var(--text-body-sm)] font-[700] text-white">{label}</p>
-            <p className="mt-0.5 text-[var(--text-caption)] leading-relaxed text-white/70">{description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Hero — search-first for students, with a quiet owner path ── */
+/* ── Hero — search-first landing section for students and owners ── */
 function Hero({ isAnonymous, userName }: { isAnonymous: boolean; userName?: string | null }) {
   const firstName = userName?.trim().split(/\s+/)[0];
 
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
-      <Image
-        src={STUDENT_HERO_IMAGE}
-        alt="Students studying and relaxing together in a hostel common room"
-        fill
-        priority
-        sizes="100vw"
-        className="hero-image-drift object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/65 to-black/35" aria-hidden="true" />
-
-      <div className="container-app relative flex min-h-[620px] items-center py-16 md:min-h-[680px] md:py-20">
-        <div className="max-w-3xl">
-          <p className="hero-enter inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
-            {firstName ? `Welcome back, ${firstName}` : "Verified student living, made simple"}
+    <SectionFrame className="bg-[var(--color-bg-page)] py-14 md:py-20">
+      <div className="container-app">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="hero-enter inline-flex items-center rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-1 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+            {firstName ? `Welcome back, ${firstName}` : "Student living, refined"}
           </p>
 
-          <h1 className="hero-enter hero-enter-delay-1 mt-5 max-w-2xl font-heading text-[2.5rem] leading-[1.05] font-[600] tracking-[-0.01em] text-white sm:text-[3.5rem] md:text-[4.25rem]">
-            {firstName ? "Keep looking for a room that fits your life." : "Find your room. Not a phone number."}
+          <h1 className="hero-enter hero-enter-delay-1 mt-5 font-heading text-[2.5rem] leading-[0.98] font-[600] tracking-[-0.02em] text-[color:var(--color-text-heading)] sm:text-[3.2rem] md:text-[3.8rem]">
+            Find a room you actually want to live in.
           </h1>
 
-          <p className="hero-enter hero-enter-delay-2 mt-5 max-w-xl text-[1.0625rem] leading-relaxed text-white/85 sm:text-[1.125rem]">
+          <p className="hero-enter hero-enter-delay-2 mx-auto mt-5 max-w-xl text-[1.04rem] leading-relaxed text-[color:var(--color-text-muted)] sm:text-[1.125rem]">
             {firstName
-              ? "Pick up where you left off, compare new options, and find a verified hostel near your university."
-              : "Compare verified hostels near your university with real PKR prices, photos, and amenities before you make a call."}
+              ? "Pick up where you left off and compare verified hostels that match your routine, budget, and campus life."
+              : "Compare verified student hostels near your university with clearer pricing, better details, and a booking experience designed around real student life."}
           </p>
+        </div>
 
-          <div className="hero-enter hero-enter-delay-3 mt-8 max-w-3xl rounded-[var(--radius-brand)] bg-white/95 p-3 shadow-[var(--shadow-lg)] backdrop-blur-sm sm:p-4">
-            <HeroSearch />
-          </div>
+        <div className="hero-enter hero-enter-delay-3 mx-auto mt-8 max-w-3xl">
+          <HeroSearch />
+        </div>
 
-          <div className="hero-enter hero-enter-delay-4 mt-7 max-w-3xl">
-            <HeroTrustProof />
-          </div>
+        {isAnonymous && (
+          <p className="hero-enter hero-enter-delay-3 mt-4 text-center text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            Own a hostel?{" "}
+            <Link href="/list-your-hostel" className="font-[600] text-[color:var(--color-text-link)] hover:underline">
+              List your hostel
+            </Link>
+          </p>
+        )}
 
-          {isAnonymous && (
-            <p className="hero-enter hero-enter-delay-5 mt-7 text-[var(--text-body-sm)] text-white/75">
-              Own a hostel?{" "}
-              <Link href="/list-your-hostel" className="font-[700] text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
-                List it on HostelLo <ArrowRight className="ml-1 inline" size={14} aria-hidden="true" />
-              </Link>
-            </p>
-          )}
+        <div className="hero-enter hero-enter-delay-4 mx-auto mt-10 max-w-2xl">
+          <TrustProof />
         </div>
       </div>
-    </section>
+    </SectionFrame>
+  );
+}
+
+/* ── Experience / feature section ─────────────────────────── */
+function ProductNarrativeSection() {
+  return (
+    <SectionFrame className="bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_100%)] py-16 md:py-20">
+      <div className="container-app">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+            One platform for every student move
+          </p>
+          <h2 className="mt-3 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
+            More clarity, less friction, better room decisions
+          </h2>
+        </div>
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <div className="space-y-4">
+            {PRODUCT_PILLARS.map(({ eyebrow, title, body }) => (
+              <Card key={title} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[0_12px_28px_rgba(0,0,0,0.04)]">
+                <CardContent className="p-0">
+                  <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+                    {eyebrow}
+                  </p>
+                  <h3 className="mt-3 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">{title}</h3>
+                  <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">{body}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="relative">
+            <div className="absolute -left-6 top-8 h-40 w-40 rounded-full bg-[var(--color-primary-light)]/40 blur-3xl" aria-hidden="true" />
+            <div className="absolute bottom-2 right-0 h-48 w-48 rounded-full bg-[var(--color-bg-raised)]/60 blur-3xl" aria-hidden="true" />
+
+            <Card className="relative overflow-hidden border-white/60 bg-white/80 p-3 shadow-[0_18px_52px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+              <CardContent className="p-0">
+                <div className="rounded-[24px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] p-3">
+                  <div className="flex items-center justify-between gap-3 rounded-[18px] bg-[var(--color-bg-card)] px-4 py-3 shadow-sm">
+                    <div>
+                      <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">
+                        Campus search
+                      </p>
+                      <p className="mt-1 text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">Lahore • GCU • PKR 24k+</p>
+                    </div>
+                    <div className="rounded-full bg-[var(--color-success-bg)] px-2.5 py-1 text-[10px] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-success-text)]">
+                      Verified
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
+                    <div className="relative min-h-[260px] overflow-hidden rounded-[20px] bg-[var(--color-bg-overlay)]">
+                      <PhotoImage
+                        src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80"
+                        alt="A premium hostel room lifestyle image"
+                        width={900}
+                        height={700}
+                        className="h-[260px] w-full object-cover contrast-[1.08] saturate-[1.08]"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="rounded-[18px] bg-[var(--color-bg-card)] p-3 shadow-sm">
+                        <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-text-muted)]">
+                          Best fit
+                        </p>
+                        <h3 className="mt-2 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">The Willow House</h3>
+                        <p className="mt-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">Private room • Wi‑Fi • Laundry • secure entry</p>
+                      </div>
+
+                      <div className="rounded-[18px] bg-[var(--color-bg-card)] p-3 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">Monthly rent</span>
+                          <span className="font-heading text-[1.7rem] font-[600] leading-none text-[color:var(--color-text-heading)]">PKR 24.5k</span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-3 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+                          <span>4.8 rating</span>
+                          <span>2 min to campus</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </SectionFrame>
+  );
+}
+
+function ExperienceSection() {
+  return (
+    <SectionFrame className="bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_100%)] py-16 md:py-20">
+      <div className="container-app grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div>
+          <SectionHeading
+            eyebrow="Built for student life"
+            heading="An experience that feels premium, not chaotic"
+            sub="We turn noisy, generic hostel discovery into a clear, design-first decision-making tool."
+          />
+
+          <div className="mt-10 space-y-4">
+            {EXPERIENCE_FEATURES.map(({ icon: Icon, title, body }) => (
+              <Card key={title} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] shadow-[0_12px_24px_rgba(0,0,0,0.03)]">
+                <CardContent className="flex gap-4 p-5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[var(--color-primary-faint)]">
+                    <Icon size={20} strokeWidth={1.7} className="text-[color:var(--color-primary-deep)]" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">{title}</h3>
+                    <p className="mt-1 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">{body}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative min-h-[520px]">
+          <div className="absolute -left-6 top-8 h-40 w-40 rounded-full bg-[var(--color-primary-light)]/40 blur-3xl" aria-hidden="true" />
+          <div className="absolute bottom-12 right-4 h-44 w-44 rounded-full bg-[var(--color-bg-raised)]/50 blur-3xl" aria-hidden="true" />
+
+          <div className="relative space-y-5 p-2">
+            <Card className="float-slow overflow-hidden border-white/50 bg-white/80 p-3 shadow-[0_18px_44px_rgba(0,0,0,0.08)] backdrop-blur-sm">
+              <CardContent className="p-0">
+                <div className="relative h-[320px] overflow-hidden rounded-[20px] bg-[var(--color-bg-overlay)]">
+                  <PhotoImage
+                    src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80"
+                    alt="Modern student hostel room"
+                    width={900}
+                    height={700}
+                    className="relative h-full w-full object-cover contrast-[1.08] saturate-[1.08]"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 shadow-[0_12px_26px_rgba(0,0,0,0.04)]">
+                <CardContent className="p-0">
+                  <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">Top pick</p>
+                  <h3 className="mt-2 text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">The Willow House</h3>
+                  <p className="mt-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">Private rooms • 5 min to campus • Wi‑Fi / laundry</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 shadow-[0_12px_26px_rgba(0,0,0,0.04)]">
+                <CardContent className="p-0">
+                  <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">Average rent</p>
+                  <div className="mt-2 text-[2rem] font-heading font-[600] leading-none text-[color:var(--color-text-heading)]">PKR 25.4k</div>
+                  <p className="mt-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">Across top verified options</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    </SectionFrame>
+  );
+}
+
+/* ── Category showcase ─────────────────────────────────── */
+function CategoryShowcase() {
+  return (
+    <SectionFrame className="bg-[var(--color-bg-page)] py-16 md:py-20">
+      <div className="container-app">
+        <SectionHeading
+          eyebrow="Find your fit"
+          heading="Choose the room setup that matches your life"
+          sub="Whether you want budget clarity, a premium setup, or a managed stay, HostelLo keeps the decision clear."
+        />
+
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {LUXURY_CATEGORIES.map(({ title, body, image }) => (
+            <Card key={title} className="group overflow-hidden border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] shadow-[0_12px_28px_rgba(0,0,0,0.05)] transition-all duration-[var(--transition-medium)] hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(0,0,0,0.08)]">
+              <div className="relative h-64 overflow-hidden">
+                <PhotoImage src={image} alt={title} fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover contrast-[1.06] saturate-[1.12] transition-transform duration-[var(--transition-slow)] group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#000000]/60 via-[#000000]/10 to-transparent" aria-hidden="true" />
+              </div>
+              <CardContent className="p-5">
+                <h3 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">{title}</h3>
+                <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">{body}</p>
+                <Link href="/hostels" className="mt-4 inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)]">
+                  Explore options
+                  <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </SectionFrame>
   );
 }
 
 /* ── Trust / promise section ────────────────────────────────*/
 function TrustSection() {
   return (
-    <section className="bg-[var(--color-bg-page)] py-16 md:py-20">
+    <SectionFrame className="bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] py-16 md:py-20">
       <div className="container-app">
         <SectionHeading
           eyebrow="The HostelLo promise"
@@ -239,36 +451,38 @@ function TrustSection() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-3">
           {TRUST_CARDS.map(({ icon: Icon, title, body }) => (
-            <div
+            <Card
               key={title}
-              className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6"
+              className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.04)] transition-transform duration-[var(--transition-base)] hover:-translate-y-1"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-                <Icon
-                  size={20}
-                  strokeWidth={1.5}
-                  className="text-[var(--color-primary-deep)]"
-                  aria-hidden="true"
-                />
-              </div>
-              <h3 className="mt-4 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">
-                {title}
-              </h3>
-              <p className="mt-2 text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                {body}
-              </p>
-            </div>
+              <CardContent className="p-0">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--color-primary-faint)]">
+                  <Icon
+                    size={20}
+                    strokeWidth={1.5}
+                    className="text-[color:var(--color-primary-deep)]"
+                    aria-hidden="true"
+                  />
+                </div>
+                <h3 className="mt-4 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
+                  {title}
+                </h3>
+                <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                  {body}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
 /* ── Browse by city ──────────────────────────────────────── */
 function BrowseCitiesSection() {
   return (
-    <section className="border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] py-16 md:py-20">
+    <SectionFrame className="border-y border-[var(--color-border-subtle)] bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_100%)] py-16 md:py-20">
       <div className="container-app">
         <SectionHeading
           eyebrow="Browse by city"
@@ -276,51 +490,61 @@ function BrowseCitiesSection() {
           sub="Explore student hostels in the places where your next semester could begin."
         />
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-          {FEATURED_CITIES.map((city) => (
-            <Link
-              key={city}
-              href={`/hostels?city=${encodeURIComponent(city)}`}
-              className="group flex flex-col items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-4 py-5 text-center transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-primary)]"
-            >
-              <MapPin
-                size={18}
-                strokeWidth={1.5}
-                className="text-[var(--color-primary-deep)]"
-                aria-hidden="true"
-              />
-              <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] group-hover:text-[var(--color-primary)]">
-                {city}
-              </span>
-            </Link>
+        <CityGrid cities={FEATURED_CITIES} />
+      </div>
+    </SectionFrame>
+  );
+}
+
+/* ── Social proof / testimonials ───────────────────────── */
+function TestimonialsSection() {
+  return (
+    <SectionFrame className="bg-[linear-gradient(180deg,#ffffff_0%,#fafafa_100%)] py-16 md:py-20">
+      <div className="container-app">
+        <SectionHeading
+          eyebrow="Student stories"
+          heading="Reliable homes, real student feedback"
+          sub="Comfort, clarity, and trust are what students remember when the room search finally feels easy."
+        />
+
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {TESTIMONIALS.map(({ quote, name, meta }) => (
+            <Card key={name} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 shadow-[0_12px_24px_rgba(0,0,0,0.04)]">
+              <CardContent className="p-0">
+                <div className="flex items-center gap-1 text-[color:var(--color-primary)]">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <span key={`${name}-${index}`}>★</span>
+                  ))}
+                </div>
+                <p className="mt-4 text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-body)]">“{quote}”</p>
+                <div className="mt-5 border-t border-[var(--color-border-subtle)] pt-4">
+                  <p className="font-[600] text-[color:var(--color-text-heading)]">{name}</p>
+                  <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{meta}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
 /* ── Recently added hostels ──────────────────────────────── */
 function RecentHostelsSection({ hostels }: { hostels: HostelCardData[] }) {
   return (
-    <section className="bg-[var(--color-bg-page)] py-16 md:py-20">
+    <SectionFrame className="bg-[var(--color-bg-page)] py-16 md:py-20">
       <div className="container-app">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-primary-deep)]">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
               New on HostelLo
             </p>
-            <h2 className="mt-2 font-heading text-[var(--text-h2)] font-[600] text-[var(--color-text-heading)]">
+            <h2 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
               Rooms worth a closer look
             </h2>
           </div>
-          <Link
-            href="/hostels"
-            className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
-          >
-            See all hostels
-            <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
-          </Link>
+          <SectionCtaLink href="/hostels">See all hostels</SectionCtaLink>
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -329,16 +553,16 @@ function RecentHostelsSection({ hostels }: { hostels: HostelCardData[] }) {
           ))}
         </div>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
 /* ── How it works (student journey) ─────────────────────────*/
 function HowItWorksSection() {
   return (
-    <section
+    <SectionFrame
       id="how-it-works"
-      className="scroll-mt-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] py-16 pb-24 md:py-20 md:pb-20"
+      className="scroll-mt-16 border-t border-[var(--color-border-subtle)] bg-[linear-gradient(180deg,#ffffff_0%,#fafafa_100%)] py-16 pb-24 md:py-20 md:pb-20"
     >
       <div className="container-app">
         <SectionHeading
@@ -353,20 +577,22 @@ function HowItWorksSection() {
           <div className="grid gap-8 md:grid-cols-3 md:gap-10">
             {STUDENT_STEPS.map(({ icon: Icon, title, body }, index) => (
               <div key={title} className="relative flex gap-4 md:block">
-                <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-primary)]/25 bg-[var(--color-bg-page)] text-[var(--color-primary-deep)] md:h-13 md:w-13">
+                <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-primary)]/20 bg-[var(--color-bg-card)] text-[color:var(--color-primary-deep)] shadow-[0_8px_20px_rgba(0,0,0,0.04)] md:h-13 md:w-13">
                   <Icon size={18} strokeWidth={1.6} aria-hidden="true" />
-                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[10px] font-[700] text-white">
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[10px] font-[700] text-[color:var(--color-text-inverse)]">
                     {index + 1}
                   </span>
                 </div>
-                <div>
-                  <h3 className="mt-0.5 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] md:mt-5">
-                    {title}
-                  </h3>
-                  <p className="mt-2 max-w-[34ch] text-[var(--text-body-sm)] leading-relaxed text-[var(--color-text-muted)]">
-                    {body}
-                  </p>
-                </div>
+                <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[0_12px_30px_rgba(0,0,0,0.04)] md:mt-5">
+                  <CardContent className="p-0">
+                    <h3 className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
+                      {title}
+                    </h3>
+                    <p className="mt-2 max-w-[34ch] text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                      {body}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             ))}
           </div>
@@ -375,54 +601,78 @@ function HowItWorksSection() {
         <div className="mt-10 text-center">
           <Link
             href="/hostels"
-            className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-action)] px-5 py-3 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] shadow-[var(--shadow-md)] transition-transform duration-[var(--transition-base)] hover:-translate-y-0.5 hover:bg-[var(--color-action-dark)]"
           >
             Start searching
             <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
           </Link>
         </div>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
 /* ── Closing owner CTA — anonymous visitors only ─────────────*/
 function OwnerCtaBanner() {
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
-      <Image
+    <SectionFrame className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(232,67,92,0.26),_transparent_30%),linear-gradient(135deg,#1a1a1a_0%,#262626_100%)]">
+      <PhotoImage
+        dark
         src={OWNER_CTA_IMAGE}
         alt="A bright shared hostel lounge with comfortable seating"
         fill
         sizes="100vw"
-        className="hero-image-drift object-cover"
+        className="hero-image-drift object-cover mix-blend-luminosity opacity-40 contrast-[1.1] saturate-[1.1]"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/35" aria-hidden="true" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/90 via-[#1a1a1a]/80 to-[#1a1a1a]/60" aria-hidden="true" />
 
-      <div className="container-app relative grid gap-8 py-16 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-20">
+      <div className="container-app relative grid gap-8 py-16 md:grid-cols-[minmax(0,1fr)_360px] md:items-center md:py-20">
         <div className="max-w-2xl">
-          <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/75">
+          <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-light)]">
             For hostel owners
           </p>
-          <h2 className="mt-3 max-w-xl font-heading text-[var(--text-h2)] font-[600] text-white">
+          <h2 className="mt-3 max-w-xl font-heading text-[length:var(--text-h2)] font-[600] text-white">
             Put your rooms in front of students who are ready to compare.
           </h2>
-          <p className="mt-4 max-w-xl text-[var(--text-body)] leading-relaxed text-white/80">
+          <p className="mt-4 max-w-xl text-[length:var(--text-body)] leading-relaxed text-white/80">
             Add your hostel, rooms, prices, and photos once. Students can discover the details and contact you from one trusted listing.
           </p>
-          <p className="mt-5 text-[var(--text-body-sm)] text-white/60">
-            Built for independent hostels across Pakistan.
-          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-[length:var(--text-body-sm)] text-white/75">
+            <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5">Verified listings</span>
+            <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5">Easy room management</span>
+            <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1.5">Built for Pakistan</span>
+          </div>
         </div>
 
-        <Button asChild size="lg" className="group w-fit shadow-[var(--shadow-lg)]">
-          <Link href="/list-your-hostel">
-            List your hostel
-            <ArrowRight size={16} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-hover:translate-x-0.5" aria-hidden="true" />
-          </Link>
-        </Button>
+        <Card className="rounded-[28px] border border-white/10 bg-white/8 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-md">
+          <div className="rounded-[20px] bg-white/95 p-5 text-left shadow-[var(--shadow-md)]">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+              Grow your rooms
+            </p>
+            <h3 className="mt-2 text-[length:var(--text-h3)] font-[600] text-[color:var(--color-text-heading)]">
+              Reach students before they book elsewhere.
+            </h3>
+            <div className="mt-5 space-y-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+              <div className="flex items-center justify-between rounded-[12px] bg-[var(--color-bg-page)] px-3 py-2.5">
+                <span>Listings created</span>
+                <span className="font-[700] text-[color:var(--color-text-heading)]">2 min</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[12px] bg-[var(--color-bg-page)] px-3 py-2.5">
+                <span>Response time</span>
+                <span className="font-[700] text-[color:var(--color-success)]">Fast</span>
+              </div>
+            </div>
+            <Button asChild size="lg" className="group mt-5 w-full shadow-[var(--shadow-md)] rounded-[var(--radius-md)]">
+              <Link href="/list-your-hostel">
+                List your hostel
+                <ArrowRight size={16} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
@@ -432,44 +682,44 @@ function OwnerHomeView() {
     <PublicLayout>
       <section className="bg-[var(--color-bg-page)] py-16 md:py-20">
         <div className="container-app max-w-3xl">
-          <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[var(--color-primary-deep)]">
+          <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
             Owner workspace
           </p>
-          <h1 className="mt-2 font-heading text-[var(--text-h2)] font-[600] text-[var(--color-text-heading)]">
+          <h1 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
             Manage your hostel business
           </h1>
-          <p className="mt-3 max-w-lg text-[var(--text-body)] text-[var(--color-text-muted)]">
+          <p className="mt-3 max-w-lg text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
             Jump back into your listings, bookings, and messages.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {OWNER_QUICK_LINKS.map(({ icon: Icon, label, body, href }) => (
-              <Link
-                key={href}
-                href={href}
-                className="group flex items-start gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-primary)]"
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-                  <Icon
-                    size={20}
-                    strokeWidth={1.5}
-                    className="text-[var(--color-primary-deep)]"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div>
-                  <p className="text-[var(--text-body)] font-[600] text-[var(--color-text-heading)] group-hover:text-[var(--color-primary)]">
-                    {label}
-                  </p>
-                  <p className="mt-0.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">{body}</p>
-                </div>
+              <Link key={href} href={href} className="block">
+                <Card className="group h-full border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-primary)]">
+                  <CardContent className="flex items-start gap-4 p-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
+                      <Icon
+                        size={20}
+                        strokeWidth={1.5}
+                        className="text-[color:var(--color-primary-deep)]"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)] group-hover:text-[color:var(--color-primary)]">
+                        {label}
+                      </p>
+                      <p className="mt-0.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{body}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
 
           <Link
             href="/owner/dashboard"
-            className="mt-8 inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+            className="mt-8 inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] hover:underline"
           >
             Go to full dashboard
             <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
@@ -503,9 +753,13 @@ export default async function HomePage() {
   return (
     <PublicLayout>
       <Hero isAnonymous={isAnonymous} userName={session?.user.name} />
+      <ProductNarrativeSection />
       <TrustSection />
+      <ExperienceSection />
+      <CategoryShowcase />
       {hostels.length > 0 && <RecentHostelsSection hostels={hostels} />}
       <BrowseCitiesSection />
+      <TestimonialsSection />
       <HowItWorksSection />
       {isAnonymous && <OwnerCtaBanner />}
     </PublicLayout>

@@ -51,7 +51,7 @@ function StatCard({
       }`}
     >
       <div className="flex items-start justify-between">
-        <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)] max-w-[70%]">
+        <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)] max-w-[70%]">
           {label}
         </p>
         <div
@@ -61,7 +61,7 @@ function StatCard({
           <Icon size={16} strokeWidth={1.5} style={{ color: iconColor }} aria-hidden="true" />
         </div>
       </div>
-      <p className="mt-3 font-heading text-[2rem] font-[800] text-[var(--color-text-heading)]">
+      <p className="mt-3 font-heading text-[2rem] font-[800] text-[color:var(--color-text-heading)]">
         {value}
       </p>
     </div>
@@ -82,17 +82,17 @@ export function VerificationAnalyticsClient() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-[var(--text-h1)] font-[800] text-[var(--color-text-heading)]">
+          <h1 className="font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
             Verification Analytics
           </h1>
-          <p className="mt-1 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             Overview of student verification throughput and moderator performance.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/admin/verifications"
-            className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-link)] hover:underline"
+            className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] hover:underline"
           >
             ← Back to queue
           </Link>
@@ -101,10 +101,10 @@ export function VerificationAnalyticsClient() {
               <button
                 key={r}
                 onClick={() => setDays(r)}
-                className={`rounded-[var(--radius-sm)] px-3 py-1.5 text-[var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
+                className={`rounded-[var(--radius-sm)] px-3 py-1.5 text-[length:var(--text-body-sm)] font-[600] transition-colors duration-[var(--transition-fast)] ${
                   days === r
-                    ? "bg-[var(--color-bg-card)] text-[var(--color-primary)] shadow-[var(--shadow-xs)]"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-body)]"
+                    ? "bg-[var(--color-bg-card)] text-[color:var(--color-primary)] shadow-[var(--shadow-xs)]"
+                    : "text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)]"
                 }`}
               >
                 Last {r} days
@@ -128,12 +128,12 @@ export function VerificationAnalyticsClient() {
             />
             <StatCard
               icon={Timer}
-              iconBg="var(--color-secondary-brand-container)"
-              iconColor="var(--color-secondary-brand)"
+              iconBg="var(--color-bg-raised)"
+              iconColor="var(--color-text-heading)"
               label="Avg. Processing Time"
               value={
                 stats.avgProcessingHours !== null
-                  ? <>{stats.avgProcessingHours.toFixed(1)}<span className="text-[1.1rem] font-[600] text-[var(--color-text-muted)]">h</span></>
+                  ? <>{stats.avgProcessingHours.toFixed(1)}<span className="text-[1.1rem] font-[600] text-[color:var(--color-text-muted)]">h</span></>
                   : "—"
               }
             />
@@ -149,16 +149,16 @@ export function VerificationAnalyticsClient() {
               iconBg="var(--color-primary-faint)"
               iconColor="var(--color-primary-deep)"
               label="Pending Queue"
-              value={<>{stats.pendingCount} <span className="text-[1rem] font-[500] text-[var(--color-text-muted)]">requests</span></>}
+              value={<>{stats.pendingCount} <span className="text-[1rem] font-[500] text-[color:var(--color-text-muted)]">requests</span></>}
               emphasize
             />
           </div>
 
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
-            <h2 className="mb-1 text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
+            <h2 className="mb-1 text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">
               Verification Throughput
             </h2>
-            <p className="mb-4 text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="mb-4 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               Daily submissions vs. approvals, last {stats.days} days.
             </p>
             <VerificationThroughputChart data={stats.throughput} />
@@ -166,15 +166,15 @@ export function VerificationAnalyticsClient() {
 
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
             <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] px-5 py-4">
-              <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
+              <h2 className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">
                 Moderator Performance
               </h2>
             </div>
 
             {stats.moderatorPerformance.length === 0 ? (
               <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
-                <ListChecks size={24} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
-                <p className="max-w-sm text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+                <ListChecks size={24} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
+                <p className="max-w-sm text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
                   No decisions recorded in this range yet. This table fills in as admins work through the queue.
                 </p>
               </div>
@@ -183,7 +183,7 @@ export function VerificationAnalyticsClient() {
                 <thead>
                   <tr className="border-b border-[var(--color-border-subtle)]">
                     {["Moderator", "Total reviews", "Approval rate", "Avg. speed"].map((h) => (
-                      <th key={h} className="px-5 py-2.5 text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+                      <th key={h} className="px-5 py-2.5 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
                         {h}
                       </th>
                     ))}
@@ -194,15 +194,15 @@ export function VerificationAnalyticsClient() {
                     <tr key={m.id} className="border-b border-[var(--color-border-subtle)] last:border-b-0">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[11px] font-[700] text-[var(--color-primary-deep)]">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary-faint)] text-[11px] font-[700] text-[color:var(--color-primary-deep)]">
                             {m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                           </div>
-                          <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">{m.name}</span>
+                          <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">{m.name}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-[var(--text-body-sm)] text-[var(--color-text-body)]">{m.totalReviews}</td>
+                      <td className="px-5 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">{m.totalReviews}</td>
                       <td className="px-5 py-3">
-                        <span className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                        <span className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                           <span
                             className="h-1.5 w-1.5 rounded-full"
                             style={{ backgroundColor: m.approvalRate >= 85 ? "var(--color-success)" : "var(--color-error)" }}
@@ -211,7 +211,7 @@ export function VerificationAnalyticsClient() {
                           {m.approvalRate.toFixed(0)}%
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-[var(--text-body-sm)] text-[var(--color-text-body)]">
+                      <td className="px-5 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
                         {m.avgHours !== null ? `${m.avgHours.toFixed(1)} hrs` : "—"}
                       </td>
                     </tr>
@@ -221,7 +221,7 @@ export function VerificationAnalyticsClient() {
             )}
           </div>
 
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             Decision-level stats (everything above except the pending count) only cover verifications decided on or after {stats.trackingSince}, when moderator/timing tracking was added.
           </p>
         </>

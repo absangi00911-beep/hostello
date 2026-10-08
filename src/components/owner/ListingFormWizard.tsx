@@ -75,19 +75,19 @@ function StepProgress({ step }: { step: number }) {
           <li key={label} className={`flex items-center ${isLast ? "" : "flex-1"}`}>
             <div className="flex flex-col items-center gap-1.5">
               <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-[700] transition-colors duration-[var(--transition-base)] ${
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-full)] text-[13px] font-[700] transition-colors duration-[var(--transition-base)] ${
                   isComplete
-                    ? "bg-[var(--color-primary)] text-white"
+                    ? "bg-[var(--color-primary)] text-[color:var(--color-text-inverse)]"
                     : isActive
-                    ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary-faint)]"
-                    : "bg-[var(--color-bg-overlay)] text-[var(--color-text-muted)]"
+                    ? "bg-[var(--color-primary)] text-[color:var(--color-text-inverse)] ring-4 ring-[var(--color-primary-faint)]"
+                    : "bg-[var(--color-bg-overlay)] text-[color:var(--color-text-muted)]"
                 }`}
               >
                 {isComplete ? <Check size={15} strokeWidth={2.5} aria-hidden="true" /> : stepNum}
               </div>
               <span
-                className={`hidden text-center text-[var(--text-caption)] font-[500] sm:block ${
-                  isActive ? "text-[var(--color-text-heading)]" : "text-[var(--color-text-muted)]"
+                className={`hidden text-center text-[length:var(--text-caption)] font-[500] sm:block ${
+                  isActive ? "text-[color:var(--color-text-heading)]" : "text-[color:var(--color-text-muted)]"
                 }`}
               >
                 {label}
@@ -95,7 +95,7 @@ function StepProgress({ step }: { step: number }) {
             </div>
             {!isLast && (
               <div
-                className={`mx-2 h-0.5 flex-1 rounded-full transition-colors duration-[var(--transition-base)] ${
+                className={`mx-2 h-0.5 flex-1 rounded-[var(--radius-full)] transition-colors duration-[var(--transition-base)] ${
                   isComplete ? "bg-[var(--color-primary)]" : "bg-[var(--color-border-subtle)]"
                 }`}
                 aria-hidden="true"
@@ -125,17 +125,17 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">{label}</label>
+      <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">{label}</label>
       {presets && (
         <div className="flex flex-wrap gap-1.5">
           {presets.map((p) => (
             <button
               key={p} type="button"
               onClick={() => values.includes(p) ? remove(p) : add(p)}
-              className={`h-7 px-2.5 rounded-full text-[var(--text-caption)] font-[500] border transition-colors duration-[var(--transition-fast)] ${
+              className={`h-7 px-2.5 rounded-[var(--radius-full)] text-[length:var(--text-caption)] font-[500] border transition-colors duration-[var(--transition-fast)] ${
                 values.includes(p)
-                  ? "bg-[var(--color-primary-faint)] border-[var(--color-primary-light)] text-[var(--color-primary-deep)]"
-                  : "bg-[var(--color-bg-sidebar)] border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)]"
+                  ? "bg-[var(--color-primary-faint)] border-[var(--color-primary-light)] text-[color:var(--color-primary-deep)]"
+                  : "bg-[var(--color-bg-sidebar)] border-[var(--color-border-subtle)] text-[color:var(--color-text-muted)] hover:border-[var(--color-border-strong)]"
               }`}
             >
               {values.includes(p) ? "✓ " : ""}{p}
@@ -154,7 +154,7 @@ function TagInput({
         <button
           type="button" onClick={() => add(input)}
           disabled={!input.trim()}
-          className="h-10 px-3 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors disabled:opacity-40"
+          className="h-10 px-3 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-default)] text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors disabled:opacity-40"
         >
           <Plus size={16} strokeWidth={1.5} aria-hidden="true" />
         </button>
@@ -162,10 +162,10 @@ function TagInput({
       {values.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-1">
           {values.map((v) => (
-            <span key={v} className="inline-flex items-center gap-1.5 h-7 pl-3 pr-2 rounded-full bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] text-[var(--text-caption)] text-[var(--color-text-body)]">
+            <span key={v} className="inline-flex items-center gap-1.5 h-7 pl-3 pr-2 rounded-[var(--radius-full)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] text-[length:var(--text-caption)] text-[color:var(--color-text-body)]">
               {v}
               <button type="button" onClick={() => remove(v)} aria-label={`Remove ${v}`}
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--color-border-default)] transition-colors">
+                className="flex h-4 w-4 items-center justify-center rounded-[var(--radius-full)] hover:bg-[var(--color-border-default)] transition-colors">
                 <X size={10} strokeWidth={2} aria-hidden="true" />
               </button>
             </span>
@@ -200,8 +200,8 @@ function PhotoUploader({
         toast.error(`${file.name} is not a supported format. Use JPEG, PNG, or WebP.`);
         continue;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} exceeds the 5MB limit.`);
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds the 4MB limit.`);
         continue;
       }
       const fd = new FormData();
@@ -230,8 +230,8 @@ function PhotoUploader({
 
   return (
     <div className="space-y-4">
-      <label className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
-        Photos <span className="text-[var(--color-text-muted)] font-[400]">(max 15, 5MB each)</span>
+      <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
+        Photos <span className="text-[color:var(--color-text-muted)] font-[400]">(max 15, 4MB each)</span>
       </label>
 
       {/* Upload zone */}
@@ -242,14 +242,14 @@ function PhotoUploader({
         className="flex w-full flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] py-10 transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-faint)] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {uploading ? (
-          <Loader2 size={24} strokeWidth={1.5} className="animate-spin text-[var(--color-primary)]" aria-hidden="true" />
+          <Loader2 size={24} strokeWidth={1.5} className="animate-spin text-[color:var(--color-primary)]" aria-hidden="true" />
         ) : (
-          <Upload size={24} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
+          <Upload size={24} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
         )}
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           {uploading ? "Uploading…" : "Click to upload photos"}
         </p>
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">JPEG, PNG, WebP</p>
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">JPEG, PNG, WebP</p>
       </button>
       <input
         ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp"
@@ -266,7 +266,7 @@ function PhotoUploader({
               <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
               {/* Cover badge */}
               {url === coverImage && (
-                <span className="absolute left-1 top-1 rounded-sm bg-[var(--color-primary)] px-1 text-[9px] font-[700] text-[var(--color-text-heading)] leading-4">
+                <span className="absolute left-1 top-1 rounded-sm bg-[var(--color-primary)] px-1 text-[9px] font-[700] text-[color:var(--color-text-inverse)] leading-4">
                   Cover
                 </span>
               )}
@@ -274,7 +274,7 @@ function PhotoUploader({
                 {url !== coverImage && (
                   <button
                     type="button" onClick={() => onCoverChange(url)}
-                    className="rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-[600] text-gray-800"
+                    className="rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-[600] text-[color:var(--color-text-heading)]"
                   >
                     Set cover
                   </button>
@@ -282,7 +282,7 @@ function PhotoUploader({
                 <button
                   type="button" onClick={() => removeImage(url)}
                   aria-label="Remove photo"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-red-600"
+                  className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-full)] bg-white/90 text-[color:var(--color-error)]"
                 >
                   <X size={12} strokeWidth={2} aria-hidden="true" />
                 </button>
@@ -381,18 +381,18 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
   }
 
   const sectionCls = "space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-8";
-  const headingCls = "owner-form-heading text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] mb-5";
+  const headingCls = "owner-form-heading text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] mb-5";
 
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-5 flex items-center justify-between">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] sm:hidden">
-          Step {step} of {STEPS.length} — <span className="font-[500] text-[var(--color-text-body)]">{STEPS[step - 1]}</span>
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] sm:hidden">
+          Step {step} of {STEPS.length} — <span className="font-[500] text-[color:var(--color-text-body)]">{STEPS[step - 1]}</span>
         </p>
         <div className="hidden sm:block" />
         <Link
           href="/owner/listings"
-          className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:text-[var(--color-text-body)]"
+          className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:text-[color:var(--color-text-body)]"
         >
           <X size={15} strokeWidth={2} aria-hidden="true" />
           Exit
@@ -410,39 +410,39 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
           <h2 className={headingCls}>Basic info</h2>
 
           <div className="space-y-1.5">
-            <label htmlFor="name" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Hostel name</label>
+            <label htmlFor="name" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Hostel name</label>
             <input id="name" type="text" value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="e.g. Green Valley Boys Hostel" className={inputCls} />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="description" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Description</label>
+            <label htmlFor="description" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Description</label>
             <textarea id="description" value={form.description} onChange={(e) => update("description", e.target.value)} rows={4} placeholder="Describe your hostel's location, who it's for, what makes it a good choice for students…" className={`${inputCls} h-auto resize-none py-2.5`} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="city" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">City</label>
+              <label htmlFor="city" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">City</label>
               <select id="city" value={form.city} onChange={(e) => update("city", e.target.value)} className={`${inputCls} appearance-none`}>
                 <option value="">Select city</option>
                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="area" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Area <span className="text-[var(--color-text-muted)] font-[400]">(optional)</span></label>
+              <label htmlFor="area" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Area <span className="text-[color:var(--color-text-muted)] font-[400]">(optional)</span></label>
               <input id="area" type="text" value={form.area} onChange={(e) => update("area", e.target.value)} placeholder="e.g. Gulberg" className={inputCls} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="address" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Full address</label>
+            <label htmlFor="address" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Full address</label>
             <input id="address" type="text" value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Street address with landmark" className={inputCls} />
           </div>
 
           <div className="space-y-1.5">
-            <p className="text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Gender type</p>
+            <p className="text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Gender type</p>
             <div className="flex gap-3" role="radiogroup">
               {(["MALE","FEMALE","MIXED"] as const).map((g) => (
-                <label key={g} className={`flex flex-1 items-center justify-center gap-2 h-10 rounded-[var(--radius-md)] border-2 cursor-pointer transition-all duration-[var(--transition-fast)] text-[var(--text-body-sm)] font-[500] ${form.gender === g ? "border-[var(--color-action)] bg-[var(--color-action-light)] text-[var(--color-action-dark)]" : "border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)]"}`}>
+                <label key={g} className={`flex flex-1 items-center justify-center gap-2 h-10 rounded-[var(--radius-md)] border-2 cursor-pointer transition-all duration-[var(--transition-fast)] text-[length:var(--text-body-sm)] font-[500] ${form.gender === g ? "border-[var(--color-action)] bg-[var(--color-action-light)] text-[color:var(--color-action-dark)]" : "border-[var(--color-border-default)] text-[color:var(--color-text-muted)] hover:border-[var(--color-border-strong)]"}`}>
                   <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={() => update("gender", g)} className="sr-only" />
                   {g === "MALE" ? "Male only" : g === "FEMALE" ? "Female only" : "Mixed"}
                 </label>
@@ -452,26 +452,26 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="price" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Price / month (PKR)</label>
+              <label htmlFor="price" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Price / month (PKR)</label>
               <input id="price" type="number" value={form.pricePerMonth} onChange={(e) => update("pricePerMonth", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 8500" min={1000} className={inputCls} />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="rooms" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Number of rooms</label>
+              <label htmlFor="rooms" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Number of rooms</label>
               <input id="rooms" type="number" value={form.rooms} onChange={(e) => update("rooms", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 10" min={1} className={inputCls} />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="capacity" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Total capacity</label>
+              <label htmlFor="capacity" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Total capacity</label>
               <input id="capacity" type="number" value={form.capacity} onChange={(e) => update("capacity", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 30" min={1} className={inputCls} />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="minstay" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Min stay (mo)</label>
+              <label htmlFor="minstay" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Min stay (mo)</label>
               <input id="minstay" type="number" value={form.minStay} onChange={(e) => update("minStay", e.target.value === "" ? "" : Number(e.target.value))} min={1} className={inputCls} />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="maxstay" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Max stay <span className="text-[var(--color-text-muted)] font-[400] text-[var(--text-caption)]">(opt)</span></label>
+              <label htmlFor="maxstay" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Max stay <span className="text-[color:var(--color-text-muted)] font-[400] text-[length:var(--text-caption)]">(opt)</span></label>
               <input id="maxstay" type="number" value={form.maxStay} onChange={(e) => update("maxStay", e.target.value === "" ? "" : Number(e.target.value))} min={1} className={inputCls} />
             </div>
           </div>
@@ -481,8 +481,8 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 2: Location ------------------------- */}
       {step === 2 && (
         <div className={sectionCls}>
-          <h2 className={headingCls}>Pin your location <span className="text-[var(--color-text-muted)] text-[var(--text-body-sm)] font-[400]">(optional)</span></h2>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] -mt-2">
+          <h2 className={headingCls}>Pin your location <span className="text-[color:var(--color-text-muted)] text-[length:var(--text-body-sm)] font-[400]">(optional)</span></h2>
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] -mt-2">
             Pinning your hostel helps students judge the commute to their university before they book.
           </p>
           <ListingLocationPicker
@@ -491,17 +491,17 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
             onChange={(lat, lng) => { update("latitude", lat); update("longitude", lng); }}
           />
           <details className="group">
-            <summary className="flex list-none items-center gap-1 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-body)] cursor-pointer">
+            <summary className="flex list-none items-center gap-1 text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] transition-colors hover:text-[color:var(--color-text-body)] cursor-pointer">
               <ChevronRight size={14} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-open:rotate-90" aria-hidden="true" />
               Enter coordinates manually instead
             </summary>
             <div className="mt-3 grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="lat" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Latitude</label>
+                <label htmlFor="lat" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Latitude</label>
                 <input id="lat" type="number" step="any" value={form.latitude} onChange={(e) => update("latitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 31.5204" className={inputCls} />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="lng" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Longitude</label>
+                <label htmlFor="lng" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Longitude</label>
                 <input id="lng" type="number" step="any" value={form.longitude} onChange={(e) => update("longitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 74.3587" className={inputCls} />
               </div>
             </div>
@@ -521,7 +521,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {step === 4 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>Photos</h2>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] -mt-2">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] -mt-2">
             At least one photo is required before submitting for review. First photo or the one you mark as "Cover" appears in search results.
           </p>
           <PhotoUploader
@@ -558,19 +558,19 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
               { label: "Rules",      value: form.rules.length ? `${form.rules.length} rule${form.rules.length !== 1 ? "s" : ""}` : "None added" },
             ].map(({ label, value }) => (
               <div key={label} className="flex gap-4 px-5 py-3">
-                <span className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] w-24 shrink-0">{label}</span>
-                <span className="text-[var(--text-body-sm)] text-[var(--color-text-body)] flex-1 min-w-0 break-words">{value}</span>
+                <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] w-24 shrink-0">{label}</span>
+                <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] flex-1 min-w-0 break-words">{value}</span>
               </div>
             ))}
           </div>
 
           {form.images.length === 0 && (
-            <div className="rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-[var(--color-warning)]/25 px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
+            <div className="rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-[var(--color-warning)]/25 px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-warning-text)]">
               ⚠ Add at least one photo before submitting.
             </div>
           )}
 
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             After submitting, an admin will review your listing. You'll receive an email when it's approved.
           </p>
         </div>

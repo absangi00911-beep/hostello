@@ -43,14 +43,14 @@ export function ListingLivePreview({ form, ownerName, ownerAvatar }: ListingLive
 
   return (
     <div className="sticky top-6">
-      <div className="mb-3 flex items-center gap-1.5 text-[var(--text-caption)] font-[600] uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
+      <div className="mb-3 flex items-center gap-1.5 text-[length:var(--text-caption)] font-[600] uppercase tracking-[0.06em] text-[color:var(--color-text-muted)]">
         <Eye size={13} strokeWidth={2} aria-hidden="true" />
         Live search preview
       </div>
       <div className="pointer-events-none max-w-[340px]">
         <HostelCard hostel={previewData} />
       </div>
-      <p className="mt-3 max-w-[340px] text-[var(--text-caption)] text-[var(--color-text-muted)]">
+      <p className="mt-3 max-w-[340px] text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
         This is exactly how your listing will appear to students browsing HostelLo.
       </p>
     </div>

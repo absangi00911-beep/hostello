@@ -45,14 +45,14 @@ function DeleteButton({
         <button
           onClick={() => { onDelete(reviewId); setArmed(false); }}
           disabled={loading}
-          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-error)] text-[var(--text-caption)] font-[600] text-white hover:bg-[oklch(0.44_0.17_22)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
+          className="inline-flex items-center gap-1 h-7 px-2.5 rounded-[var(--radius-sm)] bg-[var(--color-error)] text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-inverse)] hover:opacity-90 transition-colors duration-[var(--transition-fast)] disabled:opacity-50 whitespace-nowrap"
         >
           {loading && <Loader2 size={10} className="animate-spin" aria-hidden="true" />}
           Delete
         </button>
         <button
           onClick={() => setArmed(false)}
-          className="text-[var(--text-caption)] text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
+          className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)] transition-colors duration-[var(--transition-fast)]"
         >
           Keep
         </button>
@@ -65,7 +65,7 @@ function DeleteButton({
       onClick={() => setArmed(true)}
       disabled={loading}
       aria-label="Delete review"
-      className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
+      className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
     >
       <Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
     </button>
@@ -88,17 +88,17 @@ function ReviewRow({
     <tr className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]">
       {/* Hostel */}
       <td className="px-4 py-3.5">
-        <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate max-w-[150px]">
+        <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] truncate max-w-[150px]">
           {review.hostel.name}
         </p>
       </td>
 
       {/* Student */}
       <td className="px-4 py-3.5">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] truncate max-w-[120px]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] truncate max-w-[120px]">
           {review.user.name}
         </p>
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] truncate max-w-[120px]">
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] truncate max-w-[120px]">
           {review.user.email}
         </p>
       </td>
@@ -106,24 +106,24 @@ function ReviewRow({
       {/* Rating */}
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-1">
-          <Star size={13} strokeWidth={1.5} className="text-[var(--color-primary)] fill-[var(--color-primary)]" aria-hidden="true" />
-          <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)]">{review.rating}</span>
+          <Star size={13} strokeWidth={1.5} className="text-[color:var(--color-primary)] fill-[var(--color-primary)]" aria-hidden="true" />
+          <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">{review.rating}</span>
         </div>
       </td>
 
       {/* Comment preview */}
       <td className="px-4 py-3.5 max-w-[220px]">
         {review.title && (
-          <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)] truncate">{review.title}</p>
+          <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)] truncate">{review.title}</p>
         )}
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] line-clamp-2">
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] line-clamp-2">
           {review.comment}
         </p>
       </td>
 
       {/* Date */}
       <td className="px-4 py-3.5 whitespace-nowrap">
-        <span className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{timeAgo}</span>
+        <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{timeAgo}</span>
       </td>
 
       {/* Delete */}
@@ -185,7 +185,7 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="space-y-4">
-      <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
         {total} review{total !== 1 ? "s" : ""} across all hostels
       </p>
 
@@ -203,7 +203,7 @@ export default function AdminReviewsPage() {
                 <thead>
                   <tr className="border-b border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)]">
                     {["Hostel","Student","Rating","Review","Date",""].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] whitespace-nowrap">
+                      <th key={h} className="px-4 py-3 text-left text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] whitespace-nowrap">
                         {h}
                       </th>
                     ))}

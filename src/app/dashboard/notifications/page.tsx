@@ -24,19 +24,19 @@ const TYPE_CONFIG: Record<
   string,
   { icon: LucideIcon; color: string; bg: string }
 > = {
-  BOOKING_REQUEST:   { icon: BookOpen,      color: "text-[var(--color-primary)]",  bg: "bg-[var(--color-primary-faint)]" },
-  BOOKING_CONFIRMED: { icon: CheckCircle2,  color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
-  BOOKING_CANCELLED: { icon: XCircle,       color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
-  BOOKING_COMPLETED: { icon: CheckCircle2,  color: "text-[var(--color-info)]",     bg: "bg-[var(--color-info-bg)]" },
-  MESSAGE_RECEIVED:  { icon: MessageCircle, color: "text-[var(--color-primary)]",  bg: "bg-[var(--color-primary-faint)]" },
-  REVIEW_RECEIVED:   { icon: Star,          color: "text-[var(--color-warning)]",  bg: "bg-[var(--color-warning-bg)]" },
-  HOSTEL_APPROVED:                    { icon: Building2,     color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
-  HOSTEL_REJECTED:                    { icon: Building2,     color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
-  STUDENT_VERIFICATION_APPROVED:      { icon: CheckCircle2,  color: "text-[var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
-  STUDENT_VERIFICATION_REJECTED:      { icon: XCircle,      color: "text-[var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
+  BOOKING_REQUEST:   { icon: BookOpen,      color: "text-[color:var(--color-primary)]",  bg: "bg-[var(--color-primary-faint)]" },
+  BOOKING_CONFIRMED: { icon: CheckCircle2,  color: "text-[color:var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
+  BOOKING_CANCELLED: { icon: XCircle,       color: "text-[color:var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
+  BOOKING_COMPLETED: { icon: CheckCircle2,  color: "text-[color:var(--color-info)]",     bg: "bg-[var(--color-info-bg)]" },
+  MESSAGE_RECEIVED:  { icon: MessageCircle, color: "text-[color:var(--color-primary)]",  bg: "bg-[var(--color-primary-faint)]" },
+  REVIEW_RECEIVED:   { icon: Star,          color: "text-[color:var(--color-warning)]",  bg: "bg-[var(--color-warning-bg)]" },
+  HOSTEL_APPROVED:                    { icon: Building2,     color: "text-[color:var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
+  HOSTEL_REJECTED:                    { icon: Building2,     color: "text-[color:var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
+  STUDENT_VERIFICATION_APPROVED:      { icon: CheckCircle2,  color: "text-[color:var(--color-success)]",  bg: "bg-[var(--color-success-bg)]" },
+  STUDENT_VERIFICATION_REJECTED:      { icon: XCircle,      color: "text-[color:var(--color-error)]",    bg: "bg-[var(--color-error-bg)]" },
 };
 
-const DEFAULT_TYPE = { icon: Bell, color: "text-[var(--color-primary)]", bg: "bg-[var(--color-primary-faint)]" };
+const DEFAULT_TYPE = { icon: Bell, color: "text-[color:var(--color-primary)]", bg: "bg-[var(--color-primary-faint)]" };
 
 interface Notification {
   id: string;
@@ -81,13 +81,13 @@ function NotificationRow({
 
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-0.5">
-        <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+        <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
           {notification.title}
         </p>
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] leading-relaxed">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] leading-relaxed">
           {notification.message}
         </p>
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
           {timeAgo}
         </p>
       </div>
@@ -98,7 +98,7 @@ function NotificationRow({
           <button
             onClick={() => onMarkRead(notification.id)}
             aria-label="Mark as read"
-            className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-faint)] transition-colors duration-[var(--transition-fast)]"
+            className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] hover:bg-[var(--color-primary-faint)] transition-colors duration-[var(--transition-fast)]"
           >
             <CheckCircle2 size={14} strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -107,7 +107,7 @@ function NotificationRow({
           onClick={() => onDelete(notification.id)}
           disabled={deleting}
           aria-label="Delete notification"
-          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
+          className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
         >
           {deleting ? (
             <Loader2 size={13} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
@@ -185,7 +185,7 @@ export default function NotificationsPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           {unreadCount > 0
             ? `${unreadCount} unread`
             : `${notifications.length} notification${notifications.length !== 1 ? "s" : ""}`}
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
           <button
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending}
-            className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-link)] hover:underline focus-visible:underline focus-visible:outline-none disabled:opacity-50"
           >
             {markAllReadMutation.isPending && (
               <Loader2 size={13} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />

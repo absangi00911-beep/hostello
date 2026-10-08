@@ -18,6 +18,7 @@ import {
   InlineError,
   formatPKR,
 } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
 
 /* -- Types ------------------------------------------------- */
 interface PriceAlert {
@@ -58,22 +59,22 @@ function AlertRow({
         <TrendingDown
           size={18}
           strokeWidth={1.5}
-          className={priceDrop ? "text-[var(--color-success)]" : "text-[var(--color-text-muted)]"}
+          className={priceDrop ? "text-[color:var(--color-success)]" : "text-[color:var(--color-text-muted)]"}
           aria-hidden="true"
         />
       </div>
 
       {/* Details */}
       <div className="flex-1 min-w-0">
-        <p className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+        <p className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
           {alert.hostel.name}
         </p>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[var(--text-caption)] text-[var(--color-text-muted)]">
-          <span>Target: <strong className="font-[500] text-[var(--color-text-body)]">{formatPKR(alert.targetPrice)}</strong></span>
-          <span>Current: <strong className={`font-[500] ${priceDrop ? "text-[var(--color-success)]" : "text-[var(--color-text-body)]"}`}>{formatPKR(currentPrice)}</strong></span>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+          <span>Target: <strong className="font-[500] text-[color:var(--color-text-body)]">{formatPKR(alert.targetPrice)}</strong></span>
+          <span>Current: <strong className={`font-[500] ${priceDrop ? "text-[color:var(--color-success)]" : "text-[color:var(--color-text-body)]"}`}>{formatPKR(currentPrice)}</strong></span>
         </div>
         {priceDrop && (
-          <p className="text-[var(--text-caption)] text-[var(--color-success)] mt-0.5 font-[500]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-success)] mt-0.5 font-[500]">
             Price is below your target!
           </p>
         )}
@@ -86,10 +87,10 @@ function AlertRow({
         role="switch"
         aria-checked={alert.active}
         aria-label={`${alert.active ? "Disable" : "Enable"} alert for ${alert.hostel.name}`}
-        className={`relative flex h-6 w-10 shrink-0 items-center rounded-full border-0 transition-colors duration-[150ms] ease-out focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 disabled:opacity-50 ${alert.active ? "bg-[var(--color-action)]" : "bg-[var(--color-border-strong)]"}`}
+        className={`relative flex h-6 w-10 shrink-0 items-center rounded-[var(--radius-full)] border-0 transition-colors duration-[150ms] ease-out focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 disabled:opacity-50 ${alert.active ? "bg-[var(--color-action)]" : "bg-[var(--color-border-strong)]"}`}
       >
         <span
-          className={`absolute h-4 w-4 rounded-full bg-white shadow-[var(--shadow-sm)] transition-transform duration-[150ms] ease-out ${alert.active ? "translate-x-5" : "translate-x-1"}`}
+          className={`absolute h-4 w-4 rounded-[var(--radius-full)] bg-white shadow-[var(--shadow-sm)] transition-transform duration-[150ms] ease-out ${alert.active ? "translate-x-5" : "translate-x-1"}`}
         />
       </button>
 
@@ -98,7 +99,7 @@ function AlertRow({
         onClick={() => onDelete(alert.id)}
         disabled={deleting}
         aria-label={`Delete alert for ${alert.hostel.name}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[var(--color-text-muted)] hover:text-[var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
       >
         {deleting ? (
           <Loader2 size={15} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
@@ -157,17 +158,17 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]">
+        <Button>
           <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
           Add alert
-        </button>
+        </Button>
       </SheetTrigger>
       <SheetContent
         side="right"
         className="w-full sm:max-w-[440px] bg-[var(--color-bg-card)] border-l border-[var(--color-border-default)] p-6"
       >
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)] text-left">
+          <SheetTitle className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] text-left">
             Add price alert
           </SheetTitle>
         </SheetHeader>
@@ -175,19 +176,19 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Hostel search */}
           <div className="space-y-2">
-            <label className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
+            <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
               Search hostel
             </label>
             <div className="relative">
-              <Search size={15} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" aria-hidden="true" />
+              <Search size={15} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)] pointer-events-none" aria-hidden="true" />
               <input
                 type="search"
                 value={searchQ}
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Type a hostel name…"
-                className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-9 pr-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] placeholder:text-[var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
+                className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-9 pr-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] placeholder:text-[color:var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
               />
-              {searching && <Loader2 size={14} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--color-text-muted)]" aria-hidden="true" />}
+              {searching && <Loader2 size={14} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[color:var(--color-text-muted)]" aria-hidden="true" />}
             </div>
 
             {/* Results */}
@@ -201,10 +202,10 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
                     className="flex w-full items-center justify-between px-4 py-2.5 hover:bg-[var(--color-bg-overlay)] transition-colors text-left"
                   >
                     <div>
-                      <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-heading)]">{h.name}</p>
-                      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{h.city}</p>
+                      <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)]">{h.name}</p>
+                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{h.city}</p>
                     </div>
-                    <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-primary-deep)] shrink-0 ml-3">
+                    <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)] shrink-0 ml-3">
                       {formatPKR(h.pricePerMonth)}
                     </span>
                   </button>
@@ -215,17 +216,17 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
             {selectedHostel && (
               <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] px-3 py-2">
                 <div>
-                  <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-primary-deep)]">{selectedHostel.name}</p>
-                  <p className="text-[var(--text-caption)] text-[var(--color-primary)]">Current: {formatPKR(selectedHostel.pricePerMonth)}</p>
+                  <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-primary-deep)]">{selectedHostel.name}</p>
+                  <p className="text-[length:var(--text-caption)] text-[color:var(--color-primary)]">Current: {formatPKR(selectedHostel.pricePerMonth)}</p>
                 </div>
-                <button type="button" onClick={() => { setSelectedId(""); setSearchQ(""); setTargetPrice(""); }} className="text-[var(--text-caption)] text-[var(--color-primary)] hover:underline">Change</button>
+                <button type="button" onClick={() => { setSelectedId(""); setSearchQ(""); setTargetPrice(""); }} className="text-[length:var(--text-caption)] text-[color:var(--color-primary)] hover:underline">Change</button>
               </div>
             )}
           </div>
 
           {/* Target price */}
           <div className="space-y-1.5">
-            <label htmlFor="target-price" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">
+            <label htmlFor="target-price" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
               Alert me when price drops below (PKR)
             </label>
             <input
@@ -236,18 +237,18 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
               placeholder="e.g. 8000"
               min={1000}
               required
-              className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
+              className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
             />
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={!selectedId || !targetPrice || submitting}
-            className="inline-flex w-full items-center justify-center gap-2 h-10 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={submitting}
+            disabled={!selectedId || !targetPrice}
+            className="w-full"
           >
-            {submitting && <Loader2 size={14} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
             {submitting ? "Creating…" : "Create alert"}
-          </button>
+          </Button>
         </form>
       </SheetContent>
     </Sheet>
@@ -257,17 +258,25 @@ function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
 /* -- Page --------------------------------------------------- */
 export default function PriceAlertsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId,  setDeletingId]  = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useQuery<{ data: PriceAlert[] }>({
-    queryKey: ["price-alerts"],
+  const { data, isLoading, isError } = useQuery<{
+    data: PriceAlert[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  }>({
+    queryKey: ["price-alerts", page],
     queryFn: async () => {
-      const res = await fetch("/api/price-alerts");
+      const res = await fetch(`/api/price-alerts?page=${page}&limit=20`);
       if (!res.ok) throw new Error("Failed to load alerts");
       return res.json();
     },
   });
+  const alerts = data?.data ?? [];
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
@@ -292,6 +301,7 @@ export default function PriceAlertsPage() {
     },
     onSuccess: () => {
       toast.success("Alert deleted.");
+      if (alerts.length === 1 && page > 1) setPage((current) => Math.max(1, current - 1));
       queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
     },
     onError:   () => toast.error("Couldn't delete alert."),
@@ -301,27 +311,30 @@ export default function PriceAlertsPage() {
   if (isLoading) return <PageSpinner label="Loading price alerts…" />;
   if (isError)   return <InlineError message="Couldn't load your alerts. Please refresh." />;
 
-  const alerts = data?.data ?? [];
-
   return (
     <div className="space-y-4">
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-            {alerts.length} alert{alerts.length !== 1 ? "s" : ""}
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            {data?.total ?? 0} alert{data?.total !== 1 ? "s" : ""}
           </p>
         </div>
-        <AddAlertSheet onAdded={() => queryClient.invalidateQueries({ queryKey: ["price-alerts"] })} />
+        <AddAlertSheet onAdded={() => {
+          setPage(1);
+          queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
+        }} />
       </div>
 
       {/* List */}
-      {alerts.length === 0 ? (
+      {data?.total === 0 ? (
         <EmptyState
           icon={TrendingDown}
           heading="No price alerts"
           description="Get notified by email when a hostel drops below your target price."
         />
+      ) : alerts.length === 0 ? (
+        <InlineError message="No alerts on this page. Return to the previous page to continue." />
       ) : (
         <div className="space-y-3" role="list" aria-label="Price alerts">
           {alerts.map((alert) => (
@@ -335,6 +348,30 @@ export default function PriceAlertsPage() {
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {(page > 1 || data?.hasMore) && (
+        <div className="flex items-center justify-between pt-2">
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page === 1}
+            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+            Page {page} of {Math.max(1, Math.ceil((data?.total ?? 0) / (data?.limit ?? 20)))}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((current) => current + 1)}
+            disabled={!data?.hasMore}
+            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

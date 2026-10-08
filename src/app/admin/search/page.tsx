@@ -48,31 +48,31 @@ export default function AdminSearchSyncPage() {
             <RefreshCw
               size={18}
               strokeWidth={1.5}
-              className="text-[var(--color-primary)]"
+              className="text-[color:var(--color-primary)]"
               aria-hidden="true"
             />
           </div>
           <div>
             <h2
-              className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]"
+              className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]"
 
             >
               Rebuild search index
             </h2>
-            <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+            <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
               Typesense full re-index
             </p>
           </div>
         </div>
 
-        <p className="text-[var(--text-body-sm)] text-[var(--color-text-body)] leading-relaxed">
+        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] leading-relaxed">
           This re-indexes all active hostels in Typesense. Use this if search
           results appear out of date, after bulk data changes, or when
           recovering from a Typesense outage.
         </p>
 
         <div className="rounded-[var(--radius-md)] bg-[var(--color-warning-bg)] border border-[oklch(0.68_0.15_72_/_0.25)] px-4 py-3">
-          <p className="text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-warning-text)]">
             The sync may take 15–60 seconds depending on the number of listings.
             Search will remain available via the Prisma fallback during re-indexing.
           </p>
@@ -85,15 +85,15 @@ export default function AdminSearchSyncPage() {
           <CheckCircle2
             size={18}
             strokeWidth={1.5}
-            className="text-[var(--color-success)] shrink-0 mt-0.5"
+            className="text-[color:var(--color-success)] shrink-0 mt-0.5"
             aria-hidden="true"
           />
           <div>
-            <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-success-text)]">
+            <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-success-text)]">
               {message}
             </p>
             {detail && (
-              <p className="text-[var(--text-body-sm)] text-[var(--color-success-text)] opacity-80 mt-0.5">
+              <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-success-text)] opacity-80 mt-0.5">
                 {detail}
               </p>
             )}
@@ -106,10 +106,10 @@ export default function AdminSearchSyncPage() {
           <AlertTriangle
             size={18}
             strokeWidth={1.5}
-            className="text-[var(--color-error)] shrink-0 mt-0.5"
+            className="text-[color:var(--color-error)] shrink-0 mt-0.5"
             aria-hidden="true"
           />
-          <p className="text-[var(--text-body-sm)] text-[var(--color-error-text)]">{message}</p>
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]">{message}</p>
         </div>
       )}
 
@@ -117,7 +117,7 @@ export default function AdminSearchSyncPage() {
       <button
         onClick={handleSync}
         disabled={state === "syncing"}
-        className="inline-flex items-center gap-2 h-11 px-6 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
+        className="inline-flex items-center gap-2 h-11 px-6 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[var(--color-action)] focus-visible:outline-offset-2"
       >
         {state === "syncing" ? (
           <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
@@ -128,7 +128,7 @@ export default function AdminSearchSyncPage() {
       </button>
 
       {/* Last sync info */}
-      <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
         Sync is also triggered automatically on each hostel approval and update.
         Manual sync is only needed for recovery scenarios.
       </p>

@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Map, List, ChevronDown } from "lucide-react";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
+import { Button } from "@/components/ui/button";
 import { FilterSidebar, MobileFilterSheet, type FilterState } from "@/components/hostel/FilterSidebar";
 import { Pagination } from "@/components/hostel/Pagination";
 import {
@@ -14,9 +15,13 @@ import {
   EmptyState,
   InlineError,
   RecoveryNotice,
+  PageSpinner,
 } from "@/components/ui/shared";
 import { Building2 } from "lucide-react";
 import { SearchMap } from "@/components/hostel/SearchMap";
+import { CompareToggle } from "@/components/hostel/CompareToggle";
+import { CompareTray, type CompareItem } from "@/components/hostel/CompareTray";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -123,6 +128,22 @@ export function SearchPageClient({
   const [pendingFilters, setPendingFilters] = useState<FilterState>(filters);
 
   const [mapView, setMapView] = useState(false);
+  // Card <-> pin sync, only meaningful once the map panel is actually
+  // visible alongside the list (see the split-view layout below).
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  // Compare selection — session-only (not persisted), capped at 3 to match
+  // CompareTray's fixed three slots and the compare page's own limit.
+  const [compareItems, setCompareItems] = useState<CompareItem[]>([]);
+  function toggleCompare(hostel: HostelCardData) {
+    setCompareItems((prev) => {
+      if (prev.some((i) => i.id === hostel.id)) {
+        return prev.filter((i) => i.id !== hostel.id);
+      }
+      if (prev.length >= 3) return prev;
+      return [...prev, { id: hostel.id, name: hostel.name, slug: hostel.slug }];
+    });
+  }
 
   // Sync URL whenever applied state changes
   useEffect(() => {
@@ -197,6 +218,15 @@ export function SearchPageClient({
 
   return (
     <div className="container-app py-6">
+      <div className="mb-6">
+        <h1 className="font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
+          Find student hostels
+        </h1>
+        <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+          Compare verified stays by city, monthly price, gender, and amenities.
+        </p>
+      </div>
+
       {/* ── Controls row ──────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         {/* Mobile filter button */}
@@ -210,7 +240,7 @@ export function SearchPageClient({
         />
 
         {/* Results summary */}
-        <p className="order-3 basis-full text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] sm:order-none sm:min-w-0 sm:flex-1 sm:basis-auto sm:truncate">
+        <p className="order-3 basis-full text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] sm:order-none sm:min-w-0 sm:flex-1 sm:basis-auto sm:truncate">
           {isLoading ? "Searching…" : resultsSummary()}
         </p>
 
@@ -220,11 +250,11 @@ export function SearchPageClient({
             <button
               type="button"
               aria-label="Sort results"
-              className="inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[length:var(--text-body-sm)] transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2"
             >
-              <span className="text-[var(--color-text-muted)]">Sort:</span>
-              <span className="font-[500] text-[var(--color-text-body)]">{SORT_LABELS[sort]}</span>
-              <ChevronDown size={13} strokeWidth={1.5} className="ml-1 text-[var(--color-text-muted)]" aria-hidden="true" />
+              <span className="text-[color:var(--color-text-muted)]">Sort:</span>
+              <span className="font-[500] text-[color:var(--color-text-body)]">{SORT_LABELS[sort]}</span>
+              <ChevronDown size={13} strokeWidth={1.5} className="ml-1 text-[color:var(--color-text-muted)]" aria-hidden="true" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[12rem]">
@@ -246,10 +276,10 @@ export function SearchPageClient({
         {/* Map toggle */}
         <button
           onClick={() => setMapView((v) => !v)}
-          className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] border text-[var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] ${
+          className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-md)] border text-[length:var(--text-body-sm)] font-[500] transition-colors duration-[var(--transition-fast)] ${
             mapView
-              ? "border-[var(--color-primary)] bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)]"
-              : "border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-body)]"
+              ? "border-[var(--color-primary)] bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)]"
+              : "border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[color:var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[color:var(--color-text-body)]"
           }`}
           aria-pressed={mapView}
         >
@@ -272,7 +302,7 @@ export function SearchPageClient({
         />
 
         {/* Main content */}
-        <main className="flex-1 min-w-0" aria-label="Search results">
+        <section className="flex-1 min-w-0" aria-label="Search results">
           {/* Degraded search notice */}
           {data?.isSearchDegraded && <SearchDegradedNotice />}
 
@@ -328,7 +358,10 @@ export function SearchPageClient({
           {/* Loading skeletons */}
           {isLoading && (
             <div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+              className={cn(
+                "grid gap-5",
+                mapView ? "hidden xl:grid xl:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              )}
               aria-busy="true"
               aria-label="Loading results"
             >
@@ -337,27 +370,68 @@ export function SearchPageClient({
               ))}
             </div>
           )}
+          {isLoading && mapView && (
+            <div className="xl:hidden">
+              <PageSpinner label="Loading map results" />
+            </div>
+          )}
 
-          {/* Results — list or map view */}
+          {/* Results — list, or list + map split view once "Map" is toggled on.
+              Below xl, there isn't room for sidebar + list + map together, so
+              the map replaces the list instead of sitting beside it. */}
           {!isLoading && data && data.data.length > 0 && (
-            mapView ? (
-              <SearchMap
-                hostels={data.data}
-                city={filters.city || undefined}
-              />
-            ) : (
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
               <div
-                className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+                className={cn(
+                  "grid gap-5",
+                  mapView
+                    ? "hidden xl:grid xl:flex-1 xl:min-w-0 xl:grid-cols-2"
+                    : "flex-1 min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                )}
                 role="list"
                 aria-label={resultsSummary()}
               >
                 {data.data.map((hostel) => (
-                  <div key={hostel.id} role="listitem">
-                    <HostelCard hostel={hostel} />
+                  <div
+                    key={hostel.id}
+                    role="listitem"
+                    onMouseEnter={() => setHoveredId(hostel.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className={cn(
+                      "rounded-[var(--radius-lg)] transition-shadow duration-[var(--transition-fast)]",
+                      mapView && hoveredId === hostel.id && "ring-2 ring-[var(--color-primary)] ring-offset-2"
+                    )}
+                  >
+                    <HostelCard
+                      hostel={hostel}
+                      extraActions={
+                        <CompareToggle
+                          name={hostel.name}
+                          isSelected={compareItems.some((i) => i.id === hostel.id)}
+                          isDisabled={compareItems.length >= 3 && !compareItems.some((i) => i.id === hostel.id)}
+                          onToggle={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleCompare(hostel);
+                          }}
+                        />
+                      }
+                    />
                   </div>
                 ))}
               </div>
-            )
+
+              {mapView && (
+                <div className="xl:sticky xl:top-20 xl:w-[420px] 2xl:w-[480px] xl:shrink-0">
+                  <SearchMap
+                    hostels={data.data}
+                    city={filters.city || undefined}
+                    hoveredHostelId={hoveredId}
+                    onMarkerHover={setHoveredId}
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {/* Empty state */}
@@ -369,12 +443,9 @@ export function SearchPageClient({
                 message="Try clearing filters, widening your price range, or searching a nearby city."
                 primaryAction={
                   activeCount > 0 ? (
-                    <button
-                      onClick={handleReset}
-                      className="inline-flex h-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-4 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)]"
-                    >
+                    <Button size="sm" onClick={handleReset}>
                       Clear all filters
-                    </button>
+                    </Button>
                   ) : undefined
                 }
               />
@@ -395,8 +466,14 @@ export function SearchPageClient({
               onPageChange={handlePageChange}
             />
           )}
-        </main>
+        </section>
       </div>
+
+      <CompareTray
+        items={compareItems}
+        onRemove={(id) => setCompareItems((prev) => prev.filter((i) => i.id !== id))}
+        onClear={() => setCompareItems([])}
+      />
     </div>
   );
 }
@@ -406,13 +483,13 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   return (
     <span
       role="listitem"
-      className="inline-flex items-center gap-1.5 h-7 pl-3 pr-2 rounded-full bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] text-[var(--text-caption)] font-[500] text-[var(--color-primary-deep)]"
+      className="inline-flex items-center gap-1.5 h-7 pl-3 pr-2 rounded-[var(--radius-full)] bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] text-[length:var(--text-caption)] font-[500] text-[color:var(--color-primary-deep)]"
     >
       {label}
       <button
         onClick={onRemove}
         aria-label={`Remove ${label} filter`}
-        className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--color-primary-light)] transition-colors duration-[var(--transition-fast)]"
+        className="flex h-4 w-4 items-center justify-center rounded-[var(--radius-full)] hover:bg-[var(--color-primary-light)] transition-colors duration-[var(--transition-fast)]"
       >
         <span aria-hidden="true" className="text-[10px] leading-none">✕</span>
       </button>

@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Loader2, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { formatPKR } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
 
 interface Room {
   id: string;
@@ -135,10 +136,10 @@ function BookingForm({
   }
 
   const inputCls =
-    "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[var(--text-body-sm)] text-[var(--color-text-body)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15";
+    "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] transition-all duration-[var(--transition-base)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15";
 
   const labelCls =
-    "block text-[var(--text-label)] font-[500] text-[var(--color-text-body)] mb-1.5";
+    "block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)] mb-1.5";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -218,11 +219,11 @@ function BookingForm({
       {/* Total */}
       {months > 0 && (
         <div className="rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] px-4 py-3 space-y-1.5">
-          <div className="flex justify-between text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <div className="flex justify-between text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             <span>{formatPKR(pricePerMonth)} × {months} month{months !== 1 ? "s" : ""}</span>
             <span>{formatPKR(total)}</span>
           </div>
-          <div className="flex justify-between text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] pt-1 border-t border-[var(--color-border-subtle)]">
+          <div className="flex justify-between text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] pt-1 border-t border-[var(--color-border-subtle)]">
             <span>Total</span>
             <span>{formatPKR(total)}</span>
           </div>
@@ -230,16 +231,14 @@ function BookingForm({
       )}
 
       {/* CTA */}
-      <button
+      <Button
         type="submit"
-        disabled={loading || !checkIn || !checkOut || months < 1}
-        className="inline-flex w-full items-center justify-center gap-2 h-12 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body)] font-[600] text-[var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:bg-[var(--color-action-pressed)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-[var(--color-action-light)] focus-visible:outline-offset-2"
+        loading={loading}
+        disabled={!checkIn || !checkOut || months < 1}
+        className="w-full h-12 text-[length:var(--text-body)]"
       >
-        {loading ? (
-          <Loader2 size={18} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-        ) : null}
         {loading ? "Sending request…" : "Request booking"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -247,10 +246,10 @@ function BookingForm({
 function StudentOnlyBookingNotice() {
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] px-4 py-3">
-      <p className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+      <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
         Only student accounts can request bookings.
       </p>
-      <p className="mt-1 text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+      <p className="mt-1 text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
         Switch to a student account to book a hostel.
       </p>
     </div>
@@ -314,11 +313,11 @@ export function BookingPanel({
         {/* Price */}
         <div className="mb-5">
           <p
-            className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-primary-deep)] leading-none"
+            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-primary-deep)] leading-none"
 
           >
             {formatPKR(basePricePerMonth)}
-            <span className="text-[var(--text-body)] font-[400] text-[var(--color-text-muted)]">
+            <span className="text-[length:var(--text-body)] font-[400] text-[color:var(--color-text-muted)]">
               {" "}/ month
             </span>
           </p>
@@ -338,39 +337,41 @@ export function BookingPanel({
         )}
 
         {/* Message owner */}
-        <button
+        <Button
           onClick={startConversation}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 h-10 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-bg-overlay)] hover:border-[var(--color-border-strong)]"
+          variant="outline"
+          className="mt-3 w-full"
         >
           <MessageCircle size={16} strokeWidth={1.5} aria-hidden="true" />
           Message owner
-        </button>
+        </Button>
       </aside>
 
       {/* -- Mobile bottom bar ------------------------------ */}
       <div id="booking-panel-mobile" className="fixed bottom-16 left-0 right-0 z-40 flex items-center gap-3 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-3 sm:px-4 md:bottom-0 lg:hidden">
         <div className="shrink-0">
-          <p className="text-[var(--text-h5)] font-[700] text-[var(--color-primary-deep)] leading-none">
+          <p className="text-[length:var(--text-h5)] font-[700] text-[color:var(--color-primary-deep)] leading-none">
             {formatPKR(basePricePerMonth)}
           </p>
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">per month</p>
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">per month</p>
         </div>
 
         <div className="flex min-w-0 flex-1 justify-end gap-2">
-          <button
+          <Button
             onClick={startConversation}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)]"
+            variant="outline"
+            size="icon"
             aria-label="Message owner"
           >
             <MessageCircle size={18} strokeWidth={1.5} aria-hidden="true" />
-          </button>
+          </Button>
 
           {canRequestBooking ? (
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="h-10 min-w-0 flex-1 whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-inverse)] transition-colors duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] sm:flex-none sm:px-5">
+              <Button className="min-w-0 flex-1 whitespace-nowrap sm:flex-none sm:px-5">
                 Request booking
-              </button>
+              </Button>
             </SheetTrigger>
             <SheetContent
               side="bottom"
@@ -378,7 +379,7 @@ export function BookingPanel({
             >
               <SheetHeader className="mb-5">
                 <SheetTitle
-                  className="text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)] text-left"
+                  className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] text-left"
 
                 >
                   Request booking — {hostelName}

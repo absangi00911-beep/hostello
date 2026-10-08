@@ -54,19 +54,19 @@ export function CitySelector() {
         <button
           type="button"
           aria-label={`Choose city, currently ${city}`}
-          className="flex w-full items-center justify-between gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-2 text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 sm:w-auto sm:justify-start"
+          className="flex w-full items-center justify-between gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-2 text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)] transition-all duration-[var(--transition-fast)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 sm:w-auto sm:justify-start"
         >
           <MapPin
             size={14}
             strokeWidth={1.5}
-            className="text-[var(--color-primary)] shrink-0"
+            className="text-[color:var(--color-primary)] shrink-0"
             aria-hidden="true"
           />
           <span className="max-w-[100px] truncate">{city}</span>
           <ChevronDown
             size={12}
             strokeWidth={1.5}
-            className="text-[var(--color-text-muted)] shrink-0"
+            className="text-[color:var(--color-text-muted)] shrink-0"
             aria-hidden="true"
           />
         </button>
@@ -79,7 +79,7 @@ export function CitySelector() {
       >
         <DropdownMenuItem
           onSelect={() => handleSelect("All cities")}
-          className="rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] text-[var(--color-text-muted)] cursor-pointer hover:bg-[var(--color-bg-overlay)]"
+          className="rounded-[var(--radius-sm)] px-3 py-2 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] cursor-pointer hover:bg-[var(--color-bg-overlay)]"
         >
           All cities
         </DropdownMenuItem>
@@ -88,10 +88,10 @@ export function CitySelector() {
           <DropdownMenuItem
             key={c}
             onSelect={() => handleSelect(c)}
-            className={`rounded-[var(--radius-sm)] px-3 py-2 text-[var(--text-body-sm)] cursor-pointer transition-colors ${
+            className={`rounded-[var(--radius-sm)] px-3 py-2 text-[length:var(--text-body-sm)] cursor-pointer transition-colors ${
               city === c
-                ? "bg-[var(--color-primary-faint)] text-[var(--color-primary-deep)] font-[500]"
-                : "text-[var(--color-text-body)] hover:bg-[var(--color-bg-overlay)]"
+                ? "bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)] font-[500]"
+                : "text-[color:var(--color-text-body)] hover:bg-[var(--color-bg-overlay)]"
             }`}
           >
             {c}

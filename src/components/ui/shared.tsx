@@ -30,14 +30,14 @@ export function EmptyState({
       <Icon
         size={compact ? 32 : 40}
         strokeWidth={1.5}
-        className="mb-4 text-[var(--color-text-muted)]"
+        className="mb-4 text-[color:var(--color-text-muted)]"
         aria-hidden="true"
       />
-      <h3 className="owner-empty-heading mb-2 text-[length:var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
+      <h3 className="owner-empty-heading mb-2 text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">
         {heading}
       </h3>
       {description && (
-        <p className="mb-6 max-w-[55ch] text-[var(--text-body)] text-[var(--color-text-muted)]">
+        <p className="mb-6 max-w-[55ch] text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
           {description}
         </p>
       )}
@@ -55,11 +55,11 @@ interface TrustCueProps {
 
 const TRUST_CUE_TONES = {
   trust:
-    "border-[var(--color-success)/0.18] bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
+    "border-[var(--color-success)/0.18] bg-[var(--color-success-bg)] text-[color:var(--color-success-text)]",
   neutral:
-    "border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] text-[var(--color-text-body)]",
+    "border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] text-[color:var(--color-text-body)]",
   warning:
-    "border-[var(--color-warning)/0.22] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
+    "border-[var(--color-warning)/0.22] bg-[var(--color-warning-bg)] text-[color:var(--color-warning-text)]",
 };
 
 export function TrustCue({
@@ -82,10 +82,10 @@ export function TrustCue({
         aria-hidden="true"
       />
       <div className="min-w-0">
-        <p className="text-[var(--text-caption)] font-[700] uppercase tracking-[0.06em]">
+        <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.06em]">
           {label}
         </p>
-        <p className="truncate text-[var(--text-body-sm)] font-[500]">
+        <p className="truncate text-[length:var(--text-body-sm)] font-[500]">
           {value}
         </p>
       </div>
@@ -125,13 +125,13 @@ interface RecoveryNoticeProps {
 }
 
 const RECOVERY_TONES = {
-  info: "border-[var(--color-info)/0.2] bg-[var(--color-info-bg)] text-[var(--color-info-text)]",
+  info: "border-[var(--color-info)/0.2] bg-[var(--color-info-bg)] text-[color:var(--color-info-text)]",
   warning:
-    "border-[var(--color-warning)/0.25] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
+    "border-[var(--color-warning)/0.25] bg-[var(--color-warning-bg)] text-[color:var(--color-warning-text)]",
   error:
-    "border-[var(--color-error)/0.2] bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
+    "border-[var(--color-error)/0.2] bg-[var(--color-error-bg)] text-[color:var(--color-error-text)]",
   success:
-    "border-[var(--color-success)/0.2] bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
+    "border-[var(--color-success)/0.2] bg-[var(--color-success-bg)] text-[color:var(--color-success-text)]",
 };
 
 export function RecoveryNotice({
@@ -149,8 +149,8 @@ export function RecoveryNotice({
         RECOVERY_TONES[tone],
       )}
     >
-      <p className="text-[var(--text-body-sm)] font-[700]">{title}</p>
-      <p className="mt-1 text-[var(--text-body-sm)] leading-relaxed">
+      <p className="text-[length:var(--text-body-sm)] font-[700]">{title}</p>
+      <p className="mt-1 text-[length:var(--text-body-sm)] leading-relaxed">
         {message}
       </p>
       {(primaryAction || secondaryAction) && (
@@ -170,7 +170,7 @@ export function PageSpinner({ label = "Loading..." }: { label?: string }) {
       <Loader2
         size={24}
         strokeWidth={1.5}
-        className="animate-spin text-[var(--color-primary)]"
+        className="animate-spin text-[color:var(--color-primary)]"
         aria-hidden="true"
       />
       <span className="sr-only">{label}</span>
@@ -188,10 +188,10 @@ export function InlineError({ message }: { message: string }) {
       <AlertCircle
         size={16}
         strokeWidth={1.5}
-        className="text-[var(--color-error)] shrink-0 mt-0.5"
+        className="text-[color:var(--color-error)] shrink-0 mt-0.5"
         aria-hidden="true"
       />
-      <p className="text-[var(--text-body-sm)] text-[var(--color-error-text)]">{message}</p>
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]">{message}</p>
     </div>
   );
 }
@@ -216,23 +216,23 @@ type BadgeVariant =
 
 const BADGE_STYLES: Record<BadgeVariant, string> = {
   // Semantic — map directly to design system palette
-  pending:        "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
-  confirmed:      "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
-  cancelled:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
-  completed:      "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
-  active:         "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
-  draft:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
-  pending_review: "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[var(--color-warning-text)]",
-  suspended:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
-  paid:           "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
-  refunded:       "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[var(--color-info-text)]",
-  failed:         "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[var(--color-error-text)]",
+  pending:        "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[color:var(--color-warning-text)]",
+  confirmed:      "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[color:var(--color-success-text)]",
+  cancelled:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[color:var(--color-error-text)]",
+  completed:      "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[color:var(--color-info-text)]",
+  active:         "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[color:var(--color-success-text)]",
+  draft:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[color:var(--color-text-muted)]",
+  pending_review: "bg-[var(--color-warning-bg)]  border border-[var(--color-warning)/0.25]  text-[color:var(--color-warning-text)]",
+  suspended:      "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[color:var(--color-error-text)]",
+  paid:           "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[color:var(--color-success-text)]",
+  refunded:       "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.2]      text-[color:var(--color-info-text)]",
+  failed:         "bg-[var(--color-error-bg)]    border border-[var(--color-error)/0.2]     text-[color:var(--color-error-text)]",
   // Trust signal — success green, NOT amber (amber is brand/price only)
-  verified:       "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[var(--color-success-text)]",
+  verified:       "bg-[var(--color-success-bg)]  border border-[var(--color-success)/0.2]   text-[color:var(--color-success-text)]",
   // Gender — neutral info, muted, sidebar tones
-  male:           "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.15]     text-[var(--color-info-text)]",
+  male:           "bg-[var(--color-info-bg)]     border border-[var(--color-info)/0.15]     text-[color:var(--color-info-text)]",
   female:         "bg-[oklch(0.97_0.02_340)]     border border-[oklch(0.72_0.12_340/0.2)]   text-[oklch(0.45_0.12_340)]",
-  mixed:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[var(--color-text-muted)]",
+  mixed:          "bg-[var(--color-bg-sidebar)]  border border-[var(--color-border-default)] text-[color:var(--color-text-muted)]",
 };
 
 const BADGE_LABELS: Record<BadgeVariant, string> = {
@@ -289,7 +289,7 @@ export function StatusBadge({ variant, label, tone = "pill" }: StatusBadgeProps)
 
   if (tone === "dot") {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-body)] shrink-0">
+      <span className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] shrink-0">
         <span
           className="inline-block h-1.5 w-1.5 rounded-full shrink-0"
           style={{ backgroundColor: BADGE_DOT_COLORS[variant] }}
@@ -457,10 +457,10 @@ export function SearchDegradedNotice() {
       <AlertCircle
         size={16}
         strokeWidth={1.5}
-        className="text-[var(--color-warning)] shrink-0 mt-0.5"
+        className="text-[color:var(--color-warning)] shrink-0 mt-0.5"
         aria-hidden="true"
       />
-      <p className="text-[var(--text-body-sm)] text-[var(--color-warning-text)]">
+      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-warning-text)]">
         Search is running in fallback mode. Results may be slower.
       </p>
     </div>

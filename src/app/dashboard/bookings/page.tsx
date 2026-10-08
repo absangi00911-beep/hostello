@@ -27,6 +27,7 @@ import {
   StatusBadge,
   formatPKR,
 } from "@/components/ui/shared";
+import { Button } from "@/components/ui/button";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
 type Tab = "UPCOMING" | "COMPLETED" | "CANCELLED";
@@ -50,6 +51,8 @@ interface Booking {
     longitude: number | null;
   };
 }
+
+const EMPTY_BOOKINGS: Booking[] = [];
 
 function directionsUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
@@ -76,21 +79,58 @@ function StatCard({
       <Icon
         size={72}
         strokeWidth={1}
-        className="absolute -right-3 -bottom-3 text-[var(--color-bg-overlay)]"
+        className="absolute -right-3 -bottom-3 text-[color:var(--color-bg-overlay)]"
         aria-hidden="true"
       />
-      <p className="relative text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+      <p className="relative text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
         {label}
       </p>
-      <p className={`relative mt-1.5 font-heading text-[2rem] font-[800] ${accent ? "text-[var(--color-primary)]" : "text-[var(--color-text-heading)]"}`}>
+      <p className={`relative mt-1.5 font-heading text-[2rem] font-[800] ${accent ? "text-[color:var(--color-primary)]" : "text-[color:var(--color-text-heading)]"}`}>
         {value}
       </p>
     </div>
   );
 }
 
+function CancelBookingButton({
+  booking,
+  cancelling,
+  disabled,
+  onCancel,
+}: {
+  booking: Booking;
+  cancelling: boolean;
+  disabled: boolean;
+  onCancel: (id: string) => void;
+}) {
+  if (booking.status !== "PENDING") return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onCancel(booking.id)}
+      disabled={disabled}
+      aria-label={`Cancel booking at ${booking.hostel.name}`}
+      className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[length:var(--text-caption)] font-[500] text-[color:var(--color-error)] hover:underline disabled:opacity-50"
+    >
+      {cancelling && <Loader2 size={12} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
+      Cancel booking
+    </button>
+  );
+}
+
 /* -- Featured "Next Adventure" card --------------------------- */
-function NextAdventureCard({ booking }: { booking: Booking }) {
+function NextAdventureCard({
+  booking,
+  onCancel,
+  cancelling,
+  cancelDisabled,
+}: {
+  booking: Booking;
+  onCancel: (id: string) => void;
+  cancelling: boolean;
+  cancelDisabled: boolean;
+}) {
   const { hostel } = booking;
 
   return (
@@ -100,7 +140,7 @@ function NextAdventureCard({ booking }: { booking: Booking }) {
           <Image src={hostel.coverImage} alt={hostel.name} fill className="object-cover" sizes="288px" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <Building2 size={28} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
+            <Building2 size={28} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
           </div>
         )}
         <div className="absolute top-3 left-3">
@@ -112,46 +152,49 @@ function NextAdventureCard({ booking }: { booking: Booking }) {
         <div className="flex flex-wrap items-start justify-between gap-2">
           <Link
             href={`/hostels/${hostel.slug}`}
-            className="text-[var(--text-h4)] font-[700] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+            className="text-[length:var(--text-h4)] font-[700] text-[color:var(--color-text-heading)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
           >
             {hostel.name}
           </Link>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-sidebar)] px-2.5 py-1 text-[var(--text-caption)] font-[500] text-[var(--color-text-muted)]">
+          <span className="inline-flex items-center gap-1 rounded-[var(--radius-full)] bg-[var(--color-bg-sidebar)] px-2.5 py-1 text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)]">
             <MapPin size={11} strokeWidth={2} aria-hidden="true" />
             {hostel.city}
           </span>
         </div>
 
-        <p className="flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+        <p className="flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
           <Calendar size={14} strokeWidth={1.5} aria-hidden="true" />
           {dateRange(booking)} · {booking.months} {booking.months === 1 ? "month" : "months"} · {booking.guests} guest{booking.guests !== 1 ? "s" : ""}
         </p>
 
         <div className="flex flex-wrap gap-2 pt-1">
-          <Link
-            href={`/booking/${booking.id}/confirmation`}
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[600] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]"
-          >
-            View Details
-          </Link>
-          <Link
-            href={`/dashboard/messages?hostel=${hostel.id}`}
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-          >
-            <MessageCircle size={14} strokeWidth={1.5} aria-hidden="true" />
-            Message Host
-          </Link>
+          <Button asChild size="sm">
+            <Link href={`/booking/${booking.id}/confirmation`}>View Details</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/dashboard/messages?hostel=${hostel.id}`}>
+              <MessageCircle size={14} strokeWidth={1.5} aria-hidden="true" />
+              Message Host
+            </Link>
+          </Button>
           {hostel.latitude !== null && hostel.longitude !== null && (
-            <a
-              href={directionsUrl(hostel.latitude, hostel.longitude)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-            >
-              <Navigation size={13} strokeWidth={1.5} aria-hidden="true" />
-              Get Directions
-            </a>
+            <Button asChild variant="outline" size="sm">
+              <a
+                href={directionsUrl(hostel.latitude, hostel.longitude)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation size={13} strokeWidth={1.5} aria-hidden="true" />
+                Get Directions
+              </a>
+            </Button>
           )}
+          <CancelBookingButton
+            booking={booking}
+            cancelling={cancelling}
+            disabled={cancelDisabled}
+            onCancel={onCancel}
+          />
         </div>
       </div>
     </div>
@@ -159,28 +202,46 @@ function NextAdventureCard({ booking }: { booking: Booking }) {
 }
 
 /* -- Compact row for extra upcoming bookings ------------------- */
-function UpcomingRow({ booking }: { booking: Booking }) {
+function UpcomingRow({
+  booking,
+  onCancel,
+  cancelling,
+  cancelDisabled,
+}: {
+  booking: Booking;
+  onCancel: (id: string) => void;
+  cancelling: boolean;
+  cancelDisabled: boolean;
+}) {
   const { hostel } = booking;
   return (
-    <Link
-      href={`/booking/${booking.id}/confirmation`}
-      className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-3 transition-colors duration-[var(--transition-fast)] hover:bg-[var(--color-bg-overlay)]"
-    >
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]">
-        {hostel.coverImage ? (
-          <Image src={hostel.coverImage} alt="" fill className="object-cover" sizes="48px" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Building2 size={16} strokeWidth={1.5} className="text-[var(--color-text-muted)]" aria-hidden="true" />
-          </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">{hostel.name}</p>
-        <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">{dateRange(booking)}</p>
-      </div>
-      <StatusBadge variant={booking.status.toLowerCase() as any} />
-    </Link>
+    <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-3">
+      <Link
+        href={`/booking/${booking.id}/confirmation`}
+        className="flex min-w-0 flex-1 items-center gap-3 transition-colors duration-[var(--transition-fast)] hover:opacity-80"
+      >
+        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-bg-overlay)]">
+          {hostel.coverImage ? (
+            <Image src={hostel.coverImage} alt="" fill className="object-cover" sizes="48px" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Building2 size={16} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">{hostel.name}</p>
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{dateRange(booking)}</p>
+        </div>
+        <StatusBadge variant={booking.status.toLowerCase() as any} />
+      </Link>
+      <CancelBookingButton
+        booking={booking}
+        cancelling={cancelling}
+        disabled={cancelDisabled}
+        onCancel={onCancel}
+      />
+    </div>
   );
 }
 
@@ -192,19 +253,19 @@ function PastStayRow({ booking }: { booking: Booking }) {
       <td className="px-4 py-3">
         <Link
           href={`/hostels/${hostel.slug}`}
-          className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)] hover:text-[var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
+          className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
         >
           {hostel.name}
         </Link>
       </td>
-      <td className="px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-text-body)]">{dateRange(booking)}</td>
-      <td className="px-4 py-3 text-[var(--text-body-sm)] font-[600] text-[var(--color-text-body)]">{formatPKR(booking.total)}</td>
+      <td className="px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">{dateRange(booking)}</td>
+      <td className="px-4 py-3 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">{formatPKR(booking.total)}</td>
       <td className="px-4 py-3"><StatusBadge variant={booking.status.toLowerCase() as any} /></td>
       <td className="px-4 py-3 text-right">
         {booking.status === "COMPLETED" ? (
           <Link
             href={`/dashboard/bookings/${booking.id}/review`}
-            className="inline-flex items-center gap-1 text-[var(--text-caption)] font-[600] text-[var(--color-text-link)] hover:underline"
+            className="inline-flex items-center gap-1 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-link)] hover:underline"
           >
             <Star size={12} strokeWidth={1.5} aria-hidden="true" />
             Leave a Review
@@ -212,7 +273,7 @@ function PastStayRow({ booking }: { booking: Booking }) {
         ) : (
           <Link
             href={`/booking/${booking.id}/confirmation`}
-            className="inline-flex items-center gap-1 text-[var(--text-caption)] font-[600] text-[var(--color-text-link)] hover:underline"
+            className="inline-flex items-center gap-1 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-link)] hover:underline"
           >
             <ExternalLink size={12} strokeWidth={1.5} aria-hidden="true" />
             Details
@@ -258,7 +319,7 @@ export default function BookingsPage() {
     onSettled: () => setCancellingId(null),
   });
 
-  const allBookings = data?.data ?? [];
+  const allBookings = data?.data ?? EMPTY_BOOKINGS;
 
   const { upcoming, completed, cancelled, totalSpent } = useMemo(() => {
     const now = new Date();
@@ -283,7 +344,7 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-heading text-[var(--text-h3)] font-[700] text-[var(--color-text-heading)]">
+        <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
           My Bookings
         </h2>
       </div>
@@ -305,10 +366,10 @@ export default function BookingsPage() {
               role="tab"
               aria-selected={active}
               onClick={() => setTab(key)}
-              className={`h-10 px-3.5 text-[var(--text-body-sm)] font-[600] border-b-2 transition-colors duration-[var(--transition-fast)] ${
+              className={`h-10 px-3.5 text-[length:var(--text-body-sm)] font-[600] border-b-2 transition-colors duration-[var(--transition-fast)] ${
                 active
-                  ? "border-[var(--color-primary)] text-[var(--color-primary)]"
-                  : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-body)]"
+                  ? "border-[var(--color-primary)] text-[color:var(--color-primary)]"
+                  : "border-transparent text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-body)]"
               }`}
             >
               {label} ({count})
@@ -325,32 +386,34 @@ export default function BookingsPage() {
             heading="No upcoming stays"
             description="When you book a hostel, it'll show up here."
             action={
-              <Link href="/hostels" className="inline-flex h-9 items-center px-4 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] transition-colors duration-[var(--transition-base)]">
-                Find a hostel
-              </Link>
+              <Button asChild>
+                <Link href="/hostels">Find a hostel</Link>
+              </Button>
             }
           />
         ) : (
           <div className="space-y-4">
             <div>
-              <h3 className="mb-3 text-[var(--text-h5)] font-[600] text-[var(--color-text-heading)]">Next Adventure</h3>
-              <NextAdventureCard booking={upcoming[0]} />
+              <h3 className="mb-3 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">Next Adventure</h3>
+              <NextAdventureCard
+                booking={upcoming[0]}
+                onCancel={(id) => cancelMutation.mutate(id)}
+                cancelling={cancellingId === upcoming[0].id}
+                cancelDisabled={cancellingId !== null}
+              />
             </div>
             {upcoming.length > 1 && (
               <div className="space-y-2">
-                {upcoming.slice(1).map((b) => <UpcomingRow key={b.id} booking={b} />)}
+                {upcoming.slice(1).map((b) => (
+                  <UpcomingRow
+                    key={b.id}
+                    booking={b}
+                    onCancel={(id) => cancelMutation.mutate(id)}
+                    cancelling={cancellingId === b.id}
+                    cancelDisabled={cancellingId !== null}
+                  />
+                ))}
               </div>
-            )}
-            {/* Cancel is still available for a PENDING booking, surfaced here rather than buried in the featured card */}
-            {upcoming[0].status === "PENDING" && (
-              <button
-                onClick={() => cancelMutation.mutate(upcoming[0].id)}
-                disabled={cancellingId === upcoming[0].id}
-                className="inline-flex items-center gap-1.5 text-[var(--text-caption)] font-[500] text-[var(--color-error)] hover:underline disabled:opacity-50"
-              >
-                {cancellingId === upcoming[0].id && <Loader2 size={12} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
-                Cancel this booking
-              </button>
             )}
           </div>
         )
@@ -366,7 +429,7 @@ export default function BookingsPage() {
               <thead>
                 <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]">
                   {["Hostel", "Dates", "Amount", "Status", ""].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+                    <th key={h} className="px-4 py-2.5 text-left text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
                       {h}
                     </th>
                   ))}
@@ -392,7 +455,7 @@ export default function BookingsPage() {
               <thead>
                 <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]">
                   {["Hostel", "Dates", "Amount", "Status", ""].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[var(--color-text-muted)]">
+                    <th key={h} className="px-4 py-2.5 text-left text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
                       {h}
                     </th>
                   ))}

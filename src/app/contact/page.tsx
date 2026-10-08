@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { inputCls } from "@/components/ui/input";
 
@@ -46,49 +48,51 @@ export default function ContactPage() {
       <div className="mx-auto max-w-[560px] px-4 py-12 md:py-16">
         <div className="mb-8">
           <h1
-            className="font-heading text-[var(--text-h2)] font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+            className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 
           >
             Contact us
           </h1>
-          <p className="text-[var(--text-body)] text-[var(--color-text-muted)] mt-2">
+          <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] mt-2">
             We reply to all messages within 24 hours.
           </p>
         </div>
 
         {sent ? (
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center space-y-3">
-            <CheckCircle2 size={40} strokeWidth={1.5} className="text-[var(--color-success)] mx-auto" aria-hidden="true" />
-            <h2 className="text-[var(--text-h4)] font-[600] text-[var(--color-text-heading)]">
-              Message sent
-            </h2>
-            <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
-              We'll reply to <strong>{email}</strong> within 24 hours.
-            </p>
-          </div>
+          <Card className="border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center">
+            <CardContent className="space-y-3 p-0">
+              <CheckCircle2 size={40} strokeWidth={1.5} className="text-[color:var(--color-success)] mx-auto" aria-hidden="true" />
+              <h2 className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">
+                Message sent
+              </h2>
+              <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+                We'll reply to <strong>{email}</strong> within 24 hours.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div role="alert" className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[var(--text-body-sm)] text-[var(--color-error-text)]">
+              <div role="alert" className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]">
                 {error}
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="ct-name" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Name</label>
+                <label htmlFor="ct-name" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Name</label>
                 <input id="ct-name" type="text" value={name} onChange={(e) => setName(e.target.value)}
                   placeholder="Your name" required autoComplete="name" className={inputCls} />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="ct-email" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Email</label>
+                <label htmlFor="ct-email" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Email</label>
                 <input id="ct-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com" required autoComplete="email" className={inputCls} />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="ct-subject" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Subject</label>
+              <label htmlFor="ct-subject" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Subject</label>
               <select id="ct-subject" value={subject} onChange={(e) => setSubject(e.target.value)}
                 required className={`${inputCls} appearance-none`}>
                 <option value="">Select a topic</option>
@@ -97,17 +101,16 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="ct-msg" className="block text-[var(--text-label)] font-[500] text-[var(--color-text-body)]">Message</label>
+              <label htmlFor="ct-msg" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Message</label>
               <textarea id="ct-msg" value={message} onChange={(e) => setMessage(e.target.value)}
                 rows={5} required minLength={20} placeholder="Describe your issue or question in detail."
                 className={`${inputCls} h-auto resize-none py-2.5`} />
             </div>
 
-            <button type="submit" disabled={loading || !name || !email || !subject || message.length < 20}
-              className="inline-flex w-full items-center justify-center gap-2 h-11 rounded-[var(--radius-md)] bg-[var(--color-action)] text-[var(--text-body-sm)] font-[500] text-white hover:bg-[var(--color-action-dark)] active:scale-[0.97] transition-all duration-[var(--transition-base)] disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button type="submit" disabled={loading || !name || !email || !subject || message.length < 20} className="w-full">
               {loading && <Loader2 size={16} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />}
               {loading ? "Sending…" : "Send message"}
-            </button>
+            </Button>
           </form>
         )}
       </div>

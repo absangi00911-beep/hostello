@@ -21,12 +21,12 @@ export default async function DashboardLayout({
         {/* Page heading */}
         <div className="mb-6">
           <h1
-            className="student-dashboard-title font-heading font-[700] text-[var(--color-text-heading)] tracking-[-0.02em]"
+            className="student-dashboard-title font-heading font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 
           >
             My account
           </h1>
-          <p className="text-[var(--text-body-sm)] text-[var(--color-text-muted)] mt-1">
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mt-1">
             Manage your bookings, saved hostels, and messages.
           </p>
         </div>

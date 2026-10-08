@@ -23,8 +23,8 @@ const DropdownMenuSubTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "flex cursor-default select-none items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5",
-      "text-[var(--text-body-sm)] text-[var(--color-text-body)] outline-none",
-      "focus:bg-[var(--color-bg-overlay)] focus:text-[var(--color-text-heading)]",
+      "text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] outline-none",
+      "focus:bg-[var(--color-bg-overlay)] focus:text-[color:var(--color-text-heading)]",
       "data-[state=open]:bg-[var(--color-bg-overlay)]",
       "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
@@ -47,7 +47,7 @@ const DropdownMenuSubContent = React.forwardRef<
     className={cn(
       "z-50 min-w-[8rem] overflow-hidden rounded-[var(--radius-md)]",
       "border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-1",
-      "text-[var(--color-text-body)] shadow-[var(--shadow-lg)]",
+      "text-[color:var(--color-text-body)] shadow-[var(--shadow-lg)]",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -71,7 +71,7 @@ const DropdownMenuContent = React.forwardRef<
       className={cn(
         "z-50 min-w-[8rem] overflow-hidden rounded-[var(--radius-md)]",
         "border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-1",
-        "text-[var(--color-text-body)] shadow-[var(--shadow-lg)]",
+        "text-[color:var(--color-text-body)] shadow-[var(--shadow-lg)]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -95,9 +95,9 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5",
-      "text-[var(--text-body-sm)] text-[var(--color-text-body)] outline-none",
+      "text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] outline-none",
       "transition-colors duration-[var(--transition-fast)]",
-      "focus:bg-[var(--color-bg-overlay)] focus:text-[var(--color-text-heading)]",
+      "focus:bg-[var(--color-bg-overlay)] focus:text-[color:var(--color-text-heading)]",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
@@ -116,9 +116,9 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center rounded-[var(--radius-sm)] py-1.5 pl-8 pr-2",
-      "text-[var(--text-body-sm)] text-[var(--color-text-body)] outline-none",
+      "text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] outline-none",
       "transition-colors duration-[var(--transition-fast)]",
-      "focus:bg-[var(--color-bg-overlay)] focus:text-[var(--color-text-heading)]",
+      "focus:bg-[var(--color-bg-overlay)] focus:text-[color:var(--color-text-heading)]",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
@@ -127,7 +127,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-[var(--color-primary)]" />
+        <Check className="h-4 w-4 text-[color:var(--color-primary)]" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -143,9 +143,9 @@ const DropdownMenuRadioItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex cursor-default select-none items-center rounded-[var(--radius-sm)] py-1.5 pl-8 pr-2",
-      "text-[var(--text-body-sm)] text-[var(--color-text-body)] outline-none",
+      "text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] outline-none",
       "transition-colors duration-[var(--transition-fast)]",
-      "focus:bg-[var(--color-bg-overlay)] focus:text-[var(--color-text-heading)]",
+      "focus:bg-[var(--color-bg-overlay)] focus:text-[color:var(--color-text-heading)]",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
@@ -170,7 +170,7 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-[var(--text-label)] font-[600] text-[var(--color-text-muted)] uppercase tracking-[0.06em]",
+      "px-2 py-1.5 text-[length:var(--text-label)] font-[600] text-[color:var(--color-text-muted)] uppercase tracking-[0.06em]",
       inset && "pl-8",
       className
     )}
@@ -197,7 +197,7 @@ const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     className={cn(
-      "ml-auto text-[var(--text-caption)] tracking-widest text-[var(--color-text-placeholder)]",
+      "ml-auto text-[length:var(--text-caption)] tracking-widest text-[color:var(--color-text-placeholder)]",
       className
     )}
     {...props}

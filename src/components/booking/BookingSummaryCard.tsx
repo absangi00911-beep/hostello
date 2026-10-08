@@ -100,7 +100,7 @@ export function BookingSummaryCard({
               <Building2
                 size={20}
                 strokeWidth={1.5}
-                className="text-[var(--color-text-muted)]"
+                className="text-[color:var(--color-text-muted)]"
                 aria-hidden="true"
               />
             </div>
@@ -110,12 +110,12 @@ export function BookingSummaryCard({
         {/* Info */}
         <div className="min-w-0 flex-1">
           <p
-            className="truncate text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]"
+            className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]"
 
           >
             {hostel.name}
           </p>
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)]">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             {hostel.city}{hostel.area ? `, ${hostel.area}` : ""}
           </p>
         </div>
@@ -130,20 +130,20 @@ export function BookingSummaryCard({
       {/* Booking details grid */}
       <div className="grid grid-cols-2 gap-0 divide-x divide-[var(--color-border-subtle)]">
         <div className="p-4 space-y-1">
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] flex items-center gap-1.5">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] flex items-center gap-1.5">
             <Calendar size={12} strokeWidth={1.5} aria-hidden="true" />
             Check-in
           </p>
-          <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
+          <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)]">
             {checkInFmt}
           </p>
         </div>
         <div className="p-4 space-y-1">
-          <p className="text-[var(--text-caption)] text-[var(--color-text-muted)] flex items-center gap-1.5">
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] flex items-center gap-1.5">
             <Calendar size={12} strokeWidth={1.5} aria-hidden="true" />
             Check-out
           </p>
-          <p className="text-[var(--text-body-sm)] font-[500] text-[var(--color-text-body)]">
+          <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-body)]">
             {checkOutFmt}
           </p>
         </div>
@@ -152,7 +152,7 @@ export function BookingSummaryCard({
       {/* Duration + guests + total */}
       <div className="px-4 pb-4 pt-0 space-y-2 border-t border-[var(--color-border-subtle)]">
         <div className="flex items-center justify-between pt-3">
-          <div className="flex items-center gap-1.5 text-[var(--text-body-sm)] text-[var(--color-text-muted)]">
+          <div className="flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             <Users size={13} strokeWidth={1.5} aria-hidden="true" />
             {booking.guests} guest{booking.guests !== 1 ? "s" : ""} ·{" "}
             {booking.months} month{booking.months !== 1 ? "s" : ""}
@@ -161,10 +161,10 @@ export function BookingSummaryCard({
 
         {/* Total row */}
         <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border-subtle)]">
-          <span className="text-[var(--text-body-sm)] font-[600] text-[var(--color-text-heading)]">
+          <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
             Total
           </span>
-          <span className="text-[var(--text-h5)] font-[700] text-[var(--color-primary-deep)]">
+          <span className="text-[length:var(--text-h5)] font-[700] text-[color:var(--color-primary-deep)]">
             {formatPKR(booking.total)}
           </span>
         </div>
@@ -174,14 +174,14 @@ export function BookingSummaryCard({
             <CreditCard
               size={15}
               strokeWidth={1.5}
-              className="mt-0.5 shrink-0 text-[var(--color-action)]"
+              className="mt-0.5 shrink-0 text-[color:var(--color-action)]"
               aria-hidden="true"
             />
             <div className="space-y-0.5">
-              <p className="text-[var(--text-caption)] font-[700] text-[var(--color-primary-deep)]">
+              <p className="text-[length:var(--text-caption)] font-[700] text-[color:var(--color-primary-deep)]">
                 {hint.title}
               </p>
-              <p className="text-[var(--text-caption)] leading-relaxed text-[var(--color-text-muted)]">
+              <p className="text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
                 {hint.message}
               </p>
             </div>
