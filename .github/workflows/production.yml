@@ -81,11 +81,19 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Install project dependencies
+        run: npm ci
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Pull Vercel environment (production)
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Apply production database migrations
+        run: vercel env run --token="$VERCEL_TOKEN" -e production -- npm run db:migrate:deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}

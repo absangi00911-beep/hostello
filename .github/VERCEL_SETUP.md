@@ -63,12 +63,20 @@ PR merged to main
   gate-web + gate-mobile (full checks re-run)
        │ both pass
        ▼
+  vercel env run -e production -- npm run db:migrate:deploy
+       │
+       ▼
+  vercel build --prod
+       │
+       ▼
   vercel deploy --prod
        │
        ▼
   GitHub Deployment status: ✅ success
   https://hostello.pk
 ```
+
+Set `DATABASE_URL` in the Vercel Production environment (and a separate non-production database in Preview). The production workflow reads the production value with `vercel env run`; do not add the database URL to GitHub Actions secrets. Preview builds do not apply migrations, so prepare their schema separately before validating database-backed routes.
 
 ---
 

@@ -18,4 +18,17 @@ Sentry.init({
   beforeSendTransaction: (event) => scrubSentryEvent(event) as typeof event,
   beforeSendSpan: (span) => scrubSentrySpan(span) as typeof span,
   tracesSampleRate: 1.0,
+  debug: false,
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  // Sentry v10: replayIntegration must be registered explicitly when using
+  // replaysOnErrorSampleRate / replaysSessionSampleRate.
+  integrations: [
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
 });
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
