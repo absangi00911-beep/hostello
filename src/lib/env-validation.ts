@@ -8,7 +8,8 @@
  *
  * Run at: module import time (when the server starts)
  * Behavior:
- *   - Production: throws on missing critical variables
+ *   - Production deployments: throws on missing critical variables
+ *   - Preview deployments: warns when production-only variables are missing
  *   - Development: warns on missing optional variables
  */
 
@@ -196,14 +197,21 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
 /**
  * Validate environment variables at startup.
  * Throws an error if critical variables are missing in production.
- * Logs warnings for development if optional variables are missing.
+ * Logs warnings in Preview and development when variables are missing.
  *
  * @throws Error if a required production variable is missing
  */
 export function validateEnvironment(): void {
   if (process.env.HOSTELLO_E2E === "1") return;
 
-  const isProduction = process.env.NODE_ENV === "production";
+  // Vercel Preview runs with NODE_ENV=production, but it must not require
+  // production-only provider credentials to serve the rest of the app.
+  // Keep local production-mode checks strict when VERCEL_ENV is unavailable.
+  const vercelEnvironment = process.env.VERCEL_ENV;
+  const isPreview = vercelEnvironment === "preview";
+  const isProduction =
+    vercelEnvironment === "production" ||
+    (vercelEnvironment === undefined && process.env.NODE_ENV === "production");
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -212,6 +220,8 @@ export function validateEnvironment(): void {
 
     if (!isSet && rule.requiredInProduction && isProduction) {
       errors.push(`${rule.name}: ${rule.description}`);
+    } else if (!isSet && rule.requiredInProduction && isPreview) {
+      warnings.push(`${rule.name}: ${rule.description} (not configured in Preview)`);
     }
 
     if (!isSet && !rule.requiredInProduction && !isProduction) {
@@ -227,9 +237,9 @@ export function validateEnvironment(): void {
     throw new Error(message);
   }
 
-  if (warnings.length > 0 && process.env.NODE_ENV !== "production") {
+  if (warnings.length > 0 && !isProduction) {
     console.warn(
-      "⚠️  WARNING: Missing optional environment variables in development:\n" +
+      "⚠️  WARNING: Environment variables are missing for this deployment:\n" +
         warnings.map((w) => `  - ${w}`).join("\n")
     );
   }
