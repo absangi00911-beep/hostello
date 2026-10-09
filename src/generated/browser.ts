@@ -23,6 +23,11 @@ export * from './enums';
  */
 export type User = Prisma.UserModel
 /**
+ * Model AccountDeletionJob
+ * 
+ */
+export type AccountDeletionJob = Prisma.AccountDeletionJobModel
+/**
  * Model DeviceToken
  * 
  */
@@ -37,6 +42,11 @@ export type Subscription = Prisma.SubscriptionModel
  * 
  */
 export type Payout = Prisma.PayoutModel
+/**
+ * Model PayoutAuditEvent
+ * 
+ */
+export type PayoutAuditEvent = Prisma.PayoutAuditEventModel
 /**
  * Model Account
  * 
@@ -73,15 +83,25 @@ export type Room = Prisma.RoomModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model HostelVerificationReview
+ * 
+ */
+export type HostelVerificationReview = Prisma.HostelVerificationReviewModel
+/**
  * Model RefundAuditEvent
- *
+ * 
  */
 export type RefundAuditEvent = Prisma.RefundAuditEventModel
 /**
  * Model SafepayWebhookEvent
- *
+ * 
  */
 export type SafepayWebhookEvent = Prisma.SafepayWebhookEventModel
+/**
+ * Model SafepayWebhookReplayEvent
+ * 
+ */
+export type SafepayWebhookReplayEvent = Prisma.SafepayWebhookReplayEventModel
 /**
  * Model Review
  * 

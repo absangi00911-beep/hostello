@@ -56,7 +56,11 @@ function makeBooking(overrides = {}) {
     total: 45000,
     status: "CANCELLED",
     paymentStatus: "PAID",
+    paymentMethod: "safepay",
     transactionId: "sfpy_txn_12345",
+    cancellationRefundAmount: 45000,
+    refundedAmount: 0,
+    refundState: "NONE",
     refundedAt: null,
     refundedBy: null,
     user: { name: "Ayesha Khan", email: "ayesha@test.com" },
@@ -110,7 +114,7 @@ describe("processRefund — precondition checks", () => {
 describe("processRefund — automatic path", () => {
   it("calls refundPayment with the transactionId and full total, marks REFUNDED, returns automatic: true", async () => {
     vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(refundPayment).mockResolvedValue({ success: true, raw: {} });
+    vi.mocked(refundPayment).mockResolvedValue({ success: true, state: "TRACKER_REFUNDED", raw: {} });
     vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(
       makeBooking({ paymentStatus: "REFUNDED", refundedBy: ADMIN_ID }) as any,
@@ -119,14 +123,15 @@ describe("processRefund — automatic path", () => {
     const result = await processRefund(BOOKING_ID, ADMIN_ID);
 
     expect(refundPayment).toHaveBeenCalledWith({ transactionId: "sfpy_txn_12345", amount: 45000 });
-    expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+    expect(db.booking.updateMany).toHaveBeenNthCalledWith(2, expect.objectContaining({
       where: expect.objectContaining({
         id: BOOKING_ID,
-        paymentStatus: "PAID",
+        paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
         refundState: "PROCESSING",
       }),
       data: expect.objectContaining({
+        refundedAmount: { increment: 45000 },
         paymentStatus: "REFUNDED",
         refundState: "REFUNDED",
         refundedBy: ADMIN_ID,
@@ -139,7 +144,7 @@ describe("processRefund — automatic path", () => {
 
   it("notifies the student in-app and by email once the refund lands", async () => {
     vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(refundPayment).mockResolvedValue({ success: true, raw: {} });
+    vi.mocked(refundPayment).mockResolvedValue({ success: true, state: "TRACKER_REFUNDED", raw: {} });
     vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(makeBooking({ paymentStatus: "REFUNDED" }) as any);
 
@@ -156,9 +161,35 @@ describe("processRefund — automatic path", () => {
     expect(sendEmail).toHaveBeenCalled();
   });
 
+  it("records an approved partial refund without marking the whole booking refunded", async () => {
+    vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking({ cancellationRefundAmount: 22_500 }) as any);
+    vi.mocked(refundPayment).mockResolvedValue({ success: true, state: "TRACKER_PARTIAL_REFUND", raw: {} });
+    vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
+    vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(
+      makeBooking({
+        cancellationRefundAmount: 22_500,
+        refundedAmount: 22_500,
+        paymentStatus: "PARTIALLY_REFUNDED",
+        refundState: "PARTIALLY_REFUNDED",
+      }) as any,
+    );
+
+    const result = await processRefund(BOOKING_ID, ADMIN_ID);
+
+    expect(refundPayment).toHaveBeenCalledWith({ transactionId: "sfpy_txn_12345", amount: 22_500 });
+    expect(db.booking.updateMany).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      data: expect.objectContaining({
+        refundedAmount: { increment: 22_500 },
+        paymentStatus: "PARTIALLY_REFUNDED",
+        refundState: "PARTIALLY_REFUNDED",
+      }),
+    }));
+    expect(result.booking.paymentStatus).toBe("PARTIALLY_REFUNDED");
+  });
+
   it("still returns successfully even if the notification dispatch fails", async () => {
     vi.mocked(db.booking.findUnique).mockResolvedValue(makeBooking() as any);
-    vi.mocked(refundPayment).mockResolvedValue({ success: true, raw: {} });
+    vi.mocked(refundPayment).mockResolvedValue({ success: true, state: "TRACKER_REFUNDED", raw: {} });
     vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
     vi.mocked(db.booking.findUniqueOrThrow).mockResolvedValue(makeBooking({ paymentStatus: "REFUNDED" }) as any);
     vi.mocked(createNotification).mockRejectedValueOnce(new Error("notification service down"));
@@ -218,7 +249,7 @@ describe("confirmManualRefund", () => {
     expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({
         id: BOOKING_ID,
-        paymentStatus: "PAID",
+        paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
         refundState: { in: ["NONE", "UNCERTAIN"] },
       }),

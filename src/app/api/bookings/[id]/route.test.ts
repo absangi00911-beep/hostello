@@ -28,9 +28,16 @@ const tx = {
 const booking = {
   id: "booking_1",
   status: "PENDING",
+  createdAt: new Date(Date.now() - 60 * 60 * 1000),
+  ownerResponseDueAt: new Date(Date.now() + 60 * 60 * 1000),
+  checkIn: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
   checkOut: new Date(Date.now() + 24 * 60 * 60 * 1000),
+  total: 45_000,
+  paymentStatus: "PENDING",
+  cancellationPolicy: "STANDARD",
   payoutId: null,
   roomId: "room_1",
+  guests: 3,
   hostelId: "hostel_1",
   userId: "student_1",
   hostel: { ownerId: "owner_1", name: "Hostel One", slug: "hostel-one" },
@@ -116,13 +123,19 @@ describe("PATCH /api/bookings/[id]", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: booking.id, status: "PENDING", payoutId: null, userId: "student_1" },
-      data: { status: "CANCELLED" },
-    });
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: booking.id,
+        status: "PENDING",
+        payoutId: null,
+        paymentStatus: "PENDING",
+        userId: "student_1",
+      }),
+      data: { status: "CANCELLED", cancellationRefundAmount: 0 },
+    }));
     expect(tx.room.update).toHaveBeenCalledWith({
       where: { id: "room_1" },
-      data: { available: { increment: 1 }, version: { increment: 1 } },
+      data: { available: { increment: 3 }, version: { increment: 1 } },
     });
     expect(body.data.status).toBe("CANCELLED");
   });
@@ -152,7 +165,7 @@ describe("PATCH /api/bookings/[id]", () => {
     expect(tx.room.update).not.toHaveBeenCalled();
   });
 
-  it("rejects a student cancellation after the owner confirms", async () => {
+  it("allows a student to cancel a confirmed booking under its saved cancellation terms", async () => {
     vi.mocked(auth).mockResolvedValue(session("student_1", "STUDENT"));
     vi.mocked(db.booking.findFirst).mockResolvedValue({
       ...booking,
@@ -162,10 +175,10 @@ describe("PATCH /api/bookings/[id]", () => {
     const response = await patch("cancel");
     const body = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(body.error).toContain("before the owner confirms");
-    expect(tx.booking.updateMany).not.toHaveBeenCalled();
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(body.data).toMatchObject({ status: "CANCELLED", cancellationRefundAmount: 0 });
+    expect(tx.booking.updateMany).toHaveBeenCalledOnce();
+    expect(tx.room.update).toHaveBeenCalledOnce();
   });
 
   it("does not cancel a booking if a payout batch claims it after the initial read", async () => {
@@ -179,29 +192,31 @@ describe("PATCH /api/bookings/[id]", () => {
 
     expect(response.status).toBe(409);
     expect(body.error).toContain("payout batch");
-    expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: booking.id, status: "PENDING", payoutId: null },
-      data: { status: "CANCELLED" },
-    });
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: booking.id, status: "PENDING", payoutId: null, paymentStatus: "PENDING" }),
+      data: { status: "CANCELLED", cancellationRefundAmount: 0 },
+    }));
     expect(tx.room.update).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
   });
 
   it("confirms a pending booking with a compare-and-set and no inventory change", async () => {
     vi.mocked(auth).mockResolvedValue(session("owner_1", "OWNER"));
+    vi.mocked(db.booking.findFirst).mockResolvedValue({ ...booking, paymentStatus: "PAID" } as any);
 
     const response = await patch("confirm");
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: {
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
         id: booking.id,
         status: "PENDING",
+        paymentStatus: "PAID",
         hostel: { is: { ownerId: "owner_1" } },
-      },
+      }),
       data: { status: "CONFIRMED" },
-    });
+    }));
     expect(tx.room.update).not.toHaveBeenCalled();
     expect(body.data.status).toBe("CONFIRMED");
   });
@@ -222,28 +237,30 @@ describe("PATCH /api/bookings/[id]", () => {
     const response = await patch("decline");
 
     expect(response.status).toBe(409);
-    expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: {
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
         id: booking.id,
         status: "PENDING",
+        paymentStatus: "PENDING",
         hostel: { is: { ownerId: "owner_1" } },
-      },
+      }),
       data: { status: "CANCELLED" },
-    });
+    }));
     expect(tx.room.update).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
   });
 
   it("keeps the admin transition available without an owner relation constraint", async () => {
     vi.mocked(auth).mockResolvedValue(session("admin_1", "ADMIN"));
+    vi.mocked(db.booking.findFirst).mockResolvedValue({ ...booking, paymentStatus: "PAID" } as any);
 
     const response = await patch("confirm");
 
     expect(response.status).toBe(200);
-    expect(tx.booking.updateMany).toHaveBeenCalledWith({
-      where: { id: booking.id, status: "PENDING" },
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: booking.id, status: "PENDING", paymentStatus: "PAID" }),
       data: { status: "CONFIRMED" },
-    });
+    }));
   });
 
   it("writes a correlated admin audit event with keyed IDs and no contact or hostel data", async () => {

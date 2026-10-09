@@ -8,6 +8,8 @@ import { sendEmail } from "@/lib/email";
 import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
 import { createNotification } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
+import { processRefund } from "@/lib/refunds";
+import { CANCELLATION_POLICY_DETAILS, getCancellationRefundAmount } from "@/lib/cancellation-policy";
 import {
   createOperationalLogContext,
   hashOperationalIdentifier,
@@ -158,14 +160,17 @@ export async function PATCH(
       if (["CANCELLED", "COMPLETED"].includes(booking.status)) {
         return NextResponse.json({ error: "Booking cannot be cancelled." }, { status: 400 });
       }
-      if (isStudent && booking.status !== "PENDING") {
-        return NextResponse.json(
-          { error: "You can cancel before the owner confirms. Contact the hostel about its cancellation terms." },
-          { status: 400 },
-        );
+      if (isStudent && !["PENDING", "CONFIRMED"].includes(booking.status)) {
+        return NextResponse.json({ error: "This booking cannot be cancelled online." }, { status: 400 });
       }
       if (isStudent && booking.checkOut <= new Date()) {
         return NextResponse.json({ error: "A stay cannot be cancelled after check-out." }, { status: 400 });
+      }
+      if (isStudent && booking.status === "CONFIRMED" && !booking.cancellationPolicy) {
+        return NextResponse.json(
+          { error: "This booking has no saved cancellation terms. Contact support for help." },
+          { status: 409 },
+        );
       }
       if (booking.payoutId) {
         return NextResponse.json(
@@ -174,32 +179,43 @@ export async function PATCH(
         );
       }
 
-      // Use a transaction to atomically cancel the booking and restore room availability
+      const cancelledAt = new Date();
+      const refundAmount = booking.paymentStatus !== "PAID"
+        ? 0
+        : isStudent && booking.status === "CONFIRMED" && booking.cancellationPolicy
+          ? getCancellationRefundAmount(booking.cancellationPolicy, booking.total, booking.checkIn, cancelledAt)
+          : booking.total;
+
+      // Use a transaction to atomically cancel the booking and restore room availability.
       const updated = await db.$transaction(async (tx) => {
         const cancelled = await tx.booking.updateMany({
           where: {
             id,
             status: booking.status,
             payoutId: null,
+            paymentStatus: booking.paymentStatus,
             ...(isStudent ? { userId: session.user.id } : {}),
           },
-          data: { status: "CANCELLED" },
+          data: {
+            status: "CANCELLED",
+            cancellationRefundAmount: refundAmount,
+          },
         });
 
         if (cancelled.count !== 1) return null;
 
         // Restore room availability if a specific room was booked
-        if (booking.roomId) {
+        if (booking.roomId && booking.checkIn > cancelledAt) {
           await tx.room.update({
             where: { id: booking.roomId },
             data: {
-              available: { increment: 1 },
+              available: { increment: booking.guests },
               version: { increment: 1 },
             },
           });
         }
 
-        return { id, status: "CANCELLED" as const, roomId: booking.roomId };
+        return { id, status: "CANCELLED" as const, roomId: booking.roomId, cancellationRefundAmount: refundAmount };
       });
 
       if (!updated) {
@@ -229,7 +245,37 @@ export async function PATCH(
         hostelId: booking.hostelId,
       });
 
-      return NextResponse.json({ data: updated, message: "Booking cancelled." });
+      if (booking.paymentStatus === "PAID" && refundAmount > 0) {
+        try {
+          const refund = await processRefund(id, isStudent && booking.status === "CONFIRMED"
+            ? "system:student-cancelled-confirmed-booking"
+            : "system:student-cancelled-pending-booking");
+          return NextResponse.json({
+            data: { ...updated, paymentStatus: refund.booking.paymentStatus, refundState: refund.booking.refundState },
+            message: refund.automatic
+              ? `Booking cancelled and PKR ${refundAmount.toLocaleString("en-PK")} refund processed. Banks may take 3–10 business days to post it.`
+              : "Booking cancelled. The refund is being reconciled; check the booking page for updates.",
+          });
+        } catch (err) {
+          const summary = getSafeErrorSummary(err);
+          logOperationalEvent("error", "payment.reconciliation_required", {
+            entity_type: "booking",
+            entity_id: hashOperationalIdentifier(`booking:${id}`),
+            reason: "student_cancel_refund_failed",
+            error_name: summary.name,
+            ...(summary.code ? { error_code: summary.code } : {}),
+          }, createOperationalLogContext(req));
+          return NextResponse.json({
+            data: { ...updated, paymentStatus: "PAID", refundState: "UNCERTAIN" },
+            message: "Booking cancelled. The refund needs manual review; contact support if the booking page does not update.",
+          });
+        }
+      }
+
+      const noRefundMessage = isStudent && booking.status === "CONFIRMED" && booking.cancellationPolicy
+        ? `Booking cancelled. The ${CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy].label} policy provides no refund at this time.`
+        : "Booking cancelled.";
+      return NextResponse.json({ data: updated, message: noRefundMessage });
     }
 
     // -- Confirm / Decline (hostel owner or admin only) -------------------------
@@ -246,6 +292,23 @@ export async function PATCH(
       );
     }
 
+    if (action === "confirm" && booking.paymentStatus !== "PAID") {
+      return NextResponse.json(
+        { error: "This booking cannot be confirmed until its payment is received." },
+        { status: 409 },
+      );
+    }
+
+    const actionAt = new Date();
+    const effectiveResponseDueAt = booking.ownerResponseDueAt ??
+      new Date(booking.createdAt.getTime() + 24 * 60 * 60 * 1000);
+    if (effectiveResponseDueAt <= actionAt) {
+      return NextResponse.json(
+        { error: "The 24-hour response window has ended. This booking is being cancelled and refunded." },
+        { status: 409 },
+      );
+    }
+
     const newStatus = action === "confirm" ? "CONFIRMED" : "CANCELLED";
 
     // Use a transaction so decline also restores room availability atomically
@@ -254,9 +317,21 @@ export async function PATCH(
         where: {
           id,
           status: "PENDING",
+          paymentStatus: booking.paymentStatus,
+          ...(booking.ownerResponseDueAt
+            ? { ownerResponseDueAt: { gt: actionAt } }
+            : {
+                ownerResponseDueAt: null,
+                createdAt: { gt: new Date(actionAt.getTime() - 24 * 60 * 60 * 1000) },
+              }),
           ...(isHostelOwner ? { hostel: { is: { ownerId: session.user.id } } } : {}),
         },
-        data: { status: newStatus },
+          data: {
+            status: newStatus,
+            ...(newStatus === "CANCELLED" && booking.paymentStatus === "PAID"
+              ? { cancellationRefundAmount: booking.total }
+              : {}),
+          },
       });
 
       if (result.count !== 1) return null;
@@ -266,7 +341,7 @@ export async function PATCH(
         await tx.room.update({
           where: { id: booking.roomId },
           data: {
-            available: { increment: 1 },
+            available: { increment: booking.guests },
             version: { increment: 1 },
           },
         });
@@ -282,26 +357,55 @@ export async function PATCH(
       );
     }
 
-    // Notify student by email — fire and forget
-    sendEmail(
-      bookingStatusEmail({
-        studentName:  booking.user.name,
-        studentEmail: booking.user.email,
-        hostelName:   booking.hostel.name,
-        hostelSlug:   booking.hostel.slug,
-        bookingId:    booking.id,
-        status:       newStatus,
-      })
-    ).catch(() => {
-      // Silently ignore email failures
-    });
+    let refundAutomatic: boolean | null = null;
+    let refundNeedsReview = false;
+    if (newStatus === "CANCELLED" && booking.paymentStatus === "PAID") {
+      try {
+        const refund = await processRefund(id, "system:owner-declined-booking");
+        refundAutomatic = refund.automatic;
+        refundNeedsReview = !refund.automatic;
+      } catch (err) {
+        refundNeedsReview = true;
+        const summary = getSafeErrorSummary(err);
+        logOperationalEvent("error", "payment.reconciliation_required", {
+          entity_type: "booking",
+          entity_id: hashOperationalIdentifier(`booking:${id}`),
+          reason: "owner_decline_refund_failed",
+          error_name: summary.name,
+          ...(summary.code ? { error_code: summary.code } : {}),
+        }, createOperationalLogContext(req));
+      }
+    }
+
+    // A successful refund service sends the processed email itself. If the
+    // provider outcome is uncertain, send a cancellation update without
+    // claiming that the refund has completed.
+    if (newStatus === "CONFIRMED" || !refundAutomatic) {
+      void sendEmail(
+        bookingStatusEmail({
+          studentName:  booking.user.name,
+          studentEmail: booking.user.email,
+          hostelName:   booking.hostel.name,
+          hostelSlug:   booking.hostel.slug,
+          bookingId:    booking.id,
+          status:       newStatus,
+          refundPending: refundNeedsReview,
+        })
+      ).catch(() => {
+        // A failed status email does not roll back the booking transition.
+      });
+    }
 
     // Notify student in-app
     const notificationType = newStatus === "CONFIRMED" ? "BOOKING_CONFIRMED" : "BOOKING_CANCELLED";
     const notificationTitle = newStatus === "CONFIRMED" ? "Booking Confirmed ✅" : "Booking Declined ❌";
     const notificationMessage = newStatus === "CONFIRMED"
       ? `Your booking for ${booking.hostel.name} has been confirmed!`
-      : `Your booking for ${booking.hostel.name} has been declined.`;
+      : refundNeedsReview
+        ? `Your booking for ${booking.hostel.name} was declined. The refund is being reconciled.`
+        : booking.paymentStatus === "PAID"
+          ? `Your booking for ${booking.hostel.name} was declined and your full refund was processed.`
+          : `Your booking for ${booking.hostel.name} has been declined.`;
 
     void createNotification({
       userId: booking.userId,
@@ -313,8 +417,19 @@ export async function PATCH(
     });
 
     return NextResponse.json({
-      data: updated,
-      message: action === "confirm" ? "Booking confirmed." : "Booking declined.",
+      data: {
+        ...updated,
+        ...(newStatus === "CANCELLED" && booking.paymentStatus === "PAID"
+          ? { paymentStatus: refundAutomatic ? "REFUNDED" : "PAID", refundState: refundAutomatic ? "REFUNDED" : "UNCERTAIN" }
+          : {}),
+      },
+      message: action === "confirm"
+        ? "Booking confirmed."
+        : refundAutomatic
+          ? "Booking declined and full refund processed."
+          : refundNeedsReview
+            ? "Booking declined. Refund needs reconciliation."
+            : "Booking declined.",
     });
   } catch (err) {
     console.error("[PATCH /api/bookings/[id]]", getSafeErrorSummary(err));

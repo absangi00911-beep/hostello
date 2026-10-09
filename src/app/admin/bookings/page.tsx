@@ -26,7 +26,7 @@ const STATUS_OPTIONS = [
 const PAGE_SIZE = 20;
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
-type PaymentStatus = "PENDING" | "PAID" | "REFUNDED" | "FAILED";
+type PaymentStatus = "PENDING" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED" | "FAILED";
 type BookingStatusBadgeVariant = "pending" | "confirmed" | "completed" | "cancelled";
 type PaymentStatusBadgeVariant = "pending" | "paid" | "refunded" | "failed";
 type AdminBookingAction = "confirm" | "cancel";
@@ -39,6 +39,8 @@ interface BookingRow {
   checkOut: string;
   months: number;
   total: number;
+  cancellationRefundAmount: number | null;
+  refundedAmount: number;
   user?: {
     name?: string | null;
     email?: string | null;
@@ -60,6 +62,7 @@ const PAYMENT_STATUS_BADGES: Record<PaymentStatus, PaymentStatusBadgeVariant> = 
   PENDING: "pending",
   PAID: "paid",
   REFUNDED: "refunded",
+  PARTIALLY_REFUNDED: "refunded",
   FAILED: "failed",
 };
 
@@ -79,7 +82,8 @@ function AdminBookingActions({
   loading: boolean;
   refunding: boolean;
 }) {
-  if (booking.status === "CANCELLED" && booking.paymentStatus === "PAID") {
+  const refundDue = Math.max(0, (booking.cancellationRefundAmount ?? booking.total) - booking.refundedAmount);
+  if (booking.status === "CANCELLED" && ["PAID", "PARTIALLY_REFUNDED"].includes(booking.paymentStatus) && refundDue > 0) {
     return (
       <div className="flex flex-col items-start gap-1.5">
         <button
@@ -100,6 +104,14 @@ function AdminBookingActions({
           Record completed manual refund
         </button>
       </div>
+    );
+  }
+
+  if (booking.status === "CANCELLED" && booking.paymentStatus !== "PENDING") {
+    return (
+      <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+        {booking.cancellationRefundAmount === 0 ? "No refund due" : `${formatPKR(booking.refundedAmount)} refunded`}
+      </span>
     );
   }
 

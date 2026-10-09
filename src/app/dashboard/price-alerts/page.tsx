@@ -1,30 +1,14 @@
-// Path: src/app/dashboard/price-alerts/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { TrendingDown, Trash2, Plus, Search, Loader2 } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  EmptyState,
-  PageSpinner,
-  InlineError,
-  formatPKR,
-} from "@/components/ui/shared";
-import { Button } from "@/components/ui/button";
+import { Loader2, Pause, Trash2, TrendingDown } from "lucide-react";
+import { EmptyState, InlineError, PageSpinner, formatPKR } from "@/components/ui/shared";
 
-/* -- Types ------------------------------------------------- */
 interface PriceAlert {
   id: string;
   targetPrice: number;
-  lastKnownPrice?: number | null;
   active: boolean;
   hostel: {
     id: string;
@@ -35,344 +19,169 @@ interface PriceAlert {
   };
 }
 
-/* -- Alert row --------------------------------------------- */
 function AlertRow({
   alert,
-  onToggle,
+  onPause,
   onDelete,
-  toggling,
+  pausing,
   deleting,
 }: {
   alert: PriceAlert;
-  onToggle: (id: string, active: boolean) => void;
+  onPause: (id: string) => void;
   onDelete: (id: string) => void;
-  toggling: boolean;
+  pausing: boolean;
   deleting: boolean;
 }) {
-  const currentPrice = alert.hostel.pricePerMonth;
-  const priceDrop    = currentPrice < alert.targetPrice;
-
   return (
-    <div className="flex items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-4 py-3.5">
-      {/* Alert icon */}
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] ${priceDrop ? "bg-[var(--color-success-bg)]" : "bg-[var(--color-bg-sidebar)]"}`}>
-        <TrendingDown
-          size={18}
-          strokeWidth={1.5}
-          className={priceDrop ? "text-[color:var(--color-success)]" : "text-[color:var(--color-text-muted)]"}
-          aria-hidden="true"
-        />
+    <div className="flex flex-wrap items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-4 py-3.5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)]">
+        <TrendingDown size={18} strokeWidth={1.5} className="text-[color:var(--color-text-muted)]" aria-hidden="true" />
       </div>
-
-      {/* Details */}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
           {alert.hostel.name}
         </p>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+        <div className="mt-0.5 flex flex-wrap gap-x-3 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
           <span>Target: <strong className="font-[500] text-[color:var(--color-text-body)]">{formatPKR(alert.targetPrice)}</strong></span>
-          <span>Current: <strong className={`font-[500] ${priceDrop ? "text-[color:var(--color-success)]" : "text-[color:var(--color-text-body)]"}`}>{formatPKR(currentPrice)}</strong></span>
+          <span>Current: <strong className="font-[500] text-[color:var(--color-text-body)]">{formatPKR(alert.hostel.pricePerMonth)}</strong></span>
         </div>
-        {priceDrop && (
-          <p className="text-[length:var(--text-caption)] text-[color:var(--color-success)] mt-0.5 font-[500]">
-            Price is below your target!
-          </p>
-        )}
+        {!alert.active && <p className="mt-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">Paused</p>}
       </div>
-
-      {/* Toggle */}
-      <button
-        onClick={() => onToggle(alert.id, !alert.active)}
-        disabled={toggling}
-        role="switch"
-        aria-checked={alert.active}
-        aria-label={`${alert.active ? "Disable" : "Enable"} alert for ${alert.hostel.name}`}
-        className={`relative flex h-6 w-10 shrink-0 items-center rounded-[var(--radius-full)] border-0 transition-colors duration-[150ms] ease-out focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2 disabled:opacity-50 ${alert.active ? "bg-[var(--color-action)]" : "bg-[var(--color-border-strong)]"}`}
-      >
-        <span
-          className={`absolute h-4 w-4 rounded-[var(--radius-full)] bg-white shadow-[var(--shadow-sm)] transition-transform duration-[150ms] ease-out ${alert.active ? "translate-x-5" : "translate-x-1"}`}
-        />
-      </button>
-
-      {/* Delete */}
-      <button
-        onClick={() => onDelete(alert.id)}
-        disabled={deleting}
-        aria-label={`Delete alert for ${alert.hostel.name}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)] transition-colors duration-[var(--transition-fast)] disabled:opacity-50"
-      >
-        {deleting ? (
-          <Loader2 size={15} strokeWidth={1.5} className="animate-spin" aria-hidden="true" />
-        ) : (
-          <Trash2 size={15} strokeWidth={1.5} aria-hidden="true" />
+      <div className="flex shrink-0 items-center gap-2">
+        {alert.active && (
+          <button
+            type="button"
+            onClick={() => onPause(alert.id)}
+            disabled={pausing}
+            className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] px-2.5 text-[length:var(--text-caption)] text-[color:var(--color-text-body)] hover:bg-[var(--color-bg-sidebar)] disabled:opacity-50"
+          >
+            {pausing ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
+            Pause
+          </button>
         )}
-      </button>
+        <button
+          type="button"
+          onClick={() => onDelete(alert.id)}
+          disabled={deleting}
+          aria-label={`Delete alert for ${alert.hostel.name}`}
+          className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-text-muted)] transition-colors hover:bg-[var(--color-error-bg)] hover:text-[color:var(--color-error)] disabled:opacity-50"
+        >
+          {deleting ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <Trash2 size={15} aria-hidden="true" />}
+        </button>
+      </div>
     </div>
   );
 }
 
-/* -- Add alert sheet --------------------------------------- */
-function AddAlertSheet({ onAdded }: { onAdded: () => void }) {
-  const [open,        setOpen]        = useState(false);
-  const [searchQ,     setSearchQ]     = useState("");
-  const [selectedId,  setSelectedId]  = useState("");
-  const [targetPrice, setTargetPrice] = useState("");
-  const [searching,   setSearching]   = useState(false);
-  const [results,     setResults]     = useState<any[]>([]);
-  const [submitting,  setSubmitting]  = useState(false);
-
-  async function handleSearch(q: string) {
-    setSearchQ(q);
-    if (!q.trim()) { setResults([]); return; }
-    setSearching(true);
-    try {
-      const res  = await fetch(`/api/hostels?q=${encodeURIComponent(q)}&limit=6`);
-      const json = await res.json();
-      setResults(json.data ?? []);
-    } catch { /* silent */ }
-    finally { setSearching(false); }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedId || !targetPrice) return;
-    setSubmitting(true);
-    try {
-      const res  = await fetch("/api/price-alerts", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ hostelId: selectedId, targetPrice: parseInt(targetPrice) }),
-      });
-      const json = await res.json();
-      if (!res.ok) { toast.error(json.error ?? "Failed to create alert."); return; }
-      toast.success("Price alert created.");
-      setOpen(false);
-      setSearchQ(""); setSelectedId(""); setTargetPrice(""); setResults([]);
-      onAdded();
-    } catch { toast.error("Something went wrong."); }
-    finally { setSubmitting(false); }
-  }
-
-  const selectedHostel = results.find((h) => h.id === selectedId);
-
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button>
-          <Plus size={15} strokeWidth={1.5} aria-hidden="true" />
-          Add alert
-        </Button>
-      </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-[440px] bg-[var(--color-bg-card)] border-l border-[var(--color-border-default)] p-6"
-      >
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] text-left">
-            Add price alert
-          </SheetTitle>
-        </SheetHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Hostel search */}
-          <div className="space-y-2">
-            <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
-              Search hostel
-            </label>
-            <div className="relative">
-              <Search size={15} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--color-text-muted)] pointer-events-none" aria-hidden="true" />
-              <input
-                type="search"
-                value={searchQ}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Type a hostel name…"
-                className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] pl-9 pr-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] placeholder:text-[color:var(--color-text-placeholder)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
-              />
-              {searching && <Loader2 size={14} strokeWidth={1.5} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[color:var(--color-text-muted)]" aria-hidden="true" />}
-            </div>
-
-            {/* Results */}
-            {results.length > 0 && !selectedId && (
-              <div className="rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] shadow-[var(--shadow-md)] max-h-48 overflow-y-auto">
-                {results.map((h) => (
-                  <button
-                    key={h.id}
-                    type="button"
-                    onClick={() => { setSelectedId(h.id); setSearchQ(h.name); setResults([]); setTargetPrice(String(Math.round(h.pricePerMonth * 0.9))); }}
-                    className="flex w-full items-center justify-between px-4 py-2.5 hover:bg-[var(--color-bg-overlay)] transition-colors text-left"
-                  >
-                    <div>
-                      <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-heading)]">{h.name}</p>
-                      <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{h.city}</p>
-                    </div>
-                    <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)] shrink-0 ml-3">
-                      {formatPKR(h.pricePerMonth)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {selectedHostel && (
-              <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] px-3 py-2">
-                <div>
-                  <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-primary-deep)]">{selectedHostel.name}</p>
-                  <p className="text-[length:var(--text-caption)] text-[color:var(--color-primary)]">Current: {formatPKR(selectedHostel.pricePerMonth)}</p>
-                </div>
-                <button type="button" onClick={() => { setSelectedId(""); setSearchQ(""); setTargetPrice(""); }} className="text-[length:var(--text-caption)] text-[color:var(--color-primary)] hover:underline">Change</button>
-              </div>
-            )}
-          </div>
-
-          {/* Target price */}
-          <div className="space-y-1.5">
-            <label htmlFor="target-price" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
-              Alert me when price drops below (PKR)
-            </label>
-            <input
-              id="target-price"
-              type="number"
-              value={targetPrice}
-              onChange={(e) => setTargetPrice(e.target.value)}
-              placeholder="e.g. 8000"
-              min={1000}
-              required
-              className="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-[3px] focus:ring-[var(--color-primary)]/15 transition-all duration-[var(--transition-base)]"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            loading={submitting}
-            disabled={!selectedId || !targetPrice}
-            className="w-full"
-          >
-            {submitting ? "Creating…" : "Create alert"}
-          </Button>
-        </form>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-/* -- Page --------------------------------------------------- */
 export default function PriceAlertsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [deletingId,  setDeletingId]  = useState<string | null>(null);
+  const [pausingId, setPausingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery<{
     data: PriceAlert[];
     total: number;
-    page: number;
     limit: number;
     hasMore: boolean;
   }>({
     queryKey: ["price-alerts", page],
     queryFn: async () => {
-      const res = await fetch(`/api/price-alerts?page=${page}&limit=20`);
-      if (!res.ok) throw new Error("Failed to load alerts");
-      return res.json();
+      const response = await fetch(`/api/price-alerts?page=${page}&limit=20`);
+      if (!response.ok) throw new Error("Failed to load alerts");
+      return response.json();
     },
   });
   const alerts = data?.data ?? [];
 
-  const toggleMutation = useMutation({
-    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      setTogglingId(id);
-      const res = await fetch(`/api/price-alerts/${id}`, {
+  const pauseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      setPausingId(id);
+      const response = await fetch(`/api/price-alerts/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active }),
+        body: JSON.stringify({ active: false }),
       });
-      if (!res.ok) throw new Error("Toggle failed");
+      if (!response.ok) throw new Error("Pause failed");
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["price-alerts"] }),
-    onError:   () => toast.error("Couldn't update alert."),
-    onSettled: () => setTogglingId(null),
+    onSuccess: () => {
+      toast.success("Alert paused.");
+      queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
+    },
+    onError: () => toast.error("Couldn't pause alert."),
+    onSettled: () => setPausingId(null),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       setDeletingId(id);
-      const res = await fetch(`/api/price-alerts/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
+      const response = await fetch(`/api/price-alerts/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
       toast.success("Alert deleted.");
       if (alerts.length === 1 && page > 1) setPage((current) => Math.max(1, current - 1));
       queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
     },
-    onError:   () => toast.error("Couldn't delete alert."),
+    onError: () => toast.error("Couldn't delete alert."),
     onSettled: () => setDeletingId(null),
   });
 
-  if (isLoading) return <PageSpinner label="Loading price alerts…" />;
-  if (isError)   return <InlineError message="Couldn't load your alerts. Please refresh." />;
+  if (isLoading) return <PageSpinner label="Loading saved alerts…" />;
+  if (isError) return <InlineError message="Couldn't load your saved alerts. Please refresh." />;
 
   return (
-    <div className="space-y-4">
-      {/* Header row */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
-            {data?.total ?? 0} alert{data?.total !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <AddAlertSheet onAdded={() => {
-          setPage(1);
-          queryClient.invalidateQueries({ queryKey: ["price-alerts"] });
-        }} />
-      </div>
+    <div className="student-account-page student-price-alerts space-y-4">
+      <header className="student-page-heading">
+        <div className="student-page-overline"><span>PERSONAL WATCH</span><span>02 / 05</span></div>
+        <h2>Saved price alerts</h2>
+        <p>You can pause or remove existing alerts here. New alerts are no longer available.</p>
+      </header>
 
-      {/* List */}
       {data?.total === 0 ? (
         <EmptyState
           icon={TrendingDown}
-          heading="No price alerts"
-          description="Get notified by email when a hostel drops below your target price."
+          heading="No saved alerts"
+          description="Your hostel search and saved listings are still available from the dashboard."
         />
-      ) : alerts.length === 0 ? (
-        <InlineError message="No alerts on this page. Return to the previous page to continue." />
       ) : (
-        <div className="space-y-3" role="list" aria-label="Price alerts">
-          {alerts.map((alert) => (
-            <div key={alert.id} role="listitem">
-              <AlertRow
-                alert={alert}
-                onToggle={(id, active) => toggleMutation.mutate({ id, active })}
-                onDelete={(id) => deleteMutation.mutate(id)}
-                toggling={togglingId === alert.id}
-                deleting={deletingId === alert.id}
-              />
+        <>
+          <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            {data?.total ?? 0} saved alert{data?.total !== 1 ? "s" : ""}
+          </p>
+          <div className="space-y-3" role="list" aria-label="Saved price alerts">
+            {alerts.map((alert) => (
+              <div key={alert.id} role="listitem">
+                <AlertRow
+                  alert={alert}
+                  onPause={(id) => pauseMutation.mutate(id)}
+                  onDelete={(id) => deleteMutation.mutate(id)}
+                  pausing={pausingId === alert.id}
+                  deleting={deletingId === alert.id}
+                />
+              </div>
+            ))}
+          </div>
+          {(page > 1 || data?.hasMore) && (
+            <div className="flex items-center justify-between pt-2">
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page === 1}
+                className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
+              >Previous</button>
+              <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+                Page {page} of {Math.max(1, Math.ceil((data?.total ?? 0) / (data?.limit ?? 20)))}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((current) => current + 1)}
+                disabled={!data?.hasMore}
+                className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
+              >Next</button>
             </div>
-          ))}
-        </div>
-      )}
-
-      {(page > 1 || data?.hasMore) && (
-        <div className="flex items-center justify-between pt-2">
-          <button
-            type="button"
-            onClick={() => setPage((current) => Math.max(1, current - 1))}
-            disabled={page === 1}
-            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
-            Page {page} of {Math.max(1, Math.ceil((data?.total ?? 0) / (data?.limit ?? 20)))}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPage((current) => current + 1)}
-            disabled={!data?.hasMore}
-            className="rounded-md border border-[var(--color-border-default)] px-3 py-1.5 text-sm disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

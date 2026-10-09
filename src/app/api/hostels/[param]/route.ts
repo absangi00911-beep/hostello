@@ -123,15 +123,12 @@ export async function PATCH(
     const requestedStatus = bodyData.status;
 
     const hostel = await db.hostel.findFirst({
-      where: hostelIdOrSlugWhere(param),
-      select: { id: true, ownerId: true, status: true, slug: true },
+      where: { ...hostelIdOrSlugWhere(param), ownerId: session.user.id },
+      select: { id: true, status: true, slug: true },
     });
 
     if (!hostel) {
       return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
-    }
-    if (hostel.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (isListingEdit) {
@@ -162,6 +159,7 @@ export async function PATCH(
           rooms: listing.rooms,
           capacity: listing.capacity,
           gender: listing.gender,
+          cancellationPolicy: listing.cancellationPolicy,
           minStay: listing.minStay,
           maxStay: listing.maxStay ?? null,
           amenities: listing.amenities,

@@ -1,6 +1,6 @@
 # System Design Document - HostelLo
 
-**Version:** 3.114 | **Last updated:** October 8, 2026 | **Status:** Current repo audit
+**Version:** 3.126 | **Last updated:** October 9, 2026 | **Status:** Current repo audit
 
 ---
 
@@ -64,20 +64,20 @@ Homepage, auth marketing, comparison, and message-context hostel photos use the 
 
 The navbar city selector uses a `Suspense` boundary around `useSearchParams()` and shows an inert, labeled “All cities” placeholder during prerender and hydration instead of an empty reserved box.
 
-The web application is deployed to Vercel through GitHub Actions. Pull requests run web checks, mobile/shared TypeScript checks, and preview deployments; production deploys run a separate quality gate, apply migrations from Vercel's production environment, then build and deploy the artifact. Builds do not apply migrations, and preview schemas are managed separately. The CI workflows do not run Playwright E2E.
+The web application is deployed to Vercel through GitHub Actions. Pull requests run web checks, mobile/shared TypeScript checks, and preview deployments; production deploys run a separate quality gate, apply migrations from Vercel's production environment, then build and deploy the artifact. Vercel builds do not apply migrations. Preview migrations use the manually dispatched `Migrate Preview database` workflow, which verifies the Preview database host and name against GitHub Environment variables before applying changes. The CI workflows do not run Playwright E2E.
 
 ---
 
 ## 4. Current Repo Metrics
 
-Filesystem audit on October 8, 2026:
+Filesystem audit on October 9, 2026:
 
 | Area | Count |
 |---|---:|
 | Web page files | 53 |
-| API route files | 69 |
-| Prisma models | 23 |
-| Prisma migrations | 21 |
+| API route files | 74 |
+| Prisma models | 26 |
+| Prisma migrations | 23 |
 | Vitest unit/integration test files | 122 |
 | Playwright E2E specs | 5 |
 | Mobile route/screen files | 16 |
@@ -93,7 +93,8 @@ Core models:
 - `User`: auth/profile fields, role, token version, email notifications, student verification fields, owner plan, subscription relation.
 - `DeviceToken`: FCM/APNs token per mobile installation.
 - `Subscription`: owner plan/status/payment reference.
-- `Payout`: admin-created manual payout batches linked to eligible bookings, with paid status and transfer reference.
+- `Payout`: admin-created manual payout batches linked to eligible bookings, with paid status/reference, encrypted destination snapshot, and audited cancellation actor/time/reason.
+- `PayoutAuditEvent`: append-only payout batch creation, paid, and void events with actor, gross amount, reference/reason, and timestamp.
 - `Account`, `Session`, `VerificationToken`, `PasswordResetToken`, `PhoneVerificationToken`: auth support.
 - `Hostel`: listing, ownership, status, location, pricing, amenities, images, ratings, and relations.
 - `Room`: room availability and optimistic-lock version.
@@ -109,13 +110,13 @@ Core models:
 
 Money is stored as integer PKR. Review counts and ratings are denormalized on `Hostel` and maintained transactionally, with repair scripts available.
 
-Booking refunds are represented by `Booking.paymentStatus`, `refundedAt`, and `refundedBy`; there is no separate refund record or immutable financial ledger. Payout batches likewise track gross booking totals and manual transfer references, not gateway settlement or a double-entry ledger.
+Booking refunds use `Booking.refundState` and append-only `RefundAuditEvent` records for automatic requests, provider outcomes, and manual confirmations. Verified Safepay webhooks are persisted in `SafepayWebhookEvent`; operator-authorized retries are recorded in append-only `SafepayWebhookReplayEvent`. These records document Hostello activity and provider evidence, but do not replace a double-entry financial ledger. Payout batches likewise track gross booking totals and manual transfer references, not gateway settlement.
 
 ---
 
 ## 6. API Surface
 
-All API routes live under `/api`. There are 69 route files. Responses generally use:
+All API routes live under `/api`. There are 74 route files. Responses generally use:
 
 ```json
 { "data": {}, "message": "...", "error": "..." }
@@ -133,7 +134,7 @@ Route categories:
 - Notifications: list/read/delete plus device-token registration routes.
 - Price alerts: list/create/update/delete plus unsubscribe.
 - Owner: analytics, subscription, blocked dates.
-- Admin: hostels/listings/search sync/verifications, roommate report review/removal, payout batches, booking refunds.
+- Admin: hostels/listings/search sync/verifications, roommate report review/removal, payout batches, booking refunds, and Safepay payment-event reconciliation.
 - Cron: mark completed stays, cancel abandoned payments, check price alerts, cleanup tokens.
 - Operations/support: upload, contact, report, cron health.
 
@@ -192,7 +193,7 @@ Implemented:
 - Booking collection reads are limited to 60 per authenticated account per minute, and booking detail reads to 120 per account per minute. These limits run before booking queries and return `Retry-After`.
 - Owner earnings reads, including pending-balance and payout-history lookups, are limited to 30 per authenticated account per minute before database/service work.
 - Search and filter routes cap query-string size, free-text lengths, filter-array counts, and identifier/token lengths before starting database or search operations.
-- Payment webhook/callback signature checks. Safepay uses its documented raw-body HMAC-SHA512 contract; callbacks also check the merchant key, signed order/tracker, provider, terminal state, currency, and exact amount before a conditional booking transition. The existing tracker makes an identical retry idempotent. The current handler settles inline; Safepay recommends durably storing the event, acknowledging it, then applying business logic. A durable webhook inbox and immutable refund evidence remain open. Sources: [Safepay HMAC guidance](https://safepay-docs.netlify.app/developers/webhooks/verify-hmac-signatures/) and [webhook delivery guidance](https://safepay-docs.netlify.app/developers/webhooks/overview/).
+- Payment webhook/callback signature checks. Safepay uses its documented raw-body HMAC-SHA512 contract. Ingress checks the signature and merchant key, then stores verified events with bounded, sanitized evidence before QStash dispatch. The signed worker checks order/tracker, provider, terminal state, currency, and exact amount before conditional booking transitions for both success and failure events. The `/admin/payments` queue exposes retryable and reconciliation-required events. Only retryable events can be re-queued after an admin verifies the current provider state, amount, currency, and exact tracker in Safepay; the actor, tracker, and reason are stored in an append-only audit table. Reconciliation-required events remain manual. Sources: [Safepay HMAC guidance](https://safepay-docs.netlify.app/developers/webhooks/verify-hmac-signatures/) and [webhook delivery guidance](https://safepay-docs.netlify.app/developers/webhooks/overview/).
 - Payment callback GET requests are read-only browser returns; only signed gateway POST callbacks can settle a booking.
 - When `GATEWAY_IPS` is configured, JazzCash callbacks reject missing or non-allowlisted addresses before parsing payment data. The check trusts Vercel's overwritten single-IP `x-forwarded-for` value or a direct socket IP; it ignores client-controlled `cf-connecting-ip`/`x-real-ip` headers and rejects ambiguous forwarded chains. A proxy in front of Vercel requires Vercel Trusted Proxy configuration to preserve the original address ([Vercel request-header contract](https://vercel.com/docs/headers/request-headers)). HMAC remains the primary callback authentication.
 - R2 URL allowlisting for submitted image URLs.
@@ -203,7 +204,7 @@ Implemented:
 - Signup verification, resend, password-reset, subscription-checkout, and web-payment return URLs use the configured app origin; untrusted `Host` and forwarded-host request headers cannot choose security-sensitive destinations. The shared origin helper rejects HTTP in production while allowing localhost HTTP in development.
 - Email-preference unsubscribe links use a signed, expiring HMAC token and verify the token email against the current account; unsigned userId/email encodings are rejected.
 - Unsubscribe-link GET requests only render a no-store confirmation page; the bounded POST applies the preference change. Per-alert links and signed global price-alert email preferences are reachable from email, and users can re-enable them in profile settings.
-- New, changed, and reset passwords are limited to 72 UTF-8 bytes before bcrypt hashing, avoiding bcrypt's silent input truncation. Account deletion removes associated user data in one transaction, recomputes ratings/counts for surviving reviewed hostels, and keyset-pages review cleanup in 200-row batches rather than materializing every review or owned-hostel ID.
+- New, changed, and reset passwords are limited to 72 UTF-8 bytes before bcrypt hashing, avoiding bcrypt's silent input truncation. Account deletion requires typed confirmation and password confirmation when available, blocks while stays/refunds/payouts or plan payments need attention, and runs through a resumable minute worker. It preserves completed financial history with the account anonymized and removes personal data in bounded batches.
 - Profile updates and owner blocked-date writes have bounded JSON bodies and per-user rate limits; profile fields and calendar reasons are also length-validated. Admin student-verification actions accept only a small, schema-validated JSON body.
 - Every owner blocked-date method requires the OWNER role before looking up the hostel; reads, counts, deletes, and creates are also scoped through the current hostel-owner relation. Blocked-date history, owner earnings history, and conversation/message reads use bounded page-scoped queries; conversation filters run server-side, and message-history reads have per-user rate limits.
 - JSON request bodies are streamed through byte limits before parsing. Both multipart upload routes also enforce their byte caps while reading the stream, including requests without a `Content-Length` header. Write schemas cap fields and arrays where needed; listing creation retains and validates its image fields.
@@ -215,7 +216,7 @@ Implemented:
 - Public 12-month availability aggregation is limited to 60 requests per trusted client IP per minute and rejects oversized hostel identifiers before database queries.
 - Phone OTP requests have both per-destination daily limits and a per-IP hourly cap before invoking the SMS provider.
 - Owner subscription endpoints require the OWNER role, do not return the Safepay tracker, and rate-limit checkout creation per owner.
-- Booking checkout and booking-status actions, owner subscription checkout, SMS OTP, issue reports, uploads, and other high-cost writes apply per-user, destination, or trusted-IP rate limits. Booking status updates use conditional state transitions and restore room inventory only after winning the transition, preventing duplicate inventory restoration on concurrent actions. Student cancellations scope the write to the student's ID, require PENDING status, and are rejected after check-out or owner confirmation. Student/admin cancellation writes also require payoutId to remain null, so they cannot race a payout batch claim. Owner confirm/decline writes require the current hostel-owner relation. Owner payout bank-detail updates are limited to five per user per hour. Provider spending limits still need operational validation against production provider quotas.
+- Booking checkout and booking-status actions, owner subscription checkout, SMS OTP, issue reports, uploads, and other high-cost writes apply per-user, destination, or trusted-IP rate limits. Booking status updates use conditional state transitions and restore the booking's guest count to room inventory only after winning the transition, preventing duplicate inventory restoration on concurrent actions. Student cancellations scope the write to the student's ID, require PENDING status, and are rejected after check-out or owner confirmation. Student/admin cancellation writes also require payoutId to remain null, so they cannot race a payout batch claim. Owner confirm/decline writes require the current hostel-owner relation. Owner payout bank-detail updates are limited to five per user per hour. Provider spending limits still need operational validation against production provider quotas.
 - Owner listing creation reads the owner's plan, checks the current listing count, and creates the listing inside one PostgreSQL Serializable transaction. Prisma serialization conflicts (P2034) retry up to three attempts; the admin email is sent only after commit. This prevents concurrent requests from oversubscribing a plan quota. Source: [Prisma transactions and batch queries](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
 - Review creation/edits are limited to 10 per user per hour, and push-token registration to 20 per user per hour, to curb repeat owner notifications and unbounded token writes.
 - Notification inbox reads are limited to 60 requests per user per minute; read-all is limited to 5 writes per minute and per-notification read/delete actions share a 60-per-minute user cap. Limits are checked before database work or body parsing, while notification reads and mutations remain scoped to the authenticated user.
@@ -239,7 +240,7 @@ Implemented:
 - Review creation requires a `STUDENT` session; overlong request-body hostel IDs are rejected before a completed-booking lookup or review write.
 - Listing-image uploads require an owner or administrator when a hostel ID is supplied. Owner-scoped lookup returns the same 404 for absent and foreign listings, and malformed or overlong multipart hostel IDs are rejected before lookup. Uploads require an identified session; missing R2 credentials or an invalid public image URL fail with 503 in production, while the placeholder response is limited to local development.
 - Owner listing creation is capped at five per hour; device-token registration/removal is capped at 20 per user per hour. Email-verification token reads and price-alert unsubscribe lookups are capped per trusted client IP before database access.
-- Admin refund actions are capped at five per admin per hour; payout writes at 10 per hour; hostel, verification, review, and roommate moderation at 30 per minute; full Typesense sync at two per hour. Throttled responses carry Retry-After.
+- Admin refund actions and Safepay webhook retries are capped at five per admin per hour; payout writes at 10 per hour; hostel, verification, review, and roommate moderation at 30 per minute; full Typesense sync at two per hour. Throttled responses carry Retry-After.
 - Full Typesense reindex uses narrow 100-row keyset pages and indexes each page directly, avoiding the full active-listing read and per-hostel follow-up reads.
 - Notification read/delete and roommate-post deletion apply the authenticated user ID in the database write predicate and return 404 for both absent and non-owned resources.
 - Method-level Route Handler review found state changes guarded by role-scoped user/admin quotas, trusted-IP caps, the shared notification-write quota, atomic OTP-attempt limits, or verified one-time/signed ingress. The intentionally public hostel view counter is IP-limited; provider callbacks and cron writes verify signatures before mutation.
@@ -251,11 +252,11 @@ Open / needs verification:
 - Audit authorization at the data boundary for object-level, property-level, and function-level access on every public Route Handler. Targeted October 6–7 reviews removed the admin bypass from private conversation reads, stopped owner-edit metadata from disclosing listing names to unauthorized visitors, kept phone changes behind OTP verification, and restricted review creation to students before a bounded booking lookup; the route-by-route audit remains open.
 - Verify `NEXT_PUBLIC_APP_URL`/`AUTH_URL` are set to each environment's intended canonical HTTPS host; password and verification links plus payment redirects now use that configured origin rather than the incoming request host.
 - A production-mode unit regression exercises a rejected Upstash request: the per-instance in-memory fallback still denies requests above its configured window and does not log the provider error message. This does not verify production Redis behavior or coordinate limits across serverless instances; production still requires Upstash and provider-side transaction/idempotency safeguards.
-- Review remaining per-user resource quotas and unbounded result sets. Account deletion now bounds intermediate review memory and scopes owner-hostel cleanup through relations, but it remains a single transaction whose duration and aggregate-update count scale with the account's data. URL/query bounds and request-body limits reduce individual request work but do not bound all accumulated per-user data.
+- Review remaining per-user resource quotas and unbounded result sets. Account deletion now uses resumable, keyset-batched cleanup phases with bounded relation scans instead of one account-sized transaction. Its schema migration and signed QStash schedule still need release setup. URL/query bounds and request-body limits reduce individual request work but do not bound all accumulated per-user data.
 - Verification and listing-completeness scoring process matching rows in 200-row keyset batches, bounding application memory while total reads remain proportional to result-set size. Owner analytics groups six months of bookings and paid revenue by month in one owner-scoped SQL aggregate, keeping raw booking rows out of application memory. Public availability uses date-range deltas and binary-searched calendar boundaries, so aggregation work is O(matches × log days + days) for at most 366 days. Benchmark at expected launch volume. Owner listing totals and booking status/revenue summaries use database aggregates.
 - Sentry client/server/edge SDKs disable automatic collection of user data, cookies, HTTP headers/bodies, query parameters, database query data, and stack-frame locals; event and span callbacks strip request payloads and scrub common identifiers. Confirm project-level Sentry scrubbing and IP settings in the console.
 - Sentry tracing is configured at a 100% sample rate for client/server/edge; measure production volume and tune sampling while preserving high-value errors and critical transaction traces.
-- Application catches now log allowlisted error summaries; cron failures return and persist only generic status text, and cron-health reads only configured job names while redacting legacy error details. Replace remaining ad-hoc console output with correlated structured logs for critical operations and add alerts for payment, search, notification, and cron health.
+- Application catches now log allowlisted error summaries; cron failures return and persist only generic status text, and cron-health reads only configured job names while redacting legacy error details. Payment health aggregates retryable and reconciliation-required webhook events; hosted alerts for payment, search, notification, and cron health still need setup and exercise.
 - Confirm production database connection limits against Vercel instance/region scaling; the node-postgres pool uses its default maximum per process and a serverless fleet can multiply connections.
 - A roommate post at the three-report threshold remains hidden until expiry unless an admin removes it. The current schema has no audited dismiss/restore state; decide whether that workflow needs a future schema change before adding moderator restore actions.
 - The last successful web production dependency audit reported zero vulnerabilities after upgrading Next.js to 16.3.8. The full audit retains five high development-tool findings through `braces` in the ESLint chain; the current upstream advisory lists no patched version, so do not force-downgrade the Next ESLint configuration. A web audit refresh on October 6 at 13:35 UTC could not reach the npm advisory endpoint (`ENOTFOUND registry.npmjs.org`). Mobile was refreshed October 7 with 30 production findings (19 high, 11 moderate, zero critical), but a repeat request in this review failed with the same DNS error; these are the last successful counts.
@@ -274,7 +275,7 @@ Safepay:
 - Owner Pro currently uses a one-time PKR 3,000 checkout that grants one month of access; it is not automatic recurring billing.
 - Webhook expects the current `payment.succeeded` / `payment.failed` event shape, a matching merchant key, HMAC-SHA512 signature, tracker, order ID, PKR currency, exact paisa amount, and `TRACKER_ENDED` for success. Booking events are bound to a Safepay `paymentMethod` at read and state-write time; legacy null methods retain the Safepay default.
 - Mobile checkout return links carry only the booking ID; the app treats the URL as untrusted, then reads the authenticated booking endpoint and derives its result from the server-recorded payment and booking states. Pending stays in a checking state; resuming reuses the outstanding tracker, and a retry after recorded failure reuses the booking with a new tracker. A payment received after cancellation is shown distinctly. Redirect parameters never confirm a payment.
-- A booking stores its active tracker in the existing `transactionId` field; a retry reuses the tracker. Conditional updates bind the provider and tracker, block duplicate settlement, and prevent delayed success from reviving cancelled bookings. Late successful payments stay CANCELLED + PAID for refund review. A durable webhook inbox/idempotency ledger remains unimplemented.
+- A booking stores its active tracker in the existing `transactionId` field; a checkout retry reuses the tracker. Conditional updates bind the provider and tracker, block duplicate settlement, and prevent delayed success from reviving cancelled bookings. Late successful payments stay CANCELLED + PAID for refund review. Verified webhook evidence is durably stored and signed QStash delivery applies business changes. Retryable delivery failures can be re-queued by an admin after checking the exact Safepay tracker; reconciliation-required events cannot be replayed from the admin queue.
 - Mobile clients send `X-Client: mobile` and receive `hostello://payment/return?...` return paths.
 - Refund helper sends paisa-denominated `amount`/`currency` to `POST /order/payments/v3/{tracker}/refund` and accepts a full refund only when `data.tracker.state` is `TRACKER_REFUNDED`. An unknown/failed response leaves the booking PAID; the admin can record a manual refund after verifying it in Safepay. Merchant sandbox validation remains open.
 
@@ -289,14 +290,14 @@ Payouts:
 - Admins can generate a manual batch from paid, confirmed/completed bookings whose checkout date has passed.
 - One shared predicate defines payout eligibility for owner balance, admin queue, and the transactional claim: owner relation, `CONFIRMED`/`COMPLETED`, `PAID`, checkout passed, and no existing payout assignment.
 - The admin queue is paginated; pending balances are grouped by hostel in the database, and inline history is limited to the latest 20 batches per owner. Batch generation rechecks the current OWNER role and requires nonempty bank-account title, account number, and bank name inside the transaction; the admin and owner screens use the same completeness rule.
-- The batch atomically claims currently eligible bookings with a conditional update and computes its whole-PKR amount with a database aggregate; cancellation writes require payoutId to remain null, so a booking cannot be cancelled after a batch claims it. An admin performs the transfer outside the product and records the transfer reference only after completion. The existing CANCELLED enum state has no supported void/unclaim action. Durable cancellation actor/time/reason fields and a frozen transfer-destination snapshot are still needed before real transaction volume.
+- The batch atomically claims currently eligible bookings with a conditional update and computes its whole-PKR amount with a database aggregate; cancellation writes require payoutId to remain null, so a booking cannot be cancelled after a batch claims it. New batches encrypt a snapshot of the owner's bank destination with AES-256-GCM using the dedicated `PAYOUT_DESTINATION_ENCRYPTION_KEY`; the admin endpoint decrypts it only for authenticated admin payout views and disables caching. The key must be retained for every environment sharing that database. An admin performs the transfer outside the product and must provide a nonblank transfer reference before the batch can be marked paid. A pending batch can be voided only with an admin reason and explicit confirmation that no transfer was sent; the audit fields and booking-claim release commit in one transaction. `PayoutAuditEvent` records batch creation, paid, and void transitions in an append-only table, with database triggers rejecting update, delete, and truncate attempts; migration backfill uses only actor/time/reference facts already stored. The reference is operator evidence, not provider settlement verification. Existing batches have no destination snapshot; a full double-entry ledger, fee accounting, reversal, and provider settlement reconciliation remain open before real transaction volume.
 - There is no automated provider settlement, fee/commission accounting, payout reversal, or immutable ledger yet.
 
 Refunds:
 
 - An admin-only endpoint calls the Safepay refund helper for a cancelled, paid booking.
 - The helper validates the documented full-refund tracker state; unknown, partial, nonterminal, and failed responses are unconfirmed. The booking stays PAID and the student is not told a refund completed. Admins may record a manual refund only after provider-side completion.
-- The current schema does not persist refund attempts, provider evidence, a manual-confirmation note, or webhook/inbox events. A refund state machine and scheduled reconciliation still need a safe-target migration and operator runbook.
+- `RefundAuditEvent` persists refund attempts, sanitized provider result digests/state, failures, and manual confirmations; `Booking.refundState` tracks uncertainty. Safepay webhook evidence and explicit retry attestations are persisted. The runbook describes provider-first reconciliation. Sandbox refund validation and legacy in-flight session resolution remain release gates; a full accounting ledger is still open.
 
 Abandoned payments:
 
@@ -391,13 +392,13 @@ Migration workflow is enforced.
 
 - New migrations: `npm run migrate:new`.
 - Production migration command: `npm run db:migrate:deploy` (`prisma migrate deploy`). The production GitHub Actions workflow runs it against Vercel's production environment after the quality gate and before building the artifact; the database URL stays in Vercel rather than being copied into GitHub Actions secrets.
-- Build command: `npm run build` runs `prisma generate && next build` and never applies migrations. Preview builds do not migrate their database; keep preview schema changes managed separately.
+- Build command: `npm run build` runs `prisma generate && next build --webpack` and never applies migrations. For Preview schema changes, configure the `preview-migrations` GitHub Environment with `HOSTELLO_PREVIEW_DATABASE_HOST`, `HOSTELLO_PREVIEW_DATABASE_NAME`, `HOSTELLO_PRODUCTION_DATABASE_HOST`, and `HOSTELLO_PRODUCTION_DATABASE_NAME`; then manually dispatch `.github/workflows/migrate-preview.yml` from the `preview` branch. The guard refuses missing or mismatched identities. Do not store database connection URLs in GitHub.
 - Next.js prerendering still executes database-backed metadata reads, so successful local/preview builds need a reachable database with a compatible schema. Do not point a build or migration check at an unverified/shared database.
 - Keep database changes backward-compatible across old and new app versions (expand, migrate/backfill, then contract); destructive or rename changes need a staged rollout.
 - Pre-commit hook blocks staged `prisma/schema.prisma` changes without staged migration files.
 - Migration ledger is in `prisma/MIGRATIONS.md`.
 
-Current migration count: 21.
+Current migration count: 23.
 
 Never edit SQL for a migration that has been applied to any shared or production database. Create a corrective migration instead.
 
@@ -471,9 +472,9 @@ For local runs, create `.env.e2e` from `.env.e2e.example`; it is loaded before `
 
 | Item | Severity | Status | Next action |
 |---|---|---|---|
-| Safepay/refund reconciliation | P0 | Open | Safepay v3 amount/event/signature checks and fail-closed refund handling are implemented. Verify the configured merchant in sandbox, resolve any legacy in-flight sessions at rollout, persist refund/webhook evidence, and define safe operator retry/reconciliation before real transaction volume. |
-| Owner payout/accounting | P0 | Partially implemented | Manual payout batches claim eligible bookings and now require complete bank details before claiming. Transfer execution is external; batches do not freeze the transfer destination or support audited void/release, and there is no immutable ledger, fee accounting, reversal, or settlement reconciliation. Define those controls and reconcile against Safepay before real transaction volume. |
-| Operational alerting | P1 | Partially implemented | Critical business paths emit privacy-limited structured JSON events with request/trace correlation. Configure and exercise Sentry/Vercel alerts for payment reconciliation, search degradation, notification delivery, cron failures, and cron-health endpoint failures; choose rate thresholds after production volume is observable. |
+| Safepay/refund reconciliation | P0 | Partially implemented | Durable sanitized webhook evidence, refund audit records, an admin queue for unresolved events, and audited retries limited to `RETRYABLE` events are implemented. Verify current provider state, amount, currency, and tracker before retrying. Verify the configured merchant and refund response in sandbox, resolve legacy in-flight sessions at rollout, and exercise QStash retry/failure recovery before real transaction volume. |
+| Owner payout/accounting | P0 | Partially implemented | New manual payout batches freeze the bank destination in an encrypted snapshot; before marking a batch paid, Hostello rechecks eligible booking claims and reconciles their total to the batch amount. Paid transitions require a transfer reference and the lifecycle is recorded in an append-only audit ledger; void/release requires confirmation no transfer was sent. The ledger is not double-entry, existing batches have no destination snapshot, and transfer execution remains external. Fee accounting, reversal, and provider settlement reconciliation still need an approved accounting model before real transaction volume. |
+| Operational alerting | P1 | Partially implemented | Critical business paths emit privacy-limited structured JSON events with request/trace correlation. `/api/health/payments` returns 207 for both retryable exhausted webhook deliveries and manual-reconciliation events. Configure and exercise Sentry/Vercel alerts for payment health/reconciliation, search degradation, notification delivery, cron failures, and cron-health endpoint failures; choose rate thresholds after production volume is observable. |
 | Mobile native build and dependency review | P1 for mobile beta | Partially complete | Expo SDK 57.0.26 / React Native 0.86.3 are aligned. The last successful production audit has 30 findings (19 high, 11 moderate, zero critical); the current recheck failed because registry DNS does not resolve. Metro's latest Android source map contains 1,563 modules / 1,570 sources / 68 package names and confirms the URL parser packages are bundled. Per-advisory/native review, Android/iOS builds, and device QA remain open. EAS Firebase values and the absent local iOS plist need verification. This workstation has no JDK or Android SDK. |
 | Mobile app-link associations | P1 for mobile beta | Open | Both files are tracked, but the Apple `appID` omits the Apple App ID prefix. Confirm the prefix and Android release signing fingerprint from provider accounts, update the files, and verify HTTPS responses on both declared domains. |
 | Development lint dependency advisory | P2 | Open | The `braces` version in the ESLint toolchain is affected by an upstream advisory with no patch release listed as of October 5, 2026. Track the fixed release; avoid forcing `eslint-config-next` to an older major. |
@@ -671,6 +672,18 @@ Mobile also needs:
 | 3.111 | October 8, 2026 | Booking PATCH preflight checks now return the same 404 for unrelated users and preserve 403 for participants whose role cannot perform the action. Added four authorization regression cases alongside the owner-scoped price-alert checks. Full suite: 739 tests across 122 files; full ESLint: 0 errors, 26 warnings. Refreshed the authorization baseline against current Next.js guidance and OWASP API1/API3. |
 | 3.112 | October 8, 2026 | Review-reply preflight reads now scope owners by current hostel ownership and select only the review ID; foreign and missing review IDs both return 404, while admin access and role checks remain intact. Added PATCH and DELETE regression tests. Full suite: 741 tests across 122 files; root typecheck passes; full ESLint: 0 errors, 26 warnings. |
 | 3.113 | October 8, 2026 | Booking GET/PATCH now scope the preflight query to the booking student or current hostel owner, with an admin path, before selecting party contact data. Foreign bookings return 404 at the query boundary. Added two GET regression tests. Full suite: 743 tests across 122 files; root typecheck passes; full ESLint: 0 errors, 26 warnings. |
+| 3.116 | October 9, 2026 | Booking cancellation and timeout cleanup now restore the room inventory by the booking's guest count, matching checkout's inventory decrement. Updated existing inventory restoration expectations. |
+| 3.117 | October 9, 2026 | Admin payout batches now require a nonblank bank/provider transfer reference before a pending payout can be marked paid. The runbook clarifies that this is operator evidence, not provider settlement verification. |
+| 3.118 | October 9, 2026 | Added an admin-only payout void action that requires a reason and confirmation no transfer was sent, recording cancellation actor/time/reason and releasing booking claims atomically. |
+| 3.119 | October 9, 2026 | New payout batches now store an AES-256-GCM encrypted destination snapshot, revealed only in the admin payout queue without caching. Legacy batches remain unsnapshotted and require manual destination reconciliation. |
+| 3.120 | October 9, 2026 | Added append-only payout lifecycle events for batch creation, payment, and void transitions, with gross amounts and admin attribution. Migration backfills only facts preserved in existing payout rows. |
+| 3.121 | October 9, 2026 | Added an admin Safepay webhook reconciliation queue. Only `RETRYABLE` events can be re-queued, and the action requires provider-state/amount/currency/tracker verification plus a reason recorded in an append-only audit table. Booking failure events now validate exact amount and currency before changing payment state. `RECONCILIATION_REQUIRED` events remain excluded from replay. |
+| 3.122 | October 9, 2026 | Before marking an owner payout paid, recheck that its assigned bookings are still eligible for the batch owner and that their aggregate total matches the payout amount. Mismatches block transfer confirmation and require investigation. |
+| 3.123 | October 9, 2026 | Account deletion now runs in resumable, keyset-batched phases, with migration and QStash schedule setup remaining release gates. Owner listing edits now scope the preflight lookup by owner and return the same 404 for foreign and missing listings. Focused ESLint and `git diff --check` pass; route tests were not run. |
+| 3.124 | October 9, 2026 | Restrict the student-verification queue, private document lookup, moderation decision predicate, dashboard count, and analytics scans to `STUDENT` accounts. Route tests were updated but not run. |
+| 3.125 | October 9, 2026 | Public hostel search now rechecks `ACTIVE` status in the database hydration query, preventing temporarily stale Typesense entries from exposing unpublished listings. Existing route expectations were updated; tests were not run. |
+| 3.126 | October 9, 2026 | Public review reads and their count query now require the related hostel to remain `ACTIVE` at query time, closing the suspension race after the initial visibility check. Existing query expectations were updated; tests were not run. |
+| 3.115 | October 9, 2026 | Added the pending migration for cancellation-policy snapshots, partial refunds, owner-response deadlines, and verification review records. Existing full refunds are backfilled; existing listings keep a null policy until their owner chooses terms. Owner listings now expose the missing-policy state and edit path. The migration remains unapplied. |
 | 3.114 | October 8, 2026 | Conversation GET/POST now require the caller in the participant relation within the preflight query; nonparticipants, including admins, receive 404 before message reads, read-state changes, or sends. Added a message-send boundary regression test. Full suite: 744 tests across 122 files; root typecheck passes; full ESLint: 0 errors, 26 warnings. |
 
 ## 20. Current Practice Baseline

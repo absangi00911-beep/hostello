@@ -20,6 +20,7 @@ import { inputCls } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ListingLocationPicker } from "./ListingLocationPicker";
 import { ListingLivePreview } from "./ListingLivePreview";
+import { CANCELLATION_POLICIES, CANCELLATION_POLICY_DETAILS, type CancellationPolicy } from "@/lib/cancellation-policy";
 
 /* -- Types ------------------------------------------------- */
 export interface ListingFormData {
@@ -29,6 +30,7 @@ export interface ListingFormData {
   area: string;
   address: string;
   gender: "MALE" | "FEMALE" | "MIXED";
+  cancellationPolicy: CancellationPolicy | "";
   pricePerMonth: number | "";
   rooms: number | "";
   capacity: number | "";
@@ -45,6 +47,7 @@ export interface ListingFormData {
 const DEFAULT_FORM: ListingFormData = {
   name: "", description: "", city: "", area: "", address: "",
   gender: "MIXED",
+  cancellationPolicy: "",
   pricePerMonth: "", rooms: "", capacity: "", minStay: 1, maxStay: "",
   latitude: "", longitude: "",
   amenities: [], images: [], coverImage: "", rules: [],
@@ -61,11 +64,11 @@ const RULE_PRESETS = [
 ];
 
 /* -- Step indicator ---------------------------------------- */
-const STEPS = ["Basic info","Location","Amenities","Photos","Rules","Review"];
+const STEPS = ["Basic info","Location","Amenities","Photos","Rules","Cancellation terms","Review"];
 
 function StepProgress({ step }: { step: number }) {
   return (
-    <ol className="mb-8 flex items-start">
+    <ol className="owner-listing-stepper mb-8 flex items-start" aria-label="Listing steps">
       {STEPS.map((label, i) => {
         const stepNum = i + 1;
         const isComplete = stepNum < step;
@@ -75,6 +78,7 @@ function StepProgress({ step }: { step: number }) {
           <li key={label} className={`flex items-center ${isLast ? "" : "flex-1"}`}>
             <div className="flex flex-col items-center gap-1.5">
               <div
+                aria-current={isActive ? "step" : undefined}
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-full)] text-[13px] font-[700] transition-colors duration-[var(--transition-base)] ${
                   isComplete
                     ? "bg-[var(--color-primary)] text-[color:var(--color-text-inverse)]"
@@ -313,7 +317,13 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function next() { setStep((s) => Math.min(s + 1, STEPS.length)); }
+  function next() {
+    if (step === 6 && !form.cancellationPolicy) {
+      toast.error("Choose a cancellation policy before continuing.");
+      return;
+    }
+    setStep((s) => Math.min(s + 1, STEPS.length));
+  }
   function back() { setStep((s) => Math.max(s - 1, 1)); }
 
   async function handleSubmit() {
@@ -326,6 +336,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         area:          form.area || undefined,
         address:       form.address.trim(),
         gender:        form.gender,
+        cancellationPolicy: form.cancellationPolicy,
         pricePerMonth: Number(form.pricePerMonth),
         rooms:         Number(form.rooms),
         capacity:      Number(form.capacity),
@@ -354,8 +365,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         // Handle quota exceeded error
         if (json.code === "QUOTA_EXCEEDED") {
           toast.error("You've reached your listing limit.", {
-            description: "Upgrade to Pro for unlimited listings.",
-            action: { label: "Upgrade", onClick: () => router.push("/owner/subscription") }
+            description: "The Free plan includes one listing. Manage your current listing from My listings.",
           });
           return;
         }
@@ -380,11 +390,11 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
     }
   }
 
-  const sectionCls = "space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-8";
+  const sectionCls = "owner-listing-section space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6 sm:p-8";
   const headingCls = "owner-form-heading text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] mb-5";
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="owner-listing-wizard mx-auto max-w-6xl">
       <div className="mb-5 flex items-center justify-between">
         <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] sm:hidden">
           Step {step} of {STEPS.length} — <span className="font-[500] text-[color:var(--color-text-body)]">{STEPS[step - 1]}</span>
@@ -419,7 +429,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
             <textarea id="description" value={form.description} onChange={(e) => update("description", e.target.value)} rows={4} placeholder="Describe your hostel's location, who it's for, what makes it a good choice for students…" className={`${inputCls} h-auto resize-none py-2.5`} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="owner-field-grid-2 grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label htmlFor="city" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">City</label>
               <select id="city" value={form.city} onChange={(e) => update("city", e.target.value)} className={`${inputCls} appearance-none`}>
@@ -450,7 +460,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="owner-field-grid-2 grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label htmlFor="price" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Price / month (PKR)</label>
               <input id="price" type="number" value={form.pricePerMonth} onChange={(e) => update("pricePerMonth", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 8500" min={1000} className={inputCls} />
@@ -461,7 +471,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="owner-field-grid-3 grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label htmlFor="capacity" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Total capacity</label>
               <input id="capacity" type="number" value={form.capacity} onChange={(e) => update("capacity", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 30" min={1} className={inputCls} />
@@ -495,7 +505,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
               <ChevronRight size={14} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-open:rotate-90" aria-hidden="true" />
               Enter coordinates manually instead
             </summary>
-            <div className="mt-3 grid grid-cols-2 gap-4">
+            <div className="owner-field-grid-2 mt-3 grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label htmlFor="lat" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Latitude</label>
                 <input id="lat" type="number" step="any" value={form.latitude} onChange={(e) => update("latitude", e.target.value === "" ? "" : Number(e.target.value))} placeholder="e.g. 31.5204" className={inputCls} />
@@ -545,12 +555,50 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 6: Review & submit ------------------- */}
       {step === 6 && (
         <div className={sectionCls}>
+          <h2 className={headingCls}>Choose cancellation terms</h2>
+          <p className="-mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+            Students see these terms before paying. The selected policy is saved with each booking, so later listing edits won&apos;t change an existing reservation.
+          </p>
+          <div className="space-y-3" role="radiogroup" aria-label="Cancellation policy">
+            {CANCELLATION_POLICIES.map((policy) => {
+              const details = CANCELLATION_POLICY_DETAILS[policy];
+              const selected = form.cancellationPolicy === policy;
+              return (
+                <label key={policy} className={`block cursor-pointer rounded-[var(--radius-lg)] border-2 p-4 transition-colors ${selected ? "border-[var(--color-action)] bg-[var(--color-action-light)]" : "border-[var(--color-border-default)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-strong)]"}`}>
+                  <input
+                    type="radio"
+                    name="cancellationPolicy"
+                    value={policy}
+                    checked={selected}
+                    onChange={() => update("cancellationPolicy", policy)}
+                    className="sr-only"
+                  />
+                  <span className="font-[600] text-[color:var(--color-text-heading)]">{details.label}</span>
+                  <span className="mt-2 block space-y-1 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                    <span className="block">{details.fullRefund}</span>
+                    <span className="block">{details.partialRefund}</span>
+                    <span className="block">{details.noRefund}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+            Approved refunds are initiated within 1 business day. Banks may take 3–10 business days to post them. Owner declines and requests unanswered for 24 hours receive a full refund.
+          </p>
+        </div>
+      )}
+
+      {/* -- Step 7: Review & submit ------------------- */}
+      {step === 7 && (
+        <div className={sectionCls}>
           <h2 className={headingCls}>Review and submit</h2>
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] divide-y divide-[var(--color-border-subtle)]">
             {[
               { label: "Name",       value: form.name || "—" },
               { label: "City",       value: form.city ? `${form.city}${form.area ? `, ${form.area}` : ""}` : "—" },
               { label: "Gender",     value: form.gender },
+              { label: "Cancellations", value: form.cancellationPolicy ? CANCELLATION_POLICY_DETAILS[form.cancellationPolicy].label : "Choose a policy" },
               { label: "Price",      value: form.pricePerMonth ? `PKR ${Number(form.pricePerMonth).toLocaleString()}/mo` : "—" },
               { label: "Rooms",      value: form.rooms ? `${form.rooms} rooms, ${form.capacity} capacity` : "—" },
               { label: "Amenities",  value: form.amenities.length ? form.amenities.join(", ") : "None added" },

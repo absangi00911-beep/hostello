@@ -40,14 +40,21 @@ async function loadRefundableBooking(bookingId: string) {
     throw new RefundServiceError("Booking not found.", 404);
   }
 
-  if (booking.paymentStatus !== "PAID" || booking.status !== "CANCELLED") {
+  if (!["PAID", "PARTIALLY_REFUNDED"].includes(booking.paymentStatus) || booking.status !== "CANCELLED") {
     throw new RefundServiceError(
       `Cannot refund a booking with paymentStatus ${booking.paymentStatus} and status ${booking.status}. A refund requires PAID + CANCELLED.`,
       409,
     );
   }
 
-  return booking;
+  const approvedAmount = Math.min(booking.total, booking.cancellationRefundAmount ?? booking.total);
+  const refundedAmount = booking.refundedAmount ?? 0;
+  const refundAmount = Math.max(0, approvedAmount - refundedAmount);
+  if (refundAmount === 0) {
+    throw new RefundServiceError("No refund amount remains for this booking.", 409);
+  }
+
+  return { ...booking, refundedAmount, refundAmount };
 }
 
 function providerResponseDigest(value: unknown): string {
@@ -60,9 +67,9 @@ async function createAutomaticRequest(booking: Awaited<ReturnType<typeof loadRef
     const updated = await tx.booking.updateMany({
       where: {
         id: booking.id,
-        paymentStatus: "PAID",
+        paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
-        refundState: "NONE",
+        refundState: { in: ["NONE", "PARTIALLY_REFUNDED"] },
       },
       data: { refundState: "PROCESSING" },
     });
@@ -75,7 +82,7 @@ async function createAutomaticRequest(booking: Awaited<ReturnType<typeof loadRef
         adminUserId,
         type: "AUTOMATIC_REQUESTED",
         transactionId: booking.transactionId,
-        amount: booking.total,
+        amount: booking.refundAmount,
         currency: "PKR",
       },
     });
@@ -100,7 +107,7 @@ async function markAutomaticUncertain(
   const summary = getSafeErrorSummary(err);
   await db.$transaction(async (tx) => {
     await tx.booking.updateMany({
-      where: { id: booking.id, paymentStatus: "PAID", status: "CANCELLED", refundState: "PROCESSING" },
+      where: { id: booking.id, paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] }, status: "CANCELLED", refundState: "PROCESSING" },
       data: { refundState: "UNCERTAIN" },
     });
     await tx.refundAuditEvent.create({
@@ -110,7 +117,7 @@ async function markAutomaticUncertain(
         adminUserId,
         type: "AUTOMATIC_UNCERTAIN",
         transactionId: booking.transactionId,
-        amount: booking.total,
+        amount: booking.refundAmount,
         currency: "PKR",
         failureName: summary.name.slice(0, 64),
         failureCode: summary.code?.slice(0, 64),
@@ -126,6 +133,7 @@ async function recordAutomaticConfirmation(
   attemptId: string,
   providerState: string,
   providerResponseDigest: string,
+  amount: number,
 ) {
   const updated = await db.$transaction(async (tx) => {
     // Store provider evidence even if a concurrent admin action changed the
@@ -137,7 +145,7 @@ async function recordAutomaticConfirmation(
         adminUserId,
         type: "AUTOMATIC_CONFIRMED",
         transactionId: booking.transactionId,
-        amount: booking.total,
+        amount,
         currency: "PKR",
         providerState,
         providerResponseDigest,
@@ -146,13 +154,14 @@ async function recordAutomaticConfirmation(
     const result = await tx.booking.updateMany({
       where: {
         id: booking.id,
-        paymentStatus: "PAID",
+        paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
         refundState: "PROCESSING",
       },
       data: {
-        paymentStatus: "REFUNDED",
-        refundState: "REFUNDED",
+        refundedAmount: { increment: amount },
+        paymentStatus: booking.refundedAmount + amount >= booking.total ? "REFUNDED" : "PARTIALLY_REFUNDED",
+        refundState: booking.refundedAmount + amount >= booking.total ? "REFUNDED" : "PARTIALLY_REFUNDED",
         refundedAt: new Date(),
         refundedBy: adminUserId,
       },
@@ -170,12 +179,12 @@ async function recordAutomaticConfirmation(
   return updated;
 }
 
-async function notifyRefunded(booking: Awaited<ReturnType<typeof loadRefundableBooking>>) {
+async function notifyRefunded(booking: Awaited<ReturnType<typeof loadRefundableBooking>>, amount: number) {
   createNotification({
     userId: booking.userId,
     type: "BOOKING_REFUNDED",
     title: "Refund processed",
-    message: `Your refund of PKR ${Math.round(booking.total).toLocaleString("en-PK")} for ${booking.hostel.name} has been processed.`,
+    message: `Your refund of PKR ${Math.round(amount).toLocaleString("en-PK")} for ${booking.hostel.name} has been processed.`,
     bookingId: booking.id,
   }).catch((err) =>
     console.error("[processRefund] In-app notification failed:", getSafeErrorSummary(err)),
@@ -187,7 +196,7 @@ async function notifyRefunded(booking: Awaited<ReturnType<typeof loadRefundableB
       studentEmail: booking.user.email,
       hostelName: booking.hostel.name,
       bookingId: booking.id,
-      amount: booking.total,
+      amount,
     }),
   ).catch((err) =>
     console.error("[processRefund] Refund email failed:", getSafeErrorSummary(err)),
@@ -204,6 +213,19 @@ export async function processRefund(bookingId: string, adminUserId: string) {
   }
 
   const attemptId = await createAutomaticRequest(booking, adminUserId);
+  if (booking.paymentMethod && booking.paymentMethod !== "safepay") {
+    const unsupportedProvider = Object.assign(
+      new Error("Automatic refunds are not enabled for this payment provider."),
+      { code: "automatic_refund_provider_unsupported" },
+    );
+    await markAutomaticUncertain(booking, adminUserId, attemptId, unsupportedProvider);
+    return {
+      automatic: false,
+      manualConfirmed: false,
+      booking: { ...booking, refundState: "UNCERTAIN" as const },
+    };
+  }
+
   if (!booking.transactionId) {
     await markAutomaticUncertain(
       booking,
@@ -220,7 +242,7 @@ export async function processRefund(bookingId: string, adminUserId: string) {
 
   let providerResult;
   try {
-    providerResult = await refundPayment({ transactionId: booking.transactionId, amount: booking.total });
+    providerResult = await refundPayment({ transactionId: booking.transactionId, amount: booking.refundAmount });
   } catch (err) {
     console.error(
       "[processRefund] Safepay refund was not confirmed; manual reconciliation required",
@@ -240,19 +262,20 @@ export async function processRefund(bookingId: string, adminUserId: string) {
     attemptId,
     providerResult.state,
     providerResponseDigest(providerResult.raw),
+    booking.refundAmount,
   );
-  await notifyRefunded(booking);
+  await notifyRefunded(booking, booking.refundAmount);
   return { automatic: true, manualConfirmed: false, booking: updated };
 }
 
 /** Record a refund an admin has already completed and verified in Safepay. */
 export async function confirmManualRefund(bookingId: string, adminUserId: string) {
   const booking = await loadRefundableBooking(bookingId);
-  const updated = await db.$transaction(async (tx) => {
+  const { updated, refundAmount } = await db.$transaction(async (tx) => {
     const latestAttempt = await tx.refundAuditEvent.findFirst({
       where: { bookingId: booking.id, type: "AUTOMATIC_REQUESTED" },
       orderBy: { createdAt: "desc" },
-      select: { attemptId: true, createdAt: true },
+      select: { attemptId: true, createdAt: true, amount: true },
     });
     const processingTimedOut = booking.refundState === "PROCESSING" &&
       latestAttempt !== null &&
@@ -269,16 +292,21 @@ export async function confirmManualRefund(bookingId: string, adminUserId: string
       ? ["PROCESSING"] as const
       : ["NONE", "UNCERTAIN"] as const;
     const attemptId = latestAttempt?.attemptId ?? randomUUID();
+    const refundAmount = latestAttempt?.amount ?? booking.refundAmount;
+    if (refundAmount <= 0 || refundAmount > booking.total - booking.refundedAmount) {
+      throw new RefundServiceError("The recorded refund amount is inconsistent with this booking. Review it manually.", 409);
+    }
     const result = await tx.booking.updateMany({
       where: {
         id: booking.id,
-        paymentStatus: "PAID",
+        paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
         refundState: { in: [...allowedRefundStates] },
       },
       data: {
-        paymentStatus: "REFUNDED",
-        refundState: "REFUNDED",
+        refundedAmount: { increment: refundAmount },
+        paymentStatus: booking.refundedAmount + refundAmount >= booking.total ? "REFUNDED" : "PARTIALLY_REFUNDED",
+        refundState: booking.refundedAmount + refundAmount >= booking.total ? "REFUNDED" : "PARTIALLY_REFUNDED",
         refundedAt: new Date(),
         refundedBy: adminUserId,
       },
@@ -294,13 +322,16 @@ export async function confirmManualRefund(bookingId: string, adminUserId: string
         adminUserId,
         type: "MANUAL_CONFIRMED",
         transactionId: booking.transactionId,
-        amount: booking.total,
+        amount: refundAmount,
         currency: "PKR",
       },
     });
-    return tx.booking.findUniqueOrThrow({ where: { id: booking.id } });
+    return {
+      updated: await tx.booking.findUniqueOrThrow({ where: { id: booking.id } }),
+      refundAmount,
+    };
   });
 
-  await notifyRefunded(booking);
+  await notifyRefunded(booking, refundAmount);
   return { automatic: false, manualConfirmed: true, booking: updated };
 }

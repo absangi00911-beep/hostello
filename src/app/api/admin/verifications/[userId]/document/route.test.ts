@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
-vi.mock("@/lib/db", () => ({ db: { user: { findUnique: vi.fn() } } }));
+vi.mock("@/lib/db", () => ({ db: { user: { findFirst: vi.fn() } } }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 vi.mock("@/lib/verification-storage", () => ({
   getVerificationDocument: vi.fn(),
@@ -24,7 +24,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth).mockResolvedValue({ user: { id: "usr_admin_1", role: "ADMIN" } } as any);
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60_000 });
-  vi.mocked(db.user.findUnique).mockResolvedValue({ verificationStatus: "PENDING", verificationDocUrl: key } as any);
+  vi.mocked(db.user.findFirst).mockResolvedValue({ verificationStatus: "PENDING", verificationDocUrl: key } as any);
   vi.mocked(getVerificationDocument).mockResolvedValue({
     Body: { transformToWebStream: () => new Blob(["private image bytes"]).stream() },
     ContentType: "image/jpeg",
@@ -52,7 +52,7 @@ describe("GET /api/admin/verifications/[userId]/document", () => {
       limit: 30,
       windowMs: 60_000,
     });
-    expect(db.user.findUnique).not.toHaveBeenCalled();
+    expect(db.user.findFirst).not.toHaveBeenCalled();
     expect(getVerificationDocument).not.toHaveBeenCalled();
   });
 
@@ -64,13 +64,17 @@ describe("GET /api/admin/verifications/[userId]/document", () => {
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(await response.text()).toBe("private image bytes");
     expect(rateLimit.mock.invocationCallOrder[0]).toBeLessThan(
-      vi.mocked(db.user.findUnique).mock.invocationCallOrder[0],
+      vi.mocked(db.user.findFirst).mock.invocationCallOrder[0],
     );
+    expect(db.user.findFirst).toHaveBeenCalledWith({
+      where: { id: "usr_student_1", role: "STUDENT", verificationStatus: "PENDING" },
+      select: { verificationStatus: true, verificationDocUrl: true },
+    });
     expect(getVerificationDocument).toHaveBeenCalledWith(key);
   });
 
   it("does not fetch a cleared or non-pending verification document", async () => {
-    vi.mocked(db.user.findUnique).mockResolvedValue({ verificationStatus: "APPROVED", verificationDocUrl: key } as any);
+    vi.mocked(db.user.findFirst).mockResolvedValue({ verificationStatus: "APPROVED", verificationDocUrl: key } as any);
     const response = await GET(request, context);
     expect(response.status).toBe(404);
     expect(getVerificationDocument).not.toHaveBeenCalled();

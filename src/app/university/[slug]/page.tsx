@@ -12,9 +12,16 @@ import {
   slugToUniversity,
 } from "@hostello/shared";
 
-/* ── Static params — one page per university ─────────────── */
+/*
+ * Render campus pages on first request instead of opening a database
+ * connection for every university during a deployment. Returning an empty
+ * array keeps these known paths eligible for ISR without exhausting the
+ * database connection pool while the build runs.
+ */
+export const revalidate = 300;
+
 export function generateStaticParams() {
-  return UNIVERSITIES.map((u) => ({ slug: universityToSlug(u.shortName) }));
+  return [];
 }
 
 /* ── Data ────────────────────────────────────────────────── */
@@ -86,31 +93,33 @@ export default async function UniversityPage({
 
   return (
     <PublicLayout>
-      <div className="container-app py-10">
+      <div className="university-field-page container-app py-8 md:py-10">
 
         {/* ── Hero header ──────────────────────────────────── */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary-faint)] px-3 py-1.5 mb-4">
-            <GraduationCap size={14} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
-            <span className="text-[11px] font-[600] text-[color:var(--color-primary-deep)] tracking-wide uppercase">
-              {uni.shortName}
-            </span>
+          <div className="university-field-topline">
+            <span>HOSTELLO FIELD GUIDE</span>
+            <span>CAMPUS INDEX / {uni.city.toUpperCase()}</span>
           </div>
 
-          <h1 className="text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-2"
-              style={{ fontFamily: "var(--font-heading)" }}>
-            Student hostels near {uni.shortName}
-          </h1>
-
-          <div className="flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
-            <MapPin size={14} strokeWidth={1.5} aria-hidden="true" />
-            <span>{uni.name}</span>
-            {uni.area && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span>{uni.area}, {uni.city}</span>
-              </>
-            )}
+          <div className="university-field-heading-row">
+            <div>
+              <p className="university-field-eyebrow">
+                <GraduationCap size={15} strokeWidth={1.5} aria-hidden="true" />
+                NEAR CAMPUS / {uni.shortName.toUpperCase()}
+              </p>
+              <h1 className="university-field-title">Hostels near {uni.shortName}</h1>
+              <div className="university-field-location">
+                <MapPin size={14} strokeWidth={1.5} aria-hidden="true" />
+                <span>{uni.name}</span>
+                {uni.area && <span>· {uni.area}, {uni.city}</span>}
+              </div>
+            </div>
+            <div className="university-field-stamp" aria-hidden="true">
+              <span>LIVE</span>
+              <strong>{uni.city}</strong>
+              <small>STUDENT STAYS</small>
+            </div>
           </div>
         </div>
 

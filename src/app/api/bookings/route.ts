@@ -54,6 +54,8 @@ export async function GET(req: NextRequest) {
       where.userId = userId;
       if (hostelId) where.hostelId = hostelId;
     } else if (role === "OWNER") {
+      // Owner actions and dashboards should only include settled requests.
+      where.paymentStatus = "PAID";
       if (hostelId) {
         const hostel = await db.hostel.findUnique({
           where: { id: hostelId },

@@ -15,6 +15,13 @@ const schema = z.object({
   hostelId: z.string().cuid(),
   action:   z.enum(["verify", "suspend", "activate"]),
   reason:   z.string().max(500).optional(),
+  verification: z.object({
+    ownerAuthorityChecked: z.boolean(),
+    locationChecked: z.boolean(),
+    listingDetailsChecked: z.boolean(),
+    photosChecked: z.boolean(),
+    notes: z.string().max(2_000).optional(),
+  }).optional(),
 });
 
 export async function PATCH(req: NextRequest) {
@@ -47,6 +54,18 @@ export async function PATCH(req: NextRequest) {
   }
 
   const { hostelId, action, reason } = parsed.data;
+  const verification = parsed.data.verification;
+  if (action === "verify" && (!verification || ![
+    verification.ownerAuthorityChecked,
+    verification.locationChecked,
+    verification.listingDetailsChecked,
+    verification.photosChecked,
+  ].every(Boolean))) {
+    return NextResponse.json(
+      { error: "Complete every verification check before publishing the verified badge." },
+      { status: 400 },
+    );
+  }
 
   const data: Record<string, unknown> =
     action === "verify"   ? { verified: true, status: "ACTIVE" } :
@@ -86,11 +105,31 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const result = await db.hostel.updateMany({
-      where: { id: hostelId, status: hostel.status },
-      data,
-    });
-    if (result.count !== 1) {
+    const changed = action === "verify"
+      ? await db.$transaction(async (tx) => {
+          const result = await tx.hostel.updateMany({
+            where: { id: hostelId, status: "PENDING_REVIEW" },
+            data,
+          });
+          if (result.count !== 1) return false;
+          await tx.hostelVerificationReview.create({
+            data: {
+              hostelId,
+              reviewedById: session.user.id,
+              ownerAuthorityChecked: verification!.ownerAuthorityChecked,
+              locationChecked: verification!.locationChecked,
+              listingDetailsChecked: verification!.listingDetailsChecked,
+              photosChecked: verification!.photosChecked,
+              notes: verification!.notes?.trim() || null,
+            },
+          });
+          return true;
+        })
+      : (await db.hostel.updateMany({
+          where: { id: hostelId, status: hostel.status },
+          data,
+        })).count === 1;
+    if (!changed) {
       return NextResponse.json(
         { error: "This listing has already changed. Refresh the moderation queue and try again." },
         { status: 409 },

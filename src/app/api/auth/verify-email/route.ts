@@ -6,7 +6,6 @@ import { readBoundedText } from "@/lib/bounded-json";
 import { getIp, rateLimit } from "@/lib/rate-limit";
 import { hashOneTimeToken } from "@/lib/one-time-token";
 
-const APP_URL = getAppOrigin();
 const MAX_TOKEN_LENGTH = 64;
 const MAX_QUERY_LENGTH = 128;
 const MAX_BODY_BYTES = 256;
@@ -114,7 +113,7 @@ function tokenLookupValues(token: string): string[] {
 }
 
 function redirectToLogin(query: Record<string, string>) {
-  const url = new URL("/login", APP_URL);
+  const url = new URL("/login", getAppOrigin());
   for (const [key, value] of Object.entries(query)) url.searchParams.set(key, value);
   return NextResponse.redirect(url, 303);
 }

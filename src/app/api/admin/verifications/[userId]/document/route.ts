@@ -36,8 +36,8 @@ export async function GET(_req: NextRequest, { params }: Context) {
   if (!isBoundedRouteParam(userId)) {
     return NextResponse.json({ error: "Document not found." }, { status: 404 });
   }
-  const user = await db.user.findUnique({
-    where: { id: userId },
+  const user = await db.user.findFirst({
+    where: { id: userId, role: "STUDENT", verificationStatus: "PENDING" },
     select: { verificationStatus: true, verificationDocUrl: true },
   });
   if (user?.verificationStatus !== "PENDING" || !user.verificationDocUrl) {

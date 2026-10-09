@@ -5,17 +5,9 @@ export const metadata = { title: "Add new listing" };
 
 export default function NewListingPage() {
   return (
-    <div className="py-2">
-      <div className="mb-8">
-        <h1
-          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
-
-        >
-          Add new listing
-        </h1>
-        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mt-1">
-          Complete all steps to submit your hostel for review.
-        </p>
+    <div className="owner-listing-form-page py-2">
+      <div className="owner-form-intro mb-5">
+        <p>Six short steps take your property from first details to a review-ready listing.</p>
       </div>
       <ListingFormWizard mode="create" />
     </div>

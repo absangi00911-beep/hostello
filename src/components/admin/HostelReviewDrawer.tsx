@@ -1,7 +1,7 @@
 "use client";
 // Path: src/components/admin/HostelReviewDrawer.tsx
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { X, MapPin, Users, BedDouble, Star, ShieldCheck, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -41,11 +41,26 @@ interface HostelReviewDrawerProps {
   hostelId: string;
   hostelName: string;
   onClose: () => void;
-  onApprove: () => void;
+  onApprove: (verification: VerificationChecklist) => void;
   onSuspend: () => void;
   status: string;
   actionLoading: boolean;
 }
+
+export interface VerificationChecklist {
+  ownerAuthorityChecked: boolean;
+  locationChecked: boolean;
+  listingDetailsChecked: boolean;
+  photosChecked: boolean;
+  notes?: string;
+}
+
+const VERIFICATION_CHECKS = [
+  { key: "ownerAuthorityChecked", label: "Owner’s authority to manage this property was checked" },
+  { key: "locationChecked", label: "The address and location were independently checked" },
+  { key: "listingDetailsChecked", label: "Price, room details, and capacity were checked" },
+  { key: "photosChecked", label: "Photos were reviewed for consistency with this property" },
+] as const;
 
 function formatPKR(n: number) {
   return `Rs. ${n.toLocaleString("en-PK")}`;
@@ -60,6 +75,14 @@ export function HostelReviewDrawer({
   status,
   actionLoading,
 }: HostelReviewDrawerProps) {
+  const [checks, setChecks] = useState({
+    ownerAuthorityChecked: false,
+    locationChecked: false,
+    listingDetailsChecked: false,
+    photosChecked: false,
+  });
+  const [verificationNotes, setVerificationNotes] = useState("");
+  const allChecksComplete = Object.values(checks).every(Boolean);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useModalFocus({ dialogRef, initialFocusRef: closeButtonRef, onEscape: onClose });
@@ -323,6 +346,42 @@ export function HostelReviewDrawer({
                   Open full listing page
                 </Link>
               </section>
+
+              {status === "PENDING_REVIEW" && (
+                <section className="mx-4 mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-4">
+                  <h3 className="text-[length:var(--text-label)] font-[700] uppercase tracking-wide text-[color:var(--color-text-heading)]">
+                    Verification record
+                  </h3>
+                  <p className="mt-1 text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
+                    Check each item only after reviewing it. The checklist and your admin ID are saved with the listing; private documents are not stored here.
+                  </p>
+                  <div className="mt-3 space-y-2.5">
+                    {VERIFICATION_CHECKS.map(({ key, label }) => (
+                      <label key={key} className="flex cursor-pointer items-start gap-2.5 text-[length:var(--text-body-sm)] leading-snug text-[color:var(--color-text-body)]">
+                        <input
+                          type="checkbox"
+                          checked={checks[key]}
+                          onChange={(event) => setChecks((current) => ({ ...current, [key]: event.target.checked }))}
+                          className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                  <label className="mt-3 block text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-muted)]" htmlFor="verification-notes">
+                    Review notes (optional)
+                  </label>
+                  <textarea
+                    id="verification-notes"
+                    value={verificationNotes}
+                    onChange={(event) => setVerificationNotes(event.target.value)}
+                    maxLength={2_000}
+                    rows={2}
+                    className="mt-1.5 w-full resize-y rounded-[var(--radius-sm)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-2.5 py-2 text-[length:var(--text-caption)] text-[color:var(--color-text-body)]"
+                    placeholder="Record the source or any follow-up needed"
+                  />
+                </section>
+              )}
             </div>
           )}
         </div>
@@ -340,8 +399,8 @@ export function HostelReviewDrawer({
             </button>
             {/* Primary action — action green */}
             <button
-              onClick={onApprove}
-              disabled={actionLoading}
+              onClick={() => onApprove({ ...checks, notes: verificationNotes.trim() || undefined })}
+              disabled={actionLoading || !allChecksComplete}
               className="flex-1 h-9 rounded-[var(--radius-md)] text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] bg-[var(--color-action)] transition-colors duration-[var(--transition-base)] disabled:opacity-50 hover:bg-[var(--color-action-dark)]"
             >
               Approve &amp; publish

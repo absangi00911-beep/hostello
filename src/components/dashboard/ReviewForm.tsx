@@ -127,7 +127,7 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
   const canSubmit = rating > 0 && comment.trim().length >= 10;
 
   return (
-    <div>
+    <div className="student-review-page">
       <Link
         href="/dashboard/bookings"
         className="inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)] hover:text-[color:var(--color-primary)] transition-colors duration-[var(--transition-fast)]"
@@ -136,7 +136,7 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
         Back to Bookings
       </Link>
 
-      <h1 className="mt-3 font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
+      <h1 className="student-review-heading mt-3 font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
         {existingReview ? "Edit Your Review" : "Leave a Review"}
       </h1>
       <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">

@@ -53,6 +53,7 @@ export async function createHostelRecord(
       rooms: data.rooms,
       capacity: data.capacity,
       gender: data.gender,
+      cancellationPolicy: data.cancellationPolicy,
       minStay: data.minStay,
       maxStay: data.maxStay ?? null,
       amenities: data.amenities,
