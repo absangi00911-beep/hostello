@@ -88,6 +88,36 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
   };
 }
 
+/** Reminds the owner that a paid request is approaching its response deadline. */
+export function bookingOwnerReminderEmail(props: BookingEmailProps & { responseDueAt: Date }) {
+  const APP_URL = getAppUrl();
+  const escapedStudentName = escapeHtml(props.studentName);
+  const escapedHostelName = escapeHtml(props.hostelName);
+  const deadline = new Intl.DateTimeFormat("en-PK", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Karachi",
+  }).format(props.responseDueAt);
+
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1A1209;">Booking request needs a response</h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
+      ${escapedStudentName} is waiting for a response about <strong>${escapedHostelName}</strong>.
+      Please confirm or decline by <strong>${escapeHtml(deadline)} PKT</strong>.
+    </p>
+    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+      If you do not respond by the deadline, the booking request will be cancelled and the student will receive a full refund.
+    </p>
+    ${emailButton("Review booking", `${APP_URL}/owner/bookings`)}
+  `;
+
+  return {
+    to: props.ownerEmail,
+    subject: `Response needed by ${deadline} — ${escapedHostelName}`,
+    html: emailLayout(content, `A student is waiting for your response.`),
+  };
+}
+
 /**
  * Email sent to the STUDENT confirming their booking request was received.
  * They need: reference ID, hostel name, dates, what happens next.

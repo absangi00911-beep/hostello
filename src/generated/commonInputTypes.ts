@@ -260,6 +260,23 @@ export type EnumPayoutStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumPayoutStatusFilter<$PrismaModel>
 }
 
+export type EnumPayoutAuditActionFilter<$PrismaModel = never> = {
+  equals?: $Enums.PayoutAuditAction | Prisma.EnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  in?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel> | $Enums.PayoutAuditAction
+}
+
+export type EnumPayoutAuditActionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PayoutAuditAction | Prisma.EnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  in?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPayoutAuditActionWithAggregatesFilter<$PrismaModel> | $Enums.PayoutAuditAction
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel>
+}
+
 export type IntNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
@@ -312,6 +329,13 @@ export type EnumGenderFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumGenderFilter<$PrismaModel> | $Enums.Gender
 }
 
+export type EnumCancellationPolicyNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CancellationPolicy | Prisma.EnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel> | $Enums.CancellationPolicy | null
+}
+
 export type FloatFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -357,6 +381,16 @@ export type EnumGenderWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumGenderFilter<$PrismaModel>
   _max?: Prisma.NestedEnumGenderFilter<$PrismaModel>
+}
+
+export type EnumCancellationPolicyNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CancellationPolicy | Prisma.EnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCancellationPolicyNullableWithAggregatesFilter<$PrismaModel> | $Enums.CancellationPolicy | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel>
 }
 
 export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -749,6 +783,23 @@ export type NestedEnumPayoutStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumPayoutStatusFilter<$PrismaModel>
 }
 
+export type NestedEnumPayoutAuditActionFilter<$PrismaModel = never> = {
+  equals?: $Enums.PayoutAuditAction | Prisma.EnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  in?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel> | $Enums.PayoutAuditAction
+}
+
+export type NestedEnumPayoutAuditActionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PayoutAuditAction | Prisma.EnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  in?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PayoutAuditAction[] | Prisma.ListEnumPayoutAuditActionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPayoutAuditActionWithAggregatesFilter<$PrismaModel> | $Enums.PayoutAuditAction
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPayoutAuditActionFilter<$PrismaModel>
+}
+
 export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
@@ -790,6 +841,13 @@ export type NestedEnumGenderFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumGenderFilter<$PrismaModel> | $Enums.Gender
 }
 
+export type NestedEnumCancellationPolicyNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CancellationPolicy | Prisma.EnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel> | $Enums.CancellationPolicy | null
+}
+
 export type NestedEnumHostelStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.HostelStatus | Prisma.EnumHostelStatusFieldRefInput<$PrismaModel>
   in?: $Enums.HostelStatus[] | Prisma.ListEnumHostelStatusFieldRefInput<$PrismaModel>
@@ -824,6 +882,16 @@ export type NestedEnumGenderWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumGenderFilter<$PrismaModel>
   _max?: Prisma.NestedEnumGenderFilter<$PrismaModel>
+}
+
+export type NestedEnumCancellationPolicyNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CancellationPolicy | Prisma.EnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CancellationPolicy[] | Prisma.ListEnumCancellationPolicyFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCancellationPolicyNullableWithAggregatesFilter<$PrismaModel> | $Enums.CancellationPolicy | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCancellationPolicyNullableFilter<$PrismaModel>
 }
 
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {

@@ -109,11 +109,16 @@ export async function POST(req: NextRequest) {
         avatar:        true,
         emailVerified: true,
         tokenVersion:  true,
+        deletionRequestedAt: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    if (user.deletionRequestedAt) {
+      return NextResponse.json({ error: "Account deletion is being processed" }, { status: 401 });
     }
 
     if (user.tokenVersion !== tokenPayload.tokenVersion) {

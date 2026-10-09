@@ -13,9 +13,5 @@ function run(command) {
   }
 }
 
-if (process.env.VERCEL_ENV === "preview") {
-  console.log("[vercel-build] Applying Prisma migrations to the Preview database.");
-  run("npm run db:migrate:deploy");
-}
-
+console.log("[vercel-build] Building application; database migrations run through explicit workflows.");
 run("npm run build");

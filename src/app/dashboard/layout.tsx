@@ -17,11 +17,15 @@ export default async function DashboardLayout({
   return (
     <PublicLayout noFooter>
       {/* Constrained to 1024px per spec */}
-      <div className="mx-auto w-full max-w-[1024px] px-4 md:px-6 py-6 pb-24 md:pb-10">
+      <div className="student-dashboard-shell mx-auto w-full max-w-[1120px] px-4 md:px-6 py-6 pb-24 md:py-10 md:pb-12">
         {/* Page heading */}
-        <div className="mb-6">
+        <div className="student-dashboard-masthead mb-6">
+          <div className="student-dashboard-topline">
+            <span>HOSTELLO · STUDENT FIELD DESK</span>
+            <span>ACCOUNT / 01</span>
+          </div>
           <h1
-            className="student-dashboard-title font-heading font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
+            className="student-dashboard-title text-[color:var(--color-text-heading)]"
 
           >
             My account
@@ -35,7 +39,7 @@ export default async function DashboardLayout({
         <DashboardTabs />
 
         {/* Tab content */}
-        <div className="mt-6">{children}</div>
+        <div className="student-dashboard-content mt-6">{children}</div>
       </div>
     </PublicLayout>
   );

@@ -5,9 +5,9 @@
 **Never use `prisma db push` on `main`, `dev`, or any shared branch.**
 
 `db push` applies schema changes directly to the database without writing a migration file.
-Production deployments on Vercel run `prisma migrate deploy`, which reads only from
-`prisma/migrations/`. Any change made with `db push` is invisible to `migrate deploy` and will
-cause a production schema mismatch — silently, or with a build failure that is hard to diagnose.
+Deployments run `prisma migrate deploy`, which reads only from `prisma/migrations/`. Any change
+made with `db push` is invisible to `migrate deploy` and will cause a schema mismatch — silently,
+or with a build failure that is hard to diagnose.
 
 This rule also applies to your local Neon dev branch if it is shared with other engineers.
 Use a personal Neon branch for experimentation; run `migrate:new` before merging.
@@ -44,9 +44,12 @@ npm run db:migrate:deploy
 
 The production GitHub Actions workflow runs this command after the quality gate using
 `vercel env run -e production`, so the database URL stays in Vercel's Production environment.
+Preview builds never apply migrations. To migrate Preview, manually dispatch
+`.github/workflows/migrate-preview.yml` from the `preview` branch. The workflow compares the
+injected Preview database host and name with the configured `preview-migrations` GitHub Environment
+variables and refuses to run if they do not match or match the configured Production identity.
 `prisma migrate deploy` applies pending migrations in `prisma/migrations/`; it does **not**
-generate new migrations. Pull-request preview builds do not apply migrations; manage non-production
-schema changes separately and keep the preview database compatible before checking data-backed routes.
+generate new migrations.
 
 The migration command is declared in `package.json` as `db:migrate:deploy`. Vercel's build command
 remains `npm run build`, which performs Prisma Client generation and the Next.js artifact build.
@@ -80,7 +83,7 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
 
 ## Existing migrations (do not touch)
 
-**Last audited:** October 5, 2026. The repository currently has 21 migration
+**Last audited:** October 9, 2026. The repository currently has 28 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -107,6 +110,13 @@ migration is committed.
 | 20260815000000 | add_review_would_recommend |
 | 20260822095900 | add_safety_score |
 | 20260914111135 | add_student_verification_notification_types |
+| 20261008082955 | payment_reconciliation_ledger |
+| 20261009120000 | cancellation_policy_and_hostel_review |
+| 20261009123000 | audited_payout_cancellation |
+| 20261009130000 | payout_destination_snapshot |
+| 20261009133000 | payout_audit_ledger |
+| 20261009140000 | safepay_webhook_operator_retries |
+| 20261009150000 | resumable_account_deletion |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL

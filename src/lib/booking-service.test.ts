@@ -44,6 +44,7 @@ function makeHostel(overrides = {}) {
     status:        "ACTIVE",
     pricePerMonth: 10000,
     capacity:      20,
+    cancellationPolicy: "STANDARD",
     ...overrides,
   };
 }
@@ -96,6 +97,9 @@ function makeTx(overrides: {
   bookingCreate?: any;
 } = {}) {
   const tx = {
+    user: {
+      findUnique: vi.fn().mockResolvedValue({ deletionRequestedAt: null }),
+    },
     room: {
       update: vi.fn().mockResolvedValue(
         overrides.roomUpdate ?? makeRoom({ available: 1, version: 2 }),
@@ -284,6 +288,7 @@ describe("createBooking — optimistic lock conflict", () => {
       if (transactionCount === 1) {
         // First transaction: room.update succeeds (version matches)
         const tx = {
+          user: { findUnique: vi.fn().mockResolvedValue({ deletionRequestedAt: null }) },
           room: {
             update: vi.fn().mockResolvedValue(
               makeRoom({ available: 0, version: 4 }),
@@ -298,6 +303,7 @@ describe("createBooking — optimistic lock conflict", () => {
         // Second transaction: Prisma throws because version: 3 no longer exists
         // (first booking already incremented it to 4)
         const tx = {
+          user: { findUnique: vi.fn().mockResolvedValue({ deletionRequestedAt: null }) },
           room: {
             update: vi.fn().mockRejectedValue(
               Object.assign(new Error("Record to update not found."), {
@@ -329,6 +335,7 @@ describe("createBooking — optimistic lock conflict", () => {
     // Transaction succeeds but leaves available at -1 (race: two guests took the last spot)
     vi.mocked(db.$transaction).mockImplementation(async (cb: any) => {
       const tx = {
+        user: { findUnique: vi.fn().mockResolvedValue({ deletionRequestedAt: null }) },
         room: {
           update: vi.fn().mockResolvedValue(
             makeRoom({ available: -1, version: 2 }),
@@ -350,6 +357,7 @@ describe("createBooking — optimistic lock conflict", () => {
 
     vi.mocked(db.$transaction).mockImplementation(async (cb: any) => {
       const tx = {
+        user: { findUnique: vi.fn().mockResolvedValue({ deletionRequestedAt: null }) },
         room: {
           update: vi.fn().mockResolvedValue(
             makeRoom({ available: 0, version: 2 }), // exactly 0 — valid

@@ -40,7 +40,7 @@ const GENDER_LABELS = {
 
 interface HostelCardProps {
   hostel: HostelCardData;
-  /** Compact horizontal layout — used in comparison, favorites list */
+  /** Compact horizontal layout — used in favorites lists */
   compact?: boolean;
   priority?: boolean;
   /**
@@ -52,16 +52,6 @@ interface HostelCardProps {
    */
   isFavorited?: boolean;
   onToggleFavorite?: (hostelId: string) => void;
-  /**
-   * Extra control rendered as a sibling of the card's link, stacked below
-   * the heart/share buttons (top-right) — e.g. CompareToggle. Kept
-   * generic on purpose: this component shouldn't need to know what
-   * compare, or anything else that wants this slot, actually does. Must
-   * not be an element that needs to sit inside the <Link> (a <button>
-   * there would be invalid HTML nested inside an <a>), which is exactly
-   * why this renders outside it, same as the heart and share buttons do.
-   */
-  extraActions?: React.ReactNode;
 }
 
 export function HostelCard({
@@ -70,7 +60,6 @@ export function HostelCard({
   priority = false,
   isFavorited,
   onToggleFavorite,
-  extraActions,
 }: HostelCardProps) {
   const coverSrc = hostel.coverImage ?? hostel.images[0] ?? null;
   const GenderIcon = GENDER_LABELS[hostel.gender].icon;
@@ -93,10 +82,7 @@ export function HostelCard({
     }
   }
 
-  // Airbnb-style hover-scrub: move across the image to preview other
-  // photos, no separate clickable dots (which would have to nest a
-  // <button> inside the card's <a>, invalid HTML). Dots below are a
-  // pure, non-interactive readout of this state.
+  // Hover-scrub previews other photos while keeping the full card a single link.
   function handleImageMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (galleryImages.length <= 1) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -165,7 +151,7 @@ export function HostelCard({
         {/* Photo — the hero. No overlay text, no gradient wash; badges
             carry their own contrast so the image stays clean. */}
         <div
-          className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-bg-overlay)] transition-shadow duration-[var(--transition-base)] group-hover:shadow-[var(--shadow-md)]"
+          className="relative aspect-[1.14] overflow-hidden rounded-tl-[44px] rounded-tr-[8px] rounded-br-[8px] rounded-bl-[8px] bg-[var(--color-bg-overlay)] ring-1 ring-inset ring-black/[0.035] transition-[box-shadow] duration-[var(--transition-medium)] group-hover:shadow-[var(--shadow-lg)]"
           onMouseMove={handleImageMouseMove}
           onMouseLeave={handleImageMouseLeave}
         >
@@ -175,7 +161,7 @@ export function HostelCard({
               alt={hostel.name}
               fill
               priority={priority}
-              className="object-cover transition-transform duration-[var(--transition-slow)] group-hover:scale-[1.03]"
+              className="object-cover transition-transform duration-[var(--transition-slow)] group-hover:scale-[1.045]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
@@ -222,10 +208,10 @@ export function HostelCard({
           )}
         </div>
 
-        {/* Info — below the image, Airbnb's structure, not overlaid on it */}
-        <div className="space-y-1.5 pt-3">
+        {/* Editorial listing details sit below the photo for easy scanning. */}
+        <div className="space-y-2 pt-3.5">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="hostel-card-title truncate font-heading text-[length:var(--text-body)] font-[600] leading-snug text-[color:var(--color-text-heading)]">
+            <h3 className="hostel-card-title line-clamp-2 min-h-[2.3em] font-display text-[1.3rem] font-[600] leading-tight tracking-[-0.02em] text-[color:var(--color-text-heading)]">
               {hostel.name}
             </h3>
             {hostel.reviewCount > 0 && (
@@ -242,19 +228,17 @@ export function HostelCard({
             {hostel.reviewCount > 0 && ` • ${hostel.reviewCount} review${hostel.reviewCount !== 1 ? "s" : ""}`}
           </p>
 
-          <div className="flex flex-wrap gap-1.5 pt-0.5">
-            {chips.slice(0, 3).map((chip) => (
-              <span
-                key={chip}
-                className="inline-flex items-center rounded-[var(--radius-full)] border border-[var(--color-border-default)] px-2.5 py-1 text-[10px] font-[600] uppercase tracking-[0.04em] text-[color:var(--color-text-muted)]"
-              >
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 font-mono text-[9px] font-[500] uppercase tracking-[0.1em] text-[color:var(--color-text-muted)]">
+            {chips.slice(0, 3).map((chip, index) => (
+              <span key={chip} className="inline-flex items-center gap-2">
+                {index > 0 && <span className="text-[color:var(--color-primary)]" aria-hidden="true">·</span>}
                 {chip}
               </span>
             ))}
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-1.5">
-            <p className="text-[1.05rem] font-[700] text-[color:var(--color-text-heading)]">
+            <p className="font-display text-[1.3rem] font-[600] leading-none text-[color:var(--color-text-heading)]">
               {formatPKR(hostel.pricePerMonth)}
               <span className="text-[length:var(--text-body-sm)] font-[400] text-[color:var(--color-text-muted)]"> /mo</span>
             </p>
@@ -294,11 +278,6 @@ export function HostelCard({
         variant="card"
       />
 
-      {extraActions && (
-        <div className="absolute right-3 top-[6.25rem] z-10">
-          {extraActions}
-        </div>
-      )}
     </div>
   );
 }

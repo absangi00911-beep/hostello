@@ -52,9 +52,11 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  AccountDeletionJob: 'AccountDeletionJob',
   DeviceToken: 'DeviceToken',
   Subscription: 'Subscription',
   Payout: 'Payout',
+  PayoutAuditEvent: 'PayoutAuditEvent',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
@@ -62,8 +64,10 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
+  SafepayWebhookReplayEvent: 'SafepayWebhookReplayEvent',
   Review: 'Review',
   PasswordResetToken: 'PasswordResetToken',
   Favorite: 'Favorite',
@@ -107,6 +111,7 @@ export const UserScalarFieldEnum = {
   bio: 'bio',
   city: 'city',
   tokenVersion: 'tokenVersion',
+  deletionRequestedAt: 'deletionRequestedAt',
   emailNotifications: 'emailNotifications',
   studentVerified: 'studentVerified',
   verificationStatus: 'verificationStatus',
@@ -123,6 +128,25 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AccountDeletionJobScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  subjectHash: 'subjectHash',
+  status: 'status',
+  phase: 'phase',
+  cursor: 'cursor',
+  retainsFinancialHistory: 'retainsFinancialHistory',
+  verificationObjectKey: 'verificationObjectKey',
+  attemptCount: 'attemptCount',
+  lastErrorCode: 'lastErrorCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type AccountDeletionJobScalarFieldEnum = (typeof AccountDeletionJobScalarFieldEnum)[keyof typeof AccountDeletionJobScalarFieldEnum]
 
 
 export const DeviceTokenScalarFieldEnum = {
@@ -158,13 +182,31 @@ export const PayoutScalarFieldEnum = {
   amount: 'amount',
   status: 'status',
   reference: 'reference',
+  destinationSnapshot: 'destinationSnapshot',
   createdAt: 'createdAt',
   createdBy: 'createdBy',
   paidAt: 'paidAt',
-  paidBy: 'paidBy'
+  paidBy: 'paidBy',
+  cancelledAt: 'cancelledAt',
+  cancelledBy: 'cancelledBy',
+  cancellationReason: 'cancellationReason'
 } as const
 
 export type PayoutScalarFieldEnum = (typeof PayoutScalarFieldEnum)[keyof typeof PayoutScalarFieldEnum]
+
+
+export const PayoutAuditEventScalarFieldEnum = {
+  id: 'id',
+  payoutId: 'payoutId',
+  actorId: 'actorId',
+  action: 'action',
+  amount: 'amount',
+  reference: 'reference',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type PayoutAuditEventScalarFieldEnum = (typeof PayoutAuditEventScalarFieldEnum)[keyof typeof PayoutAuditEventScalarFieldEnum]
 
 
 export const AccountScalarFieldEnum = {
@@ -232,6 +274,7 @@ export const HostelScalarFieldEnum = {
   gender: 'gender',
   minStay: 'minStay',
   maxStay: 'maxStay',
+  cancellationPolicy: 'cancellationPolicy',
   amenities: 'amenities',
   rules: 'rules',
   images: 'images',
@@ -277,6 +320,9 @@ export const BookingScalarFieldEnum = {
   months: 'months',
   guests: 'guests',
   total: 'total',
+  cancellationPolicy: 'cancellationPolicy',
+  cancellationRefundAmount: 'cancellationRefundAmount',
+  refundedAmount: 'refundedAmount',
   paymentStatus: 'paymentStatus',
   paymentMethod: 'paymentMethod',
   transactionId: 'transactionId',
@@ -284,6 +330,8 @@ export const BookingScalarFieldEnum = {
   refundedAt: 'refundedAt',
   refundedBy: 'refundedBy',
   status: 'status',
+  ownerResponseDueAt: 'ownerResponseDueAt',
+  ownerResponseReminderSentAt: 'ownerResponseReminderSentAt',
   notes: 'notes',
   payoutId: 'payoutId',
   createdAt: 'createdAt',
@@ -291,6 +339,21 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const HostelVerificationReviewScalarFieldEnum = {
+  id: 'id',
+  hostelId: 'hostelId',
+  reviewedById: 'reviewedById',
+  ownerAuthorityChecked: 'ownerAuthorityChecked',
+  locationChecked: 'locationChecked',
+  listingDetailsChecked: 'listingDetailsChecked',
+  photosChecked: 'photosChecked',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type HostelVerificationReviewScalarFieldEnum = (typeof HostelVerificationReviewScalarFieldEnum)[keyof typeof HostelVerificationReviewScalarFieldEnum]
 
 
 export const RefundAuditEventScalarFieldEnum = {
@@ -333,6 +396,18 @@ export const SafepayWebhookEventScalarFieldEnum = {
 } as const
 
 export type SafepayWebhookEventScalarFieldEnum = (typeof SafepayWebhookEventScalarFieldEnum)[keyof typeof SafepayWebhookEventScalarFieldEnum]
+
+
+export const SafepayWebhookReplayEventScalarFieldEnum = {
+  id: 'id',
+  webhookEventId: 'webhookEventId',
+  adminUserId: 'adminUserId',
+  providerTracker: 'providerTracker',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type SafepayWebhookReplayEventScalarFieldEnum = (typeof SafepayWebhookReplayEventScalarFieldEnum)[keyof typeof SafepayWebhookReplayEventScalarFieldEnum]
 
 
 export const ReviewScalarFieldEnum = {

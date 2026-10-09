@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PartyPopper, CalendarClock, MessageCircleMore, Zap } from "lucide-react";
+import { PartyPopper, CalendarClock, MessageCircleMore } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Listing submitted" };
@@ -19,12 +19,6 @@ const NEXT_STEPS = [
     title: "Watch for booking requests",
     body: "Reply quickly once you're approved — students tend to book whoever answers first.",
     href: "/owner/messages",
-  },
-  {
-    icon: Zap,
-    title: "Go Pro for more visibility",
-    body: "Unlimited listings and featured placement in search, for PKR 3,000/month.",
-    href: "/owner/subscription",
   },
 ] as const;
 
@@ -57,7 +51,7 @@ export default async function ListingSuccessPage({
         <h2 className="text-[length:var(--text-label)] font-[700] uppercase tracking-[0.06em] text-[color:var(--color-text-muted)]">
           While you wait
         </h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-3">
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
           {NEXT_STEPS.map(({ icon: Icon, title, body, href }) => (
             <Link
               key={title}

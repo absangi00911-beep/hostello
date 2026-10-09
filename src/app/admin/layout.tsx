@@ -8,7 +8,7 @@ async function getPendingCounts() {
   try {
     const [hostels, verifications] = await Promise.all([
       db.hostel.count({ where: { status: "PENDING_REVIEW" } }),
-      db.user.count({ where: { verificationStatus: "PENDING" } }),
+      db.user.count({ where: { role: "STUDENT", verificationStatus: "PENDING" } }),
     ]);
     return { hostels, verifications };
   } catch {

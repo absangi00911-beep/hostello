@@ -27,9 +27,10 @@ export default function PrivacyPage() {
 
   return (
     <PublicLayout>
-      <div className="mx-auto max-w-[720px] px-4 py-12 md:py-16">
+      <div className="legal-editorial-page mx-auto max-w-[760px] px-4 py-12 md:py-16">
         {/* Header */}
-        <div className="mb-10">
+        <div className="legal-editorial-heading mb-10">
+          <div className="student-page-overline"><span>HOSTELLO · TRUST NOTES</span><span>01 / POLICY</span></div>
           <h1
             className="font-heading text-[length:var(--text-h1)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
 

@@ -120,16 +120,17 @@ export function Navbar() {
 
   const navItems = [
     { href: "/about", label: "About" },
+    { href: "/help", label: "Help" },
     { href: "/contact", label: "Contact" },
   ];
 
   return (
     <>
       <header
-        className="sticky top-0 z-40 w-full border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]"
+        className="sticky top-0 z-40 w-full border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] shadow-[0_1px_0_rgb(49_39_28_/_0.02)]"
         role="banner"
       >
-        <div className="container-app flex h-20 items-center gap-3 md:gap-4">
+        <div className="container-app flex h-[72px] items-center gap-3 md:gap-4">
           <Logo />
 
           {/* Search cluster: city selector + search trigger, the nav's

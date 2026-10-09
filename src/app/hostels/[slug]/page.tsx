@@ -11,13 +11,12 @@ import {
   CheckCircle2,
   XCircle,
   User,
-  Users,
+  MapPin,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ImageGallery } from "@/components/hostel/ImageGallery";
 import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
 import { BookingPanel } from "@/components/hostel/BookingPanel";
-import { RoommateBoard } from "@/components/hostel/RoommateBoard";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
 import { StatusBadge, formatPKR } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
@@ -128,9 +127,7 @@ export default async function HostelDetailPage({
 }) {
   const { slug } = await params;
   const session = await auth();
-  const currentUserId = session?.user.id ?? null;
   const currentUserRole = session?.user.role ?? null;
-  const canViewRoommates = currentUserRole === "STUDENT";
   const canRequestBooking = !session || currentUserRole === "STUDENT";
   const hostel = await getHostel(slug);
 
@@ -151,71 +148,69 @@ export default async function HostelDetailPage({
 
   return (
     <PublicLayout noFooter={false}>
-      {/* ── Image gallery — full width, no sidebar ──────── */}
-      <ImageGallery
-        images={hostel.images ?? []}
-        hostelName={hostel.name}
-      />
+      <div className="container-app hostel-detail-shell">
+        <header className="hostel-detail-masthead">
+          <div className="hostel-detail-topline">
+            <p className="hostel-detail-kicker">A HOSTELLO FIELD NOTE</p>
+            <p className="hostel-detail-edition">STAYS / {hostel.city.toUpperCase()}</p>
+          </div>
 
-      {/* ── Main layout: 8-col content + 4-col booking ─── */}
-      <div className="container-app">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 py-8 pb-32 lg:pb-12">
-
-          {/* ── LEFT: content area ─────────────────────── */}
-          <div className="min-w-0">
-            {/* Header */}
-            <div className="mb-6">
-              {/* City + status chips */}
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-2.5 py-0.5 rounded-full">
-                  {hostel.city}{hostel.area ? `, ${hostel.area}` : ""}
-                </span>
+          <div className="hostel-detail-title-row">
+            <div className="min-w-0">
+              <p className="hostel-detail-location">
+                <MapPin size={14} strokeWidth={1.6} aria-hidden="true" />
+                {hostel.city}{hostel.area ? ` · ${hostel.area}` : ""}
+              </p>
+              <h1 className="hostel-detail-title">{hostel.name}</h1>
+              <div className="hostel-detail-badges">
                 {hostel.verified && (
-                  <span className="flex items-center gap-1 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-primary-deep)] bg-[var(--color-primary-faint)] px-2.5 py-0.5 rounded-full">
-                    <ShieldCheck size={11} strokeWidth={1.5} aria-hidden="true" />
-                    Verified
+                  <span className="hostel-detail-verified">
+                    <ShieldCheck size={14} strokeWidth={1.6} aria-hidden="true" />
+                    Verified listing
                   </span>
                 )}
                 <StatusBadge
                   variant={hostel.gender.toLowerCase() as "male" | "female" | "mixed"}
                 />
               </div>
+            </div>
 
-              {/* Hostel name — H2 */}
-              <h1
-                className="hostel-detail-title mb-2 font-heading font-[700] text-[color:var(--color-text-heading)] leading-tight tracking-[-0.02em]"
-
-              >
-                {hostel.name}
-              </h1>
-
-              {/* Rating + review count */}
+            <div className="hostel-detail-actions">
               {hostel.reviewCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <Star
-                    size={15}
-                    strokeWidth={1.5}
-                    className="text-[color:var(--color-primary)] fill-[var(--color-primary)]"
-                    aria-hidden="true"
-                  />
-                  <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">
-                    {hostel.rating.toFixed(1)}
-                  </span>
-                  <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
-                    ({hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""})
+                <div className="hostel-detail-rating" aria-label={`${hostel.rating.toFixed(1)} out of 5, ${hostel.reviewCount} reviews`}>
+                  <Star size={15} strokeWidth={1.5} aria-hidden="true" />
+                  <span>{hostel.rating.toFixed(1)}</span>
+                  <span className="hostel-detail-review-count">
+                    {hostel.reviewCount} review{hostel.reviewCount !== 1 ? "s" : ""}
                   </span>
                 </div>
               )}
-
-              <div className="flex items-center gap-3 mt-3">
-                <ShareButton
-                  url={hostelUrl}
-                  name={hostel.name}
-                  price={hostel.pricePerMonth}
-                  variant="detail"
-                />
-              </div>
+              <ShareButton
+                url={hostelUrl}
+                name={hostel.name}
+                price={hostel.pricePerMonth}
+                variant="detail"
+              />
             </div>
+          </div>
+
+          <div className="hostel-detail-colophon" aria-hidden="true">
+            <span>ROOM TO FIND YOUR RHYTHM</span>
+            <span>HOSTELLO · PAKISTAN</span>
+          </div>
+        </header>
+
+        <div className="hostel-detail-gallery-frame">
+          <ImageGallery images={hostel.images ?? []} hostelName={hostel.name} />
+        </div>
+      </div>
+
+      {/* ── Main layout: 8-col content + 4-col booking ─── */}
+      <div className="container-app">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8 lg:gap-12 py-8 pb-32 lg:pb-12">
+
+          {/* ── LEFT: content area ─────────────────────── */}
+          <div className="hostel-detail-content min-w-0">
 
             {/* Owner info strip */}
             <div className="flex items-center gap-3 py-4 border-y border-[var(--color-border-subtle)] mb-6">
@@ -251,7 +246,7 @@ export default async function HostelDetailPage({
               />
             </div>
 
-            {/* Tabs: Details / Rooms / Reviews / Roommates / Location */}
+            {/* Tabs: Details / Rooms / Reviews / Location */}
             <Tabs defaultValue="details">
               <TabsList className="flex w-max min-w-full max-w-full justify-start overflow-x-auto border-b border-[var(--color-border-subtle)] bg-transparent p-0 mb-6 gap-0 rounded-none h-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <TabsTrigger
@@ -277,15 +272,6 @@ export default async function HostelDetailPage({
                     </span>
                   )}
                 </TabsTrigger>
-                {canViewRoommates && (
-                  <TabsTrigger
-                    value="roommates"
-                    className={TAB_TRIGGER_CLS}
-                  >
-                    <Users size={14} strokeWidth={1.5} aria-hidden="true" />
-                    Roommates
-                  </TabsTrigger>
-                )}
                 <TabsTrigger
                   value="location"
                   className={TAB_TRIGGER_CLS}
@@ -457,17 +443,6 @@ export default async function HostelDetailPage({
                 )}
               </TabsContent>
 
-              {/* ── Roommates tab ─────────────────────────── */}
-              {canViewRoommates && (
-                <TabsContent value="roommates" className="mt-0">
-                  <RoommateBoard
-                    hostelId={hostel.id}
-                    hostelName={hostel.name}
-                    currentUserId={currentUserId}
-                    currentUserRole={currentUserRole}
-                  />
-                </TabsContent>
-              )}
             </Tabs>
           </div>
 
@@ -479,6 +454,7 @@ export default async function HostelDetailPage({
               hostelName={hostel.name}
               ownerId={hostel.ownerId}
               basePricePerMonth={hostel.pricePerMonth}
+              cancellationPolicy={hostel.cancellationPolicy}
               rooms={rooms}
             />
           )}

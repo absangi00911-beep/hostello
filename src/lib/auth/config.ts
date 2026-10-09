@@ -46,10 +46,10 @@ async function validateTokenVersion(
   // Cache miss or Redis unavailable — fetch from DB
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { tokenVersion: true },
+    select: { tokenVersion: true, deletionRequestedAt: true },
   });
 
-  if (!user) return false;
+  if (!user || user.deletionRequestedAt) return false;
 
   // Populate cache for subsequent requests
   await setTokenVersion(userId, user.tokenVersion);
@@ -142,6 +142,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
         return false;
       }
+
+      const dbUser = await db.user.findUnique({
+        where: { id: user.id },
+        select: { deletionRequestedAt: true },
+      });
+      if (!dbUser || dbUser.deletionRequestedAt) return false;
 
       return true;
     },

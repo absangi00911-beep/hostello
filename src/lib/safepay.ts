@@ -217,7 +217,7 @@ function getWebhookSigningSecrets(now = Date.now()): string[] {
 
 export interface SafepayRefundResult {
   success: true;
-  state: "TRACKER_REFUNDED";
+  state: "TRACKER_REFUNDED" | "TRACKER_PARTIAL_REFUND";
   raw: unknown;
 }
 
@@ -235,8 +235,8 @@ export interface SafepayRefundResult {
  * aren't confirmed, so they're not used here.)
  *
  * The current Safepay refund guide documents amount/currency as the request
- * body and `data.tracker.state === "TRACKER_REFUNDED"` as the full-refund
- * response. Safepay expects minor units, so the helper converts whole PKR to
+ * body and the `TRACKER_REFUNDED` / `TRACKER_PARTIAL_REFUND` tracker states
+ * as confirmed refund responses. Safepay expects minor units, so the helper converts whole PKR to
  * paisas. Do not treat any other 2xx response as a completed refund. The
  * merchant sandbox flow still needs an end-to-end confirmation before launch.
  *
@@ -279,9 +279,9 @@ export async function refundPayment({
 
   const data = await res.json();
   const state = (data as { data?: { tracker?: { state?: unknown } } })?.data?.tracker?.state;
-  if (state !== "TRACKER_REFUNDED") {
+  if (state !== "TRACKER_REFUNDED" && state !== "TRACKER_PARTIAL_REFUND") {
     throw new Error(
-      `Safepay refund did not confirm a full refund (tracker state: ${typeof state === "string" ? state : "unknown"}).`,
+      `Safepay did not confirm the refund (tracker state: ${typeof state === "string" ? state : "unknown"}).`,
     );
   }
 

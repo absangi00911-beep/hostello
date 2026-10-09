@@ -34,7 +34,7 @@ function SavedHostelCard({
   removing: boolean;
 }) {
   return (
-    <div className="group relative rounded-[var(--radius-lg)] overflow-hidden transition-shadow duration-[var(--transition-base)] hover:shadow-[var(--shadow-md)]">
+    <div className="student-saved-card group relative rounded-[var(--radius-lg)] overflow-hidden transition-shadow duration-[var(--transition-base)] hover:shadow-[var(--shadow-md)]">
       {/* Remove button — top-right */}
       <button
         onClick={() => onRemove(hostel.slug)}

@@ -27,6 +27,7 @@ interface OwnerHostel {
   pricePerMonth: number;
   rooms: number;
   capacity: number;
+  cancellationPolicy: "FLEXIBLE" | "STANDARD" | "STRICT" | null;
   coverImage?: string | null;
   verified: boolean;
   reviewCount: number;
@@ -139,6 +140,18 @@ function ListingCard({
           <span>{hostel.rooms} rooms · {hostel.capacity} capacity</span>
           {hostel.reviewCount > 0 && <span>★ {hostel.rating.toFixed(1)} ({hostel.reviewCount})</span>}
         </div>
+
+        {hostel.status === "ACTIVE" && !hostel.cancellationPolicy && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-warning)]/25 bg-[var(--color-warning-bg)] px-3 py-2 text-[length:var(--text-caption)] text-[color:var(--color-warning-text)]">
+            Booking is unavailable until you choose cancellation terms. Editing the listing sends it for review again.
+            <Link
+              href={`/owner/listings/${hostel.id}/edit`}
+              className="ml-1 font-[600] underline underline-offset-2"
+            >
+              Choose terms
+            </Link>
+          </div>
+        )}
 
         {/* Actions row */}
         <div className="flex flex-wrap items-center gap-2 pt-1">

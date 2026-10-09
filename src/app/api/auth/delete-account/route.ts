@@ -1,37 +1,42 @@
-import { getSafeErrorSummary } from "@/lib/safe-error";
-// Path: src/app/api/auth/delete-account/route.ts
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
+import { type NextRequest, NextResponse } from "next/server";
 import { compare } from "bcryptjs";
-import { sendEmail } from "@/lib/email";
-import { accountDeletedEmail } from "@/lib/email-templates/account-deleted";
-import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth, invalidateLocalSessionCache } from "@/lib/auth/config";
+import { db } from "@/lib/db";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/email";
+import { accountDeletedEmail } from "@/lib/email-templates/account-deleted";
+import {
+  enqueueAccountDeletion,
+  removeDeletedOwnerHostelsFromSearch,
+} from "@/lib/account-deletion";
+import { setTokenVersion } from "@/lib/auth/token-version-cache";
+import { getSafeErrorSummary } from "@/lib/safe-error";
 
-/**
- * DELETE /api/auth/delete-account
- * 
- * Permanently deletes user account and all associated data.
- * GDPR/PECA Compliant: Removes all personal data, bookings, reviews, messages, favorites.
- * 
- * Request: { password: string }
- * Response: { success: boolean }
- */
-export async function POST(request: Request) {
+const requestSchema = z.object({
+  confirmation: z.literal("DELETE"),
+  password: z.string().max(128).optional(),
+}).strict();
+
+const BLOCKED_MESSAGES = {
+  active_bookings: "Resolve pending or future stays before requesting account deletion.",
+  unpaid_payout: "Wait until all owner payouts and eligible balances are paid or voided.",
+  refund_reconciliation: "Wait until any refund in progress has been reconciled.",
+  pending_subscription: "Finish or cancel the pending plan payment before requesting account deletion.",
+} as const;
+
+export async function POST(request: NextRequest) {
   try {
-    // 1. Verify user is authenticated
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (session.user.role === "ADMIN") {
+      return NextResponse.json({ error: "Administrator accounts cannot be deleted here." }, { status: 403 });
     }
 
-    const userId = session.user.id;
-
-    const limit = await rateLimit(`delete-account:${userId}`, {
+    const limit = await rateLimit(`delete-account:${session.user.id}`, {
       limit: 3,
       windowMs: 60 * 60 * 1000,
     });
@@ -39,153 +44,69 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
     }
 
-    // 2. Parse and validate request
     const body = await readBoundedJson(request, 1_024);
     if (!body.ok) {
       return NextResponse.json({ error: body.error }, { status: body.status });
     }
-    const password = body.data && typeof body.data === "object" && !Array.isArray(body.data)
-      ? (body.data as Record<string, unknown>).password
-      : undefined;
-
-    if (typeof password !== "string" || password.length < 1 || password.length > 128) {
-      return NextResponse.json(
-        { error: "Password is required" },
-        { status: 400 }
-      );
+    const parsed = requestSchema.safeParse(body.data);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Type DELETE to confirm account deletion." }, { status: 400 });
     }
 
-    // 3. Fetch user with password hash
     const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { id: true, password: true, name: true, email: true },
+      where: { id: session.user.id },
+      select: { id: true, email: true, name: true, password: true, role: true },
     });
-
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
-
-    // 4. Verify password
-    if (!user.password || !await compare(password, user.password)) {
-      return NextResponse.json(
-        { error: "Invalid password" },
-        { status: 403 }
-      );
+    if (user.role === "ADMIN") {
+      return NextResponse.json({ error: "Administrator accounts cannot be deleted here." }, { status: 403 });
     }
-
-    // 5. Delete all user data in a single transaction for atomicity
-    await db.$transaction(async (tx) => {
-      // Delete notifications
-      await tx.notification.deleteMany({ where: { userId } });
-
-      // Delete conversation participants
-      await tx.conversationParticipant.deleteMany({ where: { userId } });
-
-      // Delete messages
-      await tx.message.deleteMany({ where: { senderId: userId } });
-
-      // Delete favorites
-      await tx.favorite.deleteMany({ where: { userId } });
-
-      // Delete price alerts
-      await tx.priceAlert.deleteMany({ where: { userId } });
-
-      // Recompute denormalized stats for hostels that remain after this user
-      // is deleted. Reviews belonging to hostels owned by this user are
-      // removed with those hostels below.
-      // Page through the user's reviews on surviving hostels. Delete each
-      // bounded batch before recomputing affected aggregates so every update
-      // reflects the final review set for that hostel.
-      let reviewCursor: string | undefined;
-      while (true) {
-        const reviewBatch = await tx.review.findMany({
-          where: {
-            userId,
-            hostel: { is: { ownerId: { not: userId } } },
-            ...(reviewCursor ? { id: { gt: reviewCursor } } : {}),
-          },
-          orderBy: { id: "asc" },
-          take: 200,
-          select: { id: true, hostelId: true },
-        });
-        if (reviewBatch.length === 0) break;
-
-        await tx.review.deleteMany({
-          where: { id: { in: reviewBatch.map((review) => review.id) } },
-        });
-        for (const hostelId of new Set(reviewBatch.map((review) => review.hostelId))) {
-          const aggregate = await tx.review.aggregate({
-            where: { hostelId },
-            _avg: { rating: true },
-            _count: { rating: true },
-          });
-          const reviewCount = typeof aggregate._count === "number"
-            ? aggregate._count
-            : aggregate._count.rating;
-
-          await tx.hostel.update({
-            where: { id: hostelId },
-            data: {
-              rating: aggregate._avg.rating ?? 0,
-              reviewCount,
-            },
-          });
-        }
-
-        reviewCursor = reviewBatch[reviewBatch.length - 1].id;
-        if (reviewBatch.length < 200) break;
+    if (user.password) {
+      const password = parsed.data.password;
+      if (!password) {
+        return NextResponse.json({ error: "Enter your password to confirm account deletion." }, { status: 400 });
       }
-
-      // Reviews on the user's own hostels do not need aggregate updates since
-      // those hostels and their remaining bookings are removed below.
-      await tx.review.deleteMany({ where: { userId } });
-
-      // Delete bookings
-      await tx.booking.deleteMany({ where: { userId } });
-
-      // Delete password reset tokens
-      await tx.passwordResetToken.deleteMany({ where: { userId } });
-
-      // Delete phone verification tokens
-      await tx.phoneVerificationToken.deleteMany({ where: { userId } });
-
-      // Delete sessions and accounts (OAuth)
-      await tx.session.deleteMany({ where: { userId } });
-      await tx.account.deleteMany({ where: { userId } });
-
-      // For owners: scope cleanup through the relation instead of loading
-      // every owned hostel ID into application memory.
-      await tx.booking.deleteMany({ where: { hostel: { is: { ownerId: userId } } } });
-      await tx.review.deleteMany({ where: { hostel: { is: { ownerId: userId } } } });
-      await tx.hostel.deleteMany({ where: { ownerId: userId } });
-
-      // Finally: Delete the user account
-      await tx.user.delete({ where: { id: userId } });
-    });
-
-    // 6. Send confirmation email
-    try {
-      await sendEmail({
-        to: user.email,
-        ...accountDeletedEmail({ name: user.name }),
-      });
-    } catch (emailError) {
-      console.error("Failed to send account deletion email:", getSafeErrorSummary(emailError));
+      if (!await compare(password, user.password)) {
+        return NextResponse.json({ error: "Invalid password." }, { status: 403 });
+      }
     }
 
-    // 7. Return success
+    const result = await enqueueAccountDeletion(user.id);
+    if (result.kind === "not_found") {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
+    }
+    if (result.kind === "already_queued") {
+      return NextResponse.json({
+        success: true,
+        message: "Your account deletion request is already being processed.",
+      }, { status: 202 });
+    }
+    if (result.kind === "blocked") {
+      return NextResponse.json({ error: BLOCKED_MESSAGES[result.reason] }, { status: 409 });
+    }
+
+    // Replacing the cached version immediately makes every existing session stale.
+    // If Redis is unavailable, the normal cache-miss path reads the incremented DB version.
+    await invalidateLocalSessionCache(user.id);
+    await setTokenVersion(user.id, result.tokenVersion);
+    await removeDeletedOwnerHostelsFromSearch(result.activeHostelIds);
+
+    const delivery = await sendEmail({
+      to: result.email,
+      ...accountDeletedEmail({ name: result.name }),
+    });
+    if (!delivery.success) {
+      console.error("[account-deletion] Request confirmation email failed.");
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Account permanently deleted",
-    });
+      message: "Your account deletion request has been received and is being processed.",
+    }, { status: 202 });
   } catch (error) {
-    console.error("Account deletion error:", getSafeErrorSummary(error));
-    return NextResponse.json(
-      { error: "Failed to delete account" },
-      { status: 500 }
-    );
+    console.error("[POST /api/auth/delete-account]", getSafeErrorSummary(error));
+    return NextResponse.json({ error: "Could not start account deletion. Try again shortly." }, { status: 500 });
   }
 }

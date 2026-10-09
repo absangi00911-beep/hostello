@@ -308,6 +308,7 @@ export type SafepayWebhookEventWhereInput = {
   lastErrorCode?: Prisma.StringNullableFilter<"SafepayWebhookEvent"> | string | null
   receivedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventListRelationFilter
 }
 
 export type SafepayWebhookEventOrderByWithRelationInput = {
@@ -327,6 +328,7 @@ export type SafepayWebhookEventOrderByWithRelationInput = {
   lastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   receivedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  replayEvents?: Prisma.SafepayWebhookReplayEventOrderByRelationAggregateInput
 }
 
 export type SafepayWebhookEventWhereUniqueInput = Prisma.AtLeast<{
@@ -349,6 +351,7 @@ export type SafepayWebhookEventWhereUniqueInput = Prisma.AtLeast<{
   lastErrorCode?: Prisma.StringNullableFilter<"SafepayWebhookEvent"> | string | null
   receivedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventListRelationFilter
 }, "id" | "bodyHash">
 
 export type SafepayWebhookEventOrderByWithAggregationInput = {
@@ -414,6 +417,7 @@ export type SafepayWebhookEventCreateInput = {
   lastErrorCode?: string | null
   receivedAt?: Date | string
   updatedAt?: Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventCreateNestedManyWithoutWebhookEventInput
 }
 
 export type SafepayWebhookEventUncheckedCreateInput = {
@@ -433,6 +437,7 @@ export type SafepayWebhookEventUncheckedCreateInput = {
   lastErrorCode?: string | null
   receivedAt?: Date | string
   updatedAt?: Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedCreateNestedManyWithoutWebhookEventInput
 }
 
 export type SafepayWebhookEventUpdateInput = {
@@ -452,6 +457,7 @@ export type SafepayWebhookEventUpdateInput = {
   lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUpdateManyWithoutWebhookEventNestedInput
 }
 
 export type SafepayWebhookEventUncheckedUpdateInput = {
@@ -471,6 +477,7 @@ export type SafepayWebhookEventUncheckedUpdateInput = {
   lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedUpdateManyWithoutWebhookEventNestedInput
 }
 
 export type SafepayWebhookEventCreateManyInput = {
@@ -597,10 +604,150 @@ export type SafepayWebhookEventSumOrderByAggregateInput = {
   processingAttempts?: Prisma.SortOrder
 }
 
+export type SafepayWebhookEventScalarRelationFilter = {
+  is?: Prisma.SafepayWebhookEventWhereInput
+  isNot?: Prisma.SafepayWebhookEventWhereInput
+}
+
 export type EnumSafepayWebhookEventStatusFieldUpdateOperationsInput = {
   set?: $Enums.SafepayWebhookEventStatus
 }
 
+export type SafepayWebhookEventCreateNestedOneWithoutReplayEventsInput = {
+  create?: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput>
+  connectOrCreate?: Prisma.SafepayWebhookEventCreateOrConnectWithoutReplayEventsInput
+  connect?: Prisma.SafepayWebhookEventWhereUniqueInput
+}
+
+export type SafepayWebhookEventUpdateOneRequiredWithoutReplayEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput>
+  connectOrCreate?: Prisma.SafepayWebhookEventCreateOrConnectWithoutReplayEventsInput
+  upsert?: Prisma.SafepayWebhookEventUpsertWithoutReplayEventsInput
+  connect?: Prisma.SafepayWebhookEventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SafepayWebhookEventUpdateToOneWithWhereWithoutReplayEventsInput, Prisma.SafepayWebhookEventUpdateWithoutReplayEventsInput>, Prisma.SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput>
+}
+
+export type SafepayWebhookEventCreateWithoutReplayEventsInput = {
+  id?: string
+  bodyHash: string
+  eventType: string
+  merchantOrderId?: string | null
+  tracker?: string | null
+  providerState?: string | null
+  amountMinorUnits?: number | null
+  currency?: string | null
+  payloadEvidence: string
+  status?: $Enums.SafepayWebhookEventStatus
+  processingAttempts?: number
+  processingStartedAt?: Date | string | null
+  processedAt?: Date | string | null
+  lastErrorCode?: string | null
+  receivedAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput = {
+  id?: string
+  bodyHash: string
+  eventType: string
+  merchantOrderId?: string | null
+  tracker?: string | null
+  providerState?: string | null
+  amountMinorUnits?: number | null
+  currency?: string | null
+  payloadEvidence: string
+  status?: $Enums.SafepayWebhookEventStatus
+  processingAttempts?: number
+  processingStartedAt?: Date | string | null
+  processedAt?: Date | string | null
+  lastErrorCode?: string | null
+  receivedAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SafepayWebhookEventCreateOrConnectWithoutReplayEventsInput = {
+  where: Prisma.SafepayWebhookEventWhereUniqueInput
+  create: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput>
+}
+
+export type SafepayWebhookEventUpsertWithoutReplayEventsInput = {
+  update: Prisma.XOR<Prisma.SafepayWebhookEventUpdateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput>
+  create: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput>
+  where?: Prisma.SafepayWebhookEventWhereInput
+}
+
+export type SafepayWebhookEventUpdateToOneWithWhereWithoutReplayEventsInput = {
+  where?: Prisma.SafepayWebhookEventWhereInput
+  data: Prisma.XOR<Prisma.SafepayWebhookEventUpdateWithoutReplayEventsInput, Prisma.SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput>
+}
+
+export type SafepayWebhookEventUpdateWithoutReplayEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  merchantOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amountMinorUnits?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payloadEvidence?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSafepayWebhookEventStatusFieldUpdateOperationsInput | $Enums.SafepayWebhookEventStatus
+  processingAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  processingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  merchantOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amountMinorUnits?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payloadEvidence?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSafepayWebhookEventStatusFieldUpdateOperationsInput | $Enums.SafepayWebhookEventStatus
+  processingAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  processingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type SafepayWebhookEventCountOutputType
+ */
+
+export type SafepayWebhookEventCountOutputType = {
+  replayEvents: number
+}
+
+export type SafepayWebhookEventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  replayEvents?: boolean | SafepayWebhookEventCountOutputTypeCountReplayEventsArgs
+}
+
+/**
+ * SafepayWebhookEventCountOutputType without action
+ */
+export type SafepayWebhookEventCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SafepayWebhookEventCountOutputType
+   */
+  select?: Prisma.SafepayWebhookEventCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SafepayWebhookEventCountOutputType without action
+ */
+export type SafepayWebhookEventCountOutputTypeCountReplayEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SafepayWebhookReplayEventWhereInput
+}
 
 
 export type SafepayWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -620,6 +767,8 @@ export type SafepayWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.I
   lastErrorCode?: boolean
   receivedAt?: boolean
   updatedAt?: boolean
+  replayEvents?: boolean | Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.SafepayWebhookEventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["safepayWebhookEvent"]>
 
 export type SafepayWebhookEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -680,10 +829,18 @@ export type SafepayWebhookEventSelectScalar = {
 }
 
 export type SafepayWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bodyHash" | "eventType" | "merchantOrderId" | "tracker" | "providerState" | "amountMinorUnits" | "currency" | "payloadEvidence" | "status" | "processingAttempts" | "processingStartedAt" | "processedAt" | "lastErrorCode" | "receivedAt" | "updatedAt", ExtArgs["result"]["safepayWebhookEvent"]>
+export type SafepayWebhookEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  replayEvents?: boolean | Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.SafepayWebhookEventCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type SafepayWebhookEventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type SafepayWebhookEventIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $SafepayWebhookEventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SafepayWebhookEvent"
-  objects: {}
+  objects: {
+    replayEvents: Prisma.$SafepayWebhookReplayEventPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     bodyHash: string
@@ -1095,6 +1252,7 @@ readonly fields: SafepayWebhookEventFieldRefs;
  */
 export interface Prisma__SafepayWebhookEventClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  replayEvents<T extends Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SafepayWebhookReplayEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1157,6 +1315,10 @@ export type SafepayWebhookEventFindUniqueArgs<ExtArgs extends runtime.Types.Exte
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which SafepayWebhookEvent to fetch.
    */
   where: Prisma.SafepayWebhookEventWhereUniqueInput
@@ -1175,6 +1337,10 @@ export type SafepayWebhookEventFindUniqueOrThrowArgs<ExtArgs extends runtime.Typ
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which SafepayWebhookEvent to fetch.
    */
   where: Prisma.SafepayWebhookEventWhereUniqueInput
@@ -1192,6 +1358,10 @@ export type SafepayWebhookEventFindFirstArgs<ExtArgs extends runtime.Types.Exten
    * Omit specific fields from the SafepayWebhookEvent
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
   /**
    * Filter, which SafepayWebhookEvent to fetch.
    */
@@ -1241,6 +1411,10 @@ export type SafepayWebhookEventFindFirstOrThrowArgs<ExtArgs extends runtime.Type
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which SafepayWebhookEvent to fetch.
    */
   where?: Prisma.SafepayWebhookEventWhereInput
@@ -1288,6 +1462,10 @@ export type SafepayWebhookEventFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the SafepayWebhookEvent
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
   /**
    * Filter, which SafepayWebhookEvents to fetch.
    */
@@ -1337,6 +1515,10 @@ export type SafepayWebhookEventCreateArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * The data needed to create a SafepayWebhookEvent.
    */
   data: Prisma.XOR<Prisma.SafepayWebhookEventCreateInput, Prisma.SafepayWebhookEventUncheckedCreateInput>
@@ -1384,6 +1566,10 @@ export type SafepayWebhookEventUpdateArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the SafepayWebhookEvent
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
   /**
    * The data needed to update a SafepayWebhookEvent.
    */
@@ -1451,6 +1637,10 @@ export type SafepayWebhookEventUpsertArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * The filter to search for the SafepayWebhookEvent to update in case it exists.
    */
   where: Prisma.SafepayWebhookEventWhereUniqueInput
@@ -1477,6 +1667,10 @@ export type SafepayWebhookEventDeleteArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter which SafepayWebhookEvent to delete.
    */
   where: Prisma.SafepayWebhookEventWhereUniqueInput
@@ -1497,6 +1691,30 @@ export type SafepayWebhookEventDeleteManyArgs<ExtArgs extends runtime.Types.Exte
 }
 
 /**
+ * SafepayWebhookEvent.replayEvents
+ */
+export type SafepayWebhookEvent$replayEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SafepayWebhookReplayEvent
+   */
+  select?: Prisma.SafepayWebhookReplayEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SafepayWebhookReplayEvent
+   */
+  omit?: Prisma.SafepayWebhookReplayEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookReplayEventInclude<ExtArgs> | null
+  where?: Prisma.SafepayWebhookReplayEventWhereInput
+  orderBy?: Prisma.SafepayWebhookReplayEventOrderByWithRelationInput | Prisma.SafepayWebhookReplayEventOrderByWithRelationInput[]
+  cursor?: Prisma.SafepayWebhookReplayEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SafepayWebhookReplayEventScalarFieldEnum | Prisma.SafepayWebhookReplayEventScalarFieldEnum[]
+}
+
+/**
  * SafepayWebhookEvent without action
  */
 export type SafepayWebhookEventDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1508,4 +1726,8 @@ export type SafepayWebhookEventDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the SafepayWebhookEvent
    */
   omit?: Prisma.SafepayWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SafepayWebhookEventInclude<ExtArgs> | null
 }

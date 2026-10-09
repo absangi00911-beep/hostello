@@ -96,6 +96,7 @@ export const hostelCreateSchema = z.object({
   rooms: z.number().int().min(1).max(500),
   capacity: z.number().int().min(1).max(1000),
   gender: z.enum(["MALE", "FEMALE", "MIXED"]),
+  cancellationPolicy: z.enum(["FLEXIBLE", "STANDARD", "STRICT"]),
   minStay: z.number().int().min(1),
   maxStay: z.number().int().optional(),
   amenities: z.array(z.string()).min(1, "Select at least one amenity"),

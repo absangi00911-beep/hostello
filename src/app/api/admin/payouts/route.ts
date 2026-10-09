@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createPayoutBatch, getEligiblePayoutBookingWhere, PayoutServiceError } from "@/lib/payouts";
+import { decryptPayoutDestinationSnapshot } from "@/lib/payout-destination";
 import { parsePagination } from "@/lib/pagination";
 import type { Prisma } from "@/generated/client";
 import { z } from "zod";
@@ -70,6 +71,23 @@ export async function GET(req: NextRequest) {
               reference: true,
               createdAt: true,
               paidAt: true,
+              cancelledAt: true,
+              cancelledBy: true,
+              cancellationReason: true,
+              destinationSnapshot: true,
+              auditEvents: {
+                orderBy: { createdAt: "asc" },
+                take: 10,
+                select: {
+                  id: true,
+                  actorId: true,
+                  action: true,
+                  amount: true,
+                  reference: true,
+                  reason: true,
+                  createdAt: true,
+                },
+              },
             },
           },
           _count: { select: { payouts: true } },
@@ -110,18 +128,56 @@ export async function GET(req: NextRequest) {
             owner.bankName?.trim()
           ),
           pendingBalance: balances.get(owner.id) ?? 0,
-          payouts: owner.payouts,
+          payouts: owner.payouts.map((payout) => {
+            const auditEvents = payout.auditEvents ?? [];
+            if (payout.status !== "PENDING") {
+              return {
+                ...payout,
+                destinationSnapshot: null,
+                destinationSnapshotStatus: "not-applicable" as const,
+                auditEvents,
+              };
+            }
+
+            if (!payout.destinationSnapshot) {
+              return {
+                ...payout,
+                destinationSnapshot: null,
+                destinationSnapshotStatus: "missing" as const,
+                auditEvents,
+              };
+            }
+
+            try {
+              return {
+                ...payout,
+                destinationSnapshot: decryptPayoutDestinationSnapshot(payout.destinationSnapshot),
+                destinationSnapshotStatus: "available" as const,
+                auditEvents,
+              };
+            } catch {
+              return {
+                ...payout,
+                destinationSnapshot: null,
+                destinationSnapshotStatus: "unavailable" as const,
+                auditEvents,
+              };
+            }
+          }),
           payoutHistoryTruncated: owner._count.payouts > owner.payouts.length,
         }));
 
-    return NextResponse.json({
-      data,
-      total,
-      page,
-      limit,
-      hasMore: skip + owners.length < total,
-      payoutHistoryPerOwner: PAYOUT_HISTORY_PER_OWNER,
-    });
+    return NextResponse.json(
+      {
+        data,
+        total,
+        page,
+        limit,
+        hasMore: skip + owners.length < total,
+        payoutHistoryPerOwner: PAYOUT_HISTORY_PER_OWNER,
+      },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (err) {
     console.error("[GET /api/admin/payouts]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
@@ -160,7 +216,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const payout = await createPayoutBatch(parsed.data.ownerId, session.user.id);
-    return NextResponse.json({ data: payout }, { status: 201 });
+    return NextResponse.json(
+      { data: { id: payout.id, amount: payout.amount, status: payout.status } },
+      { status: 201, headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (err) {
     console.error("[POST /api/admin/payouts]", getSafeErrorSummary(err));
     if (err instanceof PayoutServiceError) {

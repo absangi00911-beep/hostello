@@ -8,14 +8,18 @@ describe("CRON_SCHEDULES", () => {
       "check-price-alerts",
       "cleanup-tokens",
       "cleanup-verification-uploads",
+      "expire-unanswered-bookings",
       "mark-completed-stays",
+      "process-account-deletions",
     ]);
     expect(Object.values(CRON_SCHEDULES).map(({ endpoint }) => endpoint).sort()).toEqual([
       "/api/cron/cancel-abandoned-payments",
       "/api/cron/check-price-alerts",
       "/api/cron/cleanup-tokens",
       "/api/cron/cleanup-verification-uploads",
+      "/api/cron/expire-unanswered-bookings",
       "/api/cron/mark-completed-stays",
+      "/api/cron/process-account-deletions",
     ]);
   });
 

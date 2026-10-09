@@ -14,6 +14,7 @@ import {
   Flag,
   ChevronLeft,
   Wallet,
+  CreditCard,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/bookings",     label: "All bookings", icon: CalendarDays },
   { href: "/admin/payouts",      label: "Payouts",      icon: Wallet },
+  { href: "/admin/payments",     label: "Payments",     icon: CreditCard },
   { href: "/admin/reviews",      label: "Reviews",      icon: Star },
   { href: "/admin/roommate-reports", label: "Roommate reports", icon: Flag },
   { href: "/admin/search",       label: "Sync search",  icon: RefreshCw },
@@ -45,12 +47,29 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
       : pathname.startsWith(item.href)
   );
   const pageTitle = currentNav?.label ?? "Admin";
+  const pageDescription = pageTitle === "Dashboard"
+    ? "Your operational queues across listings and student accounts."
+    : pageTitle === "Listings"
+      ? "Review new properties and protect listing quality."
+      : pageTitle === "Verifications"
+        ? "Check student documents and resolve pending requests."
+        : pageTitle === "All bookings"
+            ? "Inspect booking and payment records, then resolve issues."
+            : pageTitle === "Payouts"
+              ? "Generate owner payout batches and record completed transfers."
+              : pageTitle === "Payments"
+                ? "Review Safepay webhook exceptions and queue verified transient retries."
+              : pageTitle === "Reviews"
+                ? "Keep guest feedback useful and remove abusive content."
+                : pageTitle === "Roommate reports"
+                  ? "Review community reports and resolve unsafe posts."
+                  : "Rebuild the search index after listing changes.";
 
   return (
     <div className="admin-shell flex min-h-dvh bg-[var(--color-bg-page)]">
       {/* -- Sidebar --------------------------------------------- */}
       <aside
-        className="hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
+        className="admin-sidebar hidden md:flex flex-col w-[var(--sidebar-width)] shrink-0 sticky top-0 h-screen border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
         aria-label="Admin sidebar"
       >
         {/* Logo + "Admin" badge */}
@@ -63,7 +82,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4 px-3">
-          <nav aria-label="Admin navigation">
+          <nav className="admin-sidebar-nav" aria-label="Admin navigation">
             <ul className="space-y-0.5" role="list">
               {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
                 const isActive =
@@ -80,7 +99,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                     <Link
                       href={href}
                       aria-current={isActive ? "page" : undefined}
-                      className={`
+                      className={`admin-sidebar-link
                         flex items-center gap-3 h-10 px-3 rounded-[var(--radius-md)]
                         transition-colors duration-[var(--transition-fast)]
                         ${
@@ -125,7 +144,7 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
 
       {/* -- Main content ---------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
+        <header className="admin-topbar sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
           <h1 className="min-w-0 flex-1 truncate text-[length:var(--text-h5)] font-[800] tracking-[-0.03em] text-[color:var(--color-text-heading)]">
             {pageTitle}
           </h1>
@@ -135,14 +154,19 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6" id="main-content">
+        <main className="admin-main flex-1 p-4 md:p-6 pb-20 md:pb-6" id="main-content">
+          <header className="admin-page-masthead">
+            <div className="admin-page-overline"><span>HOSTELLO · OPERATIONS DESK</span><span>REVIEW / 0{Math.max(1, NAV_ITEMS.findIndex((item) => item.href === currentNav?.href) + 1)}</span></div>
+            <h2>{pageTitle}</h2>
+            <p>{pageDescription}</p>
+          </header>
           {children}
         </main>
       </div>
 
       {/* -- Mobile navigation ---------------------------------- */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] md:hidden"
+        className="admin-mobile-nav fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Mobile admin navigation"
       >

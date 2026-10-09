@@ -7,7 +7,7 @@ import { toSafepayMinorUnits, verifyWebhookSignature } from "@/lib/safepay";
 import { getAppUrl } from "@/lib/app-url";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { sendEmail } from "@/lib/email";
-import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
+import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
 import { createNotification } from "@/lib/notifications";
 import { PLANS } from "@/config/plans";
 import { getSafeErrorSummary } from "@/lib/safe-error";
@@ -308,7 +308,7 @@ async function processSafepayWebhook(event: SafepayEvent) {
 
       const booking = await db.booking.findUnique({
         where: { id: orderId },
-        select: { id: true, status: true, paymentStatus: true, paymentMethod: true, transactionId: true },
+        select: { id: true, status: true, paymentStatus: true, paymentMethod: true, transactionId: true, total: true },
       });
       if (!booking) return NextResponse.json({ error: "Booking not found." }, { status: 404 });
       if (!isSafepayBookingMethod(booking.paymentMethod)) {
@@ -324,6 +324,13 @@ async function processSafepayWebhook(event: SafepayEvent) {
           reason: "stale_failed_tracker",
         }, logContext);
         return NextResponse.json({ received: true });
+      }
+      if (!isValidPkrAmount(event, toSafepayMinorUnits(booking.total))) {
+        logOperationalEvent("error", "payment.reconciliation_required", {
+          booking_id: booking.id,
+          reason: "failed_event_amount_or_currency_mismatch",
+        }, logContext);
+        return NextResponse.json({ error: "Failed payment amount or currency mismatch." }, { status: 400 });
       }
       const transition = await db.booking.updateMany({
         where: {
@@ -356,7 +363,13 @@ async function processSafepayWebhook(event: SafepayEvent) {
       where: { id: orderId },
       include: {
         user: { select: { name: true, email: true } },
-        hostel: { select: { name: true, slug: true } },
+        hostel: {
+          select: {
+            name: true,
+            slug: true,
+            owner: { select: { id: true, name: true, email: true } },
+          },
+        },
       },
     });
 
@@ -413,6 +426,7 @@ async function processSafepayWebhook(event: SafepayEvent) {
     }
 
     const wasCancelled = booking.status === "CANCELLED";
+    const responseDueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const result = await db.booking.updateMany({
       where: {
         id: orderId,
@@ -424,7 +438,9 @@ async function processSafepayWebhook(event: SafepayEvent) {
       data: {
         paymentStatus: "PAID",
         transactionId: tracker,
-        ...(wasCancelled ? {} : { status: "CONFIRMED" }),
+        ...(!wasCancelled
+          ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
+          : {}),
       },
     });
 
@@ -452,34 +468,56 @@ async function processSafepayWebhook(event: SafepayEvent) {
 
     logOperationalEvent("info", "booking.payment_confirmed", {
       booking_id: booking.id,
-      booking_status: "CONFIRMED",
+      booking_status: "PENDING",
+      owner_response_due_at: responseDueAt.toISOString(),
     }, logContext);
 
-    void sendEmail(
-      bookingStatusEmail({
-        studentName: booking.user.name,
-        studentEmail: booking.user.email,
-        hostelName: booking.hostel.name,
-        hostelSlug: booking.hostel.slug,
-        bookingId: booking.id,
-        status: "CONFIRMED",
-      }),
-    ).then((delivery) => {
-      if (!delivery.success) {
-        logOperationalEvent("error", "notification.dispatch_failed", {
-          notification_type: "BOOKING_CONFIRMED_EMAIL",
-          booking_id: booking.id,
-          reason: "provider_rejected",
-        }, logContext);
-      }
-    }).catch((err) => {
-      const summary = getSafeErrorSummary(err);
+    const bookingEmailProps = {
+      studentName: booking.user.name,
+      studentEmail: booking.user.email,
+      ownerName: booking.hostel.owner.name,
+      ownerEmail: booking.hostel.owner.email,
+      hostelName: booking.hostel.name,
+      hostelSlug: booking.hostel.slug,
+      bookingId: booking.id,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      months: booking.months,
+      total: booking.total,
+      paymentMethod: booking.paymentMethod ?? "Safepay",
+    };
+
+    const emailTypes = ["BOOKING_REQUEST_EMAIL_TO_OWNER", "BOOKING_REQUEST_EMAIL_TO_STUDENT"] as const;
+    const emailResults = await Promise.allSettled([
+      sendEmail(bookingNotificationEmail(bookingEmailProps)),
+      sendEmail(bookingConfirmationEmail(bookingEmailProps)),
+    ]);
+    emailResults.forEach((result, index) => {
+      if (result.status === "fulfilled" && result.value.success) return;
+      const summary = result.status === "rejected" ? getSafeErrorSummary(result.reason) : null;
       logOperationalEvent("error", "notification.dispatch_failed", {
-        notification_type: "BOOKING_CONFIRMED_EMAIL",
+        notification_type: emailTypes[index],
         booking_id: booking.id,
-        error_name: summary.name,
-        ...(summary.code ? { error_code: summary.code } : {}),
+        ...(summary
+          ? { error_name: summary.name, ...(summary.code ? { error_code: summary.code } : {}) }
+          : { reason: "provider_rejected" }),
       }, logContext);
+    });
+
+    void createNotification({
+      userId: booking.hostel.owner.id,
+      type: "BOOKING_REQUEST",
+      title: "New paid booking request",
+      message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
+      bookingId: booking.id,
+    });
+    void createNotification({
+      userId: booking.userId,
+      type: "BOOKING_REQUEST",
+      title: "Payment received — awaiting owner",
+      message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
+      bookingId: booking.id,
+      hostelId: booking.hostelId,
     });
 
     return NextResponse.json({ received: true });

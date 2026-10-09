@@ -24,7 +24,7 @@ function Section({
   return (
     <section
       id={id}
-      className="scroll-mt-24 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 md:p-7"
+      className={`profile-setting-section scroll-mt-24 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-4 md:p-7 ${id === "danger" ? "profile-setting-danger" : ""}`}
       aria-labelledby={`${id}-heading`}
     >
       <div className="mb-6">
@@ -400,6 +400,7 @@ function EmailPreferencesSection({ enabled }: { enabled: boolean }) {
 function DangerZoneSection() {
   const router   = useRouter();
   const [input,   setInput]   = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const canDelete = input === "DELETE";
 
@@ -407,10 +408,16 @@ function DangerZoneSection() {
     if (!canDelete) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/delete-account", { method: "POST" });
-      if (!res.ok) { const j = await res.json(); toast.error(j.error ?? "Delete failed."); return; }
+      const res = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirmation: input, ...(password ? { password } : {}) }),
+      });
+      const result = await res.json();
+      if (!res.ok) { toast.error(result.error ?? "Delete failed."); return; }
+      toast.success(result.message ?? "Your deletion request has been received.");
       await signOut({ redirect: false });
-      router.push("/?deleted=1");
+      router.push("/");
     } catch { toast.error("Something went wrong."); }
     finally { setLoading(false); }
   }
@@ -419,7 +426,7 @@ function DangerZoneSection() {
     <div className="space-y-4">
       <div className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3">
         <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)] leading-relaxed">
-          Deleting your account permanently removes all your data: bookings, reviews, saved hostels, messages, and price alerts. This cannot be undone.
+          Your request removes your profile and personal data. Transaction records may be retained with your identity anonymized. Requests are blocked while pending or future stays, refunds, plan payments, or unpaid owner payouts need attention.
         </p>
       </div>
       <div className="space-y-2">
@@ -431,6 +438,18 @@ function DangerZoneSection() {
           placeholder="DELETE" autoComplete="off" spellCheck="false"
           className={inputCls}
         />
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="delete-password" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
+          Password, if your account uses one
+        </label>
+        <input
+          id="delete-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password" maxLength={128} className={inputCls}
+        />
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+          Social sign-in accounts can leave this blank.
+        </p>
       </div>
       <Button variant="destructive" onClick={handleDelete} disabled={!canDelete || loading} loading={loading}>
         {loading ? "Deleting account…" : "Delete my account"}
@@ -489,9 +508,10 @@ export default function ProfileSettingsPage() {
 
   return (
     <PublicLayout>
-      <div className="mx-auto w-full max-w-[720px] px-4 py-8 md:py-12 pb-24 md:pb-12">
+      <div className="profile-settings-page mx-auto w-full max-w-[820px] px-4 py-8 md:py-12 pb-24 md:pb-12">
         {/* Page heading */}
-        <div className="mb-8">
+        <div className="profile-settings-masthead mb-8">
+          <div className="student-page-overline"><span>YOUR ACCOUNT</span><span>FIELD NOTES · 01</span></div>
           <h1
             className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 

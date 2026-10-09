@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
@@ -406,6 +406,8 @@ function MessageThread({
 
 /* -- Page --------------------------------------------------- */
 export default function MessagesPage() {
+  const pathname = usePathname();
+  const isOwnerMessages = pathname.startsWith("/owner/messages");
   const { data: session } = useSession();
   const searchParams      = useSearchParams();
   const initialConvoId    = searchParams.get("conversation");
@@ -453,19 +455,32 @@ export default function MessagesPage() {
 
   if (data?.total === 0) {
     return (
-      <EmptyState
-        icon={MessageCircle}
-        heading={query || tab === "unread" ? "No conversations match" : "No messages"}
-        description={query || tab === "unread" ? "Try another search or switch to all conversations." : "Message a hostel owner from any hostel page to start a conversation."}
-      />
+      <div className={`${isOwnerMessages ? "owner-account-page owner-message-inbox" : "student-account-page student-messages-page"} space-y-4`}>
+        <header className="student-page-heading">
+          <div className="student-page-overline"><span>{isOwnerMessages ? "OWNER CORRESPONDENCE" : "OPEN CORRESPONDENCE"}</span><span>{isOwnerMessages ? "04 / 09" : "01 / 05"}</span></div>
+          <h2>Messages</h2>
+          <p>{isOwnerMessages ? "Keep student questions and booking details close at hand." : "Keep the details of your stay in one thoughtful place."}</p>
+        </header>
+        <EmptyState
+          icon={MessageCircle}
+          heading={query || tab === "unread" ? "No conversations match" : "No messages"}
+          description={query || tab === "unread" ? "Try another search or switch to all conversations." : isOwnerMessages ? "Student conversations will appear here when someone contacts you about a hostel." : "Message a hostel owner from any hostel page to start a conversation."}
+        />
+      </div>
     );
   }
 
   return (
-    <div
-      className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden"
-      style={{ height: "calc(100dvh - 280px)", minHeight: 400 }}
-    >
+    <div className={`${isOwnerMessages ? "owner-account-page owner-message-inbox" : "student-account-page student-messages-page"} space-y-4`}>
+      <header className="student-page-heading">
+        <div className="student-page-overline"><span>{isOwnerMessages ? "OWNER CORRESPONDENCE" : "OPEN CORRESPONDENCE"}</span><span>{isOwnerMessages ? "04 / 09" : "01 / 05"}</span></div>
+        <h2>Messages</h2>
+        <p>{isOwnerMessages ? "Keep student questions and booking details close at hand." : "Keep the details of your stay in one thoughtful place."}</p>
+      </header>
+      <div
+        className="student-message-shell rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden"
+        style={{ height: "calc(100dvh - 360px)", minHeight: 360 }}
+      >
       <div className="flex h-full">
         {/* -- Conversation list ----------------------- */}
         <div
@@ -576,6 +591,7 @@ export default function MessagesPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

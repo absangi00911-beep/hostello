@@ -64,6 +64,7 @@ function listingEditBody(overrides = {}) {
     pricePerMonth: 18_000,
     rooms: 10,
     capacity: 30,
+    cancellationPolicy: "STANDARD",
     minStay: 1,
     amenities: ["WiFi"],
     images: [image, image, image],
@@ -194,13 +195,17 @@ describe("PATCH /api/hostels/[param]", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 403 when the session user doesn't own the hostel", async () => {
+  it("returns the same 404 for a hostel owned by someone else", async () => {
     vi.mocked(auth).mockResolvedValue(ownerSession("usr_someone_else"));
-    vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
+    vi.mocked(db.hostel.findFirst).mockResolvedValue(null);
 
     const res = await PATCH(patchReq({ status: "DRAFT" }), paramsFor("hst_1"));
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
+    expect(db.hostel.findFirst).toHaveBeenCalledWith({
+      where: { OR: [{ id: "hst_1" }, { slug: "hst_1" }], ownerId: "usr_someone_else" },
+      select: { id: true, status: true, slug: true },
+    });
     expect(db.hostel.updateMany).not.toHaveBeenCalled();
   });
 

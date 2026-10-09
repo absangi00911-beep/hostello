@@ -16,6 +16,7 @@ import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
 import { PageSpinner, InlineError, RecoveryNotice } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { CANCELLATION_POLICY_DETAILS, cancellationPolicySummary, type CancellationPolicy } from "@/lib/cancellation-policy";
 
 const POLL_INTERVAL = 4_000; // 4s
 const MAX_POLLS     = 15;    // give up after ~60s
@@ -92,6 +93,13 @@ export default function ConfirmationPage() {
   const isSuccess   = isPaid || isConfirmed;
   const isCancelled = booking.status === "CANCELLED";
   const stillWaiting = !isSuccess && !isCancelled && polls < MAX_POLLS;
+  const responseDueAt = booking.ownerResponseDueAt
+    ? new Intl.DateTimeFormat("en-PK", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Karachi",
+      }).format(new Date(booking.ownerResponseDueAt))
+    : null;
 
   /* -- Cancelled ---------------------------------------- */
   if (isCancelled) {
@@ -115,9 +123,29 @@ export default function ConfirmationPage() {
             Booking cancelled
           </h1>
           <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] max-w-[38ch] mx-auto">
-            This booking was cancelled. If you made a payment, contact support
-            to check its refund status.
+            {booking.cancellationRefundAmount === 0 && booking.paymentStatus !== "PENDING"
+              ? `This booking was cancelled. The ${booking.cancellationPolicy ? CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy as CancellationPolicy].label : "saved"} policy provides no refund at this time.`
+              : booking.paymentStatus === "REFUNDED"
+              ? `This booking was cancelled and your full refund of PKR ${Number(booking.refundedAmount ?? booking.total).toLocaleString("en-PK")} has been processed. Your bank may take 3–10 business days to post it.`
+              : booking.paymentStatus === "PARTIALLY_REFUNDED"
+                ? `This booking was cancelled and a partial refund of PKR ${Number(booking.refundedAmount ?? 0).toLocaleString("en-PK")} has been processed. Your bank may take 3–10 business days to post it.`
+              : booking.paymentStatus === "PAID"
+                ? `This booking was cancelled. Your refund of PKR ${Number(booking.cancellationRefundAmount ?? booking.total).toLocaleString("en-PK")} is being checked; see the booking page for its latest status or contact support.`
+                : "This booking was cancelled before a payment was recorded."}
           </p>
+          <Button asChild variant="outline">
+            <Link href="/dashboard/bookings">View my bookings</Link>
+          </Button>
+          {booking.cancellationPolicy && (
+            <div className="mx-auto max-w-lg rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-4 text-left">
+              <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
+                {CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy as CancellationPolicy].label} cancellation policy
+              </p>
+              <p className="mt-1 text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
+                {cancellationPolicySummary(booking.cancellationPolicy as CancellationPolicy)}
+              </p>
+            </div>
+          )}
           <Button asChild>
             <Link href="/hostels">Find another hostel</Link>
           </Button>
@@ -197,11 +225,18 @@ export default function ConfirmationPage() {
               className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-2"
 
             >
-              Booking confirmed
+              {isConfirmed ? "Booking confirmed" : "Payment received"}
             </h1>
             <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
-              Your booking request has been sent to the owner.
+              {isConfirmed
+                ? "Your stay is confirmed. The owner will contact you with move-in details."
+                : "Your booking request has been sent to the owner. Your stay is confirmed after they accept it."}
             </p>
+            {!isConfirmed && responseDueAt && (
+              <p className="mt-2 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
+                Owner response due by {responseDueAt} PKT
+              </p>
+            )}
           </div>
 
           {/* Booking reference */}
@@ -217,6 +252,19 @@ export default function ConfirmationPage() {
 
         {/* Booking summary */}
         <BookingSummaryCard booking={booking} showStatus />
+        {booking.cancellationPolicy && (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-5">
+            <h2 className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
+              {CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy as CancellationPolicy].label} cancellation policy
+            </h2>
+            <p className="mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+              {cancellationPolicySummary(booking.cancellationPolicy as CancellationPolicy)}
+            </p>
+            <p className="mt-2 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+              Approved refunds are initiated within 1 business day. Banks may take 3–10 business days to post them.
+            </p>
+          </div>
+        )}
 
         {/* What happens next */}
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-5">
@@ -230,7 +278,11 @@ export default function ConfirmationPage() {
             {[
               {
                 icon: Clock,
-                text: "The owner will confirm your booking within 24 hours.",
+                text: isConfirmed
+                  ? "Your booking is confirmed. Keep this reference for check-in."
+                  : responseDueAt
+                    ? `The owner will respond by ${responseDueAt} PKT. If they do not respond, the request will be cancelled and a full refund will be started.`
+                    : "The owner will respond within 24 hours. If they do not respond, the request will be cancelled and a full refund will be started.",
               },
               {
                 icon: CalendarCheck,

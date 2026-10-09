@@ -267,11 +267,11 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
     <>
       {/* Desktop: fixed sidebar */}
       <aside
-        className="hidden lg:block w-[280px] shrink-0"
+        className="hidden w-[280px] shrink-0 lg:block"
         aria-label="Search filters"
       >
-        <div className="sticky top-20 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)] mb-5"
+        <div className="sticky top-[88px] rounded-[22px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-xs)]">
+          <p className="mb-5 font-display text-[1.4rem] font-[600] leading-tight text-[color:var(--color-text-heading)]"
 >
             Filters
           </p>

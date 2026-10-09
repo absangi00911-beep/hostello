@@ -37,6 +37,8 @@ interface BookingRow {
   months: number;
   guests: number;
   total: number;
+  paymentStatus: string;
+  ownerResponseDueAt: string | null;
   user?: {
     name?: string | null;
     email?: string | null;
@@ -131,11 +133,11 @@ export default function OwnerBookingsPage() {
       if (!res.ok) throw new Error(json.error ?? "Action failed");
       return json;
     },
-    onSuccess: (_, { action }) => {
-      toast.success(
+    onSuccess: (result, { action }) => {
+      toast.success(result.message ?? (
         action === "confirm" ? "Booking confirmed." :
         action === "decline" ? "Booking declined." : "Booking cancelled."
-      );
+      ));
       queryClient.invalidateQueries({ queryKey: ["owner-bookings"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -216,6 +218,11 @@ export default function OwnerBookingsPage() {
                       <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                         {b.months} mo · {b.guests} guest{b.guests !== 1 ? "s" : ""}
                       </p>
+                      {b.status === "PENDING" && b.ownerResponseDueAt && (
+                        <p className="mt-1 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-warning-text)]">
+                          Respond by {format(new Date(b.ownerResponseDueAt), "d MMM, h:mm a")}
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">

@@ -1,24 +1,39 @@
-// Path: src/app/owner/listings/[id]/edit/not-found.tsx
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { PublicLayout } from "@/components/layout/PublicLayout";
 
-export default function EditListingNotFound() {
+export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <p
-        className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)] mb-2"
+    <PublicLayout>
+      <section className="not-found-field-page container-app py-8 md:py-12">
+        <div className="not-found-field-note">
+          <div className="not-found-field-meta" aria-hidden="true">
+            <span>HOSTELLO FIELD GUIDE</span>
+            <span>ROUTE / 404</span>
+          </div>
 
-      >
-        Listing not found
-      </p>
-      <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mb-6">
-        This listing doesn't exist or you don't have permission to edit it.
-      </p>
-      <Link
-        href="/owner/listings"
-        className="inline-flex items-center h-9 px-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-overlay)] transition-colors duration-[var(--transition-fast)]"
-      >
-        ← Back to listings
-      </Link>
-    </div>
+          <div className="not-found-field-copy">
+            <p className="not-found-field-kicker">A PAGE HAS GONE MISSING</p>
+            <h1 className="not-found-field-title">This path doesn’t lead anywhere.</h1>
+            <p className="not-found-field-description">
+              The page may have moved, or the address may be off. Let’s get you back to the good part.
+            </p>
+            <div className="not-found-field-actions">
+              <Link href="/hostels" className="not-found-primary-action">
+                Explore hostels <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+              <Link href="/" className="not-found-home-action">
+                Return home
+              </Link>
+            </div>
+          </div>
+
+          <div className="not-found-field-stamp" aria-hidden="true">
+            <span>404</span>
+            <small>NO SUCH PLACE</small>
+          </div>
+        </div>
+      </section>
+    </PublicLayout>
   );
 }

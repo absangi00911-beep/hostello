@@ -40,10 +40,14 @@ export type PayoutMinAggregateOutputType = {
   amount: number | null
   status: $Enums.PayoutStatus | null
   reference: string | null
+  destinationSnapshot: string | null
   createdAt: Date | null
   createdBy: string | null
   paidAt: Date | null
   paidBy: string | null
+  cancelledAt: Date | null
+  cancelledBy: string | null
+  cancellationReason: string | null
 }
 
 export type PayoutMaxAggregateOutputType = {
@@ -52,10 +56,14 @@ export type PayoutMaxAggregateOutputType = {
   amount: number | null
   status: $Enums.PayoutStatus | null
   reference: string | null
+  destinationSnapshot: string | null
   createdAt: Date | null
   createdBy: string | null
   paidAt: Date | null
   paidBy: string | null
+  cancelledAt: Date | null
+  cancelledBy: string | null
+  cancellationReason: string | null
 }
 
 export type PayoutCountAggregateOutputType = {
@@ -64,10 +72,14 @@ export type PayoutCountAggregateOutputType = {
   amount: number
   status: number
   reference: number
+  destinationSnapshot: number
   createdAt: number
   createdBy: number
   paidAt: number
   paidBy: number
+  cancelledAt: number
+  cancelledBy: number
+  cancellationReason: number
   _all: number
 }
 
@@ -86,10 +98,14 @@ export type PayoutMinAggregateInputType = {
   amount?: true
   status?: true
   reference?: true
+  destinationSnapshot?: true
   createdAt?: true
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  cancelledAt?: true
+  cancelledBy?: true
+  cancellationReason?: true
 }
 
 export type PayoutMaxAggregateInputType = {
@@ -98,10 +114,14 @@ export type PayoutMaxAggregateInputType = {
   amount?: true
   status?: true
   reference?: true
+  destinationSnapshot?: true
   createdAt?: true
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  cancelledAt?: true
+  cancelledBy?: true
+  cancellationReason?: true
 }
 
 export type PayoutCountAggregateInputType = {
@@ -110,10 +130,14 @@ export type PayoutCountAggregateInputType = {
   amount?: true
   status?: true
   reference?: true
+  destinationSnapshot?: true
   createdAt?: true
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  cancelledAt?: true
+  cancelledBy?: true
+  cancellationReason?: true
   _all?: true
 }
 
@@ -209,10 +233,14 @@ export type PayoutGroupByOutputType = {
   amount: number
   status: $Enums.PayoutStatus
   reference: string | null
+  destinationSnapshot: string | null
   createdAt: Date
   createdBy: string
   paidAt: Date | null
   paidBy: string | null
+  cancelledAt: Date | null
+  cancelledBy: string | null
+  cancellationReason: string | null
   _count: PayoutCountAggregateOutputType | null
   _avg: PayoutAvgAggregateOutputType | null
   _sum: PayoutSumAggregateOutputType | null
@@ -244,12 +272,17 @@ export type PayoutWhereInput = {
   amount?: Prisma.IntFilter<"Payout"> | number
   status?: Prisma.EnumPayoutStatusFilter<"Payout"> | $Enums.PayoutStatus
   reference?: Prisma.StringNullableFilter<"Payout"> | string | null
+  destinationSnapshot?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   bookings?: Prisma.BookingListRelationFilter
+  auditEvents?: Prisma.PayoutAuditEventListRelationFilter
 }
 
 export type PayoutOrderByWithRelationInput = {
@@ -258,12 +291,17 @@ export type PayoutOrderByWithRelationInput = {
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reference?: Prisma.SortOrderInput | Prisma.SortOrder
+  destinationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paidBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
   bookings?: Prisma.BookingOrderByRelationAggregateInput
+  auditEvents?: Prisma.PayoutAuditEventOrderByRelationAggregateInput
 }
 
 export type PayoutWhereUniqueInput = Prisma.AtLeast<{
@@ -275,12 +313,17 @@ export type PayoutWhereUniqueInput = Prisma.AtLeast<{
   amount?: Prisma.IntFilter<"Payout"> | number
   status?: Prisma.EnumPayoutStatusFilter<"Payout"> | $Enums.PayoutStatus
   reference?: Prisma.StringNullableFilter<"Payout"> | string | null
+  destinationSnapshot?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   bookings?: Prisma.BookingListRelationFilter
+  auditEvents?: Prisma.PayoutAuditEventListRelationFilter
 }, "id">
 
 export type PayoutOrderByWithAggregationInput = {
@@ -289,10 +332,14 @@ export type PayoutOrderByWithAggregationInput = {
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reference?: Prisma.SortOrderInput | Prisma.SortOrder
+  destinationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paidBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PayoutCountOrderByAggregateInput
   _avg?: Prisma.PayoutAvgOrderByAggregateInput
   _max?: Prisma.PayoutMaxOrderByAggregateInput
@@ -309,10 +356,14 @@ export type PayoutScalarWhereWithAggregatesInput = {
   amount?: Prisma.IntWithAggregatesFilter<"Payout"> | number
   status?: Prisma.EnumPayoutStatusWithAggregatesFilter<"Payout"> | $Enums.PayoutStatus
   reference?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
+  destinationSnapshot?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Payout"> | Date | string
   createdBy?: Prisma.StringWithAggregatesFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
+  cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
+  cancelledBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
+  cancellationReason?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
 }
 
 export type PayoutCreateInput = {
@@ -320,12 +371,17 @@ export type PayoutCreateInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
   owner: Prisma.UserCreateNestedOneWithoutPayoutsInput
   bookings?: Prisma.BookingCreateNestedManyWithoutPayoutInput
+  auditEvents?: Prisma.PayoutAuditEventCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutUncheckedCreateInput = {
@@ -334,11 +390,16 @@ export type PayoutUncheckedCreateInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutPayoutInput
+  auditEvents?: Prisma.PayoutAuditEventUncheckedCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutUpdateInput = {
@@ -346,12 +407,17 @@ export type PayoutUpdateInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   owner?: Prisma.UserUpdateOneRequiredWithoutPayoutsNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutPayoutNestedInput
+  auditEvents?: Prisma.PayoutAuditEventUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutUncheckedUpdateInput = {
@@ -360,11 +426,16 @@ export type PayoutUncheckedUpdateInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutPayoutNestedInput
+  auditEvents?: Prisma.PayoutAuditEventUncheckedUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutCreateManyInput = {
@@ -373,10 +444,14 @@ export type PayoutCreateManyInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
 }
 
 export type PayoutUpdateManyMutationInput = {
@@ -384,10 +459,14 @@ export type PayoutUpdateManyMutationInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PayoutUncheckedUpdateManyInput = {
@@ -396,10 +475,14 @@ export type PayoutUncheckedUpdateManyInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PayoutListRelationFilter = {
@@ -418,10 +501,14 @@ export type PayoutCountOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  destinationSnapshot?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancelledBy?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
 }
 
 export type PayoutAvgOrderByAggregateInput = {
@@ -434,10 +521,14 @@ export type PayoutMaxOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  destinationSnapshot?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancelledBy?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
 }
 
 export type PayoutMinOrderByAggregateInput = {
@@ -446,14 +537,23 @@ export type PayoutMinOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reference?: Prisma.SortOrder
+  destinationSnapshot?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancelledBy?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
 }
 
 export type PayoutSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
+}
+
+export type PayoutScalarRelationFilter = {
+  is?: Prisma.PayoutWhereInput
+  isNot?: Prisma.PayoutWhereInput
 }
 
 export type PayoutNullableScalarRelationFilter = {
@@ -507,6 +607,20 @@ export type EnumPayoutStatusFieldUpdateOperationsInput = {
   set?: $Enums.PayoutStatus
 }
 
+export type PayoutCreateNestedOneWithoutAuditEventsInput = {
+  create?: Prisma.XOR<Prisma.PayoutCreateWithoutAuditEventsInput, Prisma.PayoutUncheckedCreateWithoutAuditEventsInput>
+  connectOrCreate?: Prisma.PayoutCreateOrConnectWithoutAuditEventsInput
+  connect?: Prisma.PayoutWhereUniqueInput
+}
+
+export type PayoutUpdateOneRequiredWithoutAuditEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.PayoutCreateWithoutAuditEventsInput, Prisma.PayoutUncheckedCreateWithoutAuditEventsInput>
+  connectOrCreate?: Prisma.PayoutCreateOrConnectWithoutAuditEventsInput
+  upsert?: Prisma.PayoutUpsertWithoutAuditEventsInput
+  connect?: Prisma.PayoutWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PayoutUpdateToOneWithWhereWithoutAuditEventsInput, Prisma.PayoutUpdateWithoutAuditEventsInput>, Prisma.PayoutUncheckedUpdateWithoutAuditEventsInput>
+}
+
 export type PayoutCreateNestedOneWithoutBookingsInput = {
   create?: Prisma.XOR<Prisma.PayoutCreateWithoutBookingsInput, Prisma.PayoutUncheckedCreateWithoutBookingsInput>
   connectOrCreate?: Prisma.PayoutCreateOrConnectWithoutBookingsInput
@@ -528,11 +642,16 @@ export type PayoutCreateWithoutOwnerInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
   bookings?: Prisma.BookingCreateNestedManyWithoutPayoutInput
+  auditEvents?: Prisma.PayoutAuditEventCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutUncheckedCreateWithoutOwnerInput = {
@@ -540,11 +659,16 @@ export type PayoutUncheckedCreateWithoutOwnerInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutPayoutInput
+  auditEvents?: Prisma.PayoutAuditEventUncheckedCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutCreateOrConnectWithoutOwnerInput = {
@@ -582,10 +706,98 @@ export type PayoutScalarWhereInput = {
   amount?: Prisma.IntFilter<"Payout"> | number
   status?: Prisma.EnumPayoutStatusFilter<"Payout"> | $Enums.PayoutStatus
   reference?: Prisma.StringNullableFilter<"Payout"> | string | null
+  destinationSnapshot?: Prisma.StringNullableFilter<"Payout"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Payout"> | Date | string
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
+}
+
+export type PayoutCreateWithoutAuditEventsInput = {
+  id?: string
+  amount: number
+  status?: $Enums.PayoutStatus
+  reference?: string | null
+  destinationSnapshot?: string | null
+  createdAt?: Date | string
+  createdBy: string
+  paidAt?: Date | string | null
+  paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
+  owner: Prisma.UserCreateNestedOneWithoutPayoutsInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutPayoutInput
+}
+
+export type PayoutUncheckedCreateWithoutAuditEventsInput = {
+  id?: string
+  ownerId: string
+  amount: number
+  status?: $Enums.PayoutStatus
+  reference?: string | null
+  destinationSnapshot?: string | null
+  createdAt?: Date | string
+  createdBy: string
+  paidAt?: Date | string | null
+  paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutPayoutInput
+}
+
+export type PayoutCreateOrConnectWithoutAuditEventsInput = {
+  where: Prisma.PayoutWhereUniqueInput
+  create: Prisma.XOR<Prisma.PayoutCreateWithoutAuditEventsInput, Prisma.PayoutUncheckedCreateWithoutAuditEventsInput>
+}
+
+export type PayoutUpsertWithoutAuditEventsInput = {
+  update: Prisma.XOR<Prisma.PayoutUpdateWithoutAuditEventsInput, Prisma.PayoutUncheckedUpdateWithoutAuditEventsInput>
+  create: Prisma.XOR<Prisma.PayoutCreateWithoutAuditEventsInput, Prisma.PayoutUncheckedCreateWithoutAuditEventsInput>
+  where?: Prisma.PayoutWhereInput
+}
+
+export type PayoutUpdateToOneWithWhereWithoutAuditEventsInput = {
+  where?: Prisma.PayoutWhereInput
+  data: Prisma.XOR<Prisma.PayoutUpdateWithoutAuditEventsInput, Prisma.PayoutUncheckedUpdateWithoutAuditEventsInput>
+}
+
+export type PayoutUpdateWithoutAuditEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
+  reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  owner?: Prisma.UserUpdateOneRequiredWithoutPayoutsNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutPayoutNestedInput
+}
+
+export type PayoutUncheckedUpdateWithoutAuditEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
+  reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.StringFieldUpdateOperationsInput | string
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutCreateWithoutBookingsInput = {
@@ -593,11 +805,16 @@ export type PayoutCreateWithoutBookingsInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
   owner: Prisma.UserCreateNestedOneWithoutPayoutsInput
+  auditEvents?: Prisma.PayoutAuditEventCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutUncheckedCreateWithoutBookingsInput = {
@@ -606,10 +823,15 @@ export type PayoutUncheckedCreateWithoutBookingsInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
+  auditEvents?: Prisma.PayoutAuditEventUncheckedCreateNestedManyWithoutPayoutInput
 }
 
 export type PayoutCreateOrConnectWithoutBookingsInput = {
@@ -633,11 +855,16 @@ export type PayoutUpdateWithoutBookingsInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   owner?: Prisma.UserUpdateOneRequiredWithoutPayoutsNestedInput
+  auditEvents?: Prisma.PayoutAuditEventUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutUncheckedUpdateWithoutBookingsInput = {
@@ -646,10 +873,15 @@ export type PayoutUncheckedUpdateWithoutBookingsInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  auditEvents?: Prisma.PayoutAuditEventUncheckedUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutCreateManyOwnerInput = {
@@ -657,10 +889,14 @@ export type PayoutCreateManyOwnerInput = {
   amount: number
   status?: $Enums.PayoutStatus
   reference?: string | null
+  destinationSnapshot?: string | null
   createdAt?: Date | string
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  cancelledAt?: Date | string | null
+  cancelledBy?: string | null
+  cancellationReason?: string | null
 }
 
 export type PayoutUpdateWithoutOwnerInput = {
@@ -668,11 +904,16 @@ export type PayoutUpdateWithoutOwnerInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bookings?: Prisma.BookingUpdateManyWithoutPayoutNestedInput
+  auditEvents?: Prisma.PayoutAuditEventUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutUncheckedUpdateWithoutOwnerInput = {
@@ -680,11 +921,16 @@ export type PayoutUncheckedUpdateWithoutOwnerInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutPayoutNestedInput
+  auditEvents?: Prisma.PayoutAuditEventUncheckedUpdateManyWithoutPayoutNestedInput
 }
 
 export type PayoutUncheckedUpdateManyWithoutOwnerInput = {
@@ -692,10 +938,14 @@ export type PayoutUncheckedUpdateManyWithoutOwnerInput = {
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumPayoutStatusFieldUpdateOperationsInput | $Enums.PayoutStatus
   reference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  destinationSnapshot?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -705,10 +955,12 @@ export type PayoutUncheckedUpdateManyWithoutOwnerInput = {
 
 export type PayoutCountOutputType = {
   bookings: number
+  auditEvents: number
 }
 
 export type PayoutCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bookings?: boolean | PayoutCountOutputTypeCountBookingsArgs
+  auditEvents?: boolean | PayoutCountOutputTypeCountAuditEventsArgs
 }
 
 /**
@@ -728,6 +980,13 @@ export type PayoutCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types
   where?: Prisma.BookingWhereInput
 }
 
+/**
+ * PayoutCountOutputType without action
+ */
+export type PayoutCountOutputTypeCountAuditEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PayoutAuditEventWhereInput
+}
+
 
 export type PayoutSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -735,12 +994,17 @@ export type PayoutSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   amount?: boolean
   status?: boolean
   reference?: boolean
+  destinationSnapshot?: boolean
   createdAt?: boolean
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  cancelledAt?: boolean
+  cancelledBy?: boolean
+  cancellationReason?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Payout$bookingsArgs<ExtArgs>
+  auditEvents?: boolean | Prisma.Payout$auditEventsArgs<ExtArgs>
   _count?: boolean | Prisma.PayoutCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["payout"]>
 
@@ -750,10 +1014,14 @@ export type PayoutSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   amount?: boolean
   status?: boolean
   reference?: boolean
+  destinationSnapshot?: boolean
   createdAt?: boolean
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  cancelledAt?: boolean
+  cancelledBy?: boolean
+  cancellationReason?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["payout"]>
 
@@ -763,10 +1031,14 @@ export type PayoutSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   amount?: boolean
   status?: boolean
   reference?: boolean
+  destinationSnapshot?: boolean
   createdAt?: boolean
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  cancelledAt?: boolean
+  cancelledBy?: boolean
+  cancellationReason?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["payout"]>
 
@@ -776,16 +1048,21 @@ export type PayoutSelectScalar = {
   amount?: boolean
   status?: boolean
   reference?: boolean
+  destinationSnapshot?: boolean
   createdAt?: boolean
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  cancelledAt?: boolean
+  cancelledBy?: boolean
+  cancellationReason?: boolean
 }
 
-export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "amount" | "status" | "reference" | "createdAt" | "createdBy" | "paidAt" | "paidBy", ExtArgs["result"]["payout"]>
+export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "amount" | "status" | "reference" | "destinationSnapshot" | "createdAt" | "createdBy" | "paidAt" | "paidBy" | "cancelledAt" | "cancelledBy" | "cancellationReason", ExtArgs["result"]["payout"]>
 export type PayoutInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Payout$bookingsArgs<ExtArgs>
+  auditEvents?: boolean | Prisma.Payout$auditEventsArgs<ExtArgs>
   _count?: boolean | Prisma.PayoutCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PayoutIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -800,6 +1077,7 @@ export type $PayoutPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     owner: Prisma.$UserPayload<ExtArgs>
     bookings: Prisma.$BookingPayload<ExtArgs>[]
+    auditEvents: Prisma.$PayoutAuditEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -807,10 +1085,14 @@ export type $PayoutPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     amount: number
     status: $Enums.PayoutStatus
     reference: string | null
+    destinationSnapshot: string | null
     createdAt: Date
     createdBy: string
     paidAt: Date | null
     paidBy: string | null
+    cancelledAt: Date | null
+    cancelledBy: string | null
+    cancellationReason: string | null
   }, ExtArgs["result"]["payout"]>
   composites: {}
 }
@@ -1207,6 +1489,7 @@ export interface Prisma__PayoutClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   bookings<T extends Prisma.Payout$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Payout$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditEvents<T extends Prisma.Payout$auditEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Payout$auditEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PayoutAuditEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1241,10 +1524,14 @@ export interface PayoutFieldRefs {
   readonly amount: Prisma.FieldRef<"Payout", 'Int'>
   readonly status: Prisma.FieldRef<"Payout", 'PayoutStatus'>
   readonly reference: Prisma.FieldRef<"Payout", 'String'>
+  readonly destinationSnapshot: Prisma.FieldRef<"Payout", 'String'>
   readonly createdAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly createdBy: Prisma.FieldRef<"Payout", 'String'>
   readonly paidAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly paidBy: Prisma.FieldRef<"Payout", 'String'>
+  readonly cancelledAt: Prisma.FieldRef<"Payout", 'DateTime'>
+  readonly cancelledBy: Prisma.FieldRef<"Payout", 'String'>
+  readonly cancellationReason: Prisma.FieldRef<"Payout", 'String'>
 }
     
 
@@ -1667,6 +1954,30 @@ export type Payout$bookingsArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
+}
+
+/**
+ * Payout.auditEvents
+ */
+export type Payout$auditEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PayoutAuditEvent
+   */
+  select?: Prisma.PayoutAuditEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PayoutAuditEvent
+   */
+  omit?: Prisma.PayoutAuditEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PayoutAuditEventInclude<ExtArgs> | null
+  where?: Prisma.PayoutAuditEventWhereInput
+  orderBy?: Prisma.PayoutAuditEventOrderByWithRelationInput | Prisma.PayoutAuditEventOrderByWithRelationInput[]
+  cursor?: Prisma.PayoutAuditEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PayoutAuditEventScalarFieldEnum | Prisma.PayoutAuditEventScalarFieldEnum[]
 }
 
 /**

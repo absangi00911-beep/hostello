@@ -55,6 +55,7 @@ function renderPanel() {
       hostelName="Test Hostel"
       ownerId="owner-1"
       basePricePerMonth={25000}
+      cancellationPolicy="FLEXIBLE"
       rooms={[
         {
           id: "room-1",

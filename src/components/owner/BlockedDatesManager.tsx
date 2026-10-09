@@ -94,7 +94,7 @@ export function BlockedDatesManager({ hostelId }: Props) {
   }
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 mt-8">
+    <section className="owner-blocked-dates rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5 mt-8" aria-labelledby="blocked-dates-heading">
 
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
@@ -102,9 +102,9 @@ export function BlockedDatesManager({ hostelId }: Props) {
           <CalendarOff size={16} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
+          <h3 id="blocked-dates-heading" className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
             Blocked dates
-          </p>
+          </h3>
           <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
             Block dates for renovations, Ramadan break, or any closure period.
           </p>
@@ -188,7 +188,7 @@ export function BlockedDatesManager({ hostelId }: Props) {
           Add a blocked range
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="owner-blocked-date-grid grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="block-start" className={labelCls}>From</label>
             <input
@@ -247,6 +247,6 @@ export function BlockedDatesManager({ hostelId }: Props) {
           Block dates
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

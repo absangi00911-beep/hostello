@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build --webpack",
     "postbuild": "node scripts/patch-routes-manifest.mjs",
     "start": "next start",
     "lint": "eslint .",
@@ -13,6 +13,7 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:preview": "node scripts/migrate-preview.mjs",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "schedule-cron": "tsx scripts/schedule-cron-jobs.ts",

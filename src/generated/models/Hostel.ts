@@ -71,6 +71,7 @@ export type HostelMinAggregateOutputType = {
   gender: $Enums.Gender | null
   minStay: number | null
   maxStay: number | null
+  cancellationPolicy: $Enums.CancellationPolicy | null
   coverImage: string | null
   verified: boolean | null
   featured: boolean | null
@@ -100,6 +101,7 @@ export type HostelMaxAggregateOutputType = {
   gender: $Enums.Gender | null
   minStay: number | null
   maxStay: number | null
+  cancellationPolicy: $Enums.CancellationPolicy | null
   coverImage: string | null
   verified: boolean | null
   featured: boolean | null
@@ -129,6 +131,7 @@ export type HostelCountAggregateOutputType = {
   gender: number
   minStay: number
   maxStay: number
+  cancellationPolicy: number
   amenities: number
   rules: number
   images: number
@@ -191,6 +194,7 @@ export type HostelMinAggregateInputType = {
   gender?: true
   minStay?: true
   maxStay?: true
+  cancellationPolicy?: true
   coverImage?: true
   verified?: true
   featured?: true
@@ -220,6 +224,7 @@ export type HostelMaxAggregateInputType = {
   gender?: true
   minStay?: true
   maxStay?: true
+  cancellationPolicy?: true
   coverImage?: true
   verified?: true
   featured?: true
@@ -249,6 +254,7 @@ export type HostelCountAggregateInputType = {
   gender?: true
   minStay?: true
   maxStay?: true
+  cancellationPolicy?: true
   amenities?: true
   rules?: true
   images?: true
@@ -368,6 +374,7 @@ export type HostelGroupByOutputType = {
   gender: $Enums.Gender
   minStay: number
   maxStay: number | null
+  cancellationPolicy: $Enums.CancellationPolicy | null
   amenities: string[]
   rules: string[]
   images: string[]
@@ -423,6 +430,7 @@ export type HostelWhereInput = {
   gender?: Prisma.EnumGenderFilter<"Hostel"> | $Enums.Gender
   minStay?: Prisma.IntFilter<"Hostel"> | number
   maxStay?: Prisma.IntNullableFilter<"Hostel"> | number | null
+  cancellationPolicy?: Prisma.EnumCancellationPolicyNullableFilter<"Hostel"> | $Enums.CancellationPolicy | null
   amenities?: Prisma.StringNullableListFilter<"Hostel">
   rules?: Prisma.StringNullableListFilter<"Hostel">
   images?: Prisma.StringNullableListFilter<"Hostel">
@@ -446,6 +454,7 @@ export type HostelWhereInput = {
   notifications?: Prisma.NotificationListRelationFilter
   blockedDates?: Prisma.BlockedDateListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
+  verificationReviews?: Prisma.HostelVerificationReviewListRelationFilter
 }
 
 export type HostelOrderByWithRelationInput = {
@@ -465,6 +474,7 @@ export type HostelOrderByWithRelationInput = {
   gender?: Prisma.SortOrder
   minStay?: Prisma.SortOrder
   maxStay?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
   amenities?: Prisma.SortOrder
   rules?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -488,6 +498,7 @@ export type HostelOrderByWithRelationInput = {
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   blockedDates?: Prisma.BlockedDateOrderByRelationAggregateInput
   roommmatePosts?: Prisma.RoommatePostOrderByRelationAggregateInput
+  verificationReviews?: Prisma.HostelVerificationReviewOrderByRelationAggregateInput
 }
 
 export type HostelWhereUniqueInput = Prisma.AtLeast<{
@@ -510,6 +521,7 @@ export type HostelWhereUniqueInput = Prisma.AtLeast<{
   gender?: Prisma.EnumGenderFilter<"Hostel"> | $Enums.Gender
   minStay?: Prisma.IntFilter<"Hostel"> | number
   maxStay?: Prisma.IntNullableFilter<"Hostel"> | number | null
+  cancellationPolicy?: Prisma.EnumCancellationPolicyNullableFilter<"Hostel"> | $Enums.CancellationPolicy | null
   amenities?: Prisma.StringNullableListFilter<"Hostel">
   rules?: Prisma.StringNullableListFilter<"Hostel">
   images?: Prisma.StringNullableListFilter<"Hostel">
@@ -533,6 +545,7 @@ export type HostelWhereUniqueInput = Prisma.AtLeast<{
   notifications?: Prisma.NotificationListRelationFilter
   blockedDates?: Prisma.BlockedDateListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
+  verificationReviews?: Prisma.HostelVerificationReviewListRelationFilter
 }, "id" | "slug">
 
 export type HostelOrderByWithAggregationInput = {
@@ -552,6 +565,7 @@ export type HostelOrderByWithAggregationInput = {
   gender?: Prisma.SortOrder
   minStay?: Prisma.SortOrder
   maxStay?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrderInput | Prisma.SortOrder
   amenities?: Prisma.SortOrder
   rules?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -592,6 +606,7 @@ export type HostelScalarWhereWithAggregatesInput = {
   gender?: Prisma.EnumGenderWithAggregatesFilter<"Hostel"> | $Enums.Gender
   minStay?: Prisma.IntWithAggregatesFilter<"Hostel"> | number
   maxStay?: Prisma.IntNullableWithAggregatesFilter<"Hostel"> | number | null
+  cancellationPolicy?: Prisma.EnumCancellationPolicyNullableWithAggregatesFilter<"Hostel"> | $Enums.CancellationPolicy | null
   amenities?: Prisma.StringNullableListFilter<"Hostel">
   rules?: Prisma.StringNullableListFilter<"Hostel">
   images?: Prisma.StringNullableListFilter<"Hostel">
@@ -624,6 +639,7 @@ export type HostelCreateInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -646,6 +662,7 @@ export type HostelCreateInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateInput = {
@@ -665,6 +682,7 @@ export type HostelUncheckedCreateInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -687,6 +705,7 @@ export type HostelUncheckedCreateInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUpdateInput = {
@@ -706,6 +725,7 @@ export type HostelUpdateInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -728,6 +748,7 @@ export type HostelUpdateInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateInput = {
@@ -747,6 +768,7 @@ export type HostelUncheckedUpdateInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -769,6 +791,7 @@ export type HostelUncheckedUpdateInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateManyInput = {
@@ -788,6 +811,7 @@ export type HostelCreateManyInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -820,6 +844,7 @@ export type HostelUpdateManyMutationInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -851,6 +876,7 @@ export type HostelUncheckedUpdateManyInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -901,6 +927,7 @@ export type HostelCountOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   minStay?: Prisma.SortOrder
   maxStay?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
   amenities?: Prisma.SortOrder
   rules?: Prisma.SortOrder
   images?: Prisma.SortOrder
@@ -947,6 +974,7 @@ export type HostelMaxOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   minStay?: Prisma.SortOrder
   maxStay?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
   coverImage?: Prisma.SortOrder
   verified?: Prisma.SortOrder
   featured?: Prisma.SortOrder
@@ -976,6 +1004,7 @@ export type HostelMinOrderByAggregateInput = {
   gender?: Prisma.SortOrder
   minStay?: Prisma.SortOrder
   maxStay?: Prisma.SortOrder
+  cancellationPolicy?: Prisma.SortOrder
   coverImage?: Prisma.SortOrder
   verified?: Prisma.SortOrder
   featured?: Prisma.SortOrder
@@ -1082,6 +1111,10 @@ export type EnumGenderFieldUpdateOperationsInput = {
   set?: $Enums.Gender
 }
 
+export type NullableEnumCancellationPolicyFieldUpdateOperationsInput = {
+  set?: $Enums.CancellationPolicy | null
+}
+
 export type HostelUpdateamenitiesInput = {
   set?: string[]
   push?: string | string[]
@@ -1131,6 +1164,20 @@ export type HostelUpdateOneRequiredWithoutBookingsNestedInput = {
   upsert?: Prisma.HostelUpsertWithoutBookingsInput
   connect?: Prisma.HostelWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.HostelUpdateToOneWithWhereWithoutBookingsInput, Prisma.HostelUpdateWithoutBookingsInput>, Prisma.HostelUncheckedUpdateWithoutBookingsInput>
+}
+
+export type HostelCreateNestedOneWithoutVerificationReviewsInput = {
+  create?: Prisma.XOR<Prisma.HostelCreateWithoutVerificationReviewsInput, Prisma.HostelUncheckedCreateWithoutVerificationReviewsInput>
+  connectOrCreate?: Prisma.HostelCreateOrConnectWithoutVerificationReviewsInput
+  connect?: Prisma.HostelWhereUniqueInput
+}
+
+export type HostelUpdateOneRequiredWithoutVerificationReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.HostelCreateWithoutVerificationReviewsInput, Prisma.HostelUncheckedCreateWithoutVerificationReviewsInput>
+  connectOrCreate?: Prisma.HostelCreateOrConnectWithoutVerificationReviewsInput
+  upsert?: Prisma.HostelUpsertWithoutVerificationReviewsInput
+  connect?: Prisma.HostelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HostelUpdateToOneWithWhereWithoutVerificationReviewsInput, Prisma.HostelUpdateWithoutVerificationReviewsInput>, Prisma.HostelUncheckedUpdateWithoutVerificationReviewsInput>
 }
 
 export type HostelCreateNestedOneWithoutReviewsInput = {
@@ -1250,6 +1297,7 @@ export type HostelCreateWithoutOwnerInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1271,6 +1319,7 @@ export type HostelCreateWithoutOwnerInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutOwnerInput = {
@@ -1290,6 +1339,7 @@ export type HostelUncheckedCreateWithoutOwnerInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1311,6 +1361,7 @@ export type HostelUncheckedCreateWithoutOwnerInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutOwnerInput = {
@@ -1359,6 +1410,7 @@ export type HostelScalarWhereInput = {
   gender?: Prisma.EnumGenderFilter<"Hostel"> | $Enums.Gender
   minStay?: Prisma.IntFilter<"Hostel"> | number
   maxStay?: Prisma.IntNullableFilter<"Hostel"> | number | null
+  cancellationPolicy?: Prisma.EnumCancellationPolicyNullableFilter<"Hostel"> | $Enums.CancellationPolicy | null
   amenities?: Prisma.StringNullableListFilter<"Hostel">
   rules?: Prisma.StringNullableListFilter<"Hostel">
   images?: Prisma.StringNullableListFilter<"Hostel">
@@ -1391,6 +1443,7 @@ export type HostelCreateWithoutRooms_relInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1412,6 +1465,7 @@ export type HostelCreateWithoutRooms_relInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutRooms_relInput = {
@@ -1431,6 +1485,7 @@ export type HostelUncheckedCreateWithoutRooms_relInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1452,6 +1507,7 @@ export type HostelUncheckedCreateWithoutRooms_relInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutRooms_relInput = {
@@ -1487,6 +1543,7 @@ export type HostelUpdateWithoutRooms_relInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1508,6 +1565,7 @@ export type HostelUpdateWithoutRooms_relInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutRooms_relInput = {
@@ -1527,6 +1585,7 @@ export type HostelUncheckedUpdateWithoutRooms_relInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1548,6 +1607,7 @@ export type HostelUncheckedUpdateWithoutRooms_relInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutBookingsInput = {
@@ -1567,6 +1627,7 @@ export type HostelCreateWithoutBookingsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1588,6 +1649,7 @@ export type HostelCreateWithoutBookingsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutBookingsInput = {
@@ -1607,6 +1669,7 @@ export type HostelUncheckedCreateWithoutBookingsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1628,6 +1691,7 @@ export type HostelUncheckedCreateWithoutBookingsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutBookingsInput = {
@@ -1663,6 +1727,7 @@ export type HostelUpdateWithoutBookingsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1684,6 +1749,7 @@ export type HostelUpdateWithoutBookingsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutBookingsInput = {
@@ -1703,6 +1769,7 @@ export type HostelUncheckedUpdateWithoutBookingsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1717,6 +1784,191 @@ export type HostelUncheckedUpdateWithoutBookingsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rooms_rel?: Prisma.RoomUncheckedUpdateManyWithoutHostelNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
+  priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
+  blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
+}
+
+export type HostelCreateWithoutVerificationReviewsInput = {
+  id?: string
+  name: string
+  slug: string
+  description: string
+  status?: $Enums.HostelStatus
+  city: string
+  area?: string | null
+  address: string
+  latitude?: number | null
+  longitude?: number | null
+  pricePerMonth: number
+  rooms: number
+  capacity: number
+  gender?: $Enums.Gender
+  minStay?: number
+  maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelCreateamenitiesInput | string[]
+  rules?: Prisma.HostelCreaterulesInput | string[]
+  images?: Prisma.HostelCreateimagesInput | string[]
+  coverImage?: string | null
+  verified?: boolean
+  featured?: boolean
+  viewCount?: number
+  rating?: number
+  reviewCount?: number
+  safetyScore?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutHostelsInput
+  rooms_rel?: Prisma.RoomCreateNestedManyWithoutHostelInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutHostelInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutHostelInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
+  priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
+  blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
+  roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+}
+
+export type HostelUncheckedCreateWithoutVerificationReviewsInput = {
+  id?: string
+  name: string
+  slug: string
+  description: string
+  status?: $Enums.HostelStatus
+  city: string
+  area?: string | null
+  address: string
+  latitude?: number | null
+  longitude?: number | null
+  pricePerMonth: number
+  rooms: number
+  capacity: number
+  gender?: $Enums.Gender
+  minStay?: number
+  maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelCreateamenitiesInput | string[]
+  rules?: Prisma.HostelCreaterulesInput | string[]
+  images?: Prisma.HostelCreateimagesInput | string[]
+  coverImage?: string | null
+  verified?: boolean
+  featured?: boolean
+  viewCount?: number
+  rating?: number
+  reviewCount?: number
+  safetyScore?: number
+  ownerId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  rooms_rel?: Prisma.RoomUncheckedCreateNestedManyWithoutHostelInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutHostelInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutHostelInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
+  priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
+  blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+}
+
+export type HostelCreateOrConnectWithoutVerificationReviewsInput = {
+  where: Prisma.HostelWhereUniqueInput
+  create: Prisma.XOR<Prisma.HostelCreateWithoutVerificationReviewsInput, Prisma.HostelUncheckedCreateWithoutVerificationReviewsInput>
+}
+
+export type HostelUpsertWithoutVerificationReviewsInput = {
+  update: Prisma.XOR<Prisma.HostelUpdateWithoutVerificationReviewsInput, Prisma.HostelUncheckedUpdateWithoutVerificationReviewsInput>
+  create: Prisma.XOR<Prisma.HostelCreateWithoutVerificationReviewsInput, Prisma.HostelUncheckedCreateWithoutVerificationReviewsInput>
+  where?: Prisma.HostelWhereInput
+}
+
+export type HostelUpdateToOneWithWhereWithoutVerificationReviewsInput = {
+  where?: Prisma.HostelWhereInput
+  data: Prisma.XOR<Prisma.HostelUpdateWithoutVerificationReviewsInput, Prisma.HostelUncheckedUpdateWithoutVerificationReviewsInput>
+}
+
+export type HostelUpdateWithoutVerificationReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHostelStatusFieldUpdateOperationsInput | $Enums.HostelStatus
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  pricePerMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  rooms?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  minStay?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelUpdateamenitiesInput | string[]
+  rules?: Prisma.HostelUpdaterulesInput | string[]
+  images?: Prisma.HostelUpdateimagesInput | string[]
+  coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
+  rooms_rel?: Prisma.RoomUpdateManyWithoutHostelNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutHostelNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutHostelNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
+  priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
+  blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
+  roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+}
+
+export type HostelUncheckedUpdateWithoutVerificationReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHostelStatusFieldUpdateOperationsInput | $Enums.HostelStatus
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  pricePerMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  rooms?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  minStay?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelUpdateamenitiesInput | string[]
+  rules?: Prisma.HostelUpdaterulesInput | string[]
+  images?: Prisma.HostelUpdateimagesInput | string[]
+  coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rooms_rel?: Prisma.RoomUncheckedUpdateManyWithoutHostelNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutHostelNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
@@ -1743,6 +1995,7 @@ export type HostelCreateWithoutReviewsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1764,6 +2017,7 @@ export type HostelCreateWithoutReviewsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutReviewsInput = {
@@ -1783,6 +2037,7 @@ export type HostelUncheckedCreateWithoutReviewsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1804,6 +2059,7 @@ export type HostelUncheckedCreateWithoutReviewsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutReviewsInput = {
@@ -1839,6 +2095,7 @@ export type HostelUpdateWithoutReviewsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1860,6 +2117,7 @@ export type HostelUpdateWithoutReviewsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutReviewsInput = {
@@ -1879,6 +2137,7 @@ export type HostelUncheckedUpdateWithoutReviewsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -1900,6 +2159,7 @@ export type HostelUncheckedUpdateWithoutReviewsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutFavoritesInput = {
@@ -1919,6 +2179,7 @@ export type HostelCreateWithoutFavoritesInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1940,6 +2201,7 @@ export type HostelCreateWithoutFavoritesInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutFavoritesInput = {
@@ -1959,6 +2221,7 @@ export type HostelUncheckedCreateWithoutFavoritesInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -1980,6 +2243,7 @@ export type HostelUncheckedCreateWithoutFavoritesInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutFavoritesInput = {
@@ -2015,6 +2279,7 @@ export type HostelUpdateWithoutFavoritesInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2036,6 +2301,7 @@ export type HostelUpdateWithoutFavoritesInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutFavoritesInput = {
@@ -2055,6 +2321,7 @@ export type HostelUncheckedUpdateWithoutFavoritesInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2076,6 +2343,7 @@ export type HostelUncheckedUpdateWithoutFavoritesInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutConversationsInput = {
@@ -2095,6 +2363,7 @@ export type HostelCreateWithoutConversationsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2116,6 +2385,7 @@ export type HostelCreateWithoutConversationsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutConversationsInput = {
@@ -2135,6 +2405,7 @@ export type HostelUncheckedCreateWithoutConversationsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2156,6 +2427,7 @@ export type HostelUncheckedCreateWithoutConversationsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutConversationsInput = {
@@ -2191,6 +2463,7 @@ export type HostelUpdateWithoutConversationsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2212,6 +2485,7 @@ export type HostelUpdateWithoutConversationsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutConversationsInput = {
@@ -2231,6 +2505,7 @@ export type HostelUncheckedUpdateWithoutConversationsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2252,6 +2527,7 @@ export type HostelUncheckedUpdateWithoutConversationsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutPriceAlertsInput = {
@@ -2271,6 +2547,7 @@ export type HostelCreateWithoutPriceAlertsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2292,6 +2569,7 @@ export type HostelCreateWithoutPriceAlertsInput = {
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutPriceAlertsInput = {
@@ -2311,6 +2589,7 @@ export type HostelUncheckedCreateWithoutPriceAlertsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2332,6 +2611,7 @@ export type HostelUncheckedCreateWithoutPriceAlertsInput = {
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutPriceAlertsInput = {
@@ -2367,6 +2647,7 @@ export type HostelUpdateWithoutPriceAlertsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2388,6 +2669,7 @@ export type HostelUpdateWithoutPriceAlertsInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutPriceAlertsInput = {
@@ -2407,6 +2689,7 @@ export type HostelUncheckedUpdateWithoutPriceAlertsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2428,6 +2711,7 @@ export type HostelUncheckedUpdateWithoutPriceAlertsInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutNotificationsInput = {
@@ -2447,6 +2731,7 @@ export type HostelCreateWithoutNotificationsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2468,6 +2753,7 @@ export type HostelCreateWithoutNotificationsInput = {
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutNotificationsInput = {
@@ -2487,6 +2773,7 @@ export type HostelUncheckedCreateWithoutNotificationsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2508,6 +2795,7 @@ export type HostelUncheckedCreateWithoutNotificationsInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutNotificationsInput = {
@@ -2543,6 +2831,7 @@ export type HostelUpdateWithoutNotificationsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2564,6 +2853,7 @@ export type HostelUpdateWithoutNotificationsInput = {
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutNotificationsInput = {
@@ -2583,6 +2873,7 @@ export type HostelUncheckedUpdateWithoutNotificationsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2604,6 +2895,7 @@ export type HostelUncheckedUpdateWithoutNotificationsInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutBlockedDatesInput = {
@@ -2623,6 +2915,7 @@ export type HostelCreateWithoutBlockedDatesInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2644,6 +2937,7 @@ export type HostelCreateWithoutBlockedDatesInput = {
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutBlockedDatesInput = {
@@ -2663,6 +2957,7 @@ export type HostelUncheckedCreateWithoutBlockedDatesInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2684,6 +2979,7 @@ export type HostelUncheckedCreateWithoutBlockedDatesInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutBlockedDatesInput = {
@@ -2719,6 +3015,7 @@ export type HostelUpdateWithoutBlockedDatesInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2740,6 +3037,7 @@ export type HostelUpdateWithoutBlockedDatesInput = {
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutBlockedDatesInput = {
@@ -2759,6 +3057,7 @@ export type HostelUncheckedUpdateWithoutBlockedDatesInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2780,6 +3079,7 @@ export type HostelUncheckedUpdateWithoutBlockedDatesInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateWithoutRoommmatePostsInput = {
@@ -2799,6 +3099,7 @@ export type HostelCreateWithoutRoommmatePostsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2820,6 +3121,7 @@ export type HostelCreateWithoutRoommmatePostsInput = {
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
 }
 
 export type HostelUncheckedCreateWithoutRoommmatePostsInput = {
@@ -2839,6 +3141,7 @@ export type HostelUncheckedCreateWithoutRoommmatePostsInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -2860,6 +3163,7 @@ export type HostelUncheckedCreateWithoutRoommmatePostsInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
 }
 
 export type HostelCreateOrConnectWithoutRoommmatePostsInput = {
@@ -2895,6 +3199,7 @@ export type HostelUpdateWithoutRoommmatePostsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2916,6 +3221,7 @@ export type HostelUpdateWithoutRoommmatePostsInput = {
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutRoommmatePostsInput = {
@@ -2935,6 +3241,7 @@ export type HostelUncheckedUpdateWithoutRoommmatePostsInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -2956,6 +3263,7 @@ export type HostelUncheckedUpdateWithoutRoommmatePostsInput = {
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelCreateManyOwnerInput = {
@@ -2975,6 +3283,7 @@ export type HostelCreateManyOwnerInput = {
   gender?: $Enums.Gender
   minStay?: number
   maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelCreateamenitiesInput | string[]
   rules?: Prisma.HostelCreaterulesInput | string[]
   images?: Prisma.HostelCreateimagesInput | string[]
@@ -3006,6 +3315,7 @@ export type HostelUpdateWithoutOwnerInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -3027,6 +3337,7 @@ export type HostelUpdateWithoutOwnerInput = {
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateWithoutOwnerInput = {
@@ -3046,6 +3357,7 @@ export type HostelUncheckedUpdateWithoutOwnerInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -3067,6 +3379,7 @@ export type HostelUncheckedUpdateWithoutOwnerInput = {
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
 }
 
 export type HostelUncheckedUpdateManyWithoutOwnerInput = {
@@ -3086,6 +3399,7 @@ export type HostelUncheckedUpdateManyWithoutOwnerInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
   minStay?: Prisma.IntFieldUpdateOperationsInput | number
   maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
   amenities?: Prisma.HostelUpdateamenitiesInput | string[]
   rules?: Prisma.HostelUpdaterulesInput | string[]
   images?: Prisma.HostelUpdateimagesInput | string[]
@@ -3115,6 +3429,7 @@ export type HostelCountOutputType = {
   notifications: number
   blockedDates: number
   roommmatePosts: number
+  verificationReviews: number
 }
 
 export type HostelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3127,6 +3442,7 @@ export type HostelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   notifications?: boolean | HostelCountOutputTypeCountNotificationsArgs
   blockedDates?: boolean | HostelCountOutputTypeCountBlockedDatesArgs
   roommmatePosts?: boolean | HostelCountOutputTypeCountRoommmatePostsArgs
+  verificationReviews?: boolean | HostelCountOutputTypeCountVerificationReviewsArgs
 }
 
 /**
@@ -3202,6 +3518,13 @@ export type HostelCountOutputTypeCountRoommmatePostsArgs<ExtArgs extends runtime
   where?: Prisma.RoommatePostWhereInput
 }
 
+/**
+ * HostelCountOutputType without action
+ */
+export type HostelCountOutputTypeCountVerificationReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HostelVerificationReviewWhereInput
+}
+
 
 export type HostelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3220,6 +3543,7 @@ export type HostelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   gender?: boolean
   minStay?: boolean
   maxStay?: boolean
+  cancellationPolicy?: boolean
   amenities?: boolean
   rules?: boolean
   images?: boolean
@@ -3243,6 +3567,7 @@ export type HostelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   notifications?: boolean | Prisma.Hostel$notificationsArgs<ExtArgs>
   blockedDates?: boolean | Prisma.Hostel$blockedDatesArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.Hostel$roommmatePostsArgs<ExtArgs>
+  verificationReviews?: boolean | Prisma.Hostel$verificationReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.HostelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hostel"]>
 
@@ -3263,6 +3588,7 @@ export type HostelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   gender?: boolean
   minStay?: boolean
   maxStay?: boolean
+  cancellationPolicy?: boolean
   amenities?: boolean
   rules?: boolean
   images?: boolean
@@ -3296,6 +3622,7 @@ export type HostelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   gender?: boolean
   minStay?: boolean
   maxStay?: boolean
+  cancellationPolicy?: boolean
   amenities?: boolean
   rules?: boolean
   images?: boolean
@@ -3329,6 +3656,7 @@ export type HostelSelectScalar = {
   gender?: boolean
   minStay?: boolean
   maxStay?: boolean
+  cancellationPolicy?: boolean
   amenities?: boolean
   rules?: boolean
   images?: boolean
@@ -3344,7 +3672,7 @@ export type HostelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HostelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "status" | "city" | "area" | "address" | "latitude" | "longitude" | "pricePerMonth" | "rooms" | "capacity" | "gender" | "minStay" | "maxStay" | "amenities" | "rules" | "images" | "coverImage" | "verified" | "featured" | "viewCount" | "rating" | "reviewCount" | "safetyScore" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["hostel"]>
+export type HostelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "status" | "city" | "area" | "address" | "latitude" | "longitude" | "pricePerMonth" | "rooms" | "capacity" | "gender" | "minStay" | "maxStay" | "cancellationPolicy" | "amenities" | "rules" | "images" | "coverImage" | "verified" | "featured" | "viewCount" | "rating" | "reviewCount" | "safetyScore" | "ownerId" | "createdAt" | "updatedAt", ExtArgs["result"]["hostel"]>
 export type HostelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   rooms_rel?: boolean | Prisma.Hostel$rooms_relArgs<ExtArgs>
@@ -3356,6 +3684,7 @@ export type HostelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   notifications?: boolean | Prisma.Hostel$notificationsArgs<ExtArgs>
   blockedDates?: boolean | Prisma.Hostel$blockedDatesArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.Hostel$roommmatePostsArgs<ExtArgs>
+  verificationReviews?: boolean | Prisma.Hostel$verificationReviewsArgs<ExtArgs>
   _count?: boolean | Prisma.HostelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HostelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3378,6 +3707,7 @@ export type $HostelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     blockedDates: Prisma.$BlockedDatePayload<ExtArgs>[]
     roommmatePosts: Prisma.$RoommatePostPayload<ExtArgs>[]
+    verificationReviews: Prisma.$HostelVerificationReviewPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3396,6 +3726,7 @@ export type $HostelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     gender: $Enums.Gender
     minStay: number
     maxStay: number | null
+    cancellationPolicy: $Enums.CancellationPolicy | null
     amenities: string[]
     rules: string[]
     images: string[]
@@ -3813,6 +4144,7 @@ export interface Prisma__HostelClient<T, Null = never, ExtArgs extends runtime.T
   notifications<T extends Prisma.Hostel$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   blockedDates<T extends Prisma.Hostel$blockedDatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$blockedDatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BlockedDatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   roommmatePosts<T extends Prisma.Hostel$roommmatePostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$roommmatePostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoommatePostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  verificationReviews<T extends Prisma.Hostel$verificationReviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$verificationReviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HostelVerificationReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3858,6 +4190,7 @@ export interface HostelFieldRefs {
   readonly gender: Prisma.FieldRef<"Hostel", 'Gender'>
   readonly minStay: Prisma.FieldRef<"Hostel", 'Int'>
   readonly maxStay: Prisma.FieldRef<"Hostel", 'Int'>
+  readonly cancellationPolicy: Prisma.FieldRef<"Hostel", 'CancellationPolicy'>
   readonly amenities: Prisma.FieldRef<"Hostel", 'String[]'>
   readonly rules: Prisma.FieldRef<"Hostel", 'String[]'>
   readonly images: Prisma.FieldRef<"Hostel", 'String[]'>
@@ -4485,6 +4818,30 @@ export type Hostel$roommmatePostsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.RoommatePostScalarFieldEnum | Prisma.RoommatePostScalarFieldEnum[]
+}
+
+/**
+ * Hostel.verificationReviews
+ */
+export type Hostel$verificationReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HostelVerificationReview
+   */
+  select?: Prisma.HostelVerificationReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HostelVerificationReview
+   */
+  omit?: Prisma.HostelVerificationReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HostelVerificationReviewInclude<ExtArgs> | null
+  where?: Prisma.HostelVerificationReviewWhereInput
+  orderBy?: Prisma.HostelVerificationReviewOrderByWithRelationInput | Prisma.HostelVerificationReviewOrderByWithRelationInput[]
+  cursor?: Prisma.HostelVerificationReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HostelVerificationReviewScalarFieldEnum | Prisma.HostelVerificationReviewScalarFieldEnum[]
 }
 
 /**

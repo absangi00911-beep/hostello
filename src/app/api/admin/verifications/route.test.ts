@@ -100,7 +100,7 @@ describe("GET /api/admin/verifications", () => {
 
     expect(db.user.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { verificationStatus: "PENDING" },
+        where: { role: "STUDENT", verificationStatus: "PENDING" },
         orderBy: { verificationSubmittedAt: "asc" },
         skip: 0,
         take: 25,
@@ -129,6 +129,7 @@ describe("GET /api/admin/verifications", () => {
 
     expect(db.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: {
+        role: "STUDENT",
         verificationStatus: "APPROVED",
         OR: [
           { name: { contains: "Ali", mode: "insensitive" } },
@@ -213,7 +214,7 @@ describe("PUT /api/admin/verifications", () => {
 
     expect(db.user.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "usr_1", verificationStatus: "PENDING" },
+        where: { id: "usr_1", role: "STUDENT", verificationStatus: "PENDING" },
         data: expect.objectContaining({
           verificationStatus: "APPROVED",
           studentVerified: true,
@@ -236,7 +237,7 @@ describe("PUT /api/admin/verifications", () => {
 
     expect(db.user.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "usr_1", verificationStatus: "PENDING" },
+        where: { id: "usr_1", role: "STUDENT", verificationStatus: "PENDING" },
         data: expect.objectContaining({
           verificationStatus: "REJECTED",
           studentVerified: false,

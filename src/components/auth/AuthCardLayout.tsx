@@ -22,9 +22,9 @@ export function AuthCardLayout({
   children,
 }: AuthCardLayoutProps) {
   return (
-    <main id="main-content" className="min-h-dvh bg-[var(--color-bg-page)] px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:py-12">
-      <div className="grid w-full max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center">
-        <aside className="relative hidden min-h-[600px] overflow-hidden rounded-[var(--radius-brand)] bg-[var(--color-text-heading)] lg:flex">
+    <main id="main-content" className="auth-editorial-shell min-h-dvh bg-[var(--color-bg-page)] px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:py-12">
+      <div className="auth-editorial-grid grid w-full max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center">
+        <aside className="auth-editorial-art relative hidden min-h-[600px] overflow-hidden bg-[var(--color-text-heading)] lg:flex">
           <PhotoImage
             dark
             src={AUTH_IMAGE}
@@ -35,30 +35,34 @@ export function AuthCardLayout({
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/20" aria-hidden="true" />
-          <div className="relative mt-auto p-10">
-            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white/70">
-              Welcome back
+          <div className="auth-art-topline absolute inset-x-8 top-8 flex justify-between text-white/75">
+            <span>HOSTELLO FIELD GUIDE</span>
+            <span>PAKISTAN · 01</span>
+          </div>
+          <div className="auth-art-copy relative mt-auto p-10">
+            <p className="auth-art-kicker">
+              {heading === "Sign in" ? "YOUR NEXT CHAPTER" : "A PLACE TO BEGIN"}
             </p>
-            <p className="mt-3 max-w-md font-heading text-[length:var(--text-h2)] leading-[1.05] font-[600] text-white">
+            <p className="auth-art-title mt-3 max-w-md text-white">
               Your next room is closer than you think.
             </p>
-            <div className="mt-6 flex items-center gap-2 text-[length:var(--text-body-sm)] text-white/80">
+            <div className="auth-art-note mt-6 flex items-center gap-2 text-white/80">
               <ShieldCheck size={16} strokeWidth={1.6} aria-hidden="true" />
-              Verified listings and clear monthly prices
+              Thoughtful stays, verified listings, clear monthly prices
               <ArrowRight size={14} strokeWidth={1.6} aria-hidden="true" />
             </div>
           </div>
         </aside>
 
-        <div className="w-full max-w-[440px] justify-self-center">
-          <div className="mb-7 flex justify-center">
+        <div className="auth-editorial-form w-full max-w-[440px] justify-self-center">
+          <div className="mb-7 flex justify-center lg:justify-start">
             <Logo />
           </div>
 
-          <Card className="p-6 shadow-[var(--shadow-md)] sm:p-8">
+          <Card className="auth-editorial-card p-6 shadow-[var(--shadow-md)] sm:p-8">
             {/* Heading */}
             <div className="mb-7 text-center">
-              <h1 className="mb-1 font-heading text-[length:var(--text-h3)] font-[600] text-[color:var(--color-text-heading)]">
+              <h1 className="auth-editorial-heading mb-1 text-[length:var(--text-h3)] text-[color:var(--color-text-heading)]">
                 {heading}
               </h1>
               {subheading && (
@@ -72,7 +76,7 @@ export function AuthCardLayout({
           </Card>
 
           {footer && (
-            <p className="mt-5 text-center text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            <p className="auth-editorial-footer mt-5 text-center text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] lg:text-left">
               {footer}
             </p>
           )}

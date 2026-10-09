@@ -72,13 +72,10 @@ export function HeroSearch() {
 
   return (
     <div className="w-full space-y-3">
-      {/* City + search — two adjacent pills rather than one fused segment,
-          matching the same pattern as the nav's compact search cluster
-          (Navbar.tsx) so the two visually read as the same control at two
-          sizes. */}
+      {/* A single search surface keeps the first decision in one calm place. */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-2 sm:flex-row sm:items-center"
+        className="flex flex-col gap-2 rounded-[22px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-2 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center"
         role="search"
         aria-label="Find a hostel"
       >
@@ -86,7 +83,7 @@ export function HeroSearch() {
           <CitySelector />
         </Suspense>
 
-        <div className="flex flex-1 items-center gap-1 rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-1.5 pl-4 pr-1.5 transition-shadow duration-[var(--transition-fast)] focus-within:border-[var(--color-primary)] focus-within:ring-[3px] focus-within:ring-[var(--color-primary)]/15">
+        <div className="flex min-h-12 flex-1 items-center gap-1 rounded-[var(--radius-lg)] bg-[var(--color-bg-page)] py-1.5 pl-4 pr-1.5 transition-[background-color,box-shadow] duration-[var(--transition-medium)] focus-within:bg-[var(--color-bg-card)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/25">
           <Search
             size={16}
             strokeWidth={1.5}
@@ -104,7 +101,7 @@ export function HeroSearch() {
           <button
             type="submit"
             aria-label="Search"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-action)] text-[color:var(--color-text-inverse)] transition-all duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:scale-[0.94]"
+            className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-action)] text-[color:var(--color-text-inverse)] transition-[background-color,transform] duration-[var(--transition-base)] hover:bg-[var(--color-action-dark)] active:scale-[0.96]"
           >
             <Search
               size={15}
@@ -120,7 +117,7 @@ export function HeroSearch() {
           by the same handleSubmit that the pill above submits through. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[length:var(--text-caption)] font-[600] uppercase tracking-[0.06em] text-[color:var(--color-text-muted)]">
-          Looking for
+          Refine by
         </span>
         {GENDER_OPTIONS.map((option) => (
           <Chip

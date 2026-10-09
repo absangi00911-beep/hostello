@@ -12,6 +12,7 @@ const NAV_LINKS = [
 ];
 
 const LEGAL_LINKS = [
+  { label: "Help centre", href: "/help" },
   { label: "Privacy policy", href: "/privacy" },
   { label: "Terms of service", href: "/terms" },
   { label: "Contact", href: "/contact" },
@@ -45,7 +46,7 @@ export function Footer() {
           {/* Col 1 — Brand */}
           <div className="space-y-5">
             <Logo className="[&>span]:text-[color:var(--color-text-heading)]" />
-            <p className="max-w-[280px] font-heading text-[length:var(--text-h3)] leading-tight text-[color:var(--color-text-heading)]">
+            <p className="max-w-[280px] font-display text-[length:var(--text-h3)] leading-tight tracking-[-0.02em] text-[color:var(--color-text-heading)]">
               Find your room.<br />
               Not a phone number.
             </p>

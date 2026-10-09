@@ -28,6 +28,7 @@ import {
   formatPKR,
 } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
+import { CANCELLATION_POLICY_DETAILS, getCancellationRefundAmount, type CancellationPolicy } from "@/lib/cancellation-policy";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
 type Tab = "UPCOMING" | "COMPLETED" | "CANCELLED";
@@ -41,6 +42,11 @@ interface Booking {
   total: number;
   status: BookingStatus;
   paymentStatus: string;
+  refundState?: string;
+  cancellationPolicy: CancellationPolicy | null;
+  cancellationRefundAmount: number | null;
+  refundedAmount: number;
+  ownerResponseDueAt: string | null;
   hostel: {
     id: string;
     name: string;
@@ -75,17 +81,17 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+    <div className="student-stat-card relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
       <Icon
         size={72}
         strokeWidth={1}
         className="absolute -right-3 -bottom-3 text-[color:var(--color-bg-overlay)]"
         aria-hidden="true"
       />
-      <p className="relative text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
+      <p className="student-stat-label relative text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.05em] text-[color:var(--color-text-muted)]">
         {label}
       </p>
-      <p className={`relative mt-1.5 font-heading text-[2rem] font-[800] ${accent ? "text-[color:var(--color-primary)]" : "text-[color:var(--color-text-heading)]"}`}>
+      <p className={`student-stat-value relative mt-1.5 font-heading text-[2rem] font-[800] ${accent ? "text-[color:var(--color-primary)]" : "text-[color:var(--color-text-heading)]"}`}>
         {value}
       </p>
     </div>
@@ -103,12 +109,21 @@ function CancelBookingButton({
   disabled: boolean;
   onCancel: (id: string) => void;
 }) {
-  if (booking.status !== "PENDING") return null;
+  if (booking.status !== "PENDING" && booking.status !== "CONFIRMED") return null;
 
   return (
     <button
       type="button"
-      onClick={() => onCancel(booking.id)}
+      onClick={() => {
+        if (booking.status === "CONFIRMED" && booking.cancellationPolicy) {
+          const refund = booking.paymentStatus === "PAID"
+            ? getCancellationRefundAmount(booking.cancellationPolicy, booking.total, new Date(booking.checkIn), new Date())
+            : 0;
+          const policy = CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy].label;
+          if (!window.confirm(`Cancel this confirmed booking under the ${policy} policy? The estimated refund is PKR ${refund.toLocaleString("en-PK")}. Continue?`)) return;
+        }
+        onCancel(booking.id);
+      }}
       disabled={disabled}
       aria-label={`Cancel booking at ${booking.hostel.name}`}
       className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[length:var(--text-caption)] font-[500] text-[color:var(--color-error)] hover:underline disabled:opacity-50"
@@ -134,7 +149,7 @@ function NextAdventureCard({
   const { hostel } = booking;
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] sm:flex">
+    <div className="next-stay-card overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] sm:flex">
       <div className="relative h-48 sm:h-auto sm:w-72 shrink-0 bg-[var(--color-bg-overlay)]">
         {hostel.coverImage ? (
           <Image src={hostel.coverImage} alt={hostel.name} fill className="object-cover" sizes="288px" />
@@ -166,6 +181,27 @@ function NextAdventureCard({
           <Calendar size={14} strokeWidth={1.5} aria-hidden="true" />
           {dateRange(booking)} · {booking.months} {booking.months === 1 ? "month" : "months"} · {booking.guests} guest{booking.guests !== 1 ? "s" : ""}
         </p>
+
+        {booking.status === "PENDING" && booking.paymentStatus === "PAID" && booking.ownerResponseDueAt && (
+          <p className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-primary-deep)]">
+            Waiting for owner · reply due {format(new Date(booking.ownerResponseDueAt), "d MMM, h:mm a")}
+          </p>
+        )}
+          {booking.status === "CANCELLED" && ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"].includes(booking.paymentStatus) && (
+          <p className="text-[length:var(--text-caption)] font-[600] text-[color:var(--color-warning-text)]">
+            Refund status: {booking.cancellationRefundAmount === 0
+              ? "no refund due under policy"
+              : booking.refundState === "UNCERTAIN"
+              ? "being reconciled"
+              : booking.refundState === "PROCESSING"
+                ? "processing"
+                : booking.paymentStatus === "REFUNDED"
+                  ? `full refund processed (${formatPKR(booking.refundedAmount)})`
+                  : booking.paymentStatus === "PARTIALLY_REFUNDED"
+                    ? `partial refund processed (${formatPKR(booking.refundedAmount)})`
+                    : "needs review"}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2 pt-1">
           <Button asChild size="sm">
@@ -232,6 +268,11 @@ function UpcomingRow({
         <div className="min-w-0 flex-1">
           <p className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">{hostel.name}</p>
           <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">{dateRange(booking)}</p>
+          {booking.status === "PENDING" && booking.paymentStatus === "PAID" && booking.ownerResponseDueAt && (
+            <p className="mt-0.5 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-primary-deep)]">
+              Reply by {format(new Date(booking.ownerResponseDueAt), "d MMM, h:mm a")}
+            </p>
+          )}
         </div>
         <StatusBadge variant={booking.status.toLowerCase() as any} />
       </Link>
@@ -260,7 +301,22 @@ function PastStayRow({ booking }: { booking: Booking }) {
       </td>
       <td className="px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">{dateRange(booking)}</td>
       <td className="px-4 py-3 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-body)]">{formatPKR(booking.total)}</td>
-      <td className="px-4 py-3"><StatusBadge variant={booking.status.toLowerCase() as any} /></td>
+      <td className="px-4 py-3">
+        <StatusBadge variant={booking.status.toLowerCase() as any} />
+        {booking.status === "CANCELLED" && booking.paymentStatus !== "PENDING" && (
+          <p className="mt-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+            {booking.cancellationRefundAmount === 0
+              ? "No refund due under policy"
+              : booking.refundState === "UNCERTAIN" || booking.refundState === "PROCESSING"
+                ? "Refund being checked"
+                : booking.paymentStatus === "REFUNDED"
+                  ? `${formatPKR(booking.refundedAmount)} refunded`
+                  : booking.paymentStatus === "PARTIALLY_REFUNDED"
+                    ? `${formatPKR(booking.refundedAmount)} partial refund`
+                    : "Refund needs review"}
+          </p>
+        )}
+      </td>
       <td className="px-4 py-3 text-right">
         {booking.status === "COMPLETED" ? (
           <Link
@@ -311,8 +367,8 @@ export default function BookingsPage() {
       if (!res.ok) throw new Error(json.error ?? "Cancel failed");
       return json;
     },
-    onSuccess: () => {
-      toast.success("Booking cancelled.");
+    onSuccess: (result) => {
+      toast.success(result.message ?? "Booking cancelled.");
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -394,7 +450,7 @@ export default function BookingsPage() {
         ) : (
           <div className="space-y-4">
             <div>
-              <h3 className="mb-3 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">Next Adventure</h3>
+              <h3 className="mb-3 text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">Your next stay</h3>
               <NextAdventureCard
                 booking={upcoming[0]}
                 onCancel={(id) => cancelMutation.mutate(id)}

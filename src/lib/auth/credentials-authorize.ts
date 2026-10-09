@@ -111,7 +111,7 @@ export async function authorizeCredentials(
 
   try {
     const user = await db.user.findUnique({ where: { email } });
-    if (!user?.password) {
+    if (!user?.password || user.deletionRequestedAt) {
       logOperationalEvent("warn", "auth.login.rejected", {
         reason: "invalid_credentials",
         ...logIdentifiers,

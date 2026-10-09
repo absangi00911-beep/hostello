@@ -4,6 +4,7 @@ import path from 'path';
 const SHARED_ROOT = path.resolve(__dirname, './packages/shared/src');
 
 export default defineConfig({
+  cacheDir: path.resolve(__dirname, 'node_modules/.vite-hostello-tests'),
   plugins: [
     {
       name: 'resolve-shared-package',

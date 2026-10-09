@@ -45,7 +45,7 @@ npm start
 | Command | Does |
 |---|---|
 | `npm run dev` | Start the web app (Turbopack) |
-| `npm run build` | Generate the Prisma client and build; does not apply migrations |
+| `npm run build` | Generate the Prisma client and build with webpack; does not apply migrations |
 | `npm run test` | Vitest unit/integration tests |
 | `npm run e2e` | Playwright E2E — refuses to run against anything that looks like a production/shared database |
 | `npm run migrate:new` | Create a new Prisma migration (required before any schema change) |

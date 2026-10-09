@@ -34,15 +34,17 @@ const VALUES = [
 export default function AboutPage() {
   return (
     <PublicLayout>
-        <section className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
-          <div className="container-app py-14 md:py-20">
-            <p className="mb-3 text-[length:var(--text-label)] font-[600] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+      <div className="about-field-page">
+        <section className="about-field-hero border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
+          <div className="about-field-hero-grid container-app py-12 md:py-16">
+            <div className="about-field-copy">
+            <p className="about-field-kicker">
               About HostelLo
             </p>
-            <h1 className="max-w-[720px] font-heading text-[length:var(--text-h1)] font-[700] leading-tight text-[color:var(--color-text-heading)]">
+            <h1 className="about-field-title max-w-[720px] text-[color:var(--color-text-heading)]">
               Finding a place to live should feel simple.
             </h1>
-            <p className="mt-5 max-w-[620px] text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
+            <p className="about-field-description mt-5 max-w-[620px] text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
               HostelLo is a student accommodation marketplace for Pakistan. We
               help students discover suitable hostels and help owners connect
               with residents who are ready to find their next home.
@@ -58,10 +60,23 @@ export default function AboutPage() {
                 <Link href="/list-your-hostel">List your hostel</Link>
               </Button>
             </div>
+            </div>
+
+            <aside className="about-field-note" aria-label="HostelLo's guiding idea">
+              <div className="about-note-sun" aria-hidden="true"><span>01</span></div>
+              <div className="about-note-content">
+                <p className="about-note-kicker">OUR POINT OF VIEW</p>
+                <p className="about-note-phrase">Make room<br />for what&apos;s next.</p>
+                <div className="about-note-colophon">
+                  <span>STUDENTS · OWNERS · PAKISTAN</span>
+                  <span>HOSTELLO / PAKISTAN</span>
+                </div>
+              </div>
+            </aside>
           </div>
         </section>
 
-        <section className="container-app py-12 md:py-16">
+        <section className="about-purpose-section container-app py-12 md:py-16">
           <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
             <div>
               <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
@@ -84,15 +99,16 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]">
+        <section className="about-values-section border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]">
           <div className="container-app py-12 md:py-16">
             <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
               What matters to us
             </h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
-              {VALUES.map(({ title, description, icon: Icon }) => (
-                <Card key={title} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+              {VALUES.map(({ title, description, icon: Icon }, index) => (
+                <Card key={title} className="about-value-card border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
                   <CardContent className="p-0">
+                    <p className="about-value-index">{String(index + 1).padStart(2, "0")} / PRINCIPLE</p>
                     <Icon
                       size={24}
                       strokeWidth={1.6}
@@ -112,7 +128,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="container-app py-12 text-center md:py-16">
+        <section className="about-final-cta container-app py-12 text-center md:py-16">
           <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
             Ready to find your place?
           </h2>
@@ -126,6 +142,7 @@ export default function AboutPage() {
             </Link>
           </Button>
         </section>
+      </div>
     </PublicLayout>
   );
 }

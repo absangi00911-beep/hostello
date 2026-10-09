@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
     maxLimit: 50,
   });
   const where = {
+    role: "STUDENT" as const,
     verificationStatus: status,
     ...(search
       ? {
@@ -143,7 +144,7 @@ export async function PUT(req: NextRequest) {
   const { userId, action } = parsed.data;
 
   const existing = await db.user.findUnique({
-    where: { id: userId },
+    where: { id: userId, role: "STUDENT", verificationStatus: "PENDING" },
     select: { verificationDocUrl: true },
   });
 
@@ -172,7 +173,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const decision = await db.user.updateMany({
-      where: { id: userId, verificationStatus: "PENDING" },
+      where: { id: userId, role: "STUDENT", verificationStatus: "PENDING" },
       data: updateData,
     });
 

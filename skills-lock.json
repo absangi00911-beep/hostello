@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ian-xiaohei-illustrations": {
+      "source": "tojileon/ian-xiaohei-illustrations-en",
+      "sourceType": "github",
+      "skillPath": "ian-xiaohei-illustrations/SKILL.md",
+      "computedHash": "0047aab51307082eaa8da45cf5fb80673a31387755471f022e895f9a18f36967"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

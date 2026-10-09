@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { ListingFormWizard } from "@/components/owner/ListingFormWizard";
+import { BlockedDatesManager } from "@/components/owner/BlockedDatesManager";
 import type { Metadata } from "next";
 
 async function getHostel(id: string) {
@@ -18,6 +19,7 @@ async function getHostel(id: string) {
       area: true,
       address: true,
       gender: true,
+      cancellationPolicy: true,
       pricePerMonth: true,
       rooms: true,
       capacity: true,
@@ -77,6 +79,7 @@ export default async function EditListingPage({
     area: hostel.area ?? "",
     address: hostel.address,
     gender: hostel.gender as "MALE" | "FEMALE" | "MIXED",
+    cancellationPolicy: (hostel.cancellationPolicy ?? "") as "FLEXIBLE" | "STANDARD" | "STRICT" | "",
     pricePerMonth: hostel.pricePerMonth,
     rooms: hostel.rooms,
     capacity: hostel.capacity,
@@ -91,16 +94,10 @@ export default async function EditListingPage({
   };
 
   return (
-    <div className="py-2">
-      <div className="mb-8">
-        <h1
-          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
-
-        >
-          Edit listing
-        </h1>
-        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mt-1">
-          {hostel.name}
+    <div className="owner-listing-form-page py-2">
+      <div className="owner-form-intro mb-5">
+        <p>
+          Property: <span className="font-[600] text-[color:var(--color-text-heading)]">{hostel.name}</span>
           {hostel.status === "ACTIVE" && (
             <span
               className="ml-2 inline-flex items-center h-5 px-2 rounded-[var(--radius-full)] text-[10px] font-[600]"
@@ -130,6 +127,7 @@ export default async function EditListingPage({
         hostelId={hostel.id}
         initialData={initialData}
       />
+      <BlockedDatesManager hostelId={hostel.id} />
     </div>
   );
 }

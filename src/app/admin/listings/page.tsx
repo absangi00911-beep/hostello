@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/hostel/Pagination";
 import { RejectReasonModal } from "@/components/admin/RejectReasonModal";
-import { HostelReviewDrawer } from "@/components/admin/HostelReviewDrawer";
+import { HostelReviewDrawer, type VerificationChecklist } from "@/components/admin/HostelReviewDrawer";
 import { FLAGGED_THRESHOLD } from "@/lib/listingCompleteness";
 
 type StatusTab = "PENDING_REVIEW" | "ACTIVE" | "SUSPENDED";
@@ -92,14 +92,12 @@ function CompletenessBar({ score }: { score: number }) {
 /* -- Inline action buttons --------------------------------- */
 function AdminActions({
   hostel,
-  onApprove,
   onSuspend,
   onActivate,
   onReview,
   loading,
 }: {
   hostel: AdminHostel;
-  onApprove:  (id: string) => void;
   onSuspend:  (id: string, name: string) => void;
   onActivate: (id: string, name: string) => void;
   onReview:   (id: string, name: string) => void;
@@ -125,8 +123,7 @@ function AdminActions({
   if (hostel.status === "PENDING_REVIEW") {
     return (
       <div className="flex items-center gap-1.5">
-        {btn("Review", () => onReview(hostel.id, hostel.name), "secondary")}
-        {btn("Approve", () => onApprove(hostel.id), "default")}
+        {btn("Review & verify", () => onReview(hostel.id, hostel.name), "secondary")}
         {btn("Reject", () => onSuspend(hostel.id, hostel.name), "destructive")}
       </div>
     );
@@ -195,16 +192,18 @@ export default function AdminListingsPage() {
       hostelId,
       action,
       reason,
+      verification,
     }: {
       hostelId: string;
       action: "verify" | "suspend" | "activate";
       reason?: string;
+      verification?: VerificationChecklist;
     }) => {
       setActingId(hostelId);
       const res = await fetch("/api/admin/hostels", {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ hostelId, action, reason }),
+        body:    JSON.stringify({ hostelId, action, reason, verification }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Action failed");
@@ -225,8 +224,8 @@ export default function AdminListingsPage() {
   });
 
   // Approve directly — no reason needed
-  function handleApprove(hostelId: string) {
-    actionMutation.mutate({ hostelId, action: "verify" });
+  function handleApprove(hostelId: string, verification: VerificationChecklist) {
+    actionMutation.mutate({ hostelId, action: "verify", verification });
   }
 
   // Suspend/reject — opens reason modal
@@ -259,9 +258,9 @@ export default function AdminListingsPage() {
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-[1.6rem] sm:text-[1.8rem] md:text-[2rem] font-[800] leading-tight text-[color:var(--color-text-heading)]">
+            <h3 className="admin-content-heading">
               Hostel Moderation
-            </h1>
+            </h3>
             <p className="mt-1 text-[0.75rem] sm:text-[0.8125rem] text-[color:var(--color-text-muted)]">
               Pending Reviews ({stats?.data.pendingApproval ?? "…"})
             </p>
@@ -407,7 +406,6 @@ export default function AdminListingsPage() {
                   <div className="mt-3 flex justify-end">
                     <AdminActions
                       hostel={hostel}
-                      onApprove={handleApprove}
                       onSuspend={handleSuspendIntent}
                       onActivate={handleActivateIntent}
                       onReview={(id, name) => setReviewDrawer({ id, name, status: hostel.status })}
@@ -482,7 +480,6 @@ export default function AdminListingsPage() {
                         <td className="px-4 py-3.5">
                           <AdminActions
                             hostel={hostel}
-                            onApprove={handleApprove}
                             onSuspend={handleSuspendIntent}
                             onActivate={handleActivateIntent}
                             onReview={(id, name) =>
@@ -527,7 +524,7 @@ export default function AdminListingsPage() {
           hostelName={reviewDrawer.name}
           status={reviewDrawer.status}
           onClose={() => setReviewDrawer(null)}
-          onApprove={() => handleApprove(reviewDrawer.id)}
+          onApprove={(verification) => handleApprove(reviewDrawer.id, verification)}
           onSuspend={() => {
             setReviewDrawer(null);
             handleSuspendIntent(reviewDrawer.id, reviewDrawer.name);

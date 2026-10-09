@@ -88,7 +88,10 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+  escapeHtml: (value: string) => value,
+}));
 vi.mock("@/lib/email-templates/booking-status", () => ({
   bookingStatusEmail: vi.fn().mockReturnValue({ subject: "test", html: "test" }),
 }));
@@ -120,9 +123,16 @@ function makeBooking(overrides: Record<string, unknown> = {}) {
     paymentStatus: "PENDING",
     paymentMethod: "safepay",
     transactionId: TRACKER,
+    checkIn: new Date("2030-01-01T00:00:00.000Z"),
+    checkOut: new Date("2030-03-01T00:00:00.000Z"),
+    months: 2,
     userId: "user-1",
     user: { name: "Ali Khan", email: "ali@example.com" },
-    hostel: { name: "Green Valley", slug: "green-valley" },
+    hostel: {
+      name: "Green Valley",
+      slug: "green-valley",
+      owner: { id: "owner-1", name: "Owner One", email: "owner@example.com" },
+    },
     ...overrides,
   };
 }
@@ -192,15 +202,20 @@ describe("JazzCash callback", () => {
     });
   });
 
-  it("confirms only a matching pending booking and redirects to its real confirmation route", async () => {
+  it("records a matching pending booking and redirects to its real confirmation route", async () => {
     const response = await callbackPOST(makeJazzCashRequest());
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toContain(`/booking/${BOOKING_ID}/confirmation`);
     expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({ paymentMethod: "jazzcash", paymentStatus: "PENDING", status: "PENDING" }),
-      data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED", transactionId: JAZZCASH_TXN }),
+      data: expect.objectContaining({
+        paymentStatus: "PAID",
+        transactionId: JAZZCASH_TXN,
+        ownerResponseDueAt: expect.any(Date),
+      }),
     }));
-    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
+    expect(sendEmail).toHaveBeenCalledTimes(2);
   });
 
   it("rejects signed-provider callbacks while that payment method is disabled", async () => {
@@ -353,43 +368,58 @@ describe("Safepay webhook", () => {
         paymentStatus: "PENDING",
         transactionId: TRACKER,
       }),
-      data: expect.objectContaining({ paymentStatus: "PAID", status: "CONFIRMED", transactionId: TRACKER }),
+      data: expect.objectContaining({
+        paymentStatus: "PAID",
+        transactionId: TRACKER,
+        ownerResponseDueAt: expect.any(Date),
+      }),
     }));
-    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
+    expect(sendEmail).toHaveBeenCalledTimes(2);
     const paymentEvent = log.mock.calls
       .map(([line]) => JSON.parse(String(line)))
       .find((record) => record.event === "booking.payment_confirmed");
     expect(paymentEvent).toMatchObject({
       severity: "INFO",
       request_id: expect.any(String),
-      attributes: { booking_id: BOOKING_ID, booking_status: "CONFIRMED" },
+      attributes: { booking_id: BOOKING_ID, booking_status: "PENDING" },
     });
     expect(JSON.stringify(paymentEvent)).not.toContain(TRACKER);
     expect(JSON.stringify(paymentEvent)).not.toContain("ali@example.com");
     log.mockRestore();
   });
 
-  it("logs a resolved email-provider rejection without recipient or tracker data", async () => {
+  it("logs email-provider rejections without recipient or tracker data", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.mocked(sendEmail).mockResolvedValue({ success: false, error: "Email delivery failed." } as any);
 
     const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
     await vi.waitFor(() => expect(log).toHaveBeenCalled());
 
-    const event = log.mock.calls
+    const events = log.mock.calls
       .map(([line]) => JSON.parse(String(line)))
-      .find((record) => record.event === "notification.dispatch_failed");
+      .filter((record) => record.event === "notification.dispatch_failed");
     expect(response.status).toBe(200);
-    expect(event).toMatchObject({
-      severity: "ERROR",
-      attributes: {
-        notification_type: "BOOKING_CONFIRMED_EMAIL",
-        booking_id: BOOKING_ID,
-        reason: "provider_rejected",
-      },
-    });
-    expect(JSON.stringify(event)).not.toContain("ali@example.com");
-    expect(JSON.stringify(event)).not.toContain(TRACKER);
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        severity: "ERROR",
+        attributes: {
+          notification_type: "BOOKING_REQUEST_EMAIL_TO_OWNER",
+          booking_id: BOOKING_ID,
+          reason: "provider_rejected",
+        },
+      }),
+      expect.objectContaining({
+        severity: "ERROR",
+        attributes: {
+          notification_type: "BOOKING_REQUEST_EMAIL_TO_STUDENT",
+          booking_id: BOOKING_ID,
+          reason: "provider_rejected",
+        },
+      }),
+    ]));
+    expect(JSON.stringify(events)).not.toContain("ali@example.com");
+    expect(JSON.stringify(events)).not.toContain(TRACKER);
     log.mockRestore();
   });
 

@@ -42,12 +42,20 @@ export async function POST(req: NextRequest) {
         paymentStatus: true,
         paymentMethod: true,
         transactionId: true,
+        cancellationPolicy: true,
         hostel: { select: { name: true } },
         user:   { select: { name: true, email: true } },
       },
     });
 
     if (!booking) return NextResponse.json({ error: "Booking not found." }, { status: 404 });
+
+    if (!booking.cancellationPolicy) {
+      return NextResponse.json(
+        { error: "Cancellation terms are not saved for this booking. Please return to the listing or contact support." },
+        { status: 409 },
+      );
+    }
 
     // Guard 1: only initiate payment for bookings that are still pending.
     // Without this check a cancelled or completed booking could be re-paid,

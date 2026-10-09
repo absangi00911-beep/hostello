@@ -47,6 +47,7 @@ describe("POST /api/payment/initiate", () => {
       paymentStatus: "PENDING",
       paymentMethod: "safepay",
       transactionId: null,
+      cancellationPolicy: "STANDARD",
       user: { name: "Ali", email: "ali@example.com" },
     } as Awaited<ReturnType<typeof db.booking.findUnique>>);
     vi.mocked(db.booking.updateMany).mockResolvedValue({ count: 1 } as any);
@@ -109,6 +110,7 @@ describe("POST /api/payment/initiate", () => {
       paymentStatus: "PENDING",
       paymentMethod: "safepay",
       transactionId: "track_existing",
+      cancellationPolicy: "STANDARD",
       user: { name: "Ali", email: "ali@example.com" },
     } as Awaited<ReturnType<typeof db.booking.findUnique>>);
 
@@ -132,6 +134,7 @@ describe("POST /api/payment/initiate", () => {
       paymentStatus: "FAILED",
       paymentMethod: "safepay",
       transactionId: "track_failed",
+      cancellationPolicy: "STANDARD",
       user: { name: "Ali", email: "ali@example.com" },
     } as Awaited<ReturnType<typeof db.booking.findUnique>>);
 
