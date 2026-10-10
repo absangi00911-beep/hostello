@@ -37,8 +37,6 @@ function applyTheme(resolved: ResolvedTheme) {
 // hydrates. It's injected via useServerInsertedHTML below, so it never
 // passes through React's render tree and never triggers the
 // "script tag encountered while rendering" warning.
-const INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
-
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
@@ -49,9 +47,10 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
   const [mounted, setMounted] = useState(false);
+  const initScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||${JSON.stringify(defaultTheme)};var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
 
   useServerInsertedHTML(() => (
-    <script dangerouslySetInnerHTML={{ __html: INIT_SCRIPT }} />
+    <script dangerouslySetInnerHTML={{ __html: initScript }} />
   ));
 
   // Read the persisted preference once on mount.

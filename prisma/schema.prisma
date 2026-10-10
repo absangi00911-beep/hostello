@@ -50,14 +50,52 @@ enum BookingStatus {
 enum PaymentStatus {
   PENDING
   PAID
+  PARTIALLY_REFUNDED
   REFUNDED
   FAILED
+}
+
+enum RefundState {
+  NONE
+  PROCESSING
+  UNCERTAIN
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  STANDARD
+  STRICT
+}
+
+enum RefundAuditEventType {
+  AUTOMATIC_REQUESTED
+  AUTOMATIC_CONFIRMED
+  AUTOMATIC_UNCERTAIN
+  MANUAL_CONFIRMED
+}
+
+enum SafepayWebhookEventStatus {
+  RECEIVED
+  QUEUED
+  PROCESSING
+  PROCESSED
+  RECONCILIATION_REQUIRED
+  IGNORED
+  RETRYABLE
 }
 
 enum PayoutStatus {
   PENDING
   PAID
   CANCELLED
+}
+
+enum PayoutAuditAction {
+  BATCH_CREATED
+  MARKED_PAID
+  VOIDED
 }
 
 enum HostelStatus {
@@ -97,6 +135,7 @@ model User {
   bio           String?   @db.Text
   city          String?
   tokenVersion            Int                 @default(0)
+  deletionRequestedAt     DateTime?
   emailNotifications      Boolean             @default(true)
   studentVerified         Boolean             @default(false)
   verificationStatus      VerificationStatus  @default(NONE)
@@ -134,6 +173,27 @@ model User {
   @@map("users")
 }
 
+// Resumable account cleanup. userId is cleared after completion; subjectHash
+// remains as a pseudonymous operational record without retaining account PII.
+model AccountDeletionJob {
+  id                      String    @id @default(cuid())
+  userId                  String?   @unique
+  subjectHash             String    @unique @db.VarChar(64)
+  status                  String    @default("PENDING")
+  phase                   String    @default("NOTIFICATIONS")
+  cursor                  String?
+  retainsFinancialHistory Boolean   @default(false)
+  verificationObjectKey   String?   @db.VarChar(256)
+  attemptCount             Int       @default(0)
+  lastErrorCode            String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  completedAt              DateTime?
+
+  @@index([status, createdAt])
+  @@map("account_deletion_jobs")
+}
+
 model DeviceToken {
   id         String   @id @default(cuid())
   userId     String
@@ -169,15 +229,36 @@ model Payout {
   amount    Int          // Whole-integer PKR, sum of included bookings' totals.
   status    PayoutStatus @default(PENDING)
   reference String?      // Bank/JazzCash transfer reference, filled in when marked paid.
+  destinationSnapshot String? @db.Text // AES-256-GCM ciphertext; never store bank details in plaintext here.
   bookings  Booking[]
   createdAt DateTime     @default(now())
   createdBy String       // Admin userId who generated the batch.
   paidAt    DateTime?
   paidBy    String?      // Admin userId who marked it paid.
+  cancelledAt        DateTime?
+  cancelledBy        String? // Admin userId who voided the batch.
+  cancellationReason String?
+  auditEvents        PayoutAuditEvent[]
 
   @@index([ownerId])
   @@index([status])
   @@map("payouts")
+}
+
+model PayoutAuditEvent {
+  id        String            @id @default(cuid())
+  payoutId  String
+  payout    Payout            @relation(fields: [payoutId], references: [id], onDelete: Restrict)
+  actorId   String            // Admin userId; retained even if the account is later deleted.
+  action    PayoutAuditAction
+  amount    Int               // Gross batch amount at this transition, before any future fee policy.
+  reference String?
+  reason    String?           @db.Text
+  createdAt DateTime          @default(now())
+
+  @@index([payoutId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("payout_audit_events")
 }
 
 model Account {
@@ -255,6 +336,7 @@ model Hostel {
   gender        Gender  @default(MIXED)
   minStay       Int     @default(1) // months
   maxStay       Int?
+  cancellationPolicy CancellationPolicy?
 
   // Features (stored as JSON arrays of strings)
   amenities String[]
@@ -286,6 +368,7 @@ model Hostel {
   notifications Notification[]
   blockedDates BlockedDate[]
   roommmatePosts  RoommatePost[]
+  verificationReviews HostelVerificationReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -338,13 +421,21 @@ model Booking {
   guests   Int      @default(1)
   total    Int      // Whole-integer PKR. Never use Float for currency — see formatPrice (packages/shared/src/utils).
 
+  // Snapshot the owner-selected terms so later listing edits cannot change an existing booking.
+  cancellationPolicy CancellationPolicy?
+  cancellationRefundAmount Int?
+  refundedAmount Int @default(0)
+
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod String?
   transactionId String?       @unique
+  refundState   RefundState   @default(NONE)
   refundedAt    DateTime?
   refundedBy    String?       // Admin userId who processed the refund.
 
   status BookingStatus @default(PENDING)
+  ownerResponseDueAt DateTime?
+  ownerResponseReminderSentAt DateTime?
   notes  String?       @db.Text
 
   payout   Payout? @relation(fields: [payoutId], references: [id])
@@ -358,9 +449,97 @@ model Booking {
   @@index([hostelId])
   @@index([userId])
   @@index([status])
+  @@index([status, paymentStatus, ownerResponseDueAt])
   @@index([checkIn, checkOut])
   @@index([payoutId])
   @@map("bookings")
+}
+
+// Records the checks an admin completed before applying the public "verified" badge.
+// Evidence files are not retained here; the checklist is the moderation audit trail.
+model HostelVerificationReview {
+  id                        String   @id @default(cuid())
+  hostelId                  String
+  reviewedById              String
+  ownerAuthorityChecked     Boolean
+  locationChecked           Boolean
+  listingDetailsChecked     Boolean
+  photosChecked             Boolean
+  notes                     String?  @db.Text
+  createdAt                 DateTime @default(now())
+
+  hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  @@index([hostelId, createdAt])
+  @@index([reviewedById, createdAt])
+  @@map("hostel_verification_reviews")
+}
+
+// Append-only records of provider refund requests and admin decisions.
+model RefundAuditEvent {
+  id                     String               @id @default(cuid())
+  attemptId              String
+  bookingId              String
+  adminUserId            String
+  type                   RefundAuditEventType
+  transactionId          String?
+  amount                 Int                  // Whole-integer PKR.
+  currency               String               @default("PKR")
+  providerState          String?
+  providerResponseDigest String?
+  failureName            String?
+  failureCode            String?
+  failureStatus          Int?
+  createdAt              DateTime             @default(now())
+
+  @@unique([attemptId, type])
+  @@index([bookingId, createdAt])
+  @@index([attemptId, createdAt])
+  @@map("refund_audit_events")
+}
+
+// Stores minimal, verified Safepay event evidence before applying its business effects.
+// The merchant API key is redacted from payloadEvidence; bodyHash fingerprints the
+// exact signed bytes without retaining the credential embedded in the request.
+model SafepayWebhookEvent {
+  id                  String                   @id @default(cuid())
+  bodyHash            String                   @unique
+  eventType           String
+  merchantOrderId     String?
+  tracker             String?
+  providerState       String?
+  amountMinorUnits    Int?
+  currency            String?
+  payloadEvidence     String                   @db.Text
+  status              SafepayWebhookEventStatus @default(RECEIVED)
+  processingAttempts  Int                      @default(0)
+  processingStartedAt DateTime?
+  processedAt         DateTime?
+  lastErrorCode       String?
+  receivedAt          DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  replayEvents        SafepayWebhookReplayEvent[]
+
+  @@index([status, receivedAt])
+  @@index([merchantOrderId, receivedAt])
+  @@index([tracker, receivedAt])
+  @@map("safepay_webhook_events")
+}
+
+// Immutable operator attestations for manually re-queued transient webhook events.
+model SafepayWebhookReplayEvent {
+  id             String             @id @default(cuid())
+  webhookEventId String
+  adminUserId    String
+  providerTracker String            @db.VarChar(256)
+  reason         String             @db.VarChar(500)
+  createdAt      DateTime           @default(now())
+
+  webhookEvent SafepayWebhookEvent @relation(fields: [webhookEventId], references: [id], onDelete: Restrict)
+
+  @@index([webhookEventId, createdAt])
+  @@index([adminUserId, createdAt])
+  @@map("safepay_webhook_replay_events")
 }
 
 model Review {

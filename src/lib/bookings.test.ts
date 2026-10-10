@@ -200,7 +200,7 @@ describe("GET /api/bookings", () => {
     expect(body.data).toHaveLength(1);
     expect(mockDb.hostel.findMany).not.toHaveBeenCalled();
     expect(mockDb.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { hostel: { is: { ownerId } } },
+      where: { hostel: { is: { ownerId } }, paymentStatus: "PAID" },
     }));
   });
 
@@ -286,7 +286,7 @@ describe("GET /api/bookings", () => {
     expect(body.total).toBe(0);
     expect(mockDb.hostel.findMany).not.toHaveBeenCalled();
     expect(mockDb.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { hostel: { is: { ownerId } } },
+      where: { hostel: { is: { ownerId } }, paymentStatus: "PAID" },
     }));
   });
 

@@ -25,14 +25,16 @@ test.describe('Homepage', () => {
     await page.goto('/');
     await page.goto('/hostels');
     await expect(page).toHaveURL(/\/hostels/);
-    await expect(page.getByRole('main', { name: 'Search results' })).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Find student hostels' })).toBeVisible();
   });
 
   test('homepage shows trust proof near search', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByText(/verified hostel listings/i)).toBeVisible();
-    await expect(page.getByText(/real prices before you call/i)).toBeVisible();
-    await expect(page.getByText(/secure booking handoff/i)).toBeVisible();
+    const trustProof = page.getByLabel('HostelLo trust proof');
+    await expect(trustProof.getByText('Verified hostel listings', { exact: true })).toBeVisible();
+    await expect(trustProof.getByText('Real prices before you call', { exact: true })).toBeVisible();
+    await expect(trustProof.getByText('Secure booking handoff', { exact: true })).toBeVisible();
   });
 });

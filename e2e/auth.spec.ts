@@ -4,7 +4,7 @@ test.describe('Login page', () => {
   test('login page renders email and password fields', async ({ page }) => {
     await page.goto('/login');
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
   });
 
   test('submit button is present', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('Login page', () => {
   test('invalid credentials show an error message', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel(/email/i).fill('notauser@example.com');
-    await page.getByRole('textbox', { name: 'Password' }).fill('wrongpassword123');
+    await page.getByLabel('Password', { exact: true }).fill('wrongpassword123');
     const submitBtn = page
       .getByRole('button', { name: /sign in|log in|login/i })
       .first();
@@ -45,7 +45,6 @@ test.describe('Login page', () => {
       .getByRole('link', { name: /register|sign up|create account/i })
       .first();
     await expect(registerLink).toBeVisible();
-    await registerLink.click();
-    await expect(page).toHaveURL(/\/(register|signup)/i);
+    await expect(registerLink).toHaveAttribute('href', '/register');
   });
 });

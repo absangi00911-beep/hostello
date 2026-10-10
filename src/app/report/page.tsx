@@ -53,9 +53,10 @@ export default function ReportPage() {
 
   return (
     <PublicLayout>
-      <div className="mx-auto max-w-[560px] px-4 py-12 md:py-16">
+      <div className="report-editorial-page mx-auto max-w-[620px] px-4 py-12 md:py-16">
         {/* Heading */}
-        <div className="mb-8">
+        <div className="report-editorial-heading mb-8">
+          <div className="student-page-overline"><span>COMMUNITY CARE</span><span>REPORT / 01</span></div>
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-warning-bg)]">
               <AlertTriangle

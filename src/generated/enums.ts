@@ -68,11 +68,55 @@ export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 export const PaymentStatus = {
   PENDING: 'PENDING',
   PAID: 'PAID',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
   REFUNDED: 'REFUNDED',
   FAILED: 'FAILED'
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const RefundState = {
+  NONE: 'NONE',
+  PROCESSING: 'PROCESSING',
+  UNCERTAIN: 'UNCERTAIN',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type RefundState = (typeof RefundState)[keyof typeof RefundState]
+
+
+export const CancellationPolicy = {
+  FLEXIBLE: 'FLEXIBLE',
+  STANDARD: 'STANDARD',
+  STRICT: 'STRICT'
+} as const
+
+export type CancellationPolicy = (typeof CancellationPolicy)[keyof typeof CancellationPolicy]
+
+
+export const RefundAuditEventType = {
+  AUTOMATIC_REQUESTED: 'AUTOMATIC_REQUESTED',
+  AUTOMATIC_CONFIRMED: 'AUTOMATIC_CONFIRMED',
+  AUTOMATIC_UNCERTAIN: 'AUTOMATIC_UNCERTAIN',
+  MANUAL_CONFIRMED: 'MANUAL_CONFIRMED'
+} as const
+
+export type RefundAuditEventType = (typeof RefundAuditEventType)[keyof typeof RefundAuditEventType]
+
+
+export const SafepayWebhookEventStatus = {
+  RECEIVED: 'RECEIVED',
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  RECONCILIATION_REQUIRED: 'RECONCILIATION_REQUIRED',
+  IGNORED: 'IGNORED',
+  RETRYABLE: 'RETRYABLE'
+} as const
+
+export type SafepayWebhookEventStatus = (typeof SafepayWebhookEventStatus)[keyof typeof SafepayWebhookEventStatus]
 
 
 export const PayoutStatus = {
@@ -82,6 +126,15 @@ export const PayoutStatus = {
 } as const
 
 export type PayoutStatus = (typeof PayoutStatus)[keyof typeof PayoutStatus]
+
+
+export const PayoutAuditAction = {
+  BATCH_CREATED: 'BATCH_CREATED',
+  MARKED_PAID: 'MARKED_PAID',
+  VOIDED: 'VOIDED'
+} as const
+
+export type PayoutAuditAction = (typeof PayoutAuditAction)[keyof typeof PayoutAuditAction]
 
 
 export const HostelStatus = {

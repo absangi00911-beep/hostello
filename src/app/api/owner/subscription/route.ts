@@ -49,8 +49,12 @@ export async function POST(_req: NextRequest) {
 
   const user = await db.user.findUnique({
     where:  { id: session.user.id },
-    select: { plan: true, name: true, email: true },
+    select: { plan: true, name: true, email: true, deletionRequestedAt: true },
   });
+
+  if (!user || user.deletionRequestedAt) {
+    return NextResponse.json({ error: "Account deletion is being processed." }, { status: 409 });
+  }
 
   if (user?.plan === "PRO") {
     return NextResponse.json({ error: "Already on Pro plan" }, { status: 409 });

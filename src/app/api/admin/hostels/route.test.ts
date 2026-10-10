@@ -7,7 +7,7 @@ vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({
-  db: { hostel: { findUnique: vi.fn(), updateMany: vi.fn() } },
+  db: { hostel: { findUnique: vi.fn(), updateMany: vi.fn() }, $transaction: vi.fn() },
 }));
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
@@ -49,6 +49,19 @@ function req(body: unknown) {
   });
 }
 
+function verifyReq(hostelId = "clx000000000000000000001") {
+  return req({
+    hostelId,
+    action: "verify",
+    verification: {
+      ownerAuthorityChecked: true,
+      locationChecked: true,
+      listingDetailsChecked: true,
+      photosChecked: true,
+    },
+  });
+}
+
 function makeHostel(overrides = {}) {
   return {
     id: "hst_1",
@@ -65,6 +78,10 @@ beforeEach(() => {
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60_000 });
   vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
+  vi.mocked(db.$transaction).mockImplementation((async (callback: any) => callback({
+    hostel: db.hostel,
+    hostelVerificationReview: { create: vi.fn().mockResolvedValue({}) },
+  })) as any);
 });
 
 describe("PATCH /api/admin/hostels", () => {
@@ -105,11 +122,21 @@ describe("PATCH /api/admin/hostels", () => {
   });
 
   describe("verify", () => {
+    it("requires every listing verification check", async () => {
+      vi.mocked(auth).mockResolvedValue(adminSession());
+
+      const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+
+      expect(res.status).toBe(400);
+      expect(db.hostel.updateMany).not.toHaveBeenCalled();
+      expect(db.$transaction).not.toHaveBeenCalled();
+    });
+
     it("sets verified + ACTIVE, indexes to Typesense, sends the approved email and HOSTEL_APPROVED notification", async () => {
       vi.mocked(auth).mockResolvedValue(adminSession());
       vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
 
-      const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+      const res = await PATCH(verifyReq());
       await new Promise((r) => setTimeout(r, 0));
 
       expect(db.hostel.updateMany).toHaveBeenCalledWith(
@@ -169,7 +196,7 @@ describe("PATCH /api/admin/hostels", () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(db.hostel.updateMany).mockRejectedValue(new Error("Database unavailable"));
 
-    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+    const res = await PATCH(verifyReq());
 
     expect(res.status).toBe(500);
     expect(indexSingleHostel).not.toHaveBeenCalled();
@@ -179,7 +206,7 @@ describe("PATCH /api/admin/hostels", () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
 
-    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+    const res = await PATCH(verifyReq());
 
     expect(res.status).toBe(409);
     expect(db.hostel.updateMany).not.toHaveBeenCalled();
@@ -190,7 +217,7 @@ describe("PATCH /api/admin/hostels", () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 0 } as any);
 
-    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+    const res = await PATCH(verifyReq());
 
     expect(res.status).toBe(409);
     expect(indexSingleHostel).not.toHaveBeenCalled();
@@ -203,7 +230,7 @@ describe("PATCH /api/admin/hostels", () => {
     vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
     vi.mocked(sendEmail).mockRejectedValueOnce(new Error("Resend is down"));
 
-    const res = await PATCH(req({ hostelId: "clx000000000000000000001", action: "verify" }));
+    const res = await PATCH(verifyReq());
 
     expect(res.status).toBe(200);
   });

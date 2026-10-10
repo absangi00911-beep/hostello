@@ -45,21 +45,24 @@ export default function ContactPage() {
 
   return (
     <PublicLayout>
-      <div className="mx-auto max-w-[560px] px-4 py-12 md:py-16">
-        <div className="mb-8">
-          <h1
-            className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
+      <main className="contact-field-page container-app py-12 md:py-16" id="main-content">
+        <div className="contact-field-layout">
+          <div className="contact-field-copy">
+            <p className="contact-field-kicker">HOSTELLO / SUPPORT DESK</p>
+            <h1 className="contact-field-title">Tell us what needs a hand.</h1>
+            <p className="contact-field-description">
+              Booking question, listing detail, or something that didn&apos;t go to plan? Send us a note and we&apos;ll help you sort it out.
+            </p>
+            <div className="contact-response-note">
+              <span>OUR REPLY TIME</span>
+              <strong>Within 24 hours</strong>
+              <small>We&apos;ll get back to you by email.</small>
+            </div>
+          </div>
 
-          >
-            Contact us
-          </h1>
-          <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] mt-2">
-            We reply to all messages within 24 hours.
-          </p>
-        </div>
-
-        {sent ? (
-          <Card className="border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center">
+          <div className="contact-form-panel">
+          {sent ? (
+          <Card className="contact-success-card border-[var(--color-success)]/30 bg-[var(--color-success-bg)] p-8 text-center">
             <CardContent className="space-y-3 p-0">
               <CheckCircle2 size={40} strokeWidth={1.5} className="text-[color:var(--color-success)] mx-auto" aria-hidden="true" />
               <h2 className="text-[length:var(--text-h4)] font-[600] text-[color:var(--color-text-heading)]">
@@ -71,7 +74,7 @@ export default function ContactPage() {
             </CardContent>
           </Card>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="contact-field-form space-y-5">
             {error && (
               <div role="alert" className="rounded-[var(--radius-md)] bg-[var(--color-error-bg)] border border-[oklch(0.52_0.18_22_/_0.2)] px-4 py-3 text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)]">
                 {error}
@@ -112,8 +115,10 @@ export default function ContactPage() {
               {loading ? "Sending…" : "Send message"}
             </Button>
           </form>
-        )}
-      </div>
+          )}
+          </div>
+        </div>
+      </main>
     </PublicLayout>
   );
 }

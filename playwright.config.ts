@@ -1,4 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as loadEnv } from 'dotenv';
+
+// Load the isolated test environment before Playwright starts the Next.js
+// webServer. The global setup uses the same file for seeding its database.
+loadEnv({ path: '.env.e2e', override: true });
+loadEnv();
 
 export default defineConfig({
   testDir: './e2e',
@@ -8,7 +14,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // E2E specs share the seeded users, hostel, and auth storage state.
+  workers: 1,
   reporter: 'list',
 
   use: {
@@ -17,7 +24,7 @@ export default defineConfig({
   },
 
   webServer: {
-    command: 'npm.cmd run start',
+    command: 'npm.cmd run dev',
     url: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -27,9 +27,10 @@ export default function TermsPage() {
 
   return (
     <PublicLayout>
-      <div className="mx-auto max-w-[720px] px-4 py-12 md:py-16">
+      <div className="legal-editorial-page mx-auto max-w-[760px] px-4 py-12 md:py-16">
         {/* Header */}
-        <div className="mb-10">
+        <div className="legal-editorial-heading mb-10">
+          <div className="student-page-overline"><span>HOSTELLO · TRUST NOTES</span><span>02 / TERMS</span></div>
           <h1
             className="font-heading text-[length:var(--text-h1)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
 
@@ -76,7 +77,7 @@ export default function TermsPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>Booking requests are not confirmed until the hostel owner accepts and payment is processed.</li>
               <li>You may cancel a pending booking (before owner confirmation) at any time with no charge.</li>
-              <li>After a booking is confirmed, cancellation is subject to the hostel owner's stated terms.</li>
+              <li>After a booking is confirmed, its saved owner-selected cancellation policy applies: Flexible gives 100% at least 48 hours before check-in, 50% from 24 hours to under 48 hours, and 0% under 24 hours or after check-in; Standard gives 100% at least 7 days before, 50% from 72 hours to under 7 days, and 0% under 72 hours or after check-in; Strict gives 50% at least 14 days before and 0% under 14 days or after check-in.</li>
               <li>Reviews may only be submitted after a completed stay. Fabricated reviews will result in account suspension.</li>
               <li>You are responsible for complying with the hostel's house rules.</li>
             </ul>
@@ -102,11 +103,7 @@ export default function TermsPage() {
               calculated at the time of request and do not change after
               confirmation.
             </p>
-            <p>
-              Refunds for cancelled confirmed bookings are subject to the
-              hostel owner's cancellation policy. HostelLo will facilitate
-              disputes but does not guarantee refunds for confirmed bookings.
-            </p>
+            <p>Approved refunds are initiated within 1 business day. Banks and card issuers may take 3–10 business days to post them. If an owner declines a request or does not respond within 24 hours, the student receives a full refund.</p>
           </Section>
 
           <Section title="Prohibited conduct">

@@ -82,11 +82,11 @@ export function BookingSummaryCard({
   const hint = showPaymentHint ? paymentHint(booking.paymentStatus) : null;
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
+    <div className="booking-summary-card rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
       {/* Hostel strip */}
       <div className="flex items-center gap-3 p-4 border-b border-[var(--color-border-subtle)]">
         {/* Thumbnail */}
-        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]">
+        <div className="booking-summary-thumbnail relative h-14 w-14 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-overlay)]">
           {hostel.coverImage ? (
             <Image
               src={hostel.coverImage}
@@ -110,7 +110,7 @@ export function BookingSummaryCard({
         {/* Info */}
         <div className="min-w-0 flex-1">
           <p
-            className="truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]"
+            className="booking-summary-name truncate text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]"
 
           >
             {hostel.name}

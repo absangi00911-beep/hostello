@@ -4,7 +4,8 @@ test.describe('Hostel search page', () => {
   test('loads the search page', async ({ page }) => {
     await page.goto('/hostels');
     await expect(page).toHaveURL(/\/hostels/);
-    await expect(page.getByRole('main', { name: 'Search results' })).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Find student hostels' })).toBeVisible();
   });
 
   test('accepts a city query parameter and reflects it', async ({ page }) => {

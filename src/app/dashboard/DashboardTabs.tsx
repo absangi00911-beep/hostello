@@ -8,14 +8,12 @@ import {
   Heart,
   MessageCircle,
   Bell,
-  TrendingDown,
 } from "lucide-react";
 
 const TABS = [
   { href: "/dashboard/bookings",      label: "My bookings",   icon: BookOpen },
   { href: "/dashboard/saved",         label: "Saved hostels", icon: Heart },
   { href: "/dashboard/messages",      label: "Messages",      icon: MessageCircle },
-  { href: "/dashboard/price-alerts",  label: "Price alerts",  icon: TrendingDown },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
 ];
 
@@ -24,7 +22,7 @@ export function DashboardTabs() {
 
   return (
     <nav
-      className="flex border-b border-[var(--color-border-subtle)] overflow-x-auto scrollbar-none"
+      className="student-dashboard-tabs flex border-b border-[var(--color-border-subtle)] overflow-x-auto scrollbar-none"
       aria-label="Dashboard navigation"
       style={{ scrollbarWidth: "none" }}
     >

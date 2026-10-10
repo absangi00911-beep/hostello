@@ -1,0 +1,53 @@
+name: Migrate Preview database
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: preview-database-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate-preview:
+    name: Migrate isolated Preview database
+    if: github.ref == 'refs/heads/preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: preview-migrations
+    permissions:
+      contents: read
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Check out Preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link Preview environment
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Apply migrations to the verified Preview database
+        run: vercel env run --token="$VERCEL_TOKEN" -e preview -- npm run db:migrate:preview
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          HOSTELLO_MIGRATION_TARGET: preview
+          HOSTELLO_PREVIEW_DATABASE_HOST: ${{ vars.HOSTELLO_PREVIEW_DATABASE_HOST }}
+          HOSTELLO_PREVIEW_DATABASE_NAME: ${{ vars.HOSTELLO_PREVIEW_DATABASE_NAME }}
+          HOSTELLO_PRODUCTION_DATABASE_HOST: ${{ vars.HOSTELLO_PRODUCTION_DATABASE_HOST }}
+          HOSTELLO_PRODUCTION_DATABASE_NAME: ${{ vars.HOSTELLO_PRODUCTION_DATABASE_NAME }}

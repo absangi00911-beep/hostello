@@ -2,14 +2,28 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/admin/payouts/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
+import { cancelPayoutBatch, markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
 import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { isBoundedRouteParam } from "@/lib/route-params";
 
-const markPaidSchema = z.object({
-  reference: z.string().max(200).optional(),
+const updatePayoutSchema = z.object({
+  action: z.enum(["mark-paid", "void"]).optional(),
+  reference: z.string().trim().min(1).max(200).optional(),
+  reason: z.string().trim().min(10).max(500).optional(),
+  confirmTransferNotSent: z.literal(true).optional(),
+}).superRefine((data, context) => {
+  if (data.action === "void") {
+    if (!data.reason) {
+      context.addIssue({ code: "custom", path: ["reason"], message: "A reason is required." });
+    }
+    if (data.confirmTransferNotSent !== true) {
+      context.addIssue({ code: "custom", path: ["confirmTransferNotSent"], message: "Confirmation is required." });
+    }
+  } else if (!data.reference) {
+    context.addIssue({ code: "custom", path: ["reference"], message: "A transfer reference is required." });
+  }
 });
 
 export async function PATCH(
@@ -43,13 +57,20 @@ export async function PATCH(
   if (!body.ok) {
     return NextResponse.json({ error: body.error }, { status: body.status });
   }
-  const parsed = markPaidSchema.safeParse(body.data);
+  const parsed = updatePayoutSchema.safeParse(body.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
   try {
-    const payout = await markPayoutPaid(id, session.user.id, parsed.data.reference);
+    const payout = parsed.data.action === "void"
+      ? await cancelPayoutBatch(
+          id,
+          session.user.id,
+          parsed.data.reason!,
+          parsed.data.confirmTransferNotSent === true,
+        )
+      : await markPayoutPaid(id, session.user.id, parsed.data.reference!);
     return NextResponse.json({ data: payout });
   } catch (err) {
     console.error("[PATCH /api/admin/payouts/[id]]", getSafeErrorSummary(err));

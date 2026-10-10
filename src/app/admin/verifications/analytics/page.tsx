@@ -1,10 +1,7 @@
 // Path: src/app/admin/verifications/analytics/page.tsx
 
-import type { Metadata } from "next";
-import { VerificationAnalyticsClient } from "@/components/admin/VerificationAnalyticsClient";
-
-export const metadata: Metadata = { title: "Verification analytics — Admin" };
+import { redirect } from "next/navigation";
 
 export default function VerificationAnalyticsPage() {
-  return <VerificationAnalyticsClient />;
+  redirect("/admin/verifications");
 }

@@ -20,10 +20,10 @@ export function BookingStepLayout({
   const progress = Math.round((step / TOTAL_STEPS) * 100);
 
   return (
-    <div className="min-h-dvh bg-[var(--color-bg-page)]">
+    <div className="booking-flow-shell min-h-dvh bg-[var(--color-bg-page)]">
       {/* -- Top progress bar — full width, primary accent ---- */}
       <div
-        className="fixed top-0 left-0 right-0 z-50 h-1 bg-[var(--color-border-subtle)]"
+        className="booking-flow-progress fixed top-0 left-0 right-0 z-50 h-1 bg-[var(--color-border-subtle)]"
         role="progressbar"
         aria-valuenow={step}
         aria-valuemin={1}
@@ -37,7 +37,7 @@ export function BookingStepLayout({
       </div>
 
       {/* -- Minimal top bar ----------------------------- */}
-      <header className="sticky top-1 z-40 flex h-14 items-center border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4">
+      <header className="booking-flow-header sticky top-1 z-40 flex h-14 items-center border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4">
         <div className="flex w-full max-w-[640px] mx-auto items-center gap-3">
           {/* Back button */}
           {backHref ? (
@@ -66,7 +66,7 @@ export function BookingStepLayout({
 
       {/* -- Page content — centered, max 640px --------- */}
       <main
-        className="mx-auto w-full max-w-[640px] px-4 py-8 pb-16"
+        className="booking-flow-main mx-auto w-full max-w-[720px] px-4 py-8 pb-16 sm:py-12"
         id="main-content"
       >
         {children}

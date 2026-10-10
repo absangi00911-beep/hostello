@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import {
@@ -128,9 +127,7 @@ export function AdminVerificationsClient() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
-            Student Verifications
-          </h1>
+          <h3 className="admin-content-heading">Review requests</h3>
           {tab === "PENDING" && (
             <p className="mt-1 flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-[color:var(--color-warning-text)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-warning)]" aria-hidden="true" />
@@ -139,12 +136,6 @@ export function AdminVerificationsClient() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/admin/verifications/analytics"
-            className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] hover:underline"
-          >
-            View analytics →
-          </Link>
           <div className="flex gap-1 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] p-1">
             {TABS.map(({ key, label }) => (
             <button

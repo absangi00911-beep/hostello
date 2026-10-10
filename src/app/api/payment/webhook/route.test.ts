@@ -6,6 +6,11 @@ vi.mock("@/lib/db", () => ({
     booking: { findUnique: vi.fn(), updateMany: vi.fn() },
     subscription: { findUnique: vi.fn() },
     user: { update: vi.fn() },
+    safepayWebhookEvent: {
+      createMany: vi.fn(),
+      findUnique: vi.fn(),
+      updateMany: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));

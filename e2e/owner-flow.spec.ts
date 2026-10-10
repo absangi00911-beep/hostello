@@ -86,51 +86,49 @@ test.describe("Owner booking confirmation flow", () => {
     ).toBeVisible();
   });
 
-  test("owner confirms a pending booking and status updates to Confirmed", async ({ ownerPage: page }) => {
+  test("owner confirms a pending booking and status updates to Confirmed", async ({ ownerPage: page, state }) => {
     await page.goto("/owner/bookings");
 
     // Wait for the Confirm button to appear (table has loaded)
-    const confirmBtn = page.getByRole("button", { name: /^confirm$/i }).first();
+    const bookingRow = page
+      .getByRole("row")
+      .filter({ hasText: new RegExp(state.hostel.name, "i") })
+      .first();
+    const confirmBtn = bookingRow.getByRole("button", { name: /^confirm$/i });
     await expect(confirmBtn).toBeVisible({ timeout: 10_000 });
 
+    const responsePromise = page.waitForResponse((response) =>
+      response.request().method() === "PATCH" &&
+      new URL(response.url()).pathname.startsWith("/api/bookings/"),
+    );
     await confirmBtn.click();
+    const response = await responsePromise;
+    expect(response.status()).toBe(200);
 
-    // The button disappears and is replaced by the "Confirmed" text label
-    // React Query invalidates and re-fetches after the mutation settles
-    await expect(confirmBtn).not.toBeVisible({ timeout: 10_000 });
+    // Scope to this booking's status cell so the hidden filter option cannot match.
+    await expect(bookingRow.getByRole("cell").nth(4).getByText("Confirmed", { exact: true }))
+      .toBeVisible({ timeout: 10_000 });
 
-    // Status cell now shows "Confirmed" (rendered by StatusBadge)
+    // This booking's row is no longer actionable; other pending rows may remain.
     await expect(
-      page.getByText(/confirmed/i).first(),
-    ).toBeVisible({ timeout: 8_000 });
-
-    // Decline button should also be gone — row is no longer actionable
-    await expect(
-      page.getByRole("button", { name: /^decline$/i }),
+      bookingRow.getByRole("button", { name: /^decline$/i }),
     ).not.toBeVisible();
   });
 
   test("student dashboard reflects the confirmed status", async ({ studentPage: page }) => {
-    await page.goto("/dashboard/bookings");
+    const bookingsResponse = page.waitForResponse((response) =>
+      response.request().method() === "GET" && new URL(response.url()).pathname === "/api/bookings",
+    );
+    await page.goto("/dashboard/bookings", { waitUntil: "domcontentloaded" });
+    const response = await bookingsResponse;
+    expect(response.ok()).toBeTruthy();
 
-    // Wait for the booking list to render
-    await page.waitForLoadState("networkidle");
-
-    // The status badge for the confirmed booking should read "Confirmed"
-    // Filter to CONFIRMED tab to narrow the assertion
-    const confirmedTab = page
-      .getByRole("button", { name: /confirmed/i })
-      .or(page.getByRole("tab", { name: /confirmed/i }))
-      .first();
-
-    // Tab may or may not exist depending on UI variant — try clicking it if present
-    const tabVisible = await confirmedTab.isVisible().catch(() => false);
-    if (tabVisible) await confirmedTab.click();
-
-    // Either way, at least one "Confirmed" status badge must be on the page
-    await expect(
-      page.getByText(/confirmed/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    const payload = await response.json() as {
+      data?: Array<{ id: string; status: string; hostel?: { name?: string } }>;
+    };
+    const booking = payload.data?.find((item) => item.id === testBookingId);
+    expect(booking?.status).toBe("CONFIRMED");
+    await expect(page.getByText("Confirmed", { exact: true })).toBeVisible({ timeout: 10_000 });
   });
 
 });

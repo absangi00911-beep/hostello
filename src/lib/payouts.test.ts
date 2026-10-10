@@ -10,6 +10,7 @@ vi.mock("@/lib/db", () => ({
       findMany: vi.fn(),
       updateMany: vi.fn(),
       aggregate: vi.fn(),
+      count: vi.fn(),
     },
     payout: {
       create: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock("@/lib/db", () => ({
       findUnique: vi.fn(),
       findUniqueOrThrow: vi.fn(),
     },
+    payoutAuditEvent: { create: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -64,6 +66,7 @@ function makePayout(overrides = {}) {
 function mockTransaction(tx: any) {
   const transaction = {
     ...tx,
+    payoutAuditEvent: tx.payoutAuditEvent ?? { create: vi.fn() },
     user: tx.user ?? {
       findUnique: vi.fn().mockResolvedValue(makeOwnerDetails()),
     },
@@ -74,7 +77,26 @@ function mockTransaction(tx: any) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("PAYOUT_DESTINATION_ENCRYPTION_KEY", Buffer.alloc(32, 7).toString("base64"));
+  vi.mocked(db.$transaction).mockImplementation(async (callback: any) => callback({
+    payout: db.payout,
+    booking: db.booking,
+    payoutAuditEvent: db.payoutAuditEvent,
+  }));
 });
+
+function mockEligiblePayoutSettlement() {
+  vi.mocked(db.payout.findUnique).mockResolvedValue(makePayout({ amount: 45_000 }) as any);
+  vi.mocked(db.booking.aggregate).mockResolvedValue({
+    _count: { _all: 1 },
+    _sum: { total: 45_000 },
+  } as any);
+  vi.mocked(db.booking.count).mockResolvedValue(1 as any);
+  vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 1 } as any);
+  vi.mocked(db.payout.findUniqueOrThrow).mockResolvedValue(
+    makePayout({ amount: 45_000, status: "PAID", paidBy: ADMIN_ID, reference: "BANK-REF-1" }) as any,
+  );
+}
 
 // ═════════════════════════════════════════════════════════════════════════════
 // getEligibleBookings
@@ -232,10 +254,7 @@ describe("createPayoutBatch", () => {
 
 describe("markPayoutPaid", () => {
   it("marks a PENDING payout paid with reference, paidAt, paidBy", async () => {
-    vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 1 } as any);
-    vi.mocked(db.payout.findUniqueOrThrow).mockResolvedValue(
-      makePayout({ status: "PAID", paidBy: ADMIN_ID, reference: "BANK-REF-1" }) as any,
-    );
+    mockEligiblePayoutSettlement();
 
     const result = await markPayoutPaid(PAYOUT_ID, ADMIN_ID, "BANK-REF-1");
 
@@ -255,7 +274,7 @@ describe("markPayoutPaid", () => {
     vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 0 } as any);
     vi.mocked(db.payout.findUnique).mockResolvedValue(null);
 
-    await expect(markPayoutPaid("nonexistent", ADMIN_ID)).rejects.toThrow(
+    await expect(markPayoutPaid("nonexistent", ADMIN_ID, "BANK-REF-1")).rejects.toThrow(
       "Payout not found",
     );
   });
@@ -264,7 +283,7 @@ describe("markPayoutPaid", () => {
     vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 0 } as any);
     vi.mocked(db.payout.findUnique).mockResolvedValue(makePayout({ status: "PAID" }) as any);
 
-    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID)).rejects.toThrow(
+    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID, "BANK-REF-1")).rejects.toThrow(
       "Cannot mark a PAID payout as paid",
     );
   });
@@ -273,7 +292,7 @@ describe("markPayoutPaid", () => {
     vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 0 } as any);
     vi.mocked(db.payout.findUnique).mockResolvedValue(makePayout({ status: "CANCELLED" }) as any);
 
-    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID)).rejects.toThrow(
+    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID, "BANK-REF-1")).rejects.toThrow(
       "Cannot mark a CANCELLED payout as paid",
     );
   });
@@ -281,27 +300,28 @@ describe("markPayoutPaid", () => {
   it("is idempotent — a second concurrent call for the same payout can't also succeed", async () => {
     // First call's updateMany already flipped status to PAID; second call's
     // conditional where (status: PENDING) now matches nothing.
+    mockEligiblePayoutSettlement();
+    vi.mocked(db.payout.findUnique)
+      .mockResolvedValueOnce(makePayout({ amount: 45_000 }))
+      .mockResolvedValueOnce(makePayout({ amount: 45_000 }))
+      .mockResolvedValueOnce(makePayout({ amount: 45_000, status: "PAID" }) as any);
     vi.mocked(db.payout.updateMany).mockResolvedValueOnce({ count: 1 } as any);
-    vi.mocked(db.payout.findUniqueOrThrow).mockResolvedValueOnce(makePayout({ status: "PAID" }) as any);
-    await markPayoutPaid(PAYOUT_ID, ADMIN_ID);
+    vi.mocked(db.payout.findUniqueOrThrow).mockResolvedValueOnce(makePayout({ amount: 45_000, status: "PAID" }) as any);
+    await markPayoutPaid(PAYOUT_ID, ADMIN_ID, "BANK-REF-1");
 
     vi.mocked(db.payout.updateMany).mockResolvedValueOnce({ count: 0 } as any);
     vi.mocked(db.payout.findUnique).mockResolvedValueOnce(makePayout({ status: "PAID" }) as any);
 
-    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID)).rejects.toThrow(
+    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID, "BANK-REF-1")).rejects.toThrow(
       "Cannot mark a PAID payout as paid",
     );
   });
 
-  it("defaults reference to null when not provided", async () => {
-    vi.mocked(db.payout.updateMany).mockResolvedValue({ count: 1 } as any);
-    vi.mocked(db.payout.findUniqueOrThrow).mockResolvedValue(makePayout({ status: "PAID" }) as any);
-
-    await markPayoutPaid(PAYOUT_ID, ADMIN_ID);
-
-    expect(db.payout.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ reference: null }) }),
+  it("rejects a blank transfer reference before writing", async () => {
+    await expect(markPayoutPaid(PAYOUT_ID, ADMIN_ID, "   ")).rejects.toThrow(
+      "Enter the bank or payment-provider transfer reference",
     );
+    expect(db.payout.updateMany).not.toHaveBeenCalled();
   });
 });
 

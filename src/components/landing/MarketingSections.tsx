@@ -1,7 +1,8 @@
 // Path: src/components/landing/MarketingSections.tsx
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, Eye, Lock, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowRight, Eye, Lock, ShieldCheck } from "lucide-react";
+import { Reveal } from "@/components/landing/Reveal";
 
 export function SectionFrame({
   children,
@@ -33,7 +34,7 @@ export function SectionHeading({
       <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
         {eyebrow}
       </p>
-      <h2 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
+      <h2 className="mt-2 font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]">
         {heading}
       </h2>
       <p className="mt-3 text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">{sub}</p>
@@ -95,25 +96,22 @@ export function TrustProof({
 
 export function CityGrid({ cities }: { cities: string[] }) {
   return (
-    <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-      {cities.map((city) => (
-        <Link
-          key={city}
-          href={`/hostels?city=${encodeURIComponent(city)}`}
-          className="group flex flex-col items-center gap-2 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-4 py-5 text-center shadow-[0_8px_20px_rgba(0,0,0,0.03)] transition-all duration-[var(--transition-fast)] hover:-translate-y-0.5 hover:border-[var(--color-primary)] hover:shadow-[0_12px_30px_rgba(232,67,92,0.10)]"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
-            <MapPin
-              size={18}
-              strokeWidth={1.5}
-              className="text-[color:var(--color-primary-deep)]"
-              aria-hidden="true"
-            />
-          </div>
-          <span className="text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)] group-hover:text-[color:var(--color-primary)]">
-            {city}
-          </span>
-        </Link>
+    <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
+      {cities.map((city, index) => (
+        <Reveal key={city} delay={Math.min(index * 0.025, 0.2)}>
+          <Link
+            href={`/hostels?city=${encodeURIComponent(city)}`}
+            className="group flex items-center gap-3 border-b border-[var(--color-border-default)] py-3.5 transition-colors duration-[var(--transition-base)] hover:border-[var(--color-primary)]"
+          >
+            <span className="w-7 font-mono text-[10px] text-[color:var(--color-text-muted)]">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span className="font-display text-[1.15rem] leading-tight tracking-[-0.015em] text-[color:var(--color-text-heading)] transition-colors group-hover:text-[color:var(--color-primary-deep)]">
+              {city}
+            </span>
+            <ArrowRight size={14} strokeWidth={1.5} className="ml-auto -translate-x-1 text-[color:var(--color-primary)] opacity-0 transition-all duration-[var(--transition-base)] group-hover:translate-x-0 group-hover:opacity-100" aria-hidden="true" />
+          </Link>
+        </Reveal>
       ))}
     </div>
   );

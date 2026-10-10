@@ -19,8 +19,6 @@ import {
 } from "@/components/ui/shared";
 import { Building2 } from "lucide-react";
 import { SearchMap } from "@/components/hostel/SearchMap";
-import { CompareToggle } from "@/components/hostel/CompareToggle";
-import { CompareTray, type CompareItem } from "@/components/hostel/CompareTray";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -132,19 +130,6 @@ export function SearchPageClient({
   // visible alongside the list (see the split-view layout below).
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  // Compare selection — session-only (not persisted), capped at 3 to match
-  // CompareTray's fixed three slots and the compare page's own limit.
-  const [compareItems, setCompareItems] = useState<CompareItem[]>([]);
-  function toggleCompare(hostel: HostelCardData) {
-    setCompareItems((prev) => {
-      if (prev.some((i) => i.id === hostel.id)) {
-        return prev.filter((i) => i.id !== hostel.id);
-      }
-      if (prev.length >= 3) return prev;
-      return [...prev, { id: hostel.id, name: hostel.name, slug: hostel.slug }];
-    });
-  }
-
   // Sync URL whenever applied state changes
   useEffect(() => {
     const params = filtersToParams(filters, sort, page, q);
@@ -217,18 +202,22 @@ export function SearchPageClient({
   }
 
   return (
-    <div className="container-app py-6">
-      <div className="mb-6">
-        <h1 className="font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
-          Find student hostels
+    <div className="container-app max-w-[1440px] py-9 md:py-12">
+      <div className="mb-8 border-b border-[var(--color-border-default)] pb-7 md:mb-9 md:pb-8">
+        <p className="mb-3 flex items-center gap-2 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.14em] text-[color:var(--color-primary-deep)]">
+          <span className="h-px w-7 bg-[var(--color-primary)]" aria-hidden="true" />
+          The HostelLo directory
+        </p>
+        <h1 className="max-w-[16ch] font-display text-[2.6rem] leading-[1.02] tracking-[-0.035em] text-[color:var(--color-text-heading)] sm:text-[3.2rem]">
+          Find a place to settle in.
         </h1>
-        <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
-          Compare verified stays by city, monthly price, gender, and amenities.
+        <p className="mt-3 max-w-xl text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
+          A thoughtful shortlist of verified student stays, with the details you need to choose well.
         </p>
       </div>
 
       {/* ── Controls row ──────────────────────────────────── */}
-      <div className="flex items-center gap-3 mb-6 flex-wrap">
+      <div className="mb-6 flex flex-wrap items-center gap-3 md:mb-7">
         {/* Mobile filter button */}
         <MobileFilterSheet
           filters={filters}
@@ -293,7 +282,7 @@ export function SearchPageClient({
       </div>
 
       {/* ── Layout: sidebar + content ────────────────────── */}
-      <div className="flex gap-6 items-start">
+      <div className="flex items-start gap-6 xl:gap-8">
         {/* Desktop filter sidebar */}
         <FilterSidebar
           filters={filters}
@@ -359,8 +348,8 @@ export function SearchPageClient({
           {isLoading && (
             <div
               className={cn(
-                "grid gap-5",
-                mapView ? "hidden xl:grid xl:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                "grid gap-x-6 gap-y-9",
+                mapView ? "hidden xl:grid xl:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3"
               )}
               aria-busy="true"
               aria-label="Loading results"
@@ -383,10 +372,10 @@ export function SearchPageClient({
             <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
               <div
                 className={cn(
-                  "grid gap-5",
+                  "grid gap-x-6 gap-y-10",
                   mapView
                     ? "hidden xl:grid xl:flex-1 xl:min-w-0 xl:grid-cols-2"
-                    : "flex-1 min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                    : "flex-1 min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3"
                 )}
                 role="list"
                 aria-label={resultsSummary()}
@@ -402,21 +391,7 @@ export function SearchPageClient({
                       mapView && hoveredId === hostel.id && "ring-2 ring-[var(--color-primary)] ring-offset-2"
                     )}
                   >
-                    <HostelCard
-                      hostel={hostel}
-                      extraActions={
-                        <CompareToggle
-                          name={hostel.name}
-                          isSelected={compareItems.some((i) => i.id === hostel.id)}
-                          isDisabled={compareItems.length >= 3 && !compareItems.some((i) => i.id === hostel.id)}
-                          onToggle={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleCompare(hostel);
-                          }}
-                        />
-                      }
-                    />
+                    <HostelCard hostel={hostel} />
                   </div>
                 ))}
               </div>
@@ -469,11 +444,6 @@ export function SearchPageClient({
         </section>
       </div>
 
-      <CompareTray
-        items={compareItems}
-        onRemove={(id) => setCompareItems((prev) => prev.filter((i) => i.id !== id))}
-        onClear={() => setCompareItems([])}
-      />
     </div>
   );
 }

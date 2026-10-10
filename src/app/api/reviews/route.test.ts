@@ -53,7 +53,7 @@ describe("GET /api/reviews", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ data: [], total: 0, page: 2, limit: 50 });
     expect(mocks.reviewFindMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { hostelId: "hostel-1" },
+      where: { hostelId: "hostel-1", hostel: { is: { status: "ACTIVE" } } },
       skip: 50,
       take: 50,
       include: { user: { select: { id: true, name: true, avatar: true } } },
@@ -61,6 +61,9 @@ describe("GET /api/reviews", () => {
     expect(mocks.hostelFindFirst).toHaveBeenCalledWith({
       where: { id: "hostel-1", status: "ACTIVE" },
       select: { id: true },
+    });
+    expect(mocks.reviewCount).toHaveBeenCalledWith({
+      where: { hostelId: "hostel-1", hostel: { is: { status: "ACTIVE" } } },
     });
     expect(mocks.rateLimit).toHaveBeenCalledWith("reviews:public:203.0.113.10", {
       limit: 120,

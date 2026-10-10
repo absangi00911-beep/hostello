@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
 
     let result:
       | { kind: "owner_missing" }
+      | { kind: "deleting" }
       | { kind: "limit_reached" }
       | {
           kind: "created";
@@ -91,9 +92,10 @@ export async function POST(req: NextRequest) {
         result = await db.$transaction(async (tx) => {
           const owner = await tx.user.findUnique({
             where: { id: session.user.id },
-            select: { name: true, email: true, plan: true },
+            select: { name: true, email: true, plan: true, deletionRequestedAt: true },
           });
           if (!owner) return { kind: "owner_missing" } as const;
+          if (owner.deletionRequestedAt) return { kind: "deleting" } as const;
 
           const listingCount = await tx.hostel.count({ where: { ownerId: session.user.id } });
           if (listingCount >= PLANS[owner.plan].maxListings) {
@@ -119,6 +121,9 @@ export async function POST(req: NextRequest) {
     if (!result) throw new Error("Listing submission transaction did not return a result.");
     if (result.kind === "owner_missing") {
       return NextResponse.json({ error: "Owner not found." }, { status: 404 });
+    }
+    if (result.kind === "deleting") {
+      return NextResponse.json({ error: "Account deletion is being processed." }, { status: 409 });
     }
     if (result.kind === "limit_reached") {
       return NextResponse.json(
@@ -205,7 +210,9 @@ export async function GET(req: NextRequest) {
     // has to be re-applied after the fetch.
     const hostels = hostelIds.length
       ? await db.hostel.findMany({
-          where: { id: { in: hostelIds } },
+          // Typesense can briefly retain a result while an async status-change
+          // removal is pending. Recheck publishability at the data boundary.
+          where: { id: { in: hostelIds }, status: "ACTIVE" },
           select: {
             id: true,
             name: true,

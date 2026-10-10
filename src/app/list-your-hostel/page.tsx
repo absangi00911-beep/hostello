@@ -12,7 +12,6 @@ import {
   LayoutGrid,
   Search,
   ShieldCheck,
-  Zap,
 } from "lucide-react";
 import { auth } from "@/lib/auth/config";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 import { Footer } from "@/components/Footer";
 import { PLANS } from "@/config/plans";
-import { formatPKR } from "@/components/ui/shared";
 
 export const metadata: Metadata = {
   title: "List Your Hostel",
@@ -34,7 +32,7 @@ const HERO_IMAGE =
 const NAV_ITEMS = [
   { label: "Benefits", href: "#benefits" },
   { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Listing limit", href: "#pricing" },
   { label: "FAQs", href: "#faqs" },
 ] as const;
 
@@ -77,7 +75,7 @@ const STEPS = [
 const FAQS = [
   {
     q: "Is it free to list my hostel?",
-    a: "Yes. The Free plan lets you list one room at no cost. Upgrade to Pro any time for unlimited listings and featured placement in search.",
+    a: "Yes. Each owner can publish one hostel listing at no cost.",
   },
   {
     q: "Which cities does HostelLo support?",
@@ -92,8 +90,8 @@ const FAQS = [
     a: "Bookings are paid securely through our payment gateway, and every payout is tracked in your owner dashboard so you always know what's pending.",
   },
   {
-    q: "Can I switch plans later?",
-    a: "Yes. Upgrade to Pro or move back to the Free plan any time from your owner settings. There's no lock-in.",
+    q: "How many hostels can I list?",
+    a: "Each owner can publish one hostel listing. You can update its rooms, photos, pricing, and availability from your dashboard.",
   },
 ] as const;
 
@@ -108,7 +106,7 @@ function OwnerLandingNav({
   isOwner: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/90 backdrop-blur-md">
+    <header className="owner-landing-nav sticky top-0 z-40 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/90 backdrop-blur-md">
       <div className="container-app flex h-16 items-center justify-between gap-4">
         <Logo />
 
@@ -143,7 +141,7 @@ function OwnerLandingNav({
 /* ── Hero ────────────────────────────────────────────────── */
 function Hero({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--color-text-heading)]">
+    <section className="owner-field-hero relative isolate overflow-hidden bg-[var(--color-text-heading)]">
       <Image
         src={HERO_IMAGE}
         alt="A group of people sitting together around a wooden table, talking and working on laptops"
@@ -157,13 +155,17 @@ function Hero({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
         aria-hidden="true"
       />
 
-      <div className="container-app relative flex min-h-[560px] flex-col justify-center py-16 sm:min-h-[600px] md:min-h-[640px] md:py-24">
+      <div className="container-app relative flex min-h-[560px] flex-col justify-center py-20 sm:min-h-[600px] md:min-h-[640px] md:py-24">
+        <div className="owner-field-masthead" aria-hidden="true">
+          <span>HOSTELLO / OWNER FIELD GUIDE</span>
+          <span>PAKISTAN · STAYS</span>
+        </div>
         <div className="max-w-2xl">
           <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-white backdrop-blur-sm">
             For hostel owners
           </p>
 
-          <h1 className="mt-5 font-heading text-[2.25rem] leading-[1.08] font-[600] tracking-[-0.01em] text-white sm:text-[2.75rem] md:text-[3.25rem] lg:text-[3.75rem]">
+          <h1 className="owner-field-title mt-5 text-white">
             Fill your rooms with students who are already searching
           </h1>
 
@@ -189,7 +191,7 @@ function Hero({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: string }) {
           </div>
 
           {/* Floating trust card — flows normally on mobile, overlaps the photo from md up */}
-          <div className="relative mt-10 max-w-xs rounded-[var(--radius-brand)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 p-4 shadow-[var(--shadow-lg)] backdrop-blur-sm md:absolute md:right-0 md:bottom-12 md:mt-0 lg:right-4">
+          <div className="owner-field-trust-note relative mt-10 max-w-xs rounded-[var(--radius-brand)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 p-4 shadow-[var(--shadow-lg)] backdrop-blur-sm md:absolute md:right-0 md:bottom-12 md:mt-0 lg:right-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-faint)]">
                 <ShieldCheck
@@ -226,11 +228,11 @@ function SectionHeading({
   sub: string;
 }) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
-      <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+    <div className="owner-section-heading mx-auto max-w-2xl text-center">
+      <p className="owner-section-kicker text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
         {eyebrow}
       </p>
-      <h2 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
+      <h2 className="owner-section-title mt-2 text-[length:var(--text-h2)] text-[color:var(--color-text-heading)]">
         {heading}
       </h2>
       <p className="mt-3 text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">{sub}</p>
@@ -251,7 +253,7 @@ function BenefitsSection() {
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map(({ icon: Icon, title, body }) => (
-            <Card key={title} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
+            <Card key={title} className="owner-benefit-card border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
               <CardContent className="p-0">
                 <div className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
                   <Icon
@@ -292,7 +294,7 @@ function HowItWorksSection() {
 
         <div className="mt-12 grid gap-8 md:grid-cols-3 md:gap-6">
           {STEPS.map(({ icon: Icon, title, body }, index) => (
-            <Card key={title} className="relative border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
+            <Card key={title} className="owner-step-card relative border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-5">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3">
                   <span className="font-heading text-[2rem] font-[600] text-[color:var(--color-primary)]/30">
@@ -328,14 +330,14 @@ function PricingSection({ ctaHref }: { ctaHref: string }) {
     <section id="pricing" className="scroll-mt-16 bg-[var(--color-bg-page)] py-16 md:py-24">
       <div className="container-app">
         <SectionHeading
-          eyebrow="Simple pricing"
-          heading="Start free. Upgrade when you're ready."
-          sub="No setup fees, no hidden charges. Switch plans any time from your owner settings."
+          eyebrow="One simple limit"
+          heading="Start with one free listing."
+          sub="List your hostel at no cost, then manage rooms, booking requests, and availability from one dashboard."
         />
 
-        <div className="mx-auto mt-12 grid max-w-3xl gap-6 sm:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-md gap-6">
           {/* Free */}
-          <Card className="flex flex-col border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
+          <Card className="owner-pricing-card flex flex-col border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] p-6">
             <CardContent className="flex flex-1 flex-col p-0">
               <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]">
                 {PLANS.FREE.label}
@@ -364,44 +366,6 @@ function PricingSection({ ctaHref }: { ctaHref: string }) {
             </CardContent>
           </Card>
 
-          {/* Pro */}
-          <Card className="relative flex flex-col border-[var(--color-primary)] bg-[var(--color-bg-card)] p-6 shadow-[0_0_0_3px_#ae2f3426]">
-            <CardContent className="flex flex-1 flex-col p-0">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)] px-3 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-[color:var(--color-text-inverse)]">
-                  <Zap size={10} strokeWidth={2.5} aria-hidden="true" />
-                  Recommended
-                </span>
-              </div>
-              <p className="text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]">
-                {PLANS.PRO.label}
-              </p>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span className="font-heading text-[2.25rem] font-[700] text-[color:var(--color-text-heading)]">
-                  {formatPKR(PLANS.PRO.price)}
-                </span>
-                <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">/mo</span>
-              </div>
-              <ul className="mt-5 flex-1 space-y-2.5">
-                {PLANS.PRO.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2">
-                    <Check
-                      size={15}
-                      strokeWidth={2.5}
-                      className="mt-0.5 shrink-0 text-[color:var(--color-primary)]"
-                      aria-hidden="true"
-                    />
-                    <span className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-body)]">
-                      {perk}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild size="lg" className="mt-6">
-                <Link href={ctaHref}>Go Pro</Link>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </section>
@@ -471,7 +435,7 @@ export default async function ListYourHostelPage() {
   const ctaLabel = isOwner ? "Go to dashboard" : "List Your Hostel";
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--color-bg-page)]">
+    <div className="owner-field-landing flex min-h-dvh flex-col bg-[var(--color-bg-page)]">
       <OwnerLandingNav ctaHref={ctaHref} ctaLabel={ctaLabel} isOwner={isOwner} />
 
       <main id="main-content">

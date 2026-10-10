@@ -9,6 +9,7 @@ import { BookingStepLayout } from "@/components/booking/BookingStepLayout";
 import { BookingSummaryCard } from "@/components/booking/BookingSummaryCard";
 import { PageSpinner, RecoveryNotice } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
+import { CANCELLATION_POLICY_DETAILS, cancellationPolicySummary, type CancellationPolicy } from "@/lib/cancellation-policy";
 
 type PaymentMethod = "safepay" | "jazzcash" | "easypaisa";
 
@@ -235,9 +236,14 @@ export default function PaymentPage() {
       {/* Cancellation policy */}
       <div className="mt-5 rounded-[var(--radius-md)] bg-[var(--color-bg-sidebar)] border border-[var(--color-border-subtle)] px-4 py-3">
         <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] leading-relaxed">
-          Your booking request will be sent to the owner after payment. They
-          have 24 hours to confirm. If they decline, you'll receive a full
-          refund.
+          <strong className="font-[600] text-[color:var(--color-text-heading)]">
+            {(booking?.cancellationPolicy as CancellationPolicy | undefined)
+              ? `${CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy as CancellationPolicy].label} cancellation policy. `
+              : "Cancellation policy unavailable. "}
+          </strong>
+          {booking?.cancellationPolicy
+            ? cancellationPolicySummary(booking.cancellationPolicy as CancellationPolicy)
+            : "Please contact the owner before paying."} Approved refunds are initiated within 1 business day; banks may take 3–10 business days to post them. Your request is also sent to the owner after payment. They have 24 hours to respond; if they decline or do not respond, you receive a full refund.
         </p>
       </div>
 

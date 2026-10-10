@@ -1,6 +1,6 @@
 # HostelLo Operations Runbook
 
-**Last updated:** October 6, 2026  
+**Last updated:** October 8, 2026
 **Status:** Repository procedures are documented; provider and production access still need validation.
 
 ## Structured operational events and alerts
@@ -17,11 +17,11 @@ Key event names:
 | Notifications | `notification.dispatch_failed`, `notification.push.partial_failure`, `notification.email.dispatch_failed`, `notification.email.scan_failed` | Check the email/FCM provider and retry behavior; email price alerts remain active after delivery failure. |
 | Scheduled jobs | `cron.success`, `cron.error`, `cron.health_log_failure` | Alert on any `cron.error` or `cron.health_log_failure`; also alert when `GET /api/health/crons` is not 200. |
 
-Create these alert rules in the Sentry/Vercel project console and exercise them in preview before release. Alert on any payment reconciliation event and cron failure immediately. Set search and notification rate thresholds after representative traffic establishes a baseline; these workspace changes do not configure hosted alert rules.
+Create these alert rules in the Sentry/Vercel project console and exercise them in preview before release. Alert on any payment reconciliation event and cron failure immediately. `/api/health/payments` returns 207 when a retryable exhausted webhook or a manual-reconciliation event is waiting for an operator; its `counts` include both categories and their combined `webhookIssues` total. Set search and notification rate thresholds after representative traffic establishes a baseline; these workspace changes do not configure hosted alert rules.
 
 ## Cron health and recovery
 
-The five QStash schedules are defined in `src/lib/cron-schedules.ts`. The same registry drives the scheduler and `GET /api/health/crons`, so a missing scheduler entry cannot silently disappear from health monitoring.
+The QStash schedules are defined in `src/lib/cron-schedules.ts`. The same registry drives the scheduler and `GET /api/health/crons`, so a missing scheduler entry cannot silently disappear from health monitoring.
 
 ### Check cron health
 
@@ -49,7 +49,7 @@ Run:
 npm run schedule-cron
 ```
 
-Stable schedule IDs update the existing schedule instead of creating a duplicate. The command exits non-zero if any registration fails. Confirm all five `hostello-*` IDs and their next deliveries in the QStash console. A newly created schedule can take up to a minute to trigger for the first time. QStash signs deliveries; the configured Bearer secret is also forwarded for compatibility with the app's manual/legacy auth path.
+Stable schedule IDs update the existing schedule instead of creating a duplicate. The command exits non-zero if any registration fails. Confirm every `hostello-*` ID and its next delivery in the QStash console. A newly created schedule can take up to a minute to trigger for the first time. QStash signs deliveries; the configured Bearer secret is also forwarded for compatibility with the app's manual/legacy auth path.
 
 Do not replay a failed job until checking its retry history and whether its side effects already completed. The recurring jobs are:
 
@@ -60,6 +60,13 @@ Do not replay a failed job until checking its retry history and whether its side
 | `check-price-alerts` | Every 6 hours | A provider-accepted email can be duplicated if the process stops before the alert is deactivated. Check provider delivery and alert state before replaying. |
 | `cleanup-tokens` | Daily at 01:00 | Repeating expiry/used-token deletion is safe. |
 | `cleanup-verification-uploads` | Hourly | Repeating deletion of expired temporary verification objects is safe; submitted review objects use immutable keys. |
+| `process-account-deletions` | Every minute | Each run handles bounded batches. A job blocked by an active/pending stay, refund, plan payment, or payout retries hourly after the blocking state is resolved. Check `account_deletion_jobs.status`, `phase`, and `lastErrorCode` when a request is stalled. |
+
+## Account deletion
+
+Account deletion is queued and resumable. The minute schedule processes at most ten requests per run and removes up to 100 rows from one cleanup phase for each request. Users cannot sign in while a request is processing. Pending or future stays, refunds awaiting reconciliation, pending plan payments, pending payouts, and eligible unpaid owner balances block completion. Blocked requests retry hourly. Resolve the underlying booking, refund, or payout state; do not delete the job manually.
+
+Completed booking, payout, and subscription history is retained when needed, while the linked account is anonymized and its login credentials and contact details are removed. A user with retained financial history therefore has an anonymized database record after deletion; the email address is replaced with a reserved `deleted.hostello.invalid` address.
 
 For an approved manual replay, use a trusted shell and the configured Bearer secret. Replays change application state and must be selected deliberately.
 
@@ -74,21 +81,27 @@ Do not manually change `CronLog` rows to clear an alert; health should reflect a
 ## Payment support
 
 - Treat Safepay's authenticated transaction record and signed webhook processing as the payment source of truth. A browser return URL is not proof of payment.
+- Verified Safepay events are stored with a bounded, sanitized payload before QStash dispatch. The signed worker processes the stored event; QStash retries transient failures up to five times. If delivery is exhausted, `payment.webhook.queue_exhausted` is logged and the inbox row becomes `RETRYABLE`. Admins can inspect unresolved rows at `/admin/payments`. Retry only a `RETRYABLE` event after checking that the current Safepay state, amount, currency, and exact tracker still match the signed event; re-enter the tracker, attest to the check, and record the reason. The retry is queued through QStash and recorded in append-only `SafepayWebhookReplayEvent` history. The normal signed worker rechecks provider, tracker, amount, currency, and booking state. `RECONCILIATION_REQUIRED` events are deliberately not retryable from this screen; compare Safepay with the booking and resolve them through the appropriate payment/refund workflow.
+- The admin retry queue requires `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, and `QSTASH_NEXT_SIGNING_KEY`. If queueing fails, the event returns to `RETRYABLE` and stays visible for review. Never retry solely because a delivery timed out; confirm the provider transaction first.
+- Refund requests and operator decisions are recorded in append-only `RefundAuditEvent` rows; `Booking.refundState` tracks `NONE`, `PROCESSING`, `UNCERTAIN`, or `REFUNDED`. For a timeout or stale `PROCESSING` attempt, verify the transaction in Safepay before recording a manual confirmation or recovering the attempt. The audit ledger is evidence of Hostello's actions, not proof that Safepay completed a refund.
 - For a pending or failed booking, compare the Hostello booking state and transaction reference with the Safepay transaction before taking action.
 - If a refund outcome is uncertain, leave the booking in its existing paid state until Safepay confirms the result. Do not issue the refund again or mark it refunded based only on a timeout. Record a manual refund in Hostello only after the completed refund is confirmed in Safepay.
 - Keep JazzCash and EasyPaisa disabled for the mobile beta until their complete transaction inquiry, callback, and refund paths have been verified in their sandboxes.
 
 ## Manual owner payouts
 
-- Review the admin queue and confirm the owner's account title, account number, bank name, and pending balance before generating a batch. The API blocks a batch if any of the three bank fields is empty, but it does not snapshot the destination on the payout record.
-- Generating a batch atomically claims its eligible bookings. Recheck the current bank destination against the owner's confirmed instructions immediately before transfer; if it changed since batch generation, stop and verify the intended destination. Transfer the displayed amount outside Hostello, then mark the batch paid and record the bank/provider reference only after confirming the transfer completed.
+- Confirm the owner's account title, account number, and bank with them before generating a batch. Batch creation snapshots those values and stores the snapshot encrypted with AES-256-GCM; the admin page reveals the frozen destination on demand for pending batches. The API blocks batch creation if any bank field is empty or destination encryption is unavailable.
+- Set `PAYOUT_DESTINATION_ENCRYPTION_KEY` in every environment that accesses the same database. Generate a dedicated 32-byte key with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`, store it in the deployment secret manager, and keep a protected recovery copy. Do not lose or rotate this key until all stored snapshots have been re-encrypted; a missing or changed key makes prior snapshots unavailable.
+- Generating a batch atomically claims its eligible bookings. Before marking it paid, Hostello rechecks that the linked bookings are still eligible for the batch owner and their total still matches the payout amount; a mismatch blocks the action. Transfer only to the frozen destination shown on that payout; do not substitute the owner's current profile details if they have changed. If a pending batch has no snapshot or the snapshot cannot be decrypted, stop and verify the intended destination with the owner before transferring. Transfer the displayed amount outside Hostello, then enter the bank/provider transfer reference and mark the batch paid only after confirming the transfer completed. The API rejects a paid transition without a nonblank reference; this reference records operator evidence but does not verify settlement with the bank/provider.
 - A booking already in a payout batch cannot be cancelled online. Students can cancel online only while a booking is PENDING and before check-out. After owner confirmation, they must follow the hostel cancellation terms; do not promise an automatic refund. If a cancellation or refund request arrives after a batch claims the booking, stop and reconcile the transfer state with the owner and bank/provider before changing any financial state.
-- The `CANCELLED` payout status exists in the schema, but there is no supported action to void a pending batch or release its bookings, and no durable cancellation actor/time/reason fields. Do not edit the database or generate a replacement batch as a workaround; escalate and record the reconciliation decision. Add an audited void/release procedure and immutable bank-destination snapshot before real transaction volume.
+- An admin may void only a `PENDING` batch after confirming no transfer was sent and entering a reason of at least 10 characters. The action records the admin, time, and reason, and releases the batch's booking claims in one database transaction. If a transfer was sent or its state is uncertain, do not void the batch; reconcile with the owner and bank/provider first. A voided batch cannot be marked paid.
+- Payout batch creation, paid, and void transitions are recorded in the append-only payout audit history with the admin actor, gross batch amount, time, and relevant reference or reason. Existing records are backfilled only where the original payout row contains those facts; missing historical actor/reference data is not inferred. This history is an operational record, not provider settlement proof or a double-entry accounting ledger.
+- Older payout batches created before this change have no frozen destination snapshot. Reconcile those with the owner before transfer; do not infer the destination from current profile details.
 
 ## Deployment and data recovery gates
 
 - Review the deployment quality gate and preview smoke results before promoting a Vercel deployment. During an incident, check production 5xx logs, run `vercel rollback`, check `vercel rollback status`, then confirm the error rate has dropped. Vercel rollback redirects production traffic to a previous deployment; it does not reverse Neon migrations or restore old environment-variable values. Keep schema changes backward-compatible with the code version used for rollback.
-- Build and migration are separate operations. `npm run build` runs `prisma generate && next build`; it does not change the database. The production workflow first passes its quality gate, then runs `npm run db:migrate:deploy` through `vercel env run -e production`, and only then builds and deploys. Vercel remains the source of the production database URL; do not copy it into GitHub secrets.
+- Build and migration are separate operations. `npm run build` runs `prisma generate && next build --webpack`; it does not change the database. The production workflow first passes its quality gate, then runs `npm run db:migrate:deploy` through `vercel env run -e production`, and only then builds and deploys. Vercel remains the source of the production database URL; do not copy it into GitHub secrets.
 - Pull-request preview builds do not run migrations. Keep preview databases schema-compatible through a separately managed non-production migration process. Next prerenders database-backed metadata, so local or preview builds still need a reachable database with a compatible schema.
 - Run migrations only through the intended deployment pipeline or against a confirmed disposable PostgreSQL target. Do not run migration, build, or E2E checks against an unverified/shared database. Keep changes backward-compatible with the currently deployed app and rollback artifact; use expand-and-contract for destructive changes.
 - Production Neon PITR/retention, recovery point objective, recovery time objective, and restore rehearsal have not been verified. Do not claim recovery readiness until an isolated restore has succeeded and been recorded.
@@ -100,4 +113,5 @@ Do not manually change `CronLog` rows to clear an alert; health should reflect a
 - [QStash schedule API](https://upstash.com/docs/qstash/api-reference/schedules/create-a-schedule)
 - [QStash schedules guide](https://upstash.com/docs/qstash/features/schedules)
 - [QStash signature verification](https://upstash.com/docs/qstash/howto/signature)
+- [QStash failure callbacks and dead-letter recovery](https://upstash.com/docs/qstash/features/callbacks)
 - [Vercel guidance for async work in functions](https://vercel.com/kb/guide/troubleshooting-inconsistent-logs-in-vercel-functions)

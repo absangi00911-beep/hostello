@@ -25,12 +25,10 @@ import {
   CalendarDays,
   MessageCircle,
   Star,
-  BarChart2,
   Wallet,
-  Zap,
+  CreditCard,
   ShieldCheck,
   RefreshCw,
-  TrendingDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,7 +45,6 @@ const MENU_ITEMS_BY_ROLE: Record<Role, MenuItem[]> = {
     { href: "/dashboard/bookings", label: "My bookings", icon: BookOpen },
     { href: "/dashboard/saved", label: "Saved hostels", icon: Heart },
     { href: "/dashboard/messages", label: "Messages", icon: MessageCircle },
-    { href: "/dashboard/price-alerts", label: "Price alerts", icon: TrendingDown },
     { href: "/profile", label: "Profile", icon: User },
     { href: "/profile/settings", label: "Settings", icon: Settings },
   ],
@@ -57,9 +54,8 @@ const MENU_ITEMS_BY_ROLE: Record<Role, MenuItem[]> = {
     { href: "/owner/bookings", label: "Bookings", icon: CalendarDays },
     { href: "/owner/messages", label: "Messages", icon: MessageCircle },
     { href: "/owner/reviews", label: "Reviews", icon: Star },
-    { href: "/owner/analytics", label: "Analytics", icon: BarChart2 },
     { href: "/owner/earnings", label: "Earnings", icon: Wallet },
-    { href: "/owner/subscription", label: "Subscription", icon: Zap },
+    { href: "/owner/subscription", label: "Plan", icon: CreditCard },
     { href: "/owner/settings", label: "Settings", icon: Settings },
   ],
   ADMIN: [

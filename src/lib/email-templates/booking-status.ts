@@ -12,6 +12,7 @@ interface BookingStatusEmailProps {
   hostelSlug:   string;
   bookingId:    string;
   status:       "CONFIRMED" | "CANCELLED";
+  refundPending?: boolean;
 }
 
 /**
@@ -19,7 +20,7 @@ interface BookingStatusEmailProps {
  */
 export function bookingStatusEmail({
   studentName, studentEmail, hostelName,
-  bookingId, status,
+  bookingId, status, refundPending = false,
 }: BookingStatusEmailProps) {
   const firstName = escapeHtml(studentName.split(" ")[0]);
   const shortId   = bookingId.slice(-8).toUpperCase();
@@ -50,8 +51,9 @@ export function bookingStatusEmail({
         accommodate your request for ref <strong>#${shortId}</strong>.
       </p>
       <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
-        This sometimes happens when a room was booked by another student at the same time.
-        There are other verified hostels nearby — browse and send a new request.
+        ${refundPending
+          ? "Your booking has been cancelled. We are checking the refund with the payment provider and will update your booking page when we have a confirmed result."
+          : "This sometimes happens when a room was booked by another student at the same time. There are other verified hostels nearby — browse and send a new request."}
       </p>
       ${emailButton("Browse hostels", `${APP_URL}/hostels`)}
     `;
@@ -94,8 +96,7 @@ export function bookingRefundedEmail({
       at <strong>${escapedHostelName}</strong> (ref <strong>#${shortId}</strong>) has been processed.
     </p>
     <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
-      It can take a few business days to appear back in your original payment method, depending on
-      your bank. If you don't see it after a week, reply to this email and we'll look into it.
+      Banks may take 3–10 business days to post the refund to your original payment method.
     </p>
     ${emailButton("View booking", `${APP_URL}/bookings/${bookingId}`)}
   `;

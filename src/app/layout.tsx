@@ -5,8 +5,8 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { twMerge } from "tailwind-merge";
 
-// Airbnb-style pairing: one clean geometric/humanist sans throughout —
-// headline weight from size/weight, not a second display face.
+// The app keeps its sans faces for controls and body copy. Editorial display
+// headlines use a system serif stack from globals.css to avoid another font fetch.
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta-sans",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fafafa",
+  themeColor: "#f6f2eb",
 };
 
 export default function RootLayout({

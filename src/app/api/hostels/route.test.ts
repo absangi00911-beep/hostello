@@ -47,6 +47,7 @@ const validListing = {
   rooms: 8,
   capacity: 24,
   gender: "MIXED",
+  cancellationPolicy: "STANDARD",
   minStay: 1,
   amenities: ["WiFi"],
   rules: [],
@@ -121,6 +122,9 @@ describe("GET /api/hostels", () => {
 
     expect(response.status).toBe(200);
     expect(body.data.map((hostel: { id: string }) => hostel.id)).toEqual(["hst_2", "hst_1"]);
+    expect(db.hostel.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: { in: ["hst_2", "hst_1"] }, status: "ACTIVE" },
+    }));
     expect(searchHostelsWithFallback).toHaveBeenCalledWith(expect.objectContaining({
       q: "campus",
       page: 2,
@@ -169,7 +173,7 @@ describe("POST /api/hostels", () => {
     });
     expect(db.user.findUnique).toHaveBeenCalledWith({
       where: { id: "owner_1" },
-      select: { name: true, email: true, plan: true },
+      select: { name: true, email: true, plan: true, deletionRequestedAt: true },
     });
     expect(db.hostel.count).toHaveBeenCalledWith({ where: { ownerId: "owner_1" } });
     expect(createHostelRecord).toHaveBeenCalledWith(expect.anything(), "owner_1", expect.objectContaining(validListing));

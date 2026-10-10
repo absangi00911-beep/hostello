@@ -218,14 +218,21 @@ function ChangePassword() {
 function DangerZone() {
   const router = useRouter();
   const [input,   setInput]   = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
     if (input !== "DELETE") return;
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/delete-account", { method: "POST" });
-      if (!res.ok) { const j = await res.json(); toast.error(j.error ?? "Delete failed."); return; }
+      const res = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirmation: input, ...(password ? { password } : {}) }),
+      });
+      const result = await res.json();
+      if (!res.ok) { toast.error(result.error ?? "Delete failed."); return; }
+      toast.success(result.message ?? "Your deletion request has been received.");
       await signOut({ redirect: false });
       router.push("/");
     } catch { toast.error("Something went wrong."); }
@@ -235,7 +242,7 @@ function DangerZone() {
   return (
     <div className="space-y-4">
       <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-error-text)] leading-relaxed">
-        Permanently deletes your account, all your listings, bookings, reviews, and messages. This cannot be undone.
+        Your request removes your profile and personal data. Transaction records may be retained with your identity anonymized. Requests are blocked while pending or future stays, refunds, plan payments, or unpaid payouts need attention.
       </p>
       <div className="space-y-1.5">
         <label htmlFor="dz-confirm" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
@@ -243,6 +250,16 @@ function DangerZone() {
         </label>
         <input id="dz-confirm" type="text" value={input} onChange={(e) => setInput(e.target.value)}
           placeholder="DELETE" autoComplete="off" spellCheck="false" className={inputCls} />
+      </div>
+      <div className="space-y-1.5">
+        <label htmlFor="dz-password" className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
+          Password, if your account uses one
+        </label>
+        <input id="dz-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password" maxLength={128} className={inputCls} />
+        <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+          Social sign-in accounts can leave this blank.
+        </p>
       </div>
       <button onClick={handleDelete} disabled={input !== "DELETE" || loading}
         className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius-md)] bg-[var(--color-error)] text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-inverse)] hover:opacity-90 active:scale-[0.97] transition-all disabled:opacity-40 disabled:cursor-not-allowed">

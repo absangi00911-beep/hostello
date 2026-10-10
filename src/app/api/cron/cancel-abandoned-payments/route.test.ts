@@ -57,8 +57,8 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
 
   it("rechecks payment state before cancelling and restores only successfully released rooms", async () => {
     vi.mocked(db.booking.findMany).mockResolvedValue([
-      { id: "booking-paid", roomId: "room-paid" },
-      { id: "booking-abandoned", roomId: "room-abandoned" },
+      { id: "booking-paid", roomId: "room-paid", guests: 2 },
+      { id: "booking-abandoned", roomId: "room-abandoned", guests: 3 },
     ] as Awaited<ReturnType<typeof db.booking.findMany>>);
     tx.booking.updateMany
       .mockResolvedValueOnce({ count: 0 })
@@ -80,7 +80,7 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
     expect(tx.room.updateMany).toHaveBeenCalledTimes(1);
     expect(tx.room.updateMany).toHaveBeenCalledWith({
       where: { id: "room-abandoned" },
-      data: { available: { increment: 1 }, version: { increment: 1 } },
+      data: { available: { increment: 3 }, version: { increment: 1 } },
     });
     expect(db.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
   });

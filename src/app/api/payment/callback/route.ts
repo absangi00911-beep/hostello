@@ -26,13 +26,13 @@ import { db } from "@/lib/db";
 import { getAppOrigin } from "@/lib/app-url";
 import { parseJazzCashCallback } from "@/lib/jazzcash";
 import { sendEmail } from "@/lib/email";
-import { bookingStatusEmail } from "@/lib/email-templates/booking-status";
+import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
+import { createNotification } from "@/lib/notifications";
 import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedText } from "@/lib/bounded-json";
 import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
-const APP_URL = getAppOrigin();
 const MAX_CALLBACK_BODY_BYTES = 16 * 1024;
 
 type CallbackBodyResult =
@@ -101,7 +101,13 @@ async function confirmBooking(
     where: { id: bookingId },
     include: {
       user:   { select: { name: true, email: true } },
-      hostel: { select: { name: true, slug: true } },
+      hostel: {
+        select: {
+          name: true,
+          slug: true,
+          owner: { select: { id: true, name: true, email: true } },
+        },
+      },
     },
   });
 
@@ -138,6 +144,7 @@ async function confirmBooking(
   }
 
   const statusBeforePayment = booking.status;
+  const responseDueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const result = await db.booking.updateMany({
     where: {
       id: bookingId,
@@ -147,7 +154,9 @@ async function confirmBooking(
     },
     data: {
       paymentStatus: "PAID",
-      ...(statusBeforePayment === "PENDING" ? { status: "CONFIRMED" } : {}),
+      ...(statusBeforePayment === "PENDING"
+        ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
+        : {}),
       transactionId: transactionId || null,
     },
   });
@@ -161,40 +170,71 @@ async function confirmBooking(
   // A delayed success after cancellation is recorded as paid but does not
   // revive the booking; this leaves it visible to the admin refund queue.
   if (statusBeforePayment === "PENDING") {
-    sendEmail(
-      bookingStatusEmail({
-        studentName:  booking.user.name,
-        studentEmail: booking.user.email,
-        hostelName:   booking.hostel.name,
-        hostelSlug:   booking.hostel.slug,
-        bookingId:    booking.id,
-        status:       "CONFIRMED",
-      }),
-    ).catch((err) =>
+    const emailProps = {
+      studentName: booking.user.name,
+      studentEmail: booking.user.email,
+      ownerName: booking.hostel.owner.name,
+      ownerEmail: booking.hostel.owner.email,
+      hostelName: booking.hostel.name,
+      hostelSlug: booking.hostel.slug,
+      bookingId: booking.id,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      months: booking.months,
+      total: booking.total,
+      paymentMethod: booking.paymentMethod ?? "Payment gateway",
+    };
+    const emailResults = await Promise.allSettled([
+      sendEmail(bookingNotificationEmail(emailProps)),
+      sendEmail(bookingConfirmationEmail(emailProps)),
+    ]);
+    for (const [index, result] of emailResults.entries()) {
+      if (result.status === "fulfilled" && result.value.success) continue;
       console.error(
-        "[callback] Confirmation email failed:",
-        getSafeErrorSummary(err),
-      ),
-    );
+        `[callback] Booking email ${index === 0 ? "to owner" : "to student"} failed:`,
+        result.status === "rejected" ? getSafeErrorSummary(result.reason) : { name: "EmailProviderRejected" },
+      );
+    }
+    void createNotification({
+      userId: booking.hostel.owner.id,
+      type: "BOOKING_REQUEST",
+      title: "New paid booking request",
+      message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
+      bookingId: booking.id,
+    });
+    void createNotification({
+      userId: booking.userId,
+      type: "BOOKING_REQUEST",
+      title: "Payment received — awaiting owner",
+      message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
+      bookingId: booking.id,
+      hostelId: booking.hostelId,
+    });
   }
 
-  return { ...booking, paymentStatus: "PAID", transactionId, status: statusBeforePayment === "PENDING" ? "CONFIRMED" : "CANCELLED" };
+  return {
+    ...booking,
+    paymentStatus: "PAID",
+    transactionId,
+    ownerResponseDueAt: statusBeforePayment === "PENDING" ? responseDueAt : booking.ownerResponseDueAt,
+  };
 }
 
 // -- Route handler -------------------------------------------------------------
 
 async function handleCallback(req: NextRequest): Promise<NextResponse> {
+  const appUrl   = getAppOrigin();
   const url       = new URL(req.url);
   const provider  = url.searchParams.get("provider");
   const bookingId = url.searchParams.get("bookingId");
 
   if (url.search.length > MAX_CALLBACK_BODY_BYTES || (bookingId !== null && bookingId.length > 64)) {
-    return NextResponse.redirect(`${APP_URL}/?payment=error`, 303);
+    return NextResponse.redirect(`${appUrl}/?payment=error`, 303);
   }
 
   if (!bookingId) {
     console.error("[callback] Missing bookingId in callback URL");
-    return NextResponse.redirect(`${APP_URL}/?payment=error`, 303);
+    return NextResponse.redirect(`${appUrl}/?payment=error`, 303);
   }
 
   // EasyPaisa callbacks are unsigned. The provider is disabled until a
@@ -202,7 +242,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
   if (provider === "easypaisa") {
     console.warn("[callback] Rejected unsigned EasyPaisa callback");
     return NextResponse.redirect(
-      `${APP_URL}/booking/${encodeURIComponent(bookingId)}/payment?payment=unavailable`,
+      `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=unavailable`,
       303,
     );
   }
@@ -210,7 +250,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
   if (provider === "jazzcash" && !PAYMENT_METHODS.find((method) => method.value === provider)?.enabled) {
     console.warn("[callback] Rejected callback for disabled payment provider");
     return NextResponse.redirect(
-      `${APP_URL}/booking/${encodeURIComponent(bookingId)}/payment?payment=unavailable`,
+      `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=unavailable`,
       303,
     );
   }
@@ -223,7 +263,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
     if (ipError) {
       console.warn("[callback] Gateway IP verification failed");
       return NextResponse.redirect(
-        `${APP_URL}/booking/${encodeURIComponent(bookingId)}/payment?payment=error`,
+        `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=error`,
         303,
       );
     }
@@ -248,24 +288,24 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
           "[callback] JazzCash reported a failed payment",
         );
         return NextResponse.redirect(
-          `${APP_URL}/booking/${encodeURIComponent(bookingId)}/payment?payment=failed&reason=${encodeURIComponent(result.responseMessage)}`,
+          `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=failed&reason=${encodeURIComponent(result.responseMessage)}`,
           303,
         );
       }
 
       await confirmBooking(bookingId, result.txnRefNo, result.amount, "jazzcash");
       return NextResponse.redirect(
-        `${APP_URL}/booking/${encodeURIComponent(bookingId)}/confirmation?payment=return`,
+        `${appUrl}/booking/${encodeURIComponent(bookingId)}/confirmation?payment=return`,
         303,
       );
     }
 
     console.error("[callback] Unknown payment provider");
-    return NextResponse.redirect(`${APP_URL}/?payment=unknown-provider`, 303);
+    return NextResponse.redirect(`${appUrl}/?payment=unknown-provider`, 303);
   } catch (err) {
     console.error("[callback] Payment callback processing failed:", getSafeErrorSummary(err));
     return NextResponse.redirect(
-      `${APP_URL}/booking/${encodeURIComponent(bookingId)}/payment?payment=error`,
+      `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=error`,
       303,
     );
   }
@@ -277,15 +317,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const appUrl = getAppOrigin();
   const url = new URL(req.url);
   const bookingId = url.searchParams.get("bookingId");
 
   if (url.search.length > MAX_CALLBACK_BODY_BYTES || !bookingId || bookingId.length > 64) {
-    return NextResponse.redirect(`${APP_URL}/?payment=error`, 303);
+    return NextResponse.redirect(`${appUrl}/?payment=error`, 303);
   }
 
   return NextResponse.redirect(
-    new URL(`/booking/${encodeURIComponent(bookingId)}/payment?payment=pending`, APP_URL),
+    new URL(`/booking/${encodeURIComponent(bookingId)}/payment?payment=pending`, appUrl),
     303,
   );
 }

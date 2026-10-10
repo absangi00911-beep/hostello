@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { formatPKR } from "@/components/ui/shared";
 import { Button } from "@/components/ui/button";
+import { CANCELLATION_POLICY_DETAILS, cancellationPolicySummary, type CancellationPolicy } from "@/lib/cancellation-policy";
 
 interface Room {
   id: string;
@@ -31,6 +32,7 @@ interface BookingPanelProps {
   ownerId: string;
   basePricePerMonth: number;
   rooms: Room[];
+  cancellationPolicy: CancellationPolicy | null;
 }
 
 /* -- Months between two dates (rounded up) ----------------- */
@@ -116,6 +118,7 @@ function BookingForm({
           checkOut: new Date(checkOut).toISOString(),
           months,
           guests,
+          paymentMethod: "safepay",
         }),
       });
 
@@ -264,6 +267,7 @@ export function BookingPanel({
   ownerId: _ownerId,
   basePricePerMonth,
   rooms,
+  cancellationPolicy,
 }: BookingPanelProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -307,23 +311,38 @@ export function BookingPanel({
       {/* -- Desktop sticky panel --------------------------- */}
       <aside
         id="booking-panel"
-        className="hidden lg:block sticky top-24 rounded-[var(--radius-xl)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-md)]"
+        className="booking-editorial-panel hidden lg:block sticky top-24 rounded-[var(--radius-xl)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 shadow-[var(--shadow-md)]"
         aria-label="Booking panel"
       >
         {/* Price */}
-        <div className="mb-5">
-          <p
-            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-primary-deep)] leading-none"
-
-          >
+        <div className="booking-editorial-price mb-5">
+          <p className="booking-editorial-overline">MONTHLY RATE</p>
+          <p className="booking-editorial-amount">
             {formatPKR(basePricePerMonth)}
-            <span className="text-[length:var(--text-body)] font-[400] text-[color:var(--color-text-muted)]">
+            <span className="booking-editorial-period">
               {" "}/ month
             </span>
           </p>
         </div>
 
-        {canRequestBooking ? (
+        {cancellationPolicy ? (
+          <div className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-3">
+            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.06em] text-[color:var(--color-text-heading)]">
+              {CANCELLATION_POLICY_DETAILS[cancellationPolicy].label} cancellation terms
+            </p>
+            <p className="mt-1 text-[length:var(--text-caption)] leading-relaxed text-[color:var(--color-text-muted)]">
+              {cancellationPolicySummary(cancellationPolicy)}
+            </p>
+          </div>
+        ) : (
+          <p className="mb-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] p-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            This hostel is updating its booking terms. Contact the owner before requesting a stay.
+          </p>
+        )}
+
+        {!canRequestBooking ? (
+          <StudentOnlyBookingNotice />
+        ) : cancellationPolicy ? (
           <BookingForm
             hostelId={hostelId}
             hostelSlug={hostelSlug}
@@ -332,9 +351,7 @@ export function BookingPanel({
             initialRoomId={initialRoomId}
             onSuccess={handleBookingSuccess}
           />
-        ) : (
-          <StudentOnlyBookingNotice />
-        )}
+        ) : null}
 
         {/* Message owner */}
         <Button
@@ -366,7 +383,7 @@ export function BookingPanel({
             <MessageCircle size={18} strokeWidth={1.5} aria-hidden="true" />
           </Button>
 
-          {canRequestBooking ? (
+          {canRequestBooking ? (cancellationPolicy ? (
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <Button className="min-w-0 flex-1 whitespace-nowrap sm:flex-none sm:px-5">
@@ -396,6 +413,8 @@ export function BookingPanel({
             </SheetContent>
           </Sheet>
           ) : (
+            <span className="max-w-[180px] text-right text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">Booking terms are being updated</span>
+          )) : (
             <div className="max-w-[180px]">
               <StudentOnlyBookingNotice />
             </div>

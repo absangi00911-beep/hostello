@@ -10,11 +10,15 @@ import { getAppUrl } from "@/lib/app-url";
 import { serializeJsonLd } from "@/lib/serialize-json-ld";
 import { CITIES, UNIVERSITIES } from "@hostello/shared";
 
-/* ── Static params — one page per city ──────────────────── */
+/*
+ * Render city pages on first request instead of opening a database connection
+ * for every city during a deployment. Returning an empty array keeps these
+ * known paths eligible for ISR while avoiding a build-time connection burst.
+ */
+export const revalidate = 300;
+
 export function generateStaticParams() {
-  return CITIES.map((city) => ({
-    city: city.toLowerCase(),
-  }));
+  return [];
 }
 
 /* ── Helpers ─────────────────────────────────────────────── */
@@ -203,12 +207,17 @@ export default async function CityLandingPage({
 
   return (
     <PublicLayout>
+      <div className="city-field-page">
       <CityJsonLd city={city} hostels={hostels} appUrl={APP_URL} />
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
-        <div className="container-app py-10 md:py-14">
-          <div className="flex items-center gap-2 mb-3 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+      <section className="city-field-hero border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
+        <div className="container-app py-8 md:py-12">
+          <div className="city-field-topline">
+            <span>HOSTELLO FIELD GUIDE</span>
+            <span>CITY INDEX / PAKISTAN</span>
+          </div>
+          <div className="editorial-breadcrumb flex items-center gap-2 mb-5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             <Link href="/hostels" className="hover:text-[color:var(--color-text-body)] transition-colors">
               All hostels
             </Link>
@@ -216,18 +225,21 @@ export default async function CityLandingPage({
             <span className="text-[color:var(--color-text-body)]">{city}</span>
           </div>
 
-          <h1
-            className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-3"
-
-          >
-            Student Hostels in {city}
-          </h1>
-
-          <p className="text-[length:var(--text-body)] text-[color:var(--color-text-muted)] max-w-[560px] mb-6">
-            {count > 0
-              ? `${count} verified hostel${count !== 1 ? "s" : ""} available. Compare prices, amenities, and book online.`
-              : "Be the first hostel listed in this city."}
-          </p>
+          <div className="city-field-heading-row">
+            <div>
+              <p className="city-field-eyebrow"><MapPin size={14} aria-hidden="true" /> CITY / {city.toUpperCase()}</p>
+              <h1 className="city-field-title">Student hostels in {city}</h1>
+              <p className="city-field-description">
+                {count > 0
+                  ? `${count} verified hostel${count !== 1 ? "s" : ""} to compare by price, amenities, and location.`
+                  : "Be the first hostel listed in this city."}
+              </p>
+            </div>
+            <div className="city-field-count" aria-label={`${count} hostels listed`}>
+              <span>{String(count).padStart(2, "0")}</span>
+              <small>HOSTELS<br />LISTED</small>
+            </div>
+          </div>
 
           {/* Gender filter quick links */}
           <div className="flex flex-wrap gap-2">
@@ -238,7 +250,7 @@ export default async function CityLandingPage({
                 <Link
                   key={label}
                   href={href}
-                  className="inline-flex items-center h-8 px-3 rounded-full border text-[length:var(--text-body-sm)] font-[500] transition-all duration-[var(--transition-fast)] hover:-translate-y-px"
+                  className="city-gender-filter inline-flex items-center h-8 px-3 rounded-full border text-[length:var(--text-body-sm)] font-[500] transition-all duration-[var(--transition-fast)] hover:-translate-y-px"
                   style={{
                     borderColor: "var(--color-border-default)",
                     background:  "var(--color-bg-card)",
@@ -451,6 +463,7 @@ export default async function CityLandingPage({
           </dl>
         </section>
 
+      </div>
       </div>
     </PublicLayout>
   );

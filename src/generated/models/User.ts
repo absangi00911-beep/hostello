@@ -47,6 +47,7 @@ export type UserMinAggregateOutputType = {
   bio: string | null
   city: string | null
   tokenVersion: number | null
+  deletionRequestedAt: Date | null
   emailNotifications: boolean | null
   studentVerified: boolean | null
   verificationStatus: $Enums.VerificationStatus | null
@@ -75,6 +76,7 @@ export type UserMaxAggregateOutputType = {
   bio: string | null
   city: string | null
   tokenVersion: number | null
+  deletionRequestedAt: Date | null
   emailNotifications: boolean | null
   studentVerified: boolean | null
   verificationStatus: $Enums.VerificationStatus | null
@@ -103,6 +105,7 @@ export type UserCountAggregateOutputType = {
   bio: number
   city: number
   tokenVersion: number
+  deletionRequestedAt: number
   emailNotifications: number
   studentVerified: number
   verificationStatus: number
@@ -141,6 +144,7 @@ export type UserMinAggregateInputType = {
   bio?: true
   city?: true
   tokenVersion?: true
+  deletionRequestedAt?: true
   emailNotifications?: true
   studentVerified?: true
   verificationStatus?: true
@@ -169,6 +173,7 @@ export type UserMaxAggregateInputType = {
   bio?: true
   city?: true
   tokenVersion?: true
+  deletionRequestedAt?: true
   emailNotifications?: true
   studentVerified?: true
   verificationStatus?: true
@@ -197,6 +202,7 @@ export type UserCountAggregateInputType = {
   bio?: true
   city?: true
   tokenVersion?: true
+  deletionRequestedAt?: true
   emailNotifications?: true
   studentVerified?: true
   verificationStatus?: true
@@ -312,6 +318,7 @@ export type UserGroupByOutputType = {
   bio: string | null
   city: string | null
   tokenVersion: number
+  deletionRequestedAt: Date | null
   emailNotifications: boolean
   studentVerified: boolean
   verificationStatus: $Enums.VerificationStatus
@@ -363,6 +370,7 @@ export type UserWhereInput = {
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   city?: Prisma.StringNullableFilter<"User"> | string | null
   tokenVersion?: Prisma.IntFilter<"User"> | number
+  deletionRequestedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   emailNotifications?: Prisma.BoolFilter<"User"> | boolean
   studentVerified?: Prisma.BoolFilter<"User"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"User"> | $Enums.VerificationStatus
@@ -408,6 +416,7 @@ export type UserOrderByWithRelationInput = {
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   city?: Prisma.SortOrderInput | Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  deletionRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   emailNotifications?: Prisma.SortOrder
   studentVerified?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -456,6 +465,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   bio?: Prisma.StringNullableFilter<"User"> | string | null
   city?: Prisma.StringNullableFilter<"User"> | string | null
   tokenVersion?: Prisma.IntFilter<"User"> | number
+  deletionRequestedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   emailNotifications?: Prisma.BoolFilter<"User"> | boolean
   studentVerified?: Prisma.BoolFilter<"User"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFilter<"User"> | $Enums.VerificationStatus
@@ -501,6 +511,7 @@ export type UserOrderByWithAggregationInput = {
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   city?: Prisma.SortOrderInput | Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  deletionRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   emailNotifications?: Prisma.SortOrder
   studentVerified?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -537,6 +548,7 @@ export type UserScalarWhereWithAggregatesInput = {
   bio?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   city?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   tokenVersion?: Prisma.IntWithAggregatesFilter<"User"> | number
+  deletionRequestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   emailNotifications?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   studentVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   verificationStatus?: Prisma.EnumVerificationStatusWithAggregatesFilter<"User"> | $Enums.VerificationStatus
@@ -565,6 +577,7 @@ export type UserCreateInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -610,6 +623,7 @@ export type UserUncheckedCreateInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -655,6 +669,7 @@ export type UserUpdateInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -700,6 +715,7 @@ export type UserUncheckedUpdateInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -745,6 +761,7 @@ export type UserCreateManyInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -773,6 +790,7 @@ export type UserUpdateManyMutationInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -801,6 +819,7 @@ export type UserUncheckedUpdateManyInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -829,6 +848,7 @@ export type UserCountOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   city?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  deletionRequestedAt?: Prisma.SortOrder
   emailNotifications?: Prisma.SortOrder
   studentVerified?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -861,6 +881,7 @@ export type UserMaxOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   city?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  deletionRequestedAt?: Prisma.SortOrder
   emailNotifications?: Prisma.SortOrder
   studentVerified?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -889,6 +910,7 @@ export type UserMinOrderByAggregateInput = {
   bio?: Prisma.SortOrder
   city?: Prisma.SortOrder
   tokenVersion?: Prisma.SortOrder
+  deletionRequestedAt?: Prisma.SortOrder
   emailNotifications?: Prisma.SortOrder
   studentVerified?: Prisma.SortOrder
   verificationStatus?: Prisma.SortOrder
@@ -1211,6 +1233,7 @@ export type UserCreateWithoutDeviceTokensInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1255,6 +1278,7 @@ export type UserUncheckedCreateWithoutDeviceTokensInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1315,6 +1339,7 @@ export type UserUpdateWithoutDeviceTokensInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1359,6 +1384,7 @@ export type UserUncheckedUpdateWithoutDeviceTokensInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1403,6 +1429,7 @@ export type UserCreateWithoutSubscriptionInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1447,6 +1474,7 @@ export type UserUncheckedCreateWithoutSubscriptionInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1507,6 +1535,7 @@ export type UserUpdateWithoutSubscriptionInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1551,6 +1580,7 @@ export type UserUncheckedUpdateWithoutSubscriptionInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1595,6 +1625,7 @@ export type UserCreateWithoutPayoutsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1639,6 +1670,7 @@ export type UserUncheckedCreateWithoutPayoutsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1699,6 +1731,7 @@ export type UserUpdateWithoutPayoutsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1743,6 +1776,7 @@ export type UserUncheckedUpdateWithoutPayoutsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1787,6 +1821,7 @@ export type UserCreateWithoutAccountsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1831,6 +1866,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -1891,6 +1927,7 @@ export type UserUpdateWithoutAccountsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1935,6 +1972,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -1979,6 +2017,7 @@ export type UserCreateWithoutSessionsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2023,6 +2062,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2083,6 +2123,7 @@ export type UserUpdateWithoutSessionsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2127,6 +2168,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2171,6 +2213,7 @@ export type UserCreateWithoutPhoneVerificationTokensInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2215,6 +2258,7 @@ export type UserUncheckedCreateWithoutPhoneVerificationTokensInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2275,6 +2319,7 @@ export type UserUpdateWithoutPhoneVerificationTokensInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2319,6 +2364,7 @@ export type UserUncheckedUpdateWithoutPhoneVerificationTokensInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2363,6 +2409,7 @@ export type UserCreateWithoutHostelsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2407,6 +2454,7 @@ export type UserUncheckedCreateWithoutHostelsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2467,6 +2515,7 @@ export type UserUpdateWithoutHostelsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2511,6 +2560,7 @@ export type UserUncheckedUpdateWithoutHostelsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2555,6 +2605,7 @@ export type UserCreateWithoutBookingsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2599,6 +2650,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2659,6 +2711,7 @@ export type UserUpdateWithoutBookingsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2703,6 +2756,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2747,6 +2801,7 @@ export type UserCreateWithoutReviewsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2791,6 +2846,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2851,6 +2907,7 @@ export type UserUpdateWithoutReviewsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2895,6 +2952,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -2939,6 +2997,7 @@ export type UserCreateWithoutPasswordResetsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -2983,6 +3042,7 @@ export type UserUncheckedCreateWithoutPasswordResetsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3043,6 +3103,7 @@ export type UserUpdateWithoutPasswordResetsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3087,6 +3148,7 @@ export type UserUncheckedUpdateWithoutPasswordResetsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3131,6 +3193,7 @@ export type UserCreateWithoutFavoritesInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3175,6 +3238,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3235,6 +3299,7 @@ export type UserUpdateWithoutFavoritesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3279,6 +3344,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3323,6 +3389,7 @@ export type UserCreateWithoutConversationParticipantsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3367,6 +3434,7 @@ export type UserUncheckedCreateWithoutConversationParticipantsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3427,6 +3495,7 @@ export type UserUpdateWithoutConversationParticipantsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3471,6 +3540,7 @@ export type UserUncheckedUpdateWithoutConversationParticipantsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3515,6 +3585,7 @@ export type UserCreateWithoutMessagesInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3559,6 +3630,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3619,6 +3691,7 @@ export type UserUpdateWithoutMessagesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3663,6 +3736,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3707,6 +3781,7 @@ export type UserCreateWithoutPriceAlertsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3751,6 +3826,7 @@ export type UserUncheckedCreateWithoutPriceAlertsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3811,6 +3887,7 @@ export type UserUpdateWithoutPriceAlertsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3855,6 +3932,7 @@ export type UserUncheckedUpdateWithoutPriceAlertsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -3899,6 +3977,7 @@ export type UserCreateWithoutNotificationsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -3943,6 +4022,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4003,6 +4083,7 @@ export type UserUpdateWithoutNotificationsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4047,6 +4128,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4091,6 +4173,7 @@ export type UserCreateWithoutRoommmatePostsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4135,6 +4218,7 @@ export type UserUncheckedCreateWithoutRoommmatePostsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4195,6 +4279,7 @@ export type UserUpdateWithoutRoommmatePostsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4239,6 +4324,7 @@ export type UserUncheckedUpdateWithoutRoommmatePostsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4283,6 +4369,7 @@ export type UserCreateWithoutRoommateReportsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4327,6 +4414,7 @@ export type UserUncheckedCreateWithoutRoommateReportsInput = {
   bio?: string | null
   city?: string | null
   tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: $Enums.VerificationStatus
@@ -4387,6 +4475,7 @@ export type UserUpdateWithoutRoommateReportsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4431,6 +4520,7 @@ export type UserUncheckedUpdateWithoutRoommateReportsInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
   studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
@@ -4641,6 +4731,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   bio?: boolean
   city?: boolean
   tokenVersion?: boolean
+  deletionRequestedAt?: boolean
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: boolean
@@ -4687,6 +4778,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   bio?: boolean
   city?: boolean
   tokenVersion?: boolean
+  deletionRequestedAt?: boolean
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: boolean
@@ -4715,6 +4807,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   bio?: boolean
   city?: boolean
   tokenVersion?: boolean
+  deletionRequestedAt?: boolean
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: boolean
@@ -4743,6 +4836,7 @@ export type UserSelectScalar = {
   bio?: boolean
   city?: boolean
   tokenVersion?: boolean
+  deletionRequestedAt?: boolean
   emailNotifications?: boolean
   studentVerified?: boolean
   verificationStatus?: boolean
@@ -4758,7 +4852,7 @@ export type UserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "password" | "name" | "phone" | "phoneVerified" | "avatar" | "role" | "bio" | "city" | "tokenVersion" | "emailNotifications" | "studentVerified" | "verificationStatus" | "verificationDocUrl" | "verificationSubmittedAt" | "verificationDecidedAt" | "verifiedById" | "plan" | "bankAccountTitle" | "bankAccountNumber" | "bankName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "password" | "name" | "phone" | "phoneVerified" | "avatar" | "role" | "bio" | "city" | "tokenVersion" | "deletionRequestedAt" | "emailNotifications" | "studentVerified" | "verificationStatus" | "verificationDocUrl" | "verificationSubmittedAt" | "verificationDecidedAt" | "verifiedById" | "plan" | "bankAccountTitle" | "bankAccountNumber" | "bankName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
@@ -4816,6 +4910,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     bio: string | null
     city: string | null
     tokenVersion: number
+    deletionRequestedAt: Date | null
     emailNotifications: boolean
     studentVerified: boolean
     verificationStatus: $Enums.VerificationStatus
@@ -5281,6 +5376,7 @@ export interface UserFieldRefs {
   readonly bio: Prisma.FieldRef<"User", 'String'>
   readonly city: Prisma.FieldRef<"User", 'String'>
   readonly tokenVersion: Prisma.FieldRef<"User", 'Int'>
+  readonly deletionRequestedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly emailNotifications: Prisma.FieldRef<"User", 'Boolean'>
   readonly studentVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly verificationStatus: Prisma.FieldRef<"User", 'VerificationStatus'>
