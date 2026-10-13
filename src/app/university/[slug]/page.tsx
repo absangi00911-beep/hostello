@@ -62,7 +62,7 @@ export async function generateMetadata({
 
   return {
     title: `Hostels near ${uni.shortName} ${uni.city} — HostelLo`,
-    description: `Find ${count > 0 ? `${count}+ ` : ""}verified student hostels near ${uni.name} in ${uni.city}. Compare prices, amenities, and book online.`,
+    description: `Find ${count > 0 ? `${count}+ ` : ""}verified student hostels near ${uni.name} in ${uni.city}. View prices and amenities, then request a booking online.`,
     alternates: { canonical: `${appUrl}/university/${slug}` },
     openGraph: {
       type: "website",

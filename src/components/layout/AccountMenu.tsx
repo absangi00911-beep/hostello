@@ -75,10 +75,10 @@ export function AccountMenu() {
   if (!session) {
     return (
       <div className="flex items-center gap-2">
-        <Button asChild variant="secondary" size="sm" className="hidden rounded-[var(--radius-md)] sm:inline-flex">
+        <Button asChild variant="secondary" size="sm" className="hidden min-h-11 rounded-[var(--radius-md)] sm:inline-flex">
           <Link href="/login">Sign in</Link>
         </Button>
-        <Button asChild size="sm" className="rounded-[var(--radius-md)]">
+        <Button asChild size="sm" className="min-h-11 rounded-[var(--radius-md)]">
           <Link href="/register">Register</Link>
         </Button>
       </div>
@@ -102,7 +102,7 @@ export function AccountMenu() {
         <Button
           variant="ghost"
           size="icon"
-          className="flex h-9 w-auto items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 hover:bg-[var(--color-bg-overlay)]"
+          className="flex h-11 min-w-11 w-auto items-center gap-2 rounded-[var(--radius-md)] px-2 py-1.5 hover:bg-[var(--color-bg-overlay)]"
           aria-label="Account menu"
         >
           <Avatar className="h-8 w-8">
@@ -134,16 +134,10 @@ export function AccountMenu() {
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 
-        {menuItems.map(({ href, label, icon: Icon }) => {
-          const isMobileBottomNavRoute =
-            user.role === "STUDENT" &&
-            (href === "/dashboard/saved" || href === "/dashboard/messages");
-
-          return (
+        {menuItems.map(({ href, label, icon: Icon }) => (
           <DropdownMenuItem
             key={href}
             asChild
-            className={isMobileBottomNavRoute ? "hidden md:flex" : undefined}
           >
             <Link
               href={href}
@@ -153,8 +147,7 @@ export function AccountMenu() {
               {label}
             </Link>
           </DropdownMenuItem>
-          );
-        })}
+        ))}
 
         <DropdownMenuSeparator className="my-1 h-px bg-[var(--color-border-subtle)]" />
 

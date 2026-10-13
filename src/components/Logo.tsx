@@ -5,12 +5,12 @@ type LogoSize = "standard" | "compact"
 
 const sizeConfig: Record<LogoSize, { dim: number; textCls: string }> = {
   standard: {
-    dim: 30,
-    textCls: "text-[1.125rem] font-[700] tracking-[-0.05em]",
+    dim: 34,
+    textCls: "text-[1.125rem] font-[700] tracking-[-0.055em]",
   },
   compact: {
-    dim: 24,
-    textCls: "text-[0.9375rem] font-[700] tracking-[-0.05em]",
+    dim: 28,
+    textCls: "text-[0.9375rem] font-[700] tracking-[-0.055em]",
   },
 }
 
@@ -42,48 +42,30 @@ export function Logo({ size = "standard", href = "/", className }: LogoProps) {
       <svg
         width={dim}
         height={dim}
-        viewBox="0 0 32 32"
+        viewBox="0 0 36 36"
         fill="none"
         aria-hidden="true"
         style={{ flexShrink: 0 }}
       >
-        <defs>
-          <linearGradient id="hostello-mark" x1="5" x2="27" y1="4" y2="28" gradientUnits="userSpaceOnUse">
-            <stop stopColor="var(--color-primary)" />
-            <stop offset="1" stopColor="var(--color-primary-deep)" />
-          </linearGradient>
-        </defs>
-
-        <rect x="2.5" y="2.5" width="27" height="27" rx="9" fill="url(#hostello-mark)" />
-
+        <rect x="1.5" y="1.5" width="33" height="33" rx="11" fill="var(--color-primary)" />
         <path
-          d="M9.2 22.2V11.2H12.8V14.8H19.2V11.2H22.8V22.2H19.2V18.2H12.8V22.2H9.2Z"
-          fill="white"
+          d="M9.5 25V13.4L18 7.3l8.5 6.1V25h-6v-8h-5v8h-6Z"
+          fill="var(--color-text-inverse)"
+          fillRule="evenodd"
         />
-
-        <path
-          d="M8.2 11.4L15.9 7.1L23.8 11.4"
-          stroke="rgba(255,255,255,0.9)"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        <path
-          d="M12.5 14.8H19.5"
-          stroke="rgba(255,255,255,0.88)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <circle cx="18" cy="13" r="1.45" fill="var(--color-primary-light)" />
       </svg>
 
       <span
         className={cn(
           textCls,
-          "font-heading text-[color:var(--color-text-heading)] leading-none select-none"
+          "inline-flex items-baseline font-heading text-[color:var(--color-text-heading)] leading-none select-none"
         )}
       >
-        HostelLo
+        <span>Hostel</span>
+        <span className="font-display font-[500] italic tracking-[-0.075em] text-[color:var(--color-primary-deep)]">
+          Lo
+        </span>
       </span>
     </Link>
   )

@@ -98,7 +98,7 @@ export default function StyleGuidePage() {
             </p>
             <h2>Hostels and PGs near your university</h2>
             <h3>Verified listings, real reviews</h3>
-            <h4>Compare up to three at once</h4>
+            <h4>Hostels near your university</h4>
             <p style={{ fontSize: "var(--text-body-lg)" }}>
               Body-lg (18px, Inter) — hero subheads and lead paragraphs.
             </p>

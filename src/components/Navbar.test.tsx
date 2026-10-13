@@ -5,14 +5,14 @@ import { Navbar } from "./Navbar";
 
 type TestRole = "STUDENT" | "OWNER" | "ADMIN";
 
-const mocks = vi.hoisted(() => ({ suspendCitySelector: false }));
+const mocks = vi.hoisted(() => ({ pathname: "/" }));
 
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => mocks.pathname,
   useRouter: () => ({ push: vi.fn() }),
 }));
 
@@ -36,13 +36,6 @@ vi.mock("./layout/AccountMenu", () => ({
   AccountMenu: () => <button>Account menu</button>,
 }));
 
-vi.mock("./layout/CitySelector", () => ({
-  CitySelector: () => {
-    if (mocks.suspendCitySelector) throw new Promise(() => undefined);
-    return <button>City</button>;
-  },
-}));
-
 function mockSession(role: TestRole) {
   vi.mocked(useSession).mockReturnValue({
     data: {
@@ -61,27 +54,55 @@ function mockSession(role: TestRole) {
   });
 }
 
-describe("Navbar mobile tabs", () => {
+describe("Navbar mobile navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.suspendCitySelector = false;
+    mocks.pathname = "/";
   });
 
-  it("keeps a readable city label in the prerender fallback", () => {
-    mockSession("STUDENT");
-    mocks.suspendCitySelector = true;
-
-    const markup = renderToStaticMarkup(<Navbar />);
-
-    expect(markup).toContain('aria-hidden="true"');
-    expect(markup).toContain(">All cities</span>");
-  });
-
-  it("shows student mobile tabs for students", () => {
+  it("keeps the homepage search focused without a city selector", () => {
     mockSession("STUDENT");
 
     const markup = renderToStaticMarkup(<Navbar />);
 
+    expect(markup).toContain("Start your search");
+    expect(markup).not.toContain(">City</button>");
+    expect(markup).not.toContain(">All cities</span>");
+  });
+
+  it("omits the city selector from the navbar on interior pages", () => {
+    mocks.pathname = "/dashboard/saved";
+
+    const markup = renderToStaticMarkup(<Navbar />);
+
+    expect(markup).not.toContain(">City</button>");
+    expect(markup).not.toContain(">All cities</span>");
+  });
+
+  it("does not add a city selector for signed-out visitors on interior pages", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+      update: vi.fn(),
+    });
+    mocks.pathname = "/hostels";
+
+    const markup = renderToStaticMarkup(<Navbar />);
+
+    expect(markup).not.toContain(">City</button>");
+    expect(markup).not.toContain(">All cities</span>");
+  });
+
+  it("shows student links in the top navigation menu", () => {
+    mockSession("STUDENT");
+
+    const markup = renderToStaticMarkup(<Navbar />);
+
+    expect(markup).toContain('aria-label="Mobile navigation"');
+    expect(markup).toContain('aria-label="Open navigation menu"');
+    expect(markup).toContain(">Quick links</h2>");
+    expect(markup).toContain(">More</h2>");
+    expect(markup).toContain(">List your hostel</a>");
     expect(markup).toContain('href="/dashboard/saved"');
     expect(markup).toContain('href="/dashboard/messages"');
     expect(markup).not.toContain('href="/owner/dashboard"');
@@ -89,9 +110,23 @@ describe("Navbar mobile tabs", () => {
     expect(markup).not.toContain('href="/owner/bookings"');
     expect(markup).not.toContain('href="/owner/messages"');
     expect(markup).not.toContain('href="/admin"');
+    expect(markup).not.toContain("fixed bottom-0");
   });
 
-  it("shows owner mobile tabs for owners", () => {
+  it("labels the unauthenticated account link as sign in", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "unauthenticated",
+      update: vi.fn(),
+    });
+
+    const markup = renderToStaticMarkup(<Navbar />);
+
+    expect(markup).toContain(">Sign in</span>");
+    expect(markup).not.toContain(">Account</span>");
+  });
+
+  it("shows owner links in the top navigation menu", () => {
     mockSession("OWNER");
 
     const markup = renderToStaticMarkup(<Navbar />);
@@ -103,7 +138,7 @@ describe("Navbar mobile tabs", () => {
     expect(markup).not.toContain('href="/admin"');
   });
 
-  it("shows admin mobile tabs for admins", () => {
+  it("shows admin links in the top navigation menu", () => {
     mockSession("ADMIN");
 
     const markup = renderToStaticMarkup(<Navbar />);

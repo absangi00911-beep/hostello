@@ -1,7 +1,7 @@
 // Path: src/components/landing/MarketingSections.tsx
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, Eye, Lock, ShieldCheck } from "lucide-react";
+import { ArrowRight, Eye, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/landing/Reveal";
 
 export function SectionFrame({
@@ -25,16 +25,18 @@ export function SectionHeading({
   heading,
   sub,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   heading: string;
   sub: string;
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
-        {eyebrow}
-      </p>
-      <h2 className="mt-2 font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]">
+      {eyebrow && (
+        <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
+          {eyebrow}
+        </p>
+      )}
+      <h2 className={`${eyebrow ? "mt-2" : ""} font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]`}>
         {heading}
       </h2>
       <p className="mt-3 text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">{sub}</p>
@@ -52,24 +54,19 @@ export function TrustProof({
   const items = [
     {
       icon: ShieldCheck,
-      label: "Verified hostel listings",
-      description: "Reviewed before students book.",
+      label: "Listings marked as verified",
+      description: "Our team reviews these listings.",
     },
     {
       icon: Eye,
-      label: "Real prices before you call",
-      description: "Monthly rent is visible upfront.",
-    },
-    {
-      icon: Lock,
-      label: "Secure booking handoff",
-      description: "Your booking stays tracked end to end.",
+      label: "Monthly rent shown",
+      description: "Rent is shown on each listing.",
     },
   ];
 
   return (
     <div
-      className={`grid gap-2 pt-4 sm:grid-cols-3 ${className} ${dark ? "border-t border-white/15" : "border-t border-[var(--color-border-subtle)]"}`}
+      className={`grid gap-2 pt-4 sm:grid-cols-2 ${className} ${dark ? "border-t border-white/15" : "border-t border-[var(--color-border-subtle)]"}`}
       aria-label="HostelLo trust proof"
     >
       {items.map(({ icon: Icon, label, description }) => (
@@ -103,7 +100,7 @@ export function CityGrid({ cities }: { cities: string[] }) {
             href={`/hostels?city=${encodeURIComponent(city)}`}
             className="group flex items-center gap-3 border-b border-[var(--color-border-default)] py-3.5 transition-colors duration-[var(--transition-base)] hover:border-[var(--color-primary)]"
           >
-            <span className="w-7 font-mono text-[10px] text-[color:var(--color-text-muted)]">
+            <span className="w-7 font-mono text-[11px] text-[color:var(--color-text-muted)]">
               {String(index + 1).padStart(2, "0")}
             </span>
             <span className="font-display text-[1.15rem] leading-tight tracking-[-0.015em] text-[color:var(--color-text-heading)] transition-colors group-hover:text-[color:var(--color-primary-deep)]">

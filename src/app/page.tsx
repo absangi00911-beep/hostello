@@ -7,9 +7,11 @@ import {
   Building2,
   CalendarDays,
   KeyRound,
+  MapPin,
   MessageCircle,
   Plus,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import { CITIES } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
@@ -25,12 +27,14 @@ import {
 import { Reveal } from "@/components/landing/Reveal";
 import { HostelCard, type HostelCardData } from "@/components/hostel/HostelCard";
 import { HeroSearch } from "@/components/landing/HeroSearch";
-import { FieldGuideArtwork } from "@/components/landing/FieldGuideArtwork";
+import { RotatingCity } from "@/components/landing/RotatingCity";
+import { PhotoImage } from "@/components/landing/PhotoImage";
+import { formatPKR } from "@/components/ui/shared";
 
 export const metadata: Metadata = {
   title: "HostelLo — Verified Student Hostels in Pakistan",
   description:
-    "Compare verified student hostels across Pakistan by city, university, monthly price, and amenities — all in one place.",
+    "Search student hostel listings across Pakistan by city, rent, university, and amenities.",
 };
 
 const OWNER_CTA_IMAGE =
@@ -40,34 +44,34 @@ const FEATURED_CITIES = CITIES.slice(0, CITIES.length);
 
 const TRUST_CARDS = [
   {
-    title: "Verified hostel listings",
-    body: "Every hostel is reviewed by our team before students can see or book it, so what you find is real.",
+    title: "Check for verified listings",
+    body: "Our team reviews listings marked as verified. Check the room details and photos, and ask the owner about anything you’re unsure of.",
   },
   {
-    title: "Real prices before you call",
-    body: "See PKR pricing, room photos, and amenities upfront — no need to call five numbers just to compare costs.",
+    title: "See monthly rent",
+    body: "See the listed rent, location, photos, and amenities before you contact a hostel.",
   },
   {
-    title: "Secure booking handoff",
-    body: "Confirm your booking and pay through HostelLo's secure gateway, tracked end to end, not just a promise over the phone.",
+    title: "Send a booking request",
+    body: "Request a booking through HostelLo, then check its status from your account.",
   },
 ] as const;
 
 const STUDENT_STEPS = [
   {
     icon: Search,
-    title: "Search & compare",
-    body: "Filter by city, university, budget, and amenities to shortlist real, verified hostels.",
+    title: "Search hostels",
+    body: "Narrow the listings by city, university, rent, and amenities.",
   },
   {
     icon: MessageCircle,
-    title: "Message & book",
-    body: "Chat with the hostel directly, confirm details, and request your booking.",
+    title: "Check the details",
+    body: "Review rent, location, photos, and amenities. Message the hostel if you have questions.",
   },
   {
     icon: KeyRound,
-    title: "Move in with confidence",
-    body: "Pay securely through HostelLo and move in knowing the listing was verified before you booked.",
+    title: "Request a booking",
+    body: "Send a request through HostelLo and check your account for updates.",
   },
 ] as const;
 
@@ -102,7 +106,7 @@ const OWNER_QUICK_LINKS = [
 async function getRecentHostels(): Promise<HostelCardData[]> {
   try {
     const baseUrl = getAppUrl();
-    const res = await fetch(`${baseUrl}/api/hostels?sort=newest&limit=6`, {
+    const res = await fetch(`${baseUrl}/api/hostels?sort=newest&limit=7`, {
       cache: "no-store",
     });
     if (!res.ok) return [];
@@ -115,97 +119,105 @@ async function getRecentHostels(): Promise<HostelCardData[]> {
 
 /* ── Hero — search-first landing section for students and owners ── */
 function Hero({
-  isAnonymous,
   userName,
   featuredHostel,
 }: {
-  isAnonymous: boolean;
   userName?: string | null;
   featuredHostel?: HostelCardData;
 }) {
   const firstName = userName?.trim().split(/\s+/)[0];
   const featuredImage = featuredHostel?.coverImage ?? featuredHostel?.images[0] ?? OWNER_CTA_IMAGE;
-  const featuredLocation = [featuredHostel?.area, featuredHostel?.city].filter(Boolean).join(", ") || "Find your next city";
+  const featuredLocation = [featuredHostel?.area, featuredHostel?.city].filter(Boolean).join(", ") || "Browse listings by city";
 
   return (
-    <SectionFrame className="relative isolate overflow-hidden border-b border-[var(--color-border-default)] bg-[var(--color-bg-sidebar)] py-9 md:py-14">
-      <svg className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.16]" aria-hidden="true">
-        <defs>
-          <pattern id="hostello-paper-grain" width="12" height="12" patternUnits="userSpaceOnUse">
-            <circle cx="1.5" cy="2" r="0.55" fill="currentColor" />
-            <circle cx="8" cy="9" r="0.45" fill="currentColor" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#hostello-paper-grain)" className="text-[color:var(--color-text-heading)]" />
-      </svg>
-
-      <div className="container-app grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-center lg:gap-16">
-        <div className="relative z-10 max-w-[660px] py-2">
-          <p className="hero-enter mb-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] font-[600] uppercase tracking-[0.16em] text-[color:var(--color-text-muted)]">
-            <span className="text-[color:var(--color-primary-deep)]">HostelLo field guide</span>
-            <span aria-hidden="true">/</span>
-            <span>Pakistan · no. 01</span>
+    <SectionFrame className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] py-10 md:py-14 lg:py-16">
+      <div className="container-app grid gap-9 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12">
+        <div className="min-w-0 max-w-[650px] py-1">
+          <p className="hero-enter mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 py-1.5 font-narrow text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-muted)]">
+            <MapPin size={13} className="text-[color:var(--color-primary)]" aria-hidden="true" />
+            Student hostels across Pakistan
           </p>
 
-          <h1 className="hero-enter hero-enter-delay-1 max-w-[16ch] font-display text-[3.4rem] leading-[0.92] tracking-[-0.055em] text-[color:var(--color-text-heading)] sm:text-[4.1rem] md:text-[4.7rem]">
-            Find a room
-            <span className="block">you <em className="font-[400] text-[color:var(--color-primary-deep)]">actually</em></span>
-            <span className="block">want to live in.</span>
+          <h1 className="hero-enter hero-enter-delay-1 max-w-[15ch] animate-[heroFadeUp_900ms_ease-out] font-display text-[2.9rem] font-[600] leading-[0.92] tracking-[-0.055em] text-[color:var(--color-text-heading)] sm:text-[3.9rem] md:text-[4.4rem]">
+            Find student hostels in <RotatingCity />
           </h1>
 
-          <p className="hero-enter hero-enter-delay-2 mt-5 max-w-[45ch] text-[1.02rem] leading-[1.75] text-[color:var(--color-text-muted)] sm:text-[1.1rem]">
+          <p className="hero-enter hero-enter-delay-2 mt-5 max-w-[48ch] text-[length:var(--text-body-lg)] leading-relaxed text-[color:var(--color-text-muted)]">
             {firstName
-              ? "Pick up where you left off. Compare verified hostels by budget, location, and the details that make a place feel right."
-              : "A little less searching in circles. Find a place with a clear price, a real address, and room to make it your own."}
+              ? `Welcome back, ${firstName}. Browse hostels by location, rent, and amenities.`
+              : "Browse hostel listings by location, rent, and amenities before contacting the owner."}
           </p>
 
-          <div className="hero-enter hero-enter-delay-3 mt-7 max-w-[620px]">
+          <div className="hero-enter hero-enter-delay-3 mt-7 max-w-[640px]">
             <HeroSearch />
           </div>
 
-          {isAnonymous && (
-            <p className="hero-enter hero-enter-delay-3 mt-4 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
-              Have a place for students?{" "}
-              <Link href="/list-your-hostel" className="font-[600] text-[color:var(--color-text-link)] underline decoration-[var(--color-primary-light)] underline-offset-4 hover:decoration-[var(--color-primary)]">
-                List your hostel
-              </Link>
-            </p>
-          )}
-
-          <div className="hero-enter hero-enter-delay-4 mt-7 flex max-w-xl items-start gap-3 border-t border-[var(--color-border-default)] pt-4">
-            <span className="pt-0.5 font-mono text-[10px] font-[600] tracking-[0.12em] text-[color:var(--color-primary-deep)]">01—03</span>
-            <p className="max-w-[38ch] text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
-              Real listings. Monthly rent up front. A calmer way to find your next address.
-            </p>
-          </div>
         </div>
 
-        <div className="hero-enter hero-enter-delay-3 relative mx-auto w-full max-w-[650px] lg:-mr-3">
-          <FieldGuideArtwork
-            src={featuredImage}
-            name={featuredHostel?.name ?? "A good place to land"}
-            location={featuredLocation}
-            price={featuredHostel?.pricePerMonth}
-            verified={featuredHostel?.verified}
-          />
+        <div className="hero-enter hero-enter-delay-3 relative mx-auto w-full max-w-[620px] lg:ml-auto">
+          <figure className="relative aspect-[1.08] overflow-hidden rounded-[24px] border border-[var(--color-border-default)] bg-[var(--color-bg-overlay)] shadow-[var(--shadow-md)] sm:aspect-[1.14]">
+            <PhotoImage
+              src={featuredImage}
+              alt={`Room at ${featuredHostel?.name ?? "a student hostel"}`}
+              fill
+              preload
+              sizes="(max-width: 1024px) 100vw, 46vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#191714]/85 via-[#191714]/10 to-transparent" aria-hidden="true" />
+
+            <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4 sm:p-5">
+              <span className="rounded-full bg-[var(--color-bg-card)]/95 px-3 py-1.5 text-[length:var(--text-caption)] font-[700] text-[color:var(--color-text-heading)] shadow-sm">
+                Hostel listing
+              </span>
+              {featuredHostel?.verified && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-bg-card)]/95 px-3 py-1.5 text-[length:var(--text-caption)] font-[700] text-[color:var(--color-success-text)] shadow-sm">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  Verified
+                </span>
+              )}
+            </div>
+
+            <figcaption className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-5 text-[color:var(--color-text-inverse)] sm:p-6">
+              <div className="min-w-0">
+                <p className="mb-1 font-mono text-[11px] font-[600] uppercase tracking-[0.14em] text-white/75">
+                  {featuredHostel ? "Featured hostel" : "Hostel listings"}
+                </p>
+                <h2 className="truncate font-heading text-[1.35rem] font-[700] tracking-[-0.025em] text-[color:var(--color-text-inverse)] sm:text-[1.6rem]">
+                  {featuredHostel?.name ?? "Browse student hostels"}
+                </h2>
+                <p className="mt-1 flex items-center gap-1.5 text-[length:var(--text-body-sm)] text-white/85">
+                  <MapPin size={14} aria-hidden="true" />
+                  <span className="truncate">{featuredLocation}</span>
+                </p>
+              </div>
+              {featuredHostel?.pricePerMonth != null && (
+                <p className="shrink-0 text-right">
+                  <span className="block text-[length:var(--text-caption)] text-white/75">Monthly rent</span>
+                  <span className="font-heading text-[1.1rem] font-[700]">
+                    {formatPKR(featuredHostel.pricePerMonth)}
+                  </span>
+                </p>
+              )}
+            </figcaption>
+          </figure>
         </div>
       </div>
     </SectionFrame>
   );
 }
 
-/* ── Trust / promise section ────────────────────────────────*/
+/* ── Listing details and verification ──────────────────────*/
 function TrustSection() {
   return (
     <SectionFrame className="bg-[var(--color-bg-card)] py-16 md:py-20">
       <div className="container-app grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
         <div>
-          <p className="font-mono text-[10px] font-[600] uppercase tracking-[0.16em] text-[color:var(--color-primary-deep)]">The HostelLo promise / 03</p>
-          <h2 className="mt-4 max-w-[11ch] font-display text-[2.6rem] leading-[0.98] tracking-[-0.04em] text-[color:var(--color-text-heading)] sm:text-[3.3rem]">
-            Good decisions need good details.
+          <h2 className="max-w-[11ch] font-display text-[2.6rem] leading-[0.98] tracking-[-0.04em] text-[color:var(--color-text-heading)] sm:text-[3.3rem]">
+            Check the details that matter.
           </h2>
           <p className="mt-4 max-w-[36ch] text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
-            Before you visit or message, know the things that are usually left out of the first conversation.
+            Review rent, location, photos, and amenities before contacting a hostel.
           </p>
         </div>
 
@@ -213,7 +225,7 @@ function TrustSection() {
           {TRUST_CARDS.map(({ title, body }, index) => (
             <Reveal key={title} delay={index * 0.07}>
               <article className="grid gap-3 border-b border-[var(--color-border-default)] py-5 sm:grid-cols-[4rem_1fr] sm:gap-5">
-                <span className="pt-1 font-mono text-[10px] font-[600] tracking-[0.12em] text-[color:var(--color-primary-deep)]">
+                <span className="pt-1 font-mono text-[11px] font-[600] tracking-[0.12em] text-[color:var(--color-primary-deep)]">
                   0{index + 1}
                 </span>
                 <div>
@@ -239,15 +251,14 @@ function BrowseCitiesSection() {
     <SectionFrame className="border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] py-16 md:py-20">
       <div className="container-app grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <p className="font-mono text-[10px] font-[600] uppercase tracking-[0.16em] text-[color:var(--color-primary-deep)]">The city index / 02</p>
-          <h2 className="mt-4 max-w-[10ch] font-display text-[2.7rem] leading-[0.98] tracking-[-0.04em] text-[color:var(--color-text-heading)] sm:text-[3.4rem]">
-            Where does next take you?
+          <h2 className="max-w-[10ch] font-display text-[2.7rem] leading-[0.98] tracking-[-0.04em] text-[color:var(--color-text-heading)] sm:text-[3.4rem]">
+            Search hostels by city.
           </h2>
           <p className="mt-4 max-w-[36ch] text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
-            Start with the city. We’ll help you find the room, the route, and a little more breathing room in your budget.
+            Choose a city to see its hostel listings and prices.
           </p>
           <Link href="/hostels" className="mt-6 inline-flex items-center gap-2 border-b border-[var(--color-primary)] pb-1 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-link)] transition-[gap] hover:gap-3">
-            Explore every stay <ArrowRight size={14} aria-hidden="true" />
+            Browse all hostels <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
 
@@ -261,23 +272,20 @@ function BrowseCitiesSection() {
 function RecentHostelsSection({ hostels }: { hostels: HostelCardData[] }) {
   return (
     <SectionFrame className="bg-[var(--color-bg-page)] py-16 md:py-20">
-      <div className="container-app">
+      <div className="container-app max-w-[1720px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
-              Notes from the directory
-            </p>
-            <h2 className="mt-2 font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]">
-              Recently found, ready to compare
+            <h2 className="font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]">
+              Recently added hostels
             </h2>
           </div>
           <SectionCtaLink href="/hostels">See all hostels</SectionCtaLink>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {hostels.slice(1, 6).map((hostel, index) => (
+        <div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 min-[1920px]:grid-cols-6">
+          {hostels.slice(1, 7).map((hostel, index) => (
             <Reveal key={hostel.id} delay={index * 0.06} className="h-full">
-              <HostelCard hostel={hostel} priority={index < 3} />
+              <HostelCard hostel={hostel} />
             </Reveal>
           ))}
         </div>
@@ -286,7 +294,7 @@ function RecentHostelsSection({ hostels }: { hostels: HostelCardData[] }) {
   );
 }
 
-/* ── How it works (student journey) ─────────────────────────*/
+/* ── How it works ──────────────────────────────────────────*/
 function HowItWorksSection() {
   return (
     <SectionFrame
@@ -295,9 +303,8 @@ function HowItWorksSection() {
     >
       <div className="container-app">
         <SectionHeading
-          eyebrow="A clear path to move-in"
-          heading="Search once. Move in with confidence."
-          sub="Shortlist a place that fits your campus life, then take the next step when you are ready."
+          heading="Find a hostel in three steps."
+          sub="Review a listing, ask the hostel questions, and send a booking request online."
         />
 
         <div className="mt-12 grid gap-8 border-t border-[var(--color-border-default)] md:grid-cols-3 md:gap-8">
@@ -305,7 +312,7 @@ function HowItWorksSection() {
             <Reveal key={title} delay={index * 0.09}>
               <article className="border-b border-[var(--color-border-default)] pb-6 pt-5 md:border-b-0 md:pb-0">
                 <div className="flex items-center justify-between text-[color:var(--color-primary-deep)]">
-                  <span className="font-mono text-[10px] font-[600] tracking-[0.15em]">0{index + 1} / 03</span>
+                  <span className="font-mono text-[11px] font-[600] tracking-[0.15em]">0{index + 1} / 03</span>
                   <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
                 </div>
                 <h3 className="mt-7 font-display text-[1.6rem] leading-tight tracking-[-0.02em] text-[color:var(--color-text-heading)]">
@@ -336,31 +343,27 @@ function HowItWorksSection() {
 /* ── Closing owner CTA — anonymous visitors only ─────────────*/
 function OwnerCtaBanner() {
   return (
-    <SectionFrame className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(173,75,57,0.22),_transparent_32%),linear-gradient(135deg,#211d19_0%,#322820_100%)]">
-      <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(ellipse_at_center,_rgba(233,192,178,0.12),_transparent_68%)]" aria-hidden="true" />
+    <SectionFrame className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,_color-mix(in_oklab,var(--color-primary)_22%,transparent),_transparent_32%),linear-gradient(135deg,#211d19_0%,#322820_100%)]">
+      <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(ellipse_at_center,_color-mix(in_oklab,var(--color-primary-light)_32%,transparent),_transparent_68%)]" aria-hidden="true" />
 
       <div className="container-app relative grid gap-10 py-16 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.62fr)] md:items-center md:py-20">
         <div className="max-w-2xl">
-          <p className="font-mono text-[10px] font-[600] uppercase tracking-[0.16em] text-[color:var(--color-primary-light)]">
-            A note for hostel owners / 04
-          </p>
-          <h2 className="mt-3 max-w-xl font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-white">
-            Put your rooms in front of students who are ready to compare.
+          <h2 className="max-w-xl font-display text-[length:var(--text-h2)] font-[500] leading-tight tracking-[-0.025em] text-white">
+            List your hostel on HostelLo.
           </h2>
           <p className="mt-4 max-w-xl text-[length:var(--text-body)] leading-relaxed text-white/80">
-            Add your hostel, rooms, prices, and photos once. Students can discover the details and contact you from one trusted listing.
+            Add your rooms, prices, photos, and amenities. Students searching in your city can view the listing and contact you.
           </p>
         </div>
 
         <div className="border-y border-white/20 py-6 md:border-y-0 md:border-l md:py-2 md:pl-8">
-          <p className="font-mono text-[9px] font-[600] uppercase tracking-[0.15em] text-white/60">The short version</p>
-          <h3 className="mt-4 max-w-[16ch] font-display text-[1.8rem] leading-[1.08] tracking-[-0.025em] text-white">
-            A good place shouldn’t be hard to find.
+          <h3 className="max-w-[16ch] font-display text-[1.8rem] leading-[1.08] tracking-[-0.025em] text-white">
+            Add your hostel details.
           </h3>
           <p className="mt-3 max-w-[36ch] text-[length:var(--text-body-sm)] leading-relaxed text-white/70">
-            Put the useful details in one place, then let the right student find you.
+            Create a listing with your prices, photos, and room information.
           </p>
-          <Link href="/list-your-hostel" className="group mt-6 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary-light)] px-4 py-3 text-[length:var(--text-body-sm)] font-[700] text-[#261d19] transition-colors hover:bg-[#f0d4c8]">
+          <Link href="/list-your-hostel" className="group mt-6 inline-flex items-center gap-3 rounded-full bg-[var(--color-primary-light)] px-4 py-3 text-[length:var(--text-body-sm)] font-[700] text-[#261d19] transition-colors hover:bg-digital-blue-200">
             List your hostel
             <ArrowRight size={15} strokeWidth={2} className="transition-transform duration-[var(--transition-fast)] group-hover:translate-x-1" aria-hidden="true" />
           </Link>
@@ -446,7 +449,7 @@ export default async function HomePage() {
 
   return (
     <PublicLayout>
-      <Hero isAnonymous={isAnonymous} userName={session?.user.name} featuredHostel={hostels[0]} />
+      <Hero userName={session?.user.name} featuredHostel={hostels[0]} />
       <TrustSection />
       {hostels.length > 1 && <RecentHostelsSection hostels={hostels} />}
       <BrowseCitiesSection />

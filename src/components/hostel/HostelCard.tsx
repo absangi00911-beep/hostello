@@ -95,11 +95,7 @@ export function HostelCard({
   }
 
   // Top 3 chips: gender, city/area, first amenity
-  const chips = [
-    genderLabel,
-    hostel.area ? hostel.area : hostel.city,
-    hostel.amenities[0] ?? null,
-  ].filter(Boolean) as string[];
+  const chips = [genderLabel, hostel.amenities[0]].filter(Boolean) as string[];
 
   if (compact) {
     return (
@@ -142,7 +138,7 @@ export function HostelCard({
   }
 
   return (
-    <div className="group relative">
+    <div className="hostel-card group relative">
       <Link
         href={`/hostels/${hostel.slug}`}
         className="hostel-card-link block no-underline hover:no-underline"
@@ -151,7 +147,7 @@ export function HostelCard({
         {/* Photo — the hero. No overlay text, no gradient wash; badges
             carry their own contrast so the image stays clean. */}
         <div
-          className="relative aspect-[1.14] overflow-hidden rounded-tl-[44px] rounded-tr-[8px] rounded-br-[8px] rounded-bl-[8px] bg-[var(--color-bg-overlay)] ring-1 ring-inset ring-black/[0.035] transition-[box-shadow] duration-[var(--transition-medium)] group-hover:shadow-[var(--shadow-lg)]"
+          className="hostel-card-photo relative aspect-[1.14] overflow-hidden rounded-[16px] bg-[var(--color-bg-overlay)] ring-1 ring-inset ring-black/[0.035] transition-[box-shadow] duration-[var(--transition-medium)] group-hover:shadow-[var(--shadow-lg)]"
           onMouseMove={handleImageMouseMove}
           onMouseLeave={handleImageMouseLeave}
         >
@@ -160,9 +156,9 @@ export function HostelCard({
               src={activeSrc}
               alt={hostel.name}
               fill
-              priority={priority}
+              preload={priority}
               className="object-cover transition-transform duration-[var(--transition-slow)] group-hover:scale-[1.045]"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 639px) 46vw, (max-width: 1023px) 23vw, (max-width: 1279px) 30vw, (max-width: 1535px) 23vw, 16vw"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -173,17 +169,17 @@ export function HostelCard({
           {/* Status badges — top-left only, so the heart owns top-right */}
           <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
             {hostel.verified ? (
-              <span className="inline-flex items-center gap-1 rounded-[var(--radius-full)] bg-[var(--color-success-bg)] px-2.5 py-1 text-[10px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-success-text)]">
+              <span className="inline-flex items-center gap-1 rounded-[var(--radius-full)] bg-[var(--color-success-bg)] px-2.5 py-1 text-[11px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-success-text)]">
                 <ShieldCheck size={11} strokeWidth={1.5} aria-hidden="true" />
                 Verified
               </span>
             ) : (
-              <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-card)] px-2.5 py-1 text-[10px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-text-muted)]">
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-bg-card)] px-2.5 py-1 text-[11px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-text-muted)]">
                 New
               </span>
             )}
             {hostel.featured && (
-              <span className="rounded-[var(--radius-full)] bg-[var(--color-primary)] px-2.5 py-1 text-[10px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-text-inverse)]">
+              <span className="rounded-[var(--radius-full)] bg-[var(--color-primary)] px-2.5 py-1 text-[11px] font-[700] uppercase tracking-[0.04em] text-[color:var(--color-text-inverse)]">
                 Featured
               </span>
             )}
@@ -209,42 +205,49 @@ export function HostelCard({
         </div>
 
         {/* Editorial listing details sit below the photo for easy scanning. */}
-        <div className="space-y-2 pt-3.5">
+        <div className="hostel-card-content space-y-2 pt-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="hostel-card-title line-clamp-2 min-h-[2.3em] font-display text-[1.3rem] font-[600] leading-tight tracking-[-0.02em] text-[color:var(--color-text-heading)]">
+            <h3 className="hostel-card-title line-clamp-2 min-h-[2.4em] font-heading text-[1.1rem] font-[700] leading-tight tracking-[-0.025em] text-[color:var(--color-text-heading)]">
               {hostel.name}
             </h3>
             {hostel.reviewCount > 0 && (
-              <span className="flex shrink-0 items-center gap-1 pt-0.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-heading)]">
+              <span
+                aria-label={`${hostel.rating.toFixed(1)} stars from ${hostel.reviewCount} reviews`}
+                className="flex shrink-0 items-center gap-1 pt-0.5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-heading)]"
+              >
                 <Star size={13} strokeWidth={1.8} className="fill-[var(--color-primary)] text-[color:var(--color-primary)]" aria-hidden="true" />
                 <span className="font-[600]">{hostel.rating.toFixed(1)}</span>
               </span>
             )}
           </div>
 
-          <p className="truncate text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+          <p className="hostel-card-location truncate text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             {hostel.city}
-            {hostel.area ? ` • ${hostel.area}` : ""}
-            {hostel.reviewCount > 0 && ` • ${hostel.reviewCount} review${hostel.reviewCount !== 1 ? "s" : ""}`}
+            {hostel.area ? ` · ${hostel.area}` : ""}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 font-mono text-[9px] font-[500] uppercase tracking-[0.1em] text-[color:var(--color-text-muted)]">
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[length:var(--text-caption)] font-[500] text-[color:var(--color-text-muted)]">
             {chips.slice(0, 3).map((chip, index) => (
-              <span key={chip} className="inline-flex items-center gap-2">
-                {index > 0 && <span className="text-[color:var(--color-primary)]" aria-hidden="true">·</span>}
+              <span
+                key={chip}
+                className={cn(
+                  "inline-flex max-w-full truncate rounded-full bg-[var(--color-bg-sidebar)] px-2 py-1",
+                  index > 0 && "hostel-card-amenity"
+                )}
+              >
                 {chip}
               </span>
             ))}
           </div>
 
-          <div className="flex items-center justify-between gap-3 pt-1.5">
-            <p className="font-display text-[1.3rem] font-[600] leading-none text-[color:var(--color-text-heading)]">
+          <div className="hostel-card-price-row flex flex-wrap items-end justify-between gap-x-2 gap-y-1 pt-1">
+            <p className="hostel-card-price font-heading text-[1.1rem] font-[700] leading-tight text-[color:var(--color-text-heading)]">
               {formatPKR(hostel.pricePerMonth)}
-              <span className="text-[length:var(--text-body-sm)] font-[400] text-[color:var(--color-text-muted)]"> /mo</span>
+              <span className="ml-1 text-[length:var(--text-caption)] font-[400] text-[color:var(--color-text-muted)]">/mo</span>
             </p>
 
             {hostel.safetyScore != null && hostel.safetyScore > 0 && (
-              <span className="flex items-center gap-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+              <span className="hostel-card-safety flex items-center gap-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
                 <ShieldCheck size={13} strokeWidth={1.6} className="text-[color:var(--color-success)]" aria-hidden="true" />
                 Safety {hostel.safetyScore.toFixed(1)}
               </span>

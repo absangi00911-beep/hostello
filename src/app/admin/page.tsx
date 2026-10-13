@@ -51,7 +51,7 @@ function StatCard({
   tone?: "neutral" | "warning" | "error";
 }) {
   return (
-    <article className={`admin-overview-stat admin-overview-stat-${tone}`}>
+    <article className={`admin-overview-stat admin-overview-stat-${tone}${tone === "warning" ? " admin-overview-stat-featured" : ""}`}>
       <div className="flex items-start justify-between gap-3">
         <p>{label}</p>
         <Icon size={17} strokeWidth={1.6} aria-hidden="true" />

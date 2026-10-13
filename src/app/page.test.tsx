@@ -32,7 +32,9 @@ vi.mock("@/components/landing/HeroSearch", () => ({
 }));
 
 vi.mock("@/components/hostel/HostelCard", () => ({
-  HostelCard: () => <article />,
+  HostelCard: ({ priority }: { priority?: boolean }) => (
+    <article data-priority={priority ? "high" : "auto"} />
+  ),
 }));
 
 describe("HomePage role-based CTAs", () => {
@@ -106,20 +108,54 @@ describe("HomePage role-based CTAs", () => {
     expect(markup).not.toContain("How it works");
   });
 
-  it("shows a premium lifestyle hero with clear CTAs for anonymous visitors", async () => {
+  it("shows clear, specific hostel-search copy for anonymous visitors", async () => {
     mockedAuth.mockResolvedValue(null);
 
     const markup = renderToStaticMarkup(await HomePage());
 
-    expect(markup).toContain("Find a room");
-    expect(markup).toContain("actually");
-    expect(markup).toContain("want to live in.");
+    expect(markup).toContain("Find student hostels in");
+    expect(markup).toContain(">Pakistan.</span>");
+    expect(markup).toContain("bg-gradient-to-r");
+    expect(markup).toContain("Browse hostel listings by location, rent, and amenities");
+    expect(markup).not.toContain("Have a place for students?");
     expect(markup).toContain("List your hostel");
-    expect(markup).toContain("Verified hostel listings");
-    expect(markup).toContain("Real prices before you call");
-    expect(markup).toContain("Secure booking handoff");
+    expect(markup).toContain("Check for verified listings");
+    expect(markup).toContain("See monthly rent");
+    expect(markup).toContain("Send a booking request");
+    expect(markup).toContain("Find a hostel in three steps.");
+    expect(markup).not.toContain("Compare");
+    expect(markup).not.toContain("Secure booking handoff");
+    expect(markup).not.toContain("next chapter");
+    expect(markup).not.toContain("breathing room");
     expect(markup).toContain("text-[color:var(--color-text-inverse)]");
     expect(markup).toContain("text-[length:var(--text-body-sm)]");
     expect(markup.match(/data-image-fallback/g)).toHaveLength(1);
+    expect(markup).not.toContain(">Before you book</p>");
+    expect(markup).not.toContain(">Browse by city</p>");
+    expect(markup).not.toContain(">For hostel owners</p>");
+  });
+
+  it("does not prioritize hostel cards rendered below the hero", async () => {
+    mockedAuth.mockResolvedValue(null);
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: Array.from({ length: 7 }, (_, index) => ({
+          id: `hostel-${index}`,
+          name: `Hostel ${index}`,
+          coverImage: "/room.jpg",
+          images: [],
+          verified: false,
+          area: "Gulberg",
+          city: "Lahore",
+          pricePerMonth: 12000,
+        })),
+      }),
+    });
+
+    const markup = renderToStaticMarkup(await HomePage());
+
+    expect(markup.match(/data-priority="high"/g)).toBeNull();
+    expect(markup.match(/data-priority="auto"/g)).toHaveLength(6);
   });
 });

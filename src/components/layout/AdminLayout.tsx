@@ -19,6 +19,7 @@ import {
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
 import { Logo } from "@/components/Logo";
+import { WorkspaceMobileNav, type WorkspaceNavItem } from "./WorkspaceMobileNav";
 
 const NAV_ITEMS = [
   { href: "/admin",              label: "Dashboard",    icon: LayoutDashboard },
@@ -64,6 +65,15 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
                 : pageTitle === "Roommate reports"
                   ? "Review community reports and resolve unsafe posts."
                   : "Rebuild the search index after listing changes.";
+  const mobileNavItems: WorkspaceNavItem[] = NAV_ITEMS.map((item) => ({
+    ...item,
+    badge:
+      item.href === "/admin/listings"
+        ? pendingCount
+        : item.href === "/admin/verifications"
+          ? verificationCount
+          : undefined,
+  }));
 
   return (
     <div className="admin-shell flex min-h-dvh bg-[var(--color-bg-page)]">
@@ -145,16 +155,16 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
       {/* -- Main content ---------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="admin-topbar sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
-          <h1 className="min-w-0 flex-1 truncate text-[length:var(--text-h5)] font-[800] tracking-[-0.03em] text-[color:var(--color-text-heading)]">
-            {pageTitle}
-          </h1>
+          <Logo size="compact" className="shrink-0 md:hidden" />
+          <div className="flex-1" />
           <div className="flex shrink-0 items-center gap-1">
             <NotificationBell />
             <AccountMenu />
+            <WorkspaceMobileNav items={mobileNavItems} label="Admin" />
           </div>
         </header>
 
-        <main className="admin-main flex-1 p-4 md:p-6 pb-20 md:pb-6" id="main-content">
+        <main className="admin-main flex-1 p-4 md:p-6" id="main-content">
           <header className="admin-page-masthead">
             <div className="admin-page-overline"><span>HOSTELLO · OPERATIONS DESK</span><span>REVIEW / 0{Math.max(1, NAV_ITEMS.findIndex((item) => item.href === currentNav?.href) + 1)}</span></div>
             <h2>{pageTitle}</h2>
@@ -164,37 +174,6 @@ export function AdminLayout({ children, pendingCount, verificationCount }: Admin
         </main>
       </div>
 
-      {/* -- Mobile navigation ---------------------------------- */}
-      <nav
-        className="admin-mobile-nav fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)] md:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        aria-label="Mobile admin navigation"
-      >
-        <div className="flex min-w-max overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const isActive =
-              href === "/admin"
-                ? pathname === href
-                : pathname.startsWith(href);
-
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-                className={`flex min-w-[76px] shrink-0 flex-col items-center justify-center gap-1 px-2 py-2.5 text-[length:var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
-                  isActive
-                    ? "text-[color:var(--color-primary)]"
-                    : "text-[color:var(--color-text-muted)]"
-                }`}
-              >
-                <Icon size={19} strokeWidth={1.5} aria-hidden="true" />
-                <span className="whitespace-nowrap">{label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
     </div>
   );
 }

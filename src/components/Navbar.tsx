@@ -2,6 +2,7 @@
 
 // Path: src/components/Navbar.tsx
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,15 +16,14 @@ import {
   CalendarDays,
   ShieldCheck,
   RefreshCw,
-  MapPin,
-  ChevronDown,
+  Menu,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "./layout/NotificationBell";
 import { AccountMenu } from "./layout/AccountMenu";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
-import { CitySelector } from "./layout/CitySelector";
 import { Suspense } from "react";
 
 type Role = "STUDENT" | "OWNER" | "ADMIN";
@@ -36,7 +36,7 @@ type MobileTab = {
 
 const PUBLIC_TABS: MobileTab[] = [
   { href: "/hostels", label: "Search", icon: Search },
-  { href: "/login", label: "Account", icon: User },
+  { href: "/login", label: "Sign in", icon: User },
 ];
 
 const STUDENT_TABS: MobileTab[] = [
@@ -77,46 +77,12 @@ function isActiveTab(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-function MobileTabBar() {
-  const pathname = usePathname();
-  const { data: session, status } = useSession();
-  const role = status === "authenticated" ? (session?.user.role as Role) : null;
-  const tabs = tabsForRole(role);
-
-  return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] shadow-[0_-8px_24px_rgba(0,0,0,0.04)] md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      aria-label="Mobile navigation"
-    >
-      <div className="flex gap-1 px-2 py-2">
-        {tabs.map(({ href, label, icon: Icon }) => {
-          const isActive = isActiveTab(pathname, href);
-
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] px-2 py-2.5 text-[10px] font-[600] transition-all duration-[var(--transition-fast)] ${
-                isActive
-                  ? "bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)] shadow-[inset_0_0_0_1px_var(--color-primary-light)]"
-                  : "text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-sidebar)]"
-              }`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
-              {label}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 export function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const role = session?.user.role as Role | undefined;
+  const mobileTabs = tabsForRole(role);
 
   const navItems = [
     { href: "/about", label: "About" },
@@ -133,26 +99,8 @@ export function Navbar() {
         <div className="container-app flex h-[72px] items-center gap-3 md:gap-4">
           <Logo />
 
-          {/* Search cluster: city selector + search trigger, the nav's
-              compact/collapsed form of search on every page. The full
-              interactive hero search (Day 6) is homepage-only and will
-              collapse into this same pill on scroll. */}
           <div className="flex flex-1 items-center justify-center">
             <div className="hidden items-center gap-2 md:flex">
-              <Suspense
-                fallback={
-                  <div
-                    aria-hidden="true"
-                    className="flex h-10 w-32 items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] px-3 text-[length:var(--text-body-sm)] font-[500] text-[color:var(--color-text-muted)]"
-                  >
-                    <MapPin size={14} strokeWidth={1.5} className="shrink-0 text-[color:var(--color-primary)]" />
-                    <span className="max-w-[100px] truncate">All cities</span>
-                    <ChevronDown size={12} strokeWidth={1.5} className="shrink-0" />
-                  </div>
-                }
-              >
-                <CitySelector />
-              </Suspense>
               <Link
                 href="/hostels"
                 className="flex items-center gap-2 rounded-[var(--radius-full)] border border-[var(--color-border-default)] bg-[var(--color-bg-card)] py-2 pl-2 pr-4 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] transition-shadow duration-[var(--transition-fast)] hover:shadow-[var(--shadow-sm)] hover:text-[color:var(--color-text-heading)]"
@@ -191,6 +139,21 @@ export function Navbar() {
             </Button>
           </div>
 
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-text-body)] hover:bg-[var(--color-bg-overlay)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] md:hidden"
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+          >
+            {isMobileMenuOpen ? (
+              <X size={20} strokeWidth={1.75} aria-hidden="true" />
+            ) : (
+              <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+            )}
+          </button>
+
           {session && (
             <Suspense fallback={null}>
               <NotificationBell />
@@ -199,9 +162,94 @@ export function Navbar() {
 
           <AccountMenu />
         </div>
-      </header>
 
-      <MobileTabBar />
+        <nav
+          id="mobile-navigation-menu"
+          className={`${isMobileMenuOpen ? "block" : "hidden"} absolute inset-x-0 top-full z-50 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-page)] shadow-[var(--shadow-lg)] md:hidden`}
+          aria-label="Mobile navigation"
+        >
+          <div className="container-app space-y-4 py-4">
+            <section aria-labelledby="mobile-primary-navigation-heading">
+              <h2
+                id="mobile-primary-navigation-heading"
+                className="mb-2 px-1 text-[length:var(--text-body-xs)] font-[600] uppercase tracking-[0.12em] text-[color:var(--color-text-muted)]"
+              >
+                Quick links
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {mobileTabs.map(({ href, label, icon: Icon }) => {
+                  const isActive = isActiveTab(pathname, href);
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`group flex min-h-14 items-center gap-3 rounded-[var(--radius-lg)] border p-3 text-[length:var(--text-body-sm)] font-[600] transition-colors ${
+                        isActive
+                          ? "border-[var(--color-primary-light)] bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)]"
+                          : "border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] text-[color:var(--color-text-body)] hover:border-[var(--color-border-default)] hover:bg-[var(--color-bg-sidebar)]"
+                      }`}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      <span
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] ${
+                          isActive
+                            ? "bg-[var(--color-bg-card)] text-[color:var(--color-primary)]"
+                            : "bg-[var(--color-bg-sidebar)] text-[color:var(--color-text-muted)] group-hover:text-[color:var(--color-primary)]"
+                        }`}
+                      >
+                        <Icon size={17} strokeWidth={1.75} aria-hidden="true" />
+                      </span>
+                      <span className="min-w-0 truncate">{label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+            <section
+              aria-labelledby="mobile-more-navigation-heading"
+              className="border-t border-[var(--color-border-subtle)] pt-3"
+            >
+              <h2
+                id="mobile-more-navigation-heading"
+                className="mb-2 px-1 text-[length:var(--text-body-xs)] font-[600] uppercase tracking-[0.12em] text-[color:var(--color-text-muted)]"
+              >
+                More
+              </h2>
+              <div className="grid grid-cols-3 gap-1">
+                {navItems.map(({ href, label }) => {
+                  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`rounded-[var(--radius-md)] px-3 py-2.5 text-center text-[length:var(--text-body-sm)] font-[500] transition-colors ${
+                        isActive
+                          ? "bg-[var(--color-primary-faint)] text-[color:var(--color-primary-deep)]"
+                          : "text-[color:var(--color-text-muted)] hover:bg-[var(--color-bg-sidebar)] hover:text-[color:var(--color-text-heading)]"
+                      }`}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+              <Link
+                href="/list-your-hostel"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-full)] bg-[var(--color-primary)] px-4 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-dark)]"
+              >
+                <Building2 size={17} strokeWidth={1.75} aria-hidden="true" />
+                List your hostel
+              </Link>
+            </section>
+          </div>
+        </nav>
+      </header>
     </>
   );
 }

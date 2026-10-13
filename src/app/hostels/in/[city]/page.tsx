@@ -86,7 +86,7 @@ export async function generateMetadata({
 
   return {
     title:       `Student Hostels in ${city} — HostelLo`,
-    description: `Browse ${count > 0 ? `${count}+ ` : ""}verified student hostels in ${city}. Compare prices, amenities, and book online. Male, female, and mixed options available.`,
+    description: `Browse ${count > 0 ? `${count}+ ` : ""}verified student hostels in ${city}. View prices and amenities, then request a booking online. Male, female, and mixed options available.`,
     keywords:    [
       `hostels in ${city}`,
       `student hostel ${city}`,
@@ -160,28 +160,28 @@ function CityJsonLd({
 }
 
 /* ── FAQ items per city ───────────────────────────────────── */
-function getCityFaqs(city: string, count: number) {
+function getCityFaqs(city: string) {
   const unis = UNIVERSITIES.filter((u) => u.city === city);
   const topUni = unis[0]?.shortName ?? "local universities";
 
   return [
     {
       q: `How much does a student hostel in ${city} cost?`,
-      a: `Student hostel prices in ${city} typically range from Rs. 5,000 to Rs. 20,000 per month depending on room type, amenities, and proximity to universities. HostelLo lists verified options across this range.`,
+      a: `Rent depends on the hostel and room. Check the monthly price on each listing, and contact the owner to confirm what is included.`,
     },
     {
       q: `Are there girls-only hostels in ${city}?`,
-      a: `Yes. HostelLo lists female-only, male-only, and mixed hostels in ${city}. Use the gender filter on the search page to see only girls' hostels.`,
+      a: `Use the links above to view listings marked female-only. Availability depends on the listings currently shown for ${city}.`,
     },
     {
       q: `Which areas in ${city} have hostels near ${topUni}?`,
       a: unis.length > 0
-        ? `Hostels are commonly found near ${unis.slice(0, 3).map((u) => u.area ?? u.city).filter(Boolean).join(", ")} where ${unis.slice(0, 3).map((u) => u.shortName).join(", ")} are located. Filter by area on the search page.`
-        : `Hostels are typically located near the main university districts of ${city}. Use the search to filter by area.`,
+        ? `Browse the university links below to see listings matching ${unis.slice(0, 3).map((u) => u.shortName).join(", ")} and their listed areas. Check each hostel's location to see how close it is.`
+        : `Search hostels in ${city} by area, then check each listing's location to see how close it is to your university.`,
     },
     {
       q: `How do I book a hostel in ${city} on HostelLo?`,
-      a: `Browse ${count > 0 ? `${count} ` : ""}verified hostels on this page, open a listing to view photos and details, then click "Request booking". The owner is notified and you receive email confirmation.`,
+      a: `Open a listing to review its photos, location, and room details. If it suits you, choose "Request booking" and follow the steps shown.`,
     },
   ];
 }
@@ -202,7 +202,7 @@ export default async function CityLandingPage({
   ]);
 
   const cityUniversities = UNIVERSITIES.filter((u) => u.city === city);
-  const faqs             = getCityFaqs(city, count);
+  const faqs             = getCityFaqs(city);
   const APP_URL          = getAppUrl();
 
   return (
@@ -214,8 +214,8 @@ export default async function CityLandingPage({
       <section className="city-field-hero border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-raised)]">
         <div className="container-app py-8 md:py-12">
           <div className="city-field-topline">
-            <span>HOSTELLO FIELD GUIDE</span>
-            <span>CITY INDEX / PAKISTAN</span>
+            <span>HOSTELLO</span>
+            <span>HOSTELS IN PAKISTAN</span>
           </div>
           <div className="editorial-breadcrumb flex items-center gap-2 mb-5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
             <Link href="/hostels" className="hover:text-[color:var(--color-text-body)] transition-colors">
@@ -231,7 +231,7 @@ export default async function CityLandingPage({
               <h1 className="city-field-title">Student hostels in {city}</h1>
               <p className="city-field-description">
                 {count > 0
-                  ? `${count} verified hostel${count !== 1 ? "s" : ""} to compare by price, amenities, and location.`
+                  ? `${count} hostel${count !== 1 ? "s" : ""} listed. View rent, amenities, and location details.`
                   : "Be the first hostel listed in this city."}
               </p>
             </div>
@@ -265,7 +265,7 @@ export default async function CityLandingPage({
         </div>
       </section>
 
-      <div className="container-app py-10 space-y-16">
+      <div className="container-app max-w-[1720px] py-10 space-y-16">
 
         {/* ── Hostel grid ─────────────────────────────────── */}
         <section aria-labelledby="hostels-heading">
@@ -311,7 +311,7 @@ export default async function CityLandingPage({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 min-[1920px]:grid-cols-6">
                 {hostels.map((hostel) => (
                   <HostelCard key={hostel.id} hostel={hostel} />
                 ))}
@@ -355,7 +355,7 @@ export default async function CityLandingPage({
               </h2>
             </div>
             <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] mb-5 max-w-[600px]">
-              HostelLo lists hostels near all major universities in {city}. Click a university to see hostels in that area.
+              Choose a university to see listings matching its area. Check each listing for its location and distance.
             </p>
             <div className="flex flex-wrap gap-2">
               {cityUniversities.map((uni) => (

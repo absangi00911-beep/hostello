@@ -7,26 +7,26 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 export const metadata = {
   title: "About HostelLo",
   description:
-    "Learn how HostelLo helps students find verified hostels and helps owners reach the right residents.",
+    "HostelLo helps students in Pakistan find hostel listings and helps owners share their rooms with prospective residents.",
 };
 
 const VALUES = [
   {
     title: "Built for students",
     description:
-      "Search by city, price, gender, amenities, and nearby universities so you can compare options that fit your life.",
+      "Search by city, rent, gender, amenities, and nearby universities. Review listing details before contacting an owner.",
     icon: Users,
   },
   {
-    title: "Trust comes first",
+    title: "Clear listing details",
     description:
-      "Verified listings, transparent details, and reviews help you make a more confident decision before booking.",
+      "Listings marked as verified have been reviewed by our team. Check the photos, room details, and reviews, and ask the owner about anything unclear.",
     icon: ShieldCheck,
   },
   {
-    title: "Better connections",
+    title: "Contact hostel owners",
     description:
-      "We bring students and hostel owners together through a simpler, more reliable booking experience.",
+      "Students can contact hostel owners and submit booking requests through HostelLo.",
     icon: CheckCircle2,
   },
 ];
@@ -42,12 +42,12 @@ export default function AboutPage() {
               About HostelLo
             </p>
             <h1 className="about-field-title max-w-[720px] text-[color:var(--color-text-heading)]">
-              Finding a place to live should feel simple.
+              Find student hostels in Pakistan.
             </h1>
             <p className="about-field-description mt-5 max-w-[620px] text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
-              HostelLo is a student accommodation marketplace for Pakistan. We
-              help students discover suitable hostels and help owners connect
-              with residents who are ready to find their next home.
+              HostelLo is a directory where students can find hostel
+              listings by city, rent, location, and amenities. Hostel owners
+              can add their rooms and contact details for students to review.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -65,8 +65,8 @@ export default function AboutPage() {
             <aside className="about-field-note" aria-label="HostelLo's guiding idea">
               <div className="about-note-sun" aria-hidden="true"><span>01</span></div>
               <div className="about-note-content">
-                <p className="about-note-kicker">OUR POINT OF VIEW</p>
-                <p className="about-note-phrase">Make room<br />for what&apos;s next.</p>
+                  <p className="about-note-kicker">WHAT YOU CAN DO</p>
+                  <p className="about-note-phrase">Find a room.<br />Contact owners.</p>
                 <div className="about-note-colophon">
                   <span>STUDENTS · OWNERS · PAKISTAN</span>
                   <span>HOSTELLO / PAKISTAN</span>
@@ -80,20 +80,19 @@ export default function AboutPage() {
           <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:gap-16">
             <div>
               <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
-                A clearer way to choose your next hostel
+                Find a hostel
               </h2>
             </div>
             <div className="space-y-4 text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-body)]">
               <p>
-                Moving to a new city for university is a major step. HostelLo
-                gives students one place to compare accommodation details,
-                understand their options, and begin a booking request online.
+                Moving for university means finding a place to stay. HostelLo
+                lets students browse hostel listings, check prices and
+                amenities, and send a booking request online.
               </p>
               <p>
-                Our goal is to make the process more transparent for everyone:
-                students can search with useful information, while owners can
-                present their properties to the people they are best equipped
-                to serve.
+                Owners can add room information, prices, photos, and contact
+                details. Students can review those details and contact the
+                hostel directly through the site.
               </p>
             </div>
           </div>
@@ -130,14 +129,14 @@ export default function AboutPage() {
 
         <section className="about-final-cta container-app py-12 text-center md:py-16">
           <h2 className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]">
-            Ready to find your place?
+            Looking for a hostel?
           </h2>
           <p className="mx-auto mt-3 max-w-[520px] text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">
-            Browse verified hostels and start comparing options in your city.
+            Browse hostel listings and review the details in your city.
           </p>
           <Button asChild size="lg" className="mt-6">
             <Link href="/hostels">
-              Start exploring
+              Browse hostels
               <ArrowRight size={16} strokeWidth={1.8} aria-hidden="true" />
             </Link>
           </Button>

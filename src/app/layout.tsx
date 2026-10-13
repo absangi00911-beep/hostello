@@ -1,12 +1,17 @@
 // Path: src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
+import {
+  Archivo_Narrow,
+  Plus_Jakarta_Sans,
+  Inter,
+  JetBrains_Mono,
+  Tenor_Sans,
+} from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { twMerge } from "tailwind-merge";
 
-// The app keeps its sans faces for controls and body copy. Editorial display
-// headlines use a system serif stack from globals.css to avoid another font fetch.
+// Keep a rounded UI sans and readable body face alongside the editorial display pair.
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta-sans",
@@ -28,6 +33,20 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const archivoNarrow = Archivo_Narrow({
+  subsets: ["latin"],
+  variable: "--font-archivo-narrow",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const tenorSans = Tenor_Sans({
+  subsets: ["latin"],
+  variable: "--font-tenor-sans",
+  weight: "400",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://hostello.pk"),
   title: {
@@ -35,7 +54,7 @@ export const metadata: Metadata = {
     template: "%s | HostelLo",
   },
   description:
-    "Find your desired hostel in Pakistan with HostelLo. Browse listings, compare prices, and book your seat online.",
+    "Find a hostel in Pakistan with HostelLo. Browse listings, view prices, and request a booking online.",
 };
 
 export const viewport: Viewport = {
@@ -51,9 +70,11 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className="relative"
+      className={twMerge(
+        `relative ${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} ${archivoNarrow.variable} ${tenorSans.variable}`
+      )}
     >
-      <body className={twMerge(`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`)}>
+      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
