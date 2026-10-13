@@ -78,6 +78,10 @@ describe('globals.css', () => {
     expect(readGlobalsCss()).not.toMatch(/oklch\(/i);
   });
 
+  it('uses the display typeface for page-level headings', () => {
+    expect(readGlobalsCss()).toMatch(/h1\s*\{\s*font-family:\s*var\(--font-display\)/);
+  });
+
   it('keeps accent controls, links, and placeholders readable in both color schemes', () => {
     const css = readGlobalsCss();
     const themes = [readThemeTokens(css, ':root'), readThemeTokens(css, '.dark')];

@@ -67,7 +67,7 @@ export default function ReportPage() {
               />
             </div>
             <h1
-              className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
+              className="text-[length:var(--text-h2)] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 
             >
               Report an issue

@@ -145,7 +145,7 @@ export default function PaymentPage() {
       {/* Heading */}
       <div className="mb-6">
         <h1
-          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)] mb-1"
+          className="text-[length:var(--text-h3)] text-[color:var(--color-text-heading)] mb-1"
 
         >
           Choose payment method

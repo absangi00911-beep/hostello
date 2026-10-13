@@ -117,7 +117,7 @@ export default function ConfirmationPage() {
             </span>
           </div>
           <h1
-            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
+            className="text-[length:var(--text-h3)] text-[color:var(--color-text-heading)]"
 
           >
             Booking cancelled
@@ -166,7 +166,7 @@ export default function ConfirmationPage() {
             aria-hidden="true"
           />
           <h1
-            className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)]"
+            className="text-[length:var(--text-h3)] text-[color:var(--color-text-heading)]"
 
           >
             Confirming your payment…
@@ -222,7 +222,7 @@ export default function ConfirmationPage() {
 
           <div>
             <h1
-              className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] mb-2"
+              className="text-[length:var(--text-h2)] text-[color:var(--color-text-heading)] mb-2"
 
             >
               {isConfirmed ? "Booking confirmed" : "Payment received"}

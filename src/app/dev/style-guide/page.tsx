@@ -87,12 +87,12 @@ export default function StyleGuidePage() {
         </div>
 
         <section className="space-y-4">
-          <SectionHeading>Typography — Plus Jakarta Sans + Inter</SectionHeading>
+          <SectionHeading>Typography — Tenor Sans + Plus Jakarta Sans + Inter</SectionHeading>
           <div className="space-y-3 border border-subtle rounded-lg p-6 bg-card">
             <p
               aria-hidden="true"
-              className="font-heading text-[color:var(--color-text-heading)]"
-              style={{ fontSize: "var(--text-h1)", fontWeight: 800, letterSpacing: "-0.02em" }}
+              className="font-display text-[color:var(--color-text-heading)]"
+              style={{ fontSize: "var(--text-h1)", fontWeight: 400, letterSpacing: "-0.04em" }}
             >
               Find your next place, sorted.
             </p>

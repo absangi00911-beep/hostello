@@ -14,8 +14,9 @@ export default function GlobalError({
         style={{
           margin:          0,
           minHeight:       "100dvh",
-          background:      "#f8f9fa",
-          fontFamily:      "system-ui, -apple-system, sans-serif",
+          background:      "var(--color-bg-page, #f6f2eb)",
+          color:           "var(--color-text-body, #303936)",
+          fontFamily:      "var(--font-body, system-ui, -apple-system, sans-serif)",
           display:         "flex",
           flexDirection:   "column",
           alignItems:      "center",
@@ -27,8 +28,8 @@ export default function GlobalError({
         <p
           style={{
             fontSize:    "clamp(60px, 14vw, 96px)",
-            fontWeight:  800,
-            color:       "#ff6b6b",
+            fontWeight:  700,
+            color:       "var(--color-primary, #0066ff)",
             lineHeight:  1,
             marginBottom: "1.5rem",
             letterSpacing: "-0.04em",
@@ -40,9 +41,11 @@ export default function GlobalError({
 
         <h1
           style={{
+            fontFamily:  "var(--font-display, system-ui, sans-serif)",
             fontSize:    "1.5rem",
-            fontWeight:  600,
-            color:       "#191c1d",
+            fontWeight:  400,
+            color:       "var(--color-text-heading, #222b29)",
+            letterSpacing: "-0.03em",
             marginBottom: "0.75rem",
           }}
         >
@@ -52,7 +55,7 @@ export default function GlobalError({
         <p
           style={{
             fontSize:   "0.9375rem",
-            color:      "#584140",
+            color:      "var(--color-text-muted, #626a65)",
             maxWidth:   "36ch",
             lineHeight: 1.65,
             marginBottom: "2rem",
@@ -66,10 +69,10 @@ export default function GlobalError({
           style={{
             height:        "2.75rem",
             padding:       "0 1.5rem",
-            borderRadius:  "8px",
+            borderRadius:  "var(--radius-md, 10px)",
             border:        "none",
-            background:    "#ae2f34",
-            color:         "#ffffff",
+            background:    "var(--color-action, #0052cc)",
+            color:         "var(--color-text-inverse, #fffaf3)",
             fontSize:      "0.9375rem",
             fontWeight:    500,
             cursor:        "pointer",

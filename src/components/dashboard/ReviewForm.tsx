@@ -136,7 +136,7 @@ export function ReviewForm({ booking, existingReview }: ReviewFormProps) {
         Back to Bookings
       </Link>
 
-      <h1 className="student-review-heading mt-3 font-heading text-[length:var(--text-h1)] font-[800] text-[color:var(--color-text-heading)]">
+      <h1 className="student-review-heading mt-3 text-[length:var(--text-h1)] text-[color:var(--color-text-heading)]">
         {existingReview ? "Edit Your Review" : "Leave a Review"}
       </h1>
       <p className="mt-1 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
