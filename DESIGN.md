@@ -1,16 +1,15 @@
 # DESIGN.md — Web Design System
 
-**Status:** design foundation recreated September 2026 and updated October 7,
+**Status:** design foundation recreated September 2026 and updated October 12,
 2026. Project rollout priorities and release gates are in
 `docs/superpowers/plans/2026-10-05-project-completion-plan.md`. The earlier
 September 15 chunk-by-chunk tracker is not present in this repository. This file had gone missing —
 `PROJECT_STRUCTURE.md` flagged it as "confirmed gone, not yet recreated."
-This documents the *current* system, which supersedes the terracotta/teal
-direction from `docs/superpowers/specs/2026-07-11-design-foundations.md`.
+This documents the current system, which supersedes the earlier palettes and
+typography documented in the design-foundations specification.
 
-**Scope:** web (`src/`) only. Native mobile has its own doc, `DESIGN_MOBILE.md`
-— also gone, not yet recreated, out of scope until the redesign reaches
-Phase 13 (mobile).
+**Scope:** web pages and transactional emails in `src/`. The native mobile app
+has its own design system.
 
 **Keeping this current:** update this file at the end of a redesign session,
 not mid-session, and only once a chunk is actually done — the same discipline
@@ -39,11 +38,20 @@ Four principles drive every token and component below:
    than fighting them for attention on top. If a remote photo fails, keep its
    frame and show a muted room-scene illustration so the layout never leaves
    an empty image block.
-3. **One type family.** Headline weight comes from size and weight, not a
-   second display face.
+3. **A restrained type system.** Tenor Sans is reserved for expressive
+   display moments; Plus Jakarta Sans and Inter keep page headings and body
+   copy readable and consistent.
 4. **Elevation is earned.** No shadow by default. A shadow means something
    is actually floating above the page (a hover state, a modal, an open
    sheet) — not "this is a card."
+
+### Listing grids
+
+Hostel listing grids show two cards per row on mobile and four on tablet.
+Narrow desktop layouts fall back to three columns; wider desktop layouts use
+four, expanding to six only on wide 1920px+ displays where cards retain
+enough room for listing details. Search-map split view stays at two columns
+so cards remain readable beside the map.
 
 ---
 
@@ -53,35 +61,35 @@ Four principles drive every token and component below:
 
 | Token | Value | Use |
 |---|---|---|
-| `--color-primary` / `--color-action` | `#c7334a` | Primary buttons, links, focus rings, prices, the active favorite-heart |
-| `--color-primary-dark` / `--color-action-dark` | `#b52f44` | Hover |
-| `--color-primary-deep` / `--color-action-pressed` | `#7a1f2e` | Pressed state, high-contrast accent text |
-| `--color-primary-light` | `#f7b8c2` | Soft accent surface (e.g. rating badge) |
-| `--color-primary-faint` / `--color-action-light` | `#fdf0f1` | Faint accent surface (selected chip, badge fill) |
+| `--color-primary` | Digital blue 500 (`#0066ff`) | Brand accent and focus rings |
+| `--color-action` | Digital blue 600 (`#0052cc`) | Primary buttons and calls to action |
+| `--color-primary-deep` | Digital blue 700 (`#003d99`) | High-contrast accent text and active navigation |
+| `--color-primary-light` | Digital blue 100 (`#cce0ff`) | Soft accent surface |
+| `--color-primary-faint` | Digital blue 50 (`#e5f0ff`) | Selected chips and subtle accent fills |
 
-Deliberately a different hue from Airbnb's own Rausch (`#FF385C`) — same
-warmth and weight, distinct enough that this isn't a literal reskin. The
-accent stays in the same coral family, with a darker light-theme value so
-text and controls pass WCAG AA contrast. Accent surfaces use the theme-aware
-`--color-text-inverse` foreground, including in dark mode. The token contrast
-regression in `src/app/globals.test.ts` checks both themes.
+The complete Digital Blue OKLCH scale is defined in `globals.css`. Keep
+backgrounds warm and neutral; reserve blue for actions, links, focus states,
+and selected items. Email-safe hex equivalents are centralized in
+`src/lib/email-templates/layout.ts` because many email clients do not reliably
+support modern color syntax.
 
 ### Neutrals
 
 | Token | Value | Use |
 |---|---|---|
-| `--color-bg-page` | `#fafafa` | Page background — a hair off pure white, just enough for cards to lift off it |
-| `--color-bg-card` | `#ffffff` | Cards and surfaces |
-| `--color-bg-sidebar` | `#f7f7f7` | Sidebars, subtle sections |
-| `--color-bg-raised` | `#f2f2f2` | Elevated blocks |
-| `--color-bg-overlay` | `#ebebeb` | Image-loading placeholders, overlays |
-| `--color-text-heading` / `--color-text-body` | `#222222` | Airbnb's classic near-black — both headings and body use it, undifferentiated |
-| `--color-text-muted` | `#686868` | Metadata rows ("2 guests · 1 bedroom"), secondary copy |
-| `--color-text-placeholder` | `#686868` | Input placeholders; AA contrast on card and sidebar surfaces |
-| `--color-text-disabled` | `#c7c7c7` | Disabled content |
-| `--color-border-default` | `#dddddd` | Standard borders |
-| `--color-border-strong` | `#b0b0b0` | Inputs, stronger dividers |
-| `--color-border-subtle` | `#ebebeb` | Quiet card/section borders |
+| `--color-bg-page` | `#f6f2eb` | Warm paper page background |
+| `--color-bg-card` | `#fffdf8` | Cards and raised surfaces |
+| `--color-bg-sidebar` | `#f0eae0` | Sidebars and subtle sections |
+| `--color-bg-raised` | `#e9e1d6` | Raised neutral blocks |
+| `--color-bg-overlay` | `#e6ddd1` | Placeholders and overlays |
+| `--color-text-heading` | `#222b29` | Headings and strong text |
+| `--color-text-body` | `#303936` | Default paragraph copy |
+| `--color-text-muted` | `#626a65` | Metadata and secondary copy |
+| `--color-text-placeholder` | `#626a65` | Input placeholders |
+| `--color-text-disabled` | `#c7c0b5` | Disabled content |
+| `--color-border-default` | `#ddd4c7` | Standard borders |
+| `--color-border-strong` | `#b8aa98` | Inputs and stronger dividers |
+| `--color-border-subtle` | `#e9e1d7` | Quiet card and section borders |
 
 The legacy secondary and tertiary brand aliases were removed after the
 owner/admin redesign. Use neutral surface tokens such as `--color-bg-raised`
@@ -92,29 +100,27 @@ brand actions and the semantic tokens below for status.
 ### Semantic — unchanged
 
 `--color-error` (`#ba1a1a`), `--color-success` (`#006a65`), `--color-warning`
-(`#8a5a00`), `--color-info` (`#3b6e9e`) — each with a `-bg` and `-text`
-pairing. Inherited as-is from the original spec; not part of the Airbnb
-re-skin, since status colors are functional, not brand. `StatusBadge` in
-`shared.tsx` maps booking/payment/verification states onto these.
+(`#8a5a00`), and `--color-info` (`#3b6e9e`) each have `-bg` and `-text`
+pairings. Status colors remain semantic rather than being replaced with the
+brand accent. `StatusBadge` in `shared.tsx` maps booking/payment/verification
+states onto these.
 
 ### Dark mode
 
-Fully re-valued in parallel — same token names, same relative relationships
-(hover lighter than base, deep lighter still, faint darkest), inverted for
-dark surfaces. The dark inverse foreground is `#151515`, and placeholder
-text is `#a8a8a8`. `globals.css`'s `.dark` block is the source of truth;
-nothing extra to opt into, `next-themes` (or whatever's toggling the `dark`
-class) picks it up automatically.
+Dark mode uses the same warm-paper relationships adapted for low-light
+surfaces, with lighter blue accents and accessible text contrast.
+`globals.css`'s `.dark` block is the source of truth.
 
 ---
 
 ## Typography
 
-**Plus Jakarta Sans** (headings) + **Inter** (body), replacing the old
-Fraunces/Be Vietnam Pro pairing — Airbnb's actual typeface (Cereal) is
-proprietary, these are free variable-font substitutes with a similar
-geometric warmth. Both load via `next/font/google` in `src/app/layout.tsx`.
-**JetBrains Mono** is unchanged, for reference codes and the odd code block.
+**Tenor Sans** is used for prominent display headlines, with **Plus Jakarta
+Sans** for interface headings and **Inter** for body text. **Archivo Narrow**
+is reserved for selected short labels; **JetBrains Mono** remains for
+reference codes and code-like details. Web fonts load through `next/font` in
+`src/app/layout.tsx`. Email uses system sans-serif fallbacks because external
+web fonts are not reliable across email clients.
 
 | Token | Size | Typical use |
 |---|---|---|
@@ -141,12 +147,27 @@ whichever pattern the surrounding file already uses.
 Weight scale (unchanged from the original spec, just riding the new
 typeface): h1 800, h2/h3/h4 700, h5/h6 600.
 
+## Page and email consistency
+
+Public pages and student, owner, and admin workspaces can keep their own
+navigation and content hierarchy, but should use the same color, typography,
+spacing, surface, and focus-state tokens. On narrow screens, workspace
+navigation belongs in the top header menu rather than a fixed bottom bar.
+Dashboard overview pages use responsive bento grids to prioritize pending work
+while keeping secondary metrics and queues easy to scan.
+
+Transactional emails use the same blue-and-warm-neutral palette through
+`emailTheme` in `src/lib/email-templates/layout.ts`. Keep styles inline and
+use email-safe hex values and system font fallbacks for client compatibility.
+Semantic status colors (such as success and error) remain distinct from the
+brand accent.
+
 ---
 
 ## Spacing, radius, shadow, motion
 
 Spacing (`--space-1` through `--space-32`, 4px base) and the timing tokens
-(`--transition-fast` 100ms through `--transition-slow` 350ms, plus
+(`--transition-fast` 140ms through `--transition-slow` 420ms, plus
 `--ease-out-quart` / `--ease-in-quart` / `--ease-standard`) are **unchanged**
 from the original spec — a spacing rhythm isn't really a "brand" decision,
 and the existing scale doesn't clash with Airbnb's language.
@@ -156,10 +177,10 @@ Radius and shadow did change:
 | Token | Value | Note |
 |---|---|---|
 | `--radius-sm` | 4px | Chips, small badges — unchanged |
-| `--radius-md` | 8px | Buttons, inputs — unchanged |
-| `--radius-lg` | 12px | Cards — unchanged, already matched Airbnb's card radius |
-| `--radius-xl` | 16px | Larger containers — unchanged |
-| `--radius-brand` | 16px | **Was 24px.** Hero moments only; tightened for Airbnb's restraint |
+| `--radius-md` | 10px | Buttons and inputs |
+| `--radius-lg` | 16px | Cards and panels |
+| `--radius-xl` | 22px | Larger containers |
+| `--radius-brand` | 28px | Hero moments |
 | `--radius-full` | 9999px | Pills, avatars, circular buttons |
 | `--shadow-xs` → `--shadow-xl` | see `globals.css` | Tighter blur radius, lower opacity than before — a defined lift instead of a diffuse glow. Shadow appears on hover/open state, not by default (see Card, below) |
 
