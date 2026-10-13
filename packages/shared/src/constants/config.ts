@@ -12,9 +12,6 @@ export const PRIVACY_EMAIL = "privacy@hostello.pk";
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 50;
 
-// Compare
-export const MAX_COMPARE_ITEMS = 3;
-
 // Booking constraints
 export const MIN_BOOKING_MONTHS = 1;
 export const MAX_BOOKING_MONTHS = 24;

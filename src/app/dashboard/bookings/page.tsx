@@ -406,7 +406,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="student-dashboard-bento">
         <StatCard icon={BookOpen} label="Upcoming Stays" value={upcoming.length} accent />
         <StatCard icon={CheckCircle2} label="Completed" value={completed.length} />
         <StatCard icon={Wallet} label="Total Spent" value={formatPKR(totalSpent)} />

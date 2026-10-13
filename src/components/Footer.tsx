@@ -38,7 +38,7 @@ export function Footer() {
 
   return (
     <footer
-      className="hidden border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] md:block"
+      className="block border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)]"
       aria-label="Site footer"
     >
       <div className="container-app py-14 md:py-20">
@@ -47,11 +47,11 @@ export function Footer() {
           <div className="space-y-5">
             <Logo className="[&>span]:text-[color:var(--color-text-heading)]" />
             <p className="max-w-[280px] font-display text-[length:var(--text-h3)] leading-tight tracking-[-0.02em] text-[color:var(--color-text-heading)]">
-              Find your room.<br />
-              Not a phone number.
+              Find hostels<br />
+              near your campus.
             </p>
             <p className="text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
-              Verified student hostels, clear monthly prices, and a simpler way to move closer to campus.
+              View rent, location, photos, and amenities before contacting a hostel.
             </p>
             <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
               Pakistan only · Prices in PKR

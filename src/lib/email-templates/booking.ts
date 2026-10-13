@@ -1,7 +1,7 @@
 // Path: src/lib/email-templates/booking.ts
 
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailRow } from "./layout";
+import { emailLayout, emailButton, emailRow, emailTheme } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface BookingEmailProps {
@@ -50,14 +50,14 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
   const escapedHostelName = escapeHtml(hostelName);
 
   const content = `
-    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:${emailTheme.heading};">
       New booking request
     </h1>
-    <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px 0;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       <strong>${escapedStudentName}</strong> has requested to book <strong>${escapedHostelName}</strong>.
     </p>
 
-    <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:${emailTheme.page};border-radius:10px;padding:16px 20px;margin-bottom:24px;">
       <tbody>
         ${emailRow("Student", escapedStudentName)}
         ${emailRow("Hostel", escapedHostelName)}
@@ -69,14 +69,14 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
       </tbody>
     </table>
 
-    <p style="margin:0 0 4px 0;font-size:14px;color:#6B6354;">
+    <p style="margin:0 0 4px 0;font-size:14px;color:${emailTheme.body};">
       Log in to your dashboard to confirm or decline this booking.
     </p>
 
     ${emailButton("View booking", `${APP_URL}/dashboard`)}
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
-    <p style="margin:0;font-size:12px;color:#A68B5B;">
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
+    <p style="margin:0;font-size:12px;color:${emailTheme.muted};">
       You received this because a student booked your hostel on HostelLo.
     </p>
   `;
@@ -100,12 +100,12 @@ export function bookingOwnerReminderEmail(props: BookingEmailProps & { responseD
   }).format(props.responseDueAt);
 
   const content = `
-    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1A1209;">Booking request needs a response</h1>
-    <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${emailTheme.heading};">Booking request needs a response</h1>
+    <p style="margin:0 0 20px;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       ${escapedStudentName} is waiting for a response about <strong>${escapedHostelName}</strong>.
       Please confirm or decline by <strong>${escapeHtml(deadline)} PKT</strong>.
     </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px;font-size:14px;color:${emailTheme.body};line-height:1.6;">
       If you do not respond by the deadline, the booking request will be cancelled and the student will receive a full refund.
     </p>
     ${emailButton("Review booking", `${APP_URL}/owner/bookings`)}
@@ -134,15 +134,15 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
   const escapedHostelName = escapeHtml(hostelName);
 
   const content = `
-    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:${emailTheme.heading};">
       Booking request sent ✓
     </h1>
-    <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px 0;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       Hi ${firstName}, your request for <strong>${escapedHostelName}</strong> has been sent to the owner.
       You'll get another email once they confirm.
     </p>
 
-    <table cellpadding="0" cellspacing="0" style="width:100%;background:#FAF7F0;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:${emailTheme.page};border-radius:10px;padding:16px 20px;margin-bottom:24px;">
       <tbody>
         ${emailRow("Reference", `#${shortId}`)}
         ${emailRow("Hostel", escapedHostelName)}
@@ -154,16 +154,16 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
       </tbody>
     </table>
 
-    <p style="margin:0 0 4px 0;font-size:14px;color:#6B6354;">
+    <p style="margin:0 0 4px 0;font-size:14px;color:${emailTheme.body};">
       The owner typically responds within 24 hours. You can view or cancel this booking in your account.
     </p>
 
     ${emailButton("View booking", `${APP_URL}/bookings/${bookingId}`)}
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
-    <p style="margin:0;font-size:12px;color:#A68B5B;">
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
+    <p style="margin:0;font-size:12px;color:${emailTheme.muted};">
       Questions? Reply to this email or visit our
-      <a href="${APP_URL}/help" style="color:#0D3B2E;">Help Centre</a>.
+      <a href="${APP_URL}/help" style="color:${emailTheme.link};">Help Centre</a>.
     </p>
   `;
 

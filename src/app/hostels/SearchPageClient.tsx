@@ -202,17 +202,17 @@ export function SearchPageClient({
   }
 
   return (
-    <div className="container-app max-w-[1440px] py-9 md:py-12">
+    <div className="container-app max-w-[1720px] py-9 md:py-12">
       <div className="mb-8 border-b border-[var(--color-border-default)] pb-7 md:mb-9 md:pb-8">
         <p className="mb-3 flex items-center gap-2 text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.14em] text-[color:var(--color-primary-deep)]">
           <span className="h-px w-7 bg-[var(--color-primary)]" aria-hidden="true" />
-          The HostelLo directory
+          Student hostels
         </p>
         <h1 className="max-w-[16ch] font-display text-[2.6rem] leading-[1.02] tracking-[-0.035em] text-[color:var(--color-text-heading)] sm:text-[3.2rem]">
-          Find a place to settle in.
+          Find a hostel.
         </h1>
         <p className="mt-3 max-w-xl text-[length:var(--text-body)] leading-relaxed text-[color:var(--color-text-muted)]">
-          A thoughtful shortlist of verified student stays, with the details you need to choose well.
+          Search listings by city, rent, gender, and amenities.
         </p>
       </div>
 
@@ -349,12 +349,12 @@ export function SearchPageClient({
             <div
               className={cn(
                 "grid gap-x-6 gap-y-9",
-                mapView ? "hidden xl:grid xl:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3"
+                mapView ? "hidden xl:grid xl:grid-cols-2" : "grid-cols-2 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 min-[1920px]:grid-cols-6"
               )}
               aria-busy="true"
               aria-label="Loading results"
             >
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 12 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
@@ -375,7 +375,7 @@ export function SearchPageClient({
                   "grid gap-x-6 gap-y-10",
                   mapView
                     ? "hidden xl:grid xl:flex-1 xl:min-w-0 xl:grid-cols-2"
-                    : "flex-1 min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3"
+                    : "flex-1 min-w-0 grid-cols-2 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 min-[1920px]:grid-cols-6"
                 )}
                 role="list"
                 aria-label={resultsSummary()}

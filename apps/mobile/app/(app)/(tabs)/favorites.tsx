@@ -179,7 +179,7 @@ export default function FavoritesScreen() {
           <View style={styles.textBlock}>
             <Text style={styles.emptyTitle}>Nothing saved yet</Text>
             <Text style={styles.emptyBody}>
-              Tap the heart on any hostel to save it here. Compare your shortlist before you decide.
+              Tap the heart on any hostel to save it here. Return to your saved hostels whenever you need them.
             </Text>
           </View>
           <TouchableOpacity

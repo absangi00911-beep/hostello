@@ -14,22 +14,62 @@ const readThemeTokens = (css: string, selector: string) => {
 
   if (!block) throw new Error(`Missing theme token block for ${selector}`);
 
-  return Object.fromEntries(
-    [...block.matchAll(/(--[\w-]+):\s*(#[\da-fA-F]{6})\s*;/g)].map(([, name, value]) => [name, value]),
-  ) as Record<string, string>;
+  const palette = css.match(/@theme\s*\{([^{}]*)\}/)?.[1] ?? '';
+  const declarations = (source: string) =>
+    Object.fromEntries(
+      [...source.matchAll(/(--[\w-]+):\s*([^;]+)\s*;/g)].map(([, name, value]) => [name, value.trim()]),
+    ) as Record<string, string>;
+
+  return { ...declarations(palette), ...declarations(block) };
 };
 
 const getToken = (tokens: Record<string, string>, name: string) => {
-  const value = tokens[name];
+  const resolve = (tokenName: string, seen = new Set<string>()): string => {
+    const value = tokens[tokenName];
 
-  if (!value) throw new Error(`Missing CSS token ${name}`);
+    if (!value) throw new Error(`Missing CSS token ${tokenName}`);
+    if (seen.has(tokenName)) throw new Error(`Circular CSS token reference for ${tokenName}`);
 
-  return value;
+    const reference = value.match(/^var\((--[\w-]+)\)$/);
+    if (!reference) return value;
+
+    return resolve(reference[1], new Set(seen).add(tokenName));
+  };
+
+  return resolve(name);
+};
+
+const toHex = (color: string) => {
+  if (color.startsWith('#')) return color;
+
+  const match = color.match(/^oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)$/);
+  if (!match) throw new Error(`Unsupported CSS color ${color}`);
+
+  const lightness = Number(match[1]) / 100;
+  const chroma = Number(match[2]);
+  const hue = (Number(match[3]) * Math.PI) / 180;
+  const a = chroma * Math.cos(hue);
+  const b = chroma * Math.sin(hue);
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const channels = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ];
+  const encoded = channels.map((channel) => {
+    const linear = Math.min(1, Math.max(0, channel));
+    return Math.round(255 * (linear <= 0.0031308 ? 12.92 * linear : 1.055 * linear ** (1 / 2.4) - 0.055));
+  });
+
+  return `#${encoded.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
 };
 
 const relativeLuminance = (hex: string) => {
+  const normalized = toHex(hex);
   const channels = [1, 3, 5].map((offset) => {
-    const channel = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    const channel = Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255;
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
 

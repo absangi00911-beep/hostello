@@ -24,6 +24,19 @@ describe("Footer role-based links", () => {
     vi.clearAllMocks();
   });
 
+  it("is visible on mobile devices", () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      status: "loading",
+      update: vi.fn(),
+    });
+
+    const markup = renderToStaticMarkup(<Footer />);
+
+    expect(markup).toMatch(/<footer[^>]*class="[^"]*\bblock\b[^"]*"/);
+    expect(markup).not.toMatch(/<footer[^>]*class="[^"]*\bhidden\b/);
+  });
+
   it("does not show owner listing links to signed-in students", () => {
     vi.mocked(useSession).mockReturnValue({
       data: {

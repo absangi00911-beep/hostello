@@ -19,31 +19,30 @@ function StatTile({
   value,
   icon: Icon,
   loading,
+  featured = false,
 }: {
   label: string;
   value: number;
   icon: React.ElementType;
   loading: boolean;
+  featured?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] px-5 py-4 shadow-[var(--shadow-xs)]">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-primary-faint)]">
-          <Icon size={17} strokeWidth={1.5} className="text-[color:var(--color-primary)]" aria-hidden="true" />
-        </div>
-        <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">{label}</p>
+    <article className={`owner-dashboard-stat${featured ? " owner-dashboard-stat-featured" : ""}`}>
+      <div className="flex items-start justify-between gap-3">
+        <p>{label}</p>
+        <span>
+          <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
+        </span>
       </div>
       {loading ? (
         <div className="h-7 w-8 skeleton rounded-[var(--radius-sm)]" />
       ) : (
-        <p
-          className="owner-metric-value text-[length:var(--text-h3)] font-[700] leading-none text-[color:var(--color-text-heading)]"
-
-        >
+        <strong>
           {value}
-        </p>
+        </strong>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -89,11 +88,11 @@ export default function OwnerDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Stat tiles — 2-col mobile, 4-col desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatTile label="Listings"         value={listings.length}  icon={Building2}    loading={loadingListings} />
-        <StatTile label="Active bookings"  value={activeBookings}   icon={CalendarCheck} loading={loadingBookings} />
-        <StatTile label="Pending requests" value={pendingRequests}  icon={Clock}        loading={loadingBookings} />
-        <StatTile label="Active listings"  value={activeListings}   icon={Building2}     loading={loadingListings} />
+      <div className="owner-dashboard-bento" aria-label="Workspace overview">
+        <StatTile label="Pending requests" value={pendingRequests} icon={Clock} loading={loadingBookings} featured />
+        <StatTile label="Active listings" value={activeListings} icon={Building2} loading={loadingListings} />
+        <StatTile label="Active bookings" value={activeBookings} icon={CalendarCheck} loading={loadingBookings} />
+        <StatTile label="Total listings" value={listings.length} icon={Building2} loading={loadingListings} />
       </div>
 
       {listings.length === 0 && !loadingListings && (
@@ -113,7 +112,7 @@ export default function OwnerDashboardPage() {
       )}
 
       {/* Recent booking requests */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
+      <div className="owner-dashboard-panel rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-border-subtle)]">
           <h2
             className="text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]"

@@ -2,7 +2,6 @@
 import { Logo } from "@/components/Logo";
 import { Card } from "@/components/ui/card";
 import { inputCls } from "@/components/ui/input";
-import { ArrowRight, ShieldCheck } from "lucide-react";
 import { PhotoImage } from "@/components/landing/PhotoImage";
 
 const AUTH_IMAGE =
@@ -36,21 +35,19 @@ export function AuthCardLayout({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/20" aria-hidden="true" />
           <div className="auth-art-topline absolute inset-x-8 top-8 flex justify-between text-white/75">
-            <span>HOSTELLO FIELD GUIDE</span>
-            <span>PAKISTAN · 01</span>
+            <span>HOSTELLO</span>
+            <span>PAKISTAN</span>
           </div>
           <div className="auth-art-copy relative mt-auto p-10">
             <p className="auth-art-kicker">
-              {heading === "Sign in" ? "YOUR NEXT CHAPTER" : "A PLACE TO BEGIN"}
+              {heading === "Sign in" ? "SIGN IN" : "CREATE YOUR ACCOUNT"}
             </p>
             <p className="auth-art-title mt-3 max-w-md text-white">
-              Your next room is closer than you think.
+              Find a hostel or manage your listing.
             </p>
-            <div className="auth-art-note mt-6 flex items-center gap-2 text-white/80">
-              <ShieldCheck size={16} strokeWidth={1.6} aria-hidden="true" />
-              Thoughtful stays, verified listings, clear monthly prices
-              <ArrowRight size={14} strokeWidth={1.6} aria-hidden="true" />
-            </div>
+            <p className="auth-art-note mt-6 text-white/80">
+              Review locations, room details, and monthly rent.
+            </p>
           </div>
         </aside>
 

@@ -172,7 +172,7 @@ function RegisterForm() {
                 {
                   value: "STUDENT" as Role,
                   label: "Student",
-                  description: "Find and compare rooms",
+                  description: "Find a room",
                   icon: GraduationCap,
                 },
                 {

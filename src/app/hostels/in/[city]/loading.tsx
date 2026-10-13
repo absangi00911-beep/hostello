@@ -21,7 +21,7 @@ export default function CityLandingLoading() {
       {/* Cards skeleton */}
       <div className="container-app py-10">
         <div className="h-6 w-40 rounded-[var(--radius-md)] mb-6 bg-[var(--color-bg-overlay)]" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 min-[1920px]:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}

@@ -18,6 +18,7 @@ import {
 import { NotificationBell } from "./NotificationBell";
 import { AccountMenu } from "./AccountMenu";
 import { Logo } from "@/components/Logo";
+import { WorkspaceMobileNav } from "./WorkspaceMobileNav";
 
 const NAV_ITEMS = [
   { href: "/owner/dashboard",    label: "Overview",    icon: LayoutDashboard },
@@ -144,16 +145,16 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
       {/* -- Main content area ----------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="owner-topbar sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-card)]/95 backdrop-blur-sm px-4 md:gap-4 md:px-6 shrink-0">
-          <h1 className="min-w-0 flex-1 truncate text-[length:var(--text-h5)] font-[600] text-[color:var(--color-text-heading)]">
-            {pageTitle}
-          </h1>
+          <Logo size="compact" className="shrink-0 md:hidden" />
+          <div className="flex-1" />
           <div className="flex shrink-0 items-center gap-1">
             <NotificationBell />
             <AccountMenu />
+            <WorkspaceMobileNav items={NAV_ITEMS} label="Owner" />
           </div>
         </header>
 
-        <main className="owner-main flex-1 p-4 md:p-6 pb-20 md:pb-6" id="main-content">
+        <main className="owner-main flex-1 p-4 md:p-6" id="main-content">
           <header className="owner-page-masthead">
             <div className="owner-page-overline"><span>HOSTELLO · OWNER FIELD DESK</span><span>WORKSPACE / 0{Math.max(1, NAV_ITEMS.findIndex((item) => item.href === currentNav?.href) + 1)}</span></div>
             <h2>{pageTitle}</h2>
@@ -163,37 +164,6 @@ export function OwnerLayout({ children }: OwnerLayoutProps) {
         </main>
       </div>
 
-      {/* -- Mobile bottom tab bar (first 4 nav items) ----------- */}
-      <nav
-        className="owner-mobile-nav fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-[var(--color-border-default)] bg-[var(--color-bg-card)]"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        aria-label="Mobile owner navigation"
-      >
-        <div className="flex">
-          {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
-            const isActive =
-              href === "/owner/dashboard"
-                ? pathname === href
-                : pathname.startsWith(href);
-
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex flex-1 flex-col items-center justify-center gap-1 py-3 text-[length:var(--text-caption)] font-[500] transition-colors duration-[var(--transition-fast)] ${
-                  isActive
-                    ? "text-[color:var(--color-primary)]"
-                    : "text-[color:var(--color-text-muted)]"
-                }`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
-                {label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
     </div>
   );
 }
