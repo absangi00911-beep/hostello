@@ -1,6 +1,6 @@
 # HostelLo Project Completion Plan
 
-**Last updated:** October 9, 2026
+**Last updated:** October 12, 2026
 **Goal:** Production-ready web MVP and a mobile beta, with Safepay as the primary payment method.
 **Status:** In progress
 
@@ -238,6 +238,48 @@ Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type c
 **Exit gate:** a distributable beta build passes the agreed device matrix and its core payment/auth/notification paths have evidence from physical devices.
 
 ### 5. Controlled release and stabilization — Not started
+
+- [ ] **Readiness remediation sequence (October 12 reassessment).** Treat the checks below as release blockers. Keep this sequence on the existing candidate plan; preserve unrelated worktree changes and do not deploy while any gate is red.
+  1. **Prepare a reviewable release candidate.** Identify the exact changes intended for release, keep unrelated redesign/skill artifacts out of the candidate, and record the commit SHA and current verification baseline. Do not discard or bulk-stage the existing working tree.
+     - **Acceptance:** The candidate diff is reviewable and contains only approved release changes; the JazzCash callback replay fix is either included and reviewed or explicitly held out.
+     - **Verification:** Review `git status` and the candidate diff; run the focused payment tests for any included payment changes.
+     - **Dependencies:** None.
+  2. **Restore deterministic CI.** Reconcile `package.json` and `package-lock.json` so a clean `npm ci` succeeds; use a Node version supported by the locked dependencies (the latest observed CI logs warned that dependencies require Node 22); scope the mobile type-check to application sources rather than tests that import unavailable Vitest; give the shared package a valid, narrow type-check command/configuration rather than compiling unrelated repository files.
+     - **Acceptance:** Clean installs and all web, mobile, and shared checks pass on the same Node version used by deployment.
+     - **Verification:** Run clean installs in each workflow working directory, then the exact CI type-check commands locally and in a PR run.
+     - **Dependencies:** Task 1.
+  3. **Make the existing suite green without hiding failures.** Fix the CSS token regression in `src/app/globals.test.ts` so it tests the actual CSS variable-based tokens, and resolve any other failures discovered by the full suite. Do not skip tests, weaken assertions, or suppress lint/type errors to clear the gate.
+     - **Acceptance:** Full Vitest suite, root typecheck, and lint complete successfully; existing warning counts are reviewed rather than mistaken for errors.
+     - **Verification:** `npm test -- --run`, `npm run typecheck`, and `npm run lint`.
+     - **Dependencies:** Task 2.
+  4. **Close dependency audit findings safely.** Re-run full and production-only web audits plus the mobile audit. Investigate the currently observed five high web findings through `braces` in the ESLint dependency chain; use a compatible patched transitive version if available, otherwise document the upstream status and explicit risk acceptance. Never force a breaking downgrade to `eslint-config-next`. Match mobile advisories to shipped JS/native artifacts and record remediation or risk decisions.
+     - **Acceptance:** No unresolved critical/high production dependency advisory; any non-production exception has an owner, rationale, and recheck date.
+     - **Verification:** `npm audit --audit-level=high`, `npm audit --omit=dev --audit-level=high`, and equivalent mobile audit commands; rerun CI after lockfile changes.
+     - **Dependencies:** Task 2.
+  5. **Make production promotion safe.** Change deployment ordering so the production artifact is built and verified before any production migration runs. Keep migrations backward-compatible with both the currently deployed version and the rollback artifact; separate artifact build from deployment where necessary so a failed build cannot leave the database migrated without the application release.
+     - **Acceptance:** A simulated build failure cannot reach the production migration step; a migration failure cannot promote traffic; rollback compatibility is documented for each pending migration.
+     - **Verification:** Review the workflow dependency graph and exercise build/migration failure paths in a non-production workflow/environment. Never test this by intentionally failing against production.
+     - **Dependencies:** Tasks 2–4.
+  6. **Enforce merge gates.** After CI job names stabilize, configure GitHub rules for `main`: require the web, mobile, shared, and deployment-preview/build checks as applicable, require review, and block direct pushes/force-pushes. Ensure preview-deployment credentials are not exposed to untrusted fork code.
+     - **Acceptance:** GitHub reports `main` protected by rules that require the agreed checks/review; direct pushes cannot bypass the release gate.
+     - **Verification:** Inspect repository rules/branch protection in GitHub and confirm a test PR cannot merge while a required check is failing.
+     - **Dependencies:** Tasks 2–5.
+  7. **Complete provider and data-recovery evidence.** Validate Safepay checkout, signed webhook, refund behavior, and booking reconciliation in its sandbox; verify Neon retention/PITR, set RPO/RTO, and complete an isolated restore rehearsal. Check production database connection budget against Vercel scale. These require provider/database-owner access; do not run a production transaction, migration, or restore without explicit approval.
+     - **Acceptance:** Payments owner records provider-to-booking reconciliation evidence; database owner records successful isolated restore, retention, RPO/RTO, and connection-budget results.
+     - **Verification:** Follow the payment and recovery procedures in [OPERATIONS-RUNBOOK.md](../../OPERATIONS-RUNBOOK.md) and [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md), recording non-secret evidence.
+     - **Dependencies:** Tasks 1–6 for the release candidate; sandbox/restore exercises must use explicitly approved targets.
+  8. **Verify private-document and monitoring operations.** Confirm the verification R2 bucket is private and credentials are bucket-scoped; audit/remove legacy public student-document objects; verify admin-only document retrieval and scheduled cleanup. Configure and exercise hosted alerts for payment reconciliation/webhook failures, cron health, search, notifications, and critical-route errors; confirm Sentry project-level privacy/IP settings and tune sampling from observed volume.
+     - **Acceptance:** No student verification document is publicly reachable; cleanup and health checks are current; each required alert has an owner, response path, and observed test event.
+     - **Verification:** Use the document-exposure and monitoring checklists in [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md); query the health endpoints and confirm alert delivery without including secrets or personal data.
+     - **Dependencies:** Task 1; requires Cloudflare, Vercel, and Sentry access.
+  9. **Run staged-release checks and decide go/no-go.** Verify production configuration, public/student/owner/admin critical paths, smoke checks, rollback target, support contacts, and a small cohort. Complete the mobile physical-device/EAS gates before advertising the mobile beta; otherwise explicitly limit the release to web.
+     - **Acceptance:** Every applicable gate in [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md) has recorded pass evidence and an owner; no payment, recovery, security, or privacy blocker remains.
+     - **Verification:** Release lead signs off on a recorded SHA, deployment URL, smoke results, monitoring window, and rollback plan before cohort expansion.
+     - **Dependencies:** Tasks 1–8.
+
+  **Checkpoint — CI and promotion safety:** Tasks 1–6 complete; clean installs, full checks, audit disposition, build-before-migration behavior, and GitHub merge rules are verified.
+
+  **Checkpoint — launch operations:** Tasks 7–9 complete for the chosen release scope; payment, restore, privacy, alert, rollback, and support evidence is recorded. Until then, continue development and preview validation only; do not treat this as authorization to release.
 
 - [ ] Prepare production configuration, admin/support runbooks, a rollback/recovery plan, and a small launch cohort/area.
   - [x] Draft the operational procedure for controlled release, deployment rollback, Neon recovery, payment reconciliation, private-document exposure, and alert response in [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md). Naming owners, exercising provider-console actions, and approving the cohort remain external launch gates.

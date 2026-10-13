@@ -1,6 +1,6 @@
 # HostelLo
 
-A Pakistan-focused marketplace connecting students with verified hostel/PG accommodation. Students discover, compare, message, and book; owners list and manage properties; admins moderate the marketplace.
+A Pakistan-focused marketplace connecting students with verified hostel/PG accommodation. Students discover, message, and book; owners list and manage properties; admins moderate the marketplace.
 
 ## Stack
 
@@ -62,6 +62,8 @@ npm start
 | [`PROJECT_STRUCTURE.md`](./PROJECT_STRUCTURE.md) | File-by-file map of the repo |
 | [`WEB_APP_PROGRESS.md`](./WEB_APP_PROGRESS.md) | What's shipped, what's open, current priorities |
 | [`prisma/MIGRATIONS.md`](./prisma/MIGRATIONS.md) | Migration workflow and failure recovery |
+| [`docs/CI-CD-GUIDE.md`](./docs/CI-CD-GUIDE.md) | CI/CD workflows, release process, and deployment concepts |
+| [`docs/API-MASTERY-GUIDE.md`](./docs/API-MASTERY-GUIDE.md) | API fundamentals, Hostello route patterns, security, testing, and learning exercises |
 | [`SENTRY_SETUP.md`](./SENTRY_SETUP.md) | Error tracking setup |
 | [`docs/superpowers/`](./docs/superpowers/) | Spec + plan format used for non-trivial feature work |
 
