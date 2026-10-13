@@ -281,7 +281,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (provider === "jazzcash") {
-      const result = parseJazzCashCallback(data);
+      const result = parseJazzCashCallback(data, bookingId);
 
       if (!result.success) {
         console.warn(

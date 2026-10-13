@@ -206,6 +206,10 @@ describe("JazzCash callback", () => {
     const response = await callbackPOST(makeJazzCashRequest());
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toContain(`/booking/${BOOKING_ID}/confirmation`);
+    expect(parseJazzCashCallback).toHaveBeenCalledWith(
+      expect.objectContaining({ bookingId: BOOKING_ID }),
+      BOOKING_ID,
+    );
     expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({ paymentMethod: "jazzcash", paymentStatus: "PENDING", status: "PENDING" }),
       data: expect.objectContaining({

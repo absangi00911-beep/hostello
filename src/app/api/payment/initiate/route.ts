@@ -96,7 +96,6 @@ export async function POST(req: NextRequest) {
       const jcSession = createJazzCashSession({
         bookingId:   booking.id,
         amount:      booking.total,
-        orderId:     booking.id,
         description: `Booking at ${booking.hostel.name}`,
         appUrl,
       });

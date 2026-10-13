@@ -70,7 +70,7 @@ function computeSecureHash(
   integritySalt: string,
 ): string {
   const sortedValues = Object.keys(params)
-    .filter((k) => k !== "pp_SecureHash" && (params[k] ?? "") !== "")
+    .filter((k) => k.startsWith("pp_") && k !== "pp_SecureHash" && (params[k] ?? "") !== "")
     .sort()
     .map((k) => params[k]);
 
@@ -81,6 +81,16 @@ function computeSecureHash(
     .update(message)
     .digest("hex")
     .toUpperCase();
+}
+
+function createBookingBillReference(bookingId: string, integritySalt: string): string {
+  const bookingToken = crypto
+    .createHmac("sha256", integritySalt)
+    .update(`hostello:jazzcash:booking:${bookingId}`)
+    .digest("hex")
+    .slice(0, 18)
+    .toUpperCase();
+  return `BK${bookingToken}`;
 }
 
 // -- Public API ----------------------------------------------------------------
@@ -95,14 +105,12 @@ export interface JazzCashSession {
 export function createJazzCashSession({
   bookingId,
   amount,
-  orderId,
   description,
   appUrl = getAppUrl(),
 }: {
   bookingId: string;
   /** Amount in PKR. Internally converted to paisa (×100). */
   amount: number;
-  orderId: string;
   description: string;
   appUrl?: string;
 }): JazzCashSession {
@@ -137,7 +145,7 @@ export function createJazzCashSession({
     pp_Amount:              Math.round(amount * 100).toString(), // PKR → paisa
     pp_TxnCurrency:         "PKR",
     pp_TxnDateTime:         txnDateTime,
-    pp_BillReference:       `BK${orderId.slice(-8).toUpperCase()}`,
+    pp_BillReference:       createBookingBillReference(bookingId, config.integritySalt),
     pp_Description:         description.slice(0, 80),
     pp_TxnExpiryDateTime:   formatDateTime(expiry),
     pp_ReturnURL:           returnUrl,
@@ -166,6 +174,7 @@ export interface JazzCashCallbackResult {
  */
 export function parseJazzCashCallback(
   data: Record<string, string>,
+  bookingId: string,
 ): JazzCashCallbackResult {
   const config = getConfig();
 
@@ -183,6 +192,15 @@ export function parseJazzCashCallback(
 
   if (receivedBytes.length !== expectedBytes.length || !crypto.timingSafeEqual(receivedBytes, expectedBytes)) {
     throw new Error("JazzCash: secure hash mismatch — possible tampering");
+  }
+
+  const receivedBillReference = Buffer.from(data.pp_BillReference ?? "");
+  const expectedBillReference = Buffer.from(createBookingBillReference(bookingId, config.integritySalt));
+  if (
+    receivedBillReference.length !== expectedBillReference.length ||
+    !crypto.timingSafeEqual(receivedBillReference, expectedBillReference)
+  ) {
+    throw new Error("JazzCash: booking reference mismatch.");
   }
 
   return {
