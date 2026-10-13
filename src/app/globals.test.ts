@@ -39,37 +39,9 @@ const getToken = (tokens: Record<string, string>, name: string) => {
   return resolve(name);
 };
 
-const toHex = (color: string) => {
-  if (color.startsWith('#')) return color;
-
-  const match = color.match(/^oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)$/);
-  if (!match) throw new Error(`Unsupported CSS color ${color}`);
-
-  const lightness = Number(match[1]) / 100;
-  const chroma = Number(match[2]);
-  const hue = (Number(match[3]) * Math.PI) / 180;
-  const a = chroma * Math.cos(hue);
-  const b = chroma * Math.sin(hue);
-  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const channels = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
-  ];
-  const encoded = channels.map((channel) => {
-    const linear = Math.min(1, Math.max(0, channel));
-    return Math.round(255 * (linear <= 0.0031308 ? 12.92 * linear : 1.055 * linear ** (1 / 2.4) - 0.055));
-  });
-
-  return `#${encoded.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
-};
-
 const relativeLuminance = (hex: string) => {
-  const normalized = toHex(hex);
   const channels = [1, 3, 5].map((offset) => {
-    const channel = Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255;
+    const channel = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
 
@@ -100,6 +72,10 @@ describe('globals.css', () => {
     expect(css).not.toContain('@tailwind base');
     expect(css).not.toContain('@tailwind components');
     expect(css).not.toContain('@tailwind utilities');
+  });
+
+  it('uses hex colors instead of OKLCH in the application stylesheet', () => {
+    expect(readGlobalsCss()).not.toMatch(/oklch\(/i);
   });
 
   it('keeps accent controls, links, and placeholders readable in both color schemes', () => {
