@@ -79,3 +79,5 @@ graphify-out/cost.json        # local only
 
 e2e/.auth/
 e2e/.test-state.json
+
+.tmp-vitest/
