@@ -82,7 +82,7 @@ export default async function ReviewBookingPage({
       <div className="booking-review-heading mb-6">
         <div className="student-page-overline"><span>RESERVATION NOTES</span><span>01 / 03</span></div>
         <h1
-          className="font-heading text-[length:var(--text-h3)] font-[700] text-[color:var(--color-text-heading)] mb-1"
+          className="text-[length:var(--text-h3)] text-[color:var(--color-text-heading)] mb-1"
 
         >
           Review your booking

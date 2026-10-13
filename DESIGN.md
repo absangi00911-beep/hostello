@@ -67,7 +67,7 @@ so cards remain readable beside the map.
 | `--color-primary-light` | Digital blue 100 (`#cce0ff`) | Soft accent surface |
 | `--color-primary-faint` | Digital blue 50 (`#e5f0ff`) | Selected chips and subtle accent fills |
 
-The complete Digital Blue OKLCH scale is defined in `globals.css`. Keep
+The complete Digital Blue hex scale is defined in `globals.css`. Keep
 backgrounds warm and neutral; reserve blue for actions, links, focus states,
 and selected items. Email-safe hex equivalents are centralized in
 `src/lib/email-templates/layout.ts` because many email clients do not reliably
@@ -115,12 +115,12 @@ surfaces, with lighter blue accents and accessible text contrast.
 
 ## Typography
 
-**Tenor Sans** is used for prominent display headlines, with **Plus Jakarta
-Sans** for interface headings and **Inter** for body text. **Archivo Narrow**
-is reserved for selected short labels; **JetBrains Mono** remains for
-reference codes and code-like details. Web fonts load through `next/font` in
-`src/app/layout.tsx`. Email uses system sans-serif fallbacks because external
-web fonts are not reliable across email clients.
+**Tenor Sans** is used for page-level headings and prominent display moments,
+with **Plus Jakarta Sans** for section and interface headings and **Inter**
+for body text. **Archivo Narrow** is reserved for selected short labels;
+**JetBrains Mono** remains for reference codes and code-like details. Web fonts
+load through `next/font` in `src/app/layout.tsx`. Email uses system sans-serif
+fallbacks because external web fonts are not reliable across email clients.
 
 | Token | Size | Typical use |
 |---|---|---|

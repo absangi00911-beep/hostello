@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         <div className="legal-editorial-heading mb-10">
           <div className="student-page-overline"><span>HOSTELLO · TRUST NOTES</span><span>01 / POLICY</span></div>
           <h1
-            className="font-heading text-[length:var(--text-h1)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
+            className="text-[length:var(--text-h1)] text-[color:var(--color-text-heading)] tracking-[-0.025em] mb-3"
 
           >
             Privacy policy

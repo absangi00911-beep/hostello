@@ -40,7 +40,7 @@ export default async function ListingSuccessPage({
         />
       </div>
 
-      <h1 className="owner-success-heading mt-6 font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)]">
+      <h1 className="owner-success-heading mt-6 text-[length:var(--text-h2)] text-[color:var(--color-text-heading)]">
         {name ? `${name} has been submitted!` : "Your listing has been submitted!"}
       </h1>
       <p className="mx-auto mt-3 max-w-md text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">

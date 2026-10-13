@@ -513,7 +513,7 @@ export default function ProfileSettingsPage() {
         <div className="profile-settings-masthead mb-8">
           <div className="student-page-overline"><span>YOUR ACCOUNT</span><span>FIELD NOTES · 01</span></div>
           <h1
-            className="font-heading text-[length:var(--text-h2)] font-[700] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
+            className="text-[length:var(--text-h2)] text-[color:var(--color-text-heading)] tracking-[-0.02em]"
 
           >
             Settings

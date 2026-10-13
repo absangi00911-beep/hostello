@@ -382,7 +382,7 @@ function OwnerHomeView() {
           <p className="text-[length:var(--text-caption)] font-[700] uppercase tracking-[0.08em] text-[color:var(--color-primary-deep)]">
             Owner workspace
           </p>
-          <h1 className="mt-2 font-heading text-[length:var(--text-h2)] font-[600] text-[color:var(--color-text-heading)]">
+          <h1 className="mt-2 text-[length:var(--text-h2)] text-[color:var(--color-text-heading)]">
             Manage your hostel business
           </h1>
           <p className="mt-3 max-w-lg text-[length:var(--text-body)] text-[color:var(--color-text-muted)]">

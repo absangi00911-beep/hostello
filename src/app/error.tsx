@@ -34,7 +34,7 @@ export default function ErrorPage({
 
       {/* Heading — honest, no "Oops" */}
       <h1
-        className="font-heading text-[length:var(--text-h3)] font-[600] text-[color:var(--color-text-heading)] mb-3"
+        className="text-[length:var(--text-h3)] text-[color:var(--color-text-heading)] mb-3"
 
       >
         Something went wrong
