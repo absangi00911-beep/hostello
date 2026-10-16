@@ -399,7 +399,6 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   AccountDeletionJob: 'AccountDeletionJob',
-  DeviceToken: 'DeviceToken',
   Subscription: 'Subscription',
   Payout: 'Payout',
   PayoutAuditEvent: 'PayoutAuditEvent',
@@ -441,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "deviceToken" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -590,80 +589,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AccountDeletionJobCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AccountDeletionJobCountAggregateOutputType> | number
-        }
-      }
-    }
-    DeviceToken: {
-      payload: Prisma.$DeviceTokenPayload<ExtArgs>
-      fields: Prisma.DeviceTokenFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.DeviceTokenFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.DeviceTokenFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        findFirst: {
-          args: Prisma.DeviceTokenFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.DeviceTokenFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        findMany: {
-          args: Prisma.DeviceTokenFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>[]
-        }
-        create: {
-          args: Prisma.DeviceTokenCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        createMany: {
-          args: Prisma.DeviceTokenCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.DeviceTokenCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>[]
-        }
-        delete: {
-          args: Prisma.DeviceTokenDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        update: {
-          args: Prisma.DeviceTokenUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        deleteMany: {
-          args: Prisma.DeviceTokenDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.DeviceTokenUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.DeviceTokenUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>[]
-        }
-        upsert: {
-          args: Prisma.DeviceTokenUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeviceTokenPayload>
-        }
-        aggregate: {
-          args: Prisma.DeviceTokenAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateDeviceToken>
-        }
-        groupBy: {
-          args: Prisma.DeviceTokenGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DeviceTokenGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.DeviceTokenCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.DeviceTokenCountAggregateOutputType> | number
         }
       }
     }
@@ -2681,18 +2606,6 @@ export const AccountDeletionJobScalarFieldEnum = {
 export type AccountDeletionJobScalarFieldEnum = (typeof AccountDeletionJobScalarFieldEnum)[keyof typeof AccountDeletionJobScalarFieldEnum]
 
 
-export const DeviceTokenScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  token: 'token',
-  platform: 'platform',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type DeviceTokenScalarFieldEnum = (typeof DeviceTokenScalarFieldEnum)[keyof typeof DeviceTokenScalarFieldEnum]
-
-
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3557,7 +3470,6 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   accountDeletionJob?: Prisma.AccountDeletionJobOmit
-  deviceToken?: Prisma.DeviceTokenOmit
   subscription?: Prisma.SubscriptionOmit
   payout?: Prisma.PayoutOmit
   payoutAuditEvent?: Prisma.PayoutAuditEventOmit

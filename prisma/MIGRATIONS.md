@@ -83,7 +83,7 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
 
 ## Existing migrations (do not touch)
 
-**Last audited:** October 9, 2026. The repository currently has 28 migration
+**Last audited:** October 16, 2026. The repository currently has 29 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -117,7 +117,11 @@ migration is committed.
 | 20261009133000 | payout_audit_ledger |
 | 20261009140000 | safepay_webhook_operator_retries |
 | 20261009150000 | resumable_account_deletion |
+| 20261016114500 | remove_mobile_device_tokens |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL
 must never be edited; create a corrective migration instead.
+
+The latest migration is not yet applied. It remaps resumable account-deletion jobs
+from the removed device-token phase before dropping the `device_tokens` table.

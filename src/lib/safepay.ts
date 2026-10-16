@@ -55,7 +55,6 @@ export async function createCheckoutLink({
   appUrl = getAppUrl(),
   redirectPath,
   cancelPath,
-  source = "hosted",
 }: {
   bookingId: string;
   token: string;
@@ -63,7 +62,6 @@ export async function createCheckoutLink({
   appUrl?: string;
   redirectPath?: string;
   cancelPath?: string;
-  source?: "hosted" | "mobile";
 }): Promise<SafepaySession> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
@@ -102,7 +100,7 @@ export async function createCheckoutLink({
     environment,
     tracker: token,
     tbt,
-    source,
+    source: "hosted",
     order_id: orderId,
     redirect_url: redirectUrl,
     cancel_url: cancelUrl,
@@ -120,7 +118,6 @@ export async function createCheckoutSession({
   appUrl = getAppUrl(),
   redirectPath = `/booking/${bookingId}/confirmation?payment=return`,
   cancelPath,
-  source = "hosted",
 }: {
   bookingId: string;
   amount: number;
@@ -130,7 +127,6 @@ export async function createCheckoutSession({
   appUrl?: string;
   redirectPath?: string;
   cancelPath?: string;
-  source?: "hosted" | "mobile";
 }): Promise<SafepaySession> {
   const baseUrl = getSafepayBaseUrl();
   const secret = getSafepaySecret();
@@ -179,7 +175,6 @@ export async function createCheckoutSession({
     appUrl,
     redirectPath,
     cancelPath,
-    source,
   });
 }
 

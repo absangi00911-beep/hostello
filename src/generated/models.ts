@@ -10,7 +10,6 @@
  */
 export type * from './models/User'
 export type * from './models/AccountDeletionJob'
-export type * from './models/DeviceToken'
 export type * from './models/Subscription'
 export type * from './models/Payout'
 export type * from './models/PayoutAuditEvent'

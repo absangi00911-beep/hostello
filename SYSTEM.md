@@ -1,6 +1,6 @@
 # System Design Document - HostelLo
 
-**Version:** 3.126 | **Last updated:** October 9, 2026 | **Status:** Current repo audit
+**Version:** 3.127 | **Last updated:** October 16, 2026 | **Status:** Current repo audit
 
 ---
 
@@ -8,7 +8,7 @@
 
 HostelLo is a Pakistan-focused student hostel marketplace. Students discover, compare, save, message, and book verified hostel accommodation. Owners manage listings, availability, bookings, messages, reviews, subscriptions, and analytics. Admins moderate listings, reviews, search sync, bookings, and student verification.
 
-The product is implemented as a Next.js monolith with route handlers for API endpoints and an Expo mobile app that uses the same backend. This document distinguishes behavior verified in the repository from production settings that cannot be verified from source alone.
+The product is a web-only Next.js monolith with route handlers for API endpoints. This document distinguishes behavior verified in the repository from production settings that cannot be verified from source alone.
 
 ---
 
@@ -16,18 +16,17 @@ The product is implemented as a Next.js monolith with route handlers for API end
 
 In scope:
 
-- Hostel discovery, filters, city/university landing pages, detail pages, maps, comparison, and favorites.
+- Hostel discovery, filters, city/university landing pages, detail pages, maps and favorites.
 - Student signup/login, email verification, password reset, phone OTP, profile, account deletion, and optional student verification.
 - Owner listing creation/editing, blocked dates, booking management, messages, reviews, analytics, settings, and subscription surface.
-- Booking flow with Safepay as primary payment and JazzCash/EasyPaisa infrastructure available but disabled for mobile.
-- Messaging (students start conversations; participants continue them), reviews, owner replies, price alerts, notifications, FCM push backend, cron jobs, and admin moderation.
-- Expo mobile app using the same backend APIs.
+- Booking flow with Safepay as primary payment and JazzCash/EasyPaisa infrastructure present but disabled.
+- Messaging (students start conversations; participants continue them), reviews, owner replies, price alerts, in-app notifications, cron jobs, and admin moderation.
 
 Out of scope for current MVP:
 
 - Separate backend services.
 - International expansion or multi-currency.
-- Native owner/admin mobile dashboards.
+- Native mobile applications.
 - Offline search.
 - Video reviews.
 - Apple Pay / Google Pay until Safepay support is confirmed.
@@ -40,16 +39,14 @@ Out of scope for current MVP:
 |---|---|
 | Web framework | Next.js 16 App Router |
 | API | Next.js Route Handlers under `src/app/api` |
-| Mobile | Expo 57.0.26 / React Native 0.86.3 / React 19.2.3 under `apps/mobile` |
 | Database | Neon PostgreSQL via Prisma 7 and `@prisma/adapter-pg` / node-postgres |
-| Auth | NextAuth v5 JWT strategy plus mobile Bearer bridge in `src/proxy.ts` |
+| Auth | NextAuth v5 JWT strategy with HTTP-only browser cookies |
 | Search | Typesense with Prisma fallback |
 | Cache/rate limits | Upstash Redis |
 | Cron | Upstash QStash calling secured route handlers |
 | Storage | Cloudflare R2 for public listing images and a separate private bucket for student verification documents |
 | Email | Resend |
 | SMS | Twilio |
-| Push | Firebase Admin + `DeviceToken` records |
 | Payments | Safepay primary; JazzCash/EasyPaisa infrastructure present |
 | Error tracking | Sentry client/server/edge initialization with Next.js instrumentation hooks and explicit event-data minimization |
 | Tests | Vitest and Playwright |
@@ -64,23 +61,22 @@ Homepage, auth marketing, comparison, and message-context hostel photos use the 
 
 The navbar city selector uses a `Suspense` boundary around `useSearchParams()` and shows an inert, labeled “All cities” placeholder during prerender and hydration instead of an empty reserved box.
 
-The web application is deployed to Vercel through GitHub Actions. Pull requests run web checks, mobile/shared TypeScript checks, and preview deployments; production deploys run a separate quality gate, apply migrations from Vercel's production environment, then build and deploy the artifact. Vercel builds do not apply migrations. Preview migrations use the manually dispatched `Migrate Preview database` workflow, which verifies the Preview database host and name against GitHub Environment variables before applying changes. The CI workflows do not run Playwright E2E.
+The web application is deployed to Vercel through GitHub Actions. Pull requests run web checks and preview deployments; production deploys run a separate quality gate, apply migrations from Vercel's production environment, then build and deploy the artifact. Vercel builds do not apply migrations. Preview migrations use the manually dispatched `Migrate Preview database` workflow, which verifies the Preview database host and name against GitHub Environment variables before applying changes. The CI workflows do not run Playwright E2E.
 
 ---
 
 ## 4. Current Repo Metrics
 
-Filesystem audit on October 9, 2026:
+Filesystem audit on October 16, 2026:
 
 | Area | Count |
 |---|---:|
-| Web page files | 53 |
-| API route files | 74 |
-| Prisma models | 26 |
-| Prisma migrations | 23 |
+| Web page files | 58 |
+| API route files | 71 |
+| Prisma models | 28 |
+| Prisma migrations | 29 |
 | Vitest unit/integration test files | 122 |
 | Playwright E2E specs | 5 |
-| Mobile route/screen files | 16 |
 
 ---
 
@@ -91,7 +87,6 @@ The Prisma schema lives in `prisma/schema.prisma`.
 Core models:
 
 - `User`: auth/profile fields, role, token version, email notifications, student verification fields, owner plan, subscription relation.
-- `DeviceToken`: FCM/APNs token per mobile installation.
 - `Subscription`: owner plan/status/payment reference.
 - `Payout`: admin-created manual payout batches linked to eligible bookings, with paid status/reference, encrypted destination snapshot, and audited cancellation actor/time/reason.
 - `PayoutAuditEvent`: append-only payout batch creation, paid, and void events with actor, gross amount, reference/reason, and timestamp.
@@ -116,7 +111,7 @@ Booking refunds use `Booking.refundState` and append-only `RefundAuditEvent` rec
 
 ## 6. API Surface
 
-All API routes live under `/api`. There are 74 route files. Responses generally use:
+All API routes live under `/api`. There are 71 route files. Responses generally use:
 
 ```json
 { "data": {}, "message": "...", "error": "..." }
@@ -124,24 +119,19 @@ All API routes live under `/api`. There are 74 route files. Responses generally 
 
 Route categories:
 
-- Auth: signup, NextAuth, email verification, resend verification, forgot/reset password, delete account, phone OTP, mobile login, mobile refresh.
+- Auth: signup, NextAuth, email verification, resend verification, forgot/reset password, delete account, and phone OTP.
 - Profile: profile update and password change.
 - Hostels: search/list/create/edit, mine, admin detail/status, favorite, availability, view count, roommate posts. Public availability/review reads are limited to active hostels; owner edits are schema-validated, re-enter review, and are removed from Typesense while pending.
 - Bookings: create/list/detail/status changes.
 - Payments: initiate, Safepay webhook, JazzCash/EasyPaisa callback.
 - Conversations: list, start with active hostels, read messages, and send messages.
 - Reviews: create/list/mine/edit/delete/reply.
-- Notifications: list/read/delete plus device-token registration routes.
+- Notifications: in-app list/read/delete.
 - Price alerts: list/create/update/delete plus unsubscribe.
 - Owner: analytics, subscription, blocked dates.
 - Admin: hostels/listings/search sync/verifications, roommate report review/removal, payout batches, booking refunds, and Safepay payment-event reconciliation.
 - Cron: mark completed stays, cancel abandoned payments, check price alerts, cleanup tokens.
 - Operations/support: upload, contact, report, cron health.
-
-Current device-token route convention:
-
-- `/api/device-tokens` is canonical for mobile push-token registration.
-- `/api/notifications/device-token` remains as a compatibility export for older clients.
 
 ---
 
@@ -155,15 +145,6 @@ Web:
 - `tokenVersion` is checked in the JWT callback on every session read. A stale or malformed token returns `null`, causing Auth.js to clear the session cookie before route handlers can trust its role claim. Role changes must also increment `tokenVersion` and invalidate its cache entry.
 - Profile edits cannot set an unverified phone number. The profile screen exposes OTP verification when the draft differs from the saved number; removing a number clears both the phone and `phoneVerified` timestamp.
 
-Mobile:
-
-- `POST /api/auth/mobile/login` returns an Auth.js encrypted JWE token, user payload, and server-supplied `expiresInSeconds`.
-- Mobile stores the opaque token, expiry metadata, and user in `expo-secure-store`; it does not parse the encrypted token to infer expiry.
-- Requests include `Authorization: Bearer <token>` and `X-Client: mobile`.
-- `src/proxy.ts` injects the Bearer token into NextAuth-compatible cookie names.
-- `POST /api/auth/mobile/refresh` accepts only a bounded (4,096-character maximum) unexpired Auth.js JWE, validates the decoded user ID and token version, and checks `tokenVersion` directly against the database before issuing a fresh token. Successful refresh responses use `Cache-Control: no-store`; expired or revoked sessions require sign-in.
-- Mobile refresh runs within five days of expiry and when the app returns to the foreground. The API wrapper retries a 401 once; it clears local auth only after the server rejects the refresh, while transient network/server failures preserve the stored session for a later retry.
-
 Authorization is role/ownership based:
 
 - Students can access their own bookings, reviews, favorites, alerts, messages, and profile.
@@ -171,7 +152,7 @@ Authorization is role/ownership based:
 - Admins can moderate listings, reviews, verifications, and search sync.
 - Admin student-verification decisions only update applications still in `PENDING`; stale decisions return a conflict. Hostel moderation validates each action against the current status and conditionally transitions from the observed state. Owner listing edits and status changes include ownership and the observed status in the write predicate, so a stale owner edit cannot undo an admin suspension.
 
-`src/proxy.ts` performs request shaping (including the mobile bearer-to-cookie bridge) and CSRF checks. It is not the authorization boundary: route handlers and data/service functions must still authenticate, authorize roles and ownership, validate object fields, and return only client-safe data.
+`src/proxy.ts` validates request origins for state-changing API calls. It is not the authorization boundary: route handlers and data/service functions must still authenticate, authorize roles and ownership, validate object fields, and return only client-safe data.
 
 ---
 
@@ -182,7 +163,6 @@ Implemented:
 - HTTPS-only deployment target.
 - Content Security Policy in `next.config.ts`.
 - CSRF Origin checks for browser state-mutating API routes.
-- Bearer-authenticated mobile requests skip browser Origin checks.
 - Zod validation on API payloads.
 - Booking, refund, and payout actions return typed domain errors and map stale-state conflicts to HTTP 409; unexpected persistence failures return operation-specific generic HTTP 500 responses while logs use safe summaries.
 - Upstash-backed rate limiting with in-memory fallback.
@@ -218,7 +198,7 @@ Implemented:
 - Owner subscription endpoints require the OWNER role, do not return the Safepay tracker, and rate-limit checkout creation per owner.
 - Booking checkout and booking-status actions, owner subscription checkout, SMS OTP, issue reports, uploads, and other high-cost writes apply per-user, destination, or trusted-IP rate limits. Booking status updates use conditional state transitions and restore the booking's guest count to room inventory only after winning the transition, preventing duplicate inventory restoration on concurrent actions. Student cancellations scope the write to the student's ID, require PENDING status, and are rejected after check-out or owner confirmation. Student/admin cancellation writes also require payoutId to remain null, so they cannot race a payout batch claim. Owner confirm/decline writes require the current hostel-owner relation. Owner payout bank-detail updates are limited to five per user per hour. Provider spending limits still need operational validation against production provider quotas.
 - Owner listing creation reads the owner's plan, checks the current listing count, and creates the listing inside one PostgreSQL Serializable transaction. Prisma serialization conflicts (P2034) retry up to three attempts; the admin email is sent only after commit. This prevents concurrent requests from oversubscribing a plan quota. Source: [Prisma transactions and batch queries](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
-- Review creation/edits are limited to 10 per user per hour, and push-token registration to 20 per user per hour, to curb repeat owner notifications and unbounded token writes.
+- Review creation/edits are limited to 10 per user per hour to curb repeat owner notifications.
 - Notification inbox reads are limited to 60 requests per user per minute; read-all is limited to 5 writes per minute and per-notification read/delete actions share a 60-per-minute user cap. Limits are checked before database work or body parsing, while notification reads and mutations remain scoped to the authenticated user.
 - Owner booking lists apply ownership through the hostel relation in the paginated booking query, avoiding an application-side preload of every hostel ID.
 - Admin-only payout and refund endpoints enforce privileged role checks.
@@ -233,13 +213,13 @@ Implemented:
 - Favorite creation/removal is student-only and limited to 60 actions per student per minute before the hostel database lookup.
 - Paginated favorites and owner listing reads are capped at 60 requests per user per minute, owner review dashboards at 30, and batch-scanning owner analytics at 10; throttled responses include `Retry-After` and limits run before database queries.
 - Admin booking state changes emit a correlated JSON audit event containing the action and keyed pseudonyms for actor and booking IDs; raw email, hostel name, and source identifiers are omitted. Booking IDs are capped at 64 characters before GET/PATCH database work.
-- Credentials sign-in checks independent 10-per-15-minute trusted-IP and 5-per-15-minute keyed-account buckets; web and mobile share both buckets. Login success, rejection, and throttling emit correlated events with HMAC pseudonyms rather than raw emails or addresses.
+- Credentials sign-in checks independent 10-per-15-minute trusted-IP and 5-per-15-minute keyed-account buckets. Login success, rejection, and throttling emit correlated events with HMAC pseudonyms rather than raw emails or addresses.
 - Admin listing-completeness and verification analytics scans are limited to 10 requests per admin per minute before database work. Sensitive admin collection reads share a 60-per-minute per-admin quota; private verification-document reads have a separate 30-per-minute cap. Cron health reads a fixed schedule set.
 - Private student-verification document reads are limited to 30 requests per admin per minute before user lookup or R2 fetch; throttled responses include `Retry-After`.
 - Price-alert edits/deletes are capped at 60 actions per user per minute and roommate-post deletion at 30 per minute; both reject overlong item IDs before the database lookup and return `Retry-After` for throttled requests.
 - Review creation requires a `STUDENT` session; overlong request-body hostel IDs are rejected before a completed-booking lookup or review write.
 - Listing-image uploads require an owner or administrator when a hostel ID is supplied. Owner-scoped lookup returns the same 404 for absent and foreign listings, and malformed or overlong multipart hostel IDs are rejected before lookup. Uploads require an identified session; missing R2 credentials or an invalid public image URL fail with 503 in production, while the placeholder response is limited to local development.
-- Owner listing creation is capped at five per hour; device-token registration/removal is capped at 20 per user per hour. Email-verification token reads and price-alert unsubscribe lookups are capped per trusted client IP before database access.
+- Owner listing creation is capped at five per hour. Email-verification token reads and price-alert unsubscribe lookups are capped per trusted client IP before database access.
 - Admin refund actions and Safepay webhook retries are capped at five per admin per hour; payout writes at 10 per hour; hostel, verification, review, and roommate moderation at 30 per minute; full Typesense sync at two per hour. Throttled responses carry Retry-After.
 - Full Typesense reindex uses narrow 100-row keyset pages and indexes each page directly, avoiding the full active-listing read and per-hostel follow-up reads.
 - Notification read/delete and roommate-post deletion apply the authenticated user ID in the database write predicate and return 404 for both absent and non-owned resources.
@@ -260,7 +240,6 @@ Open / needs verification:
 - Confirm production database connection limits against Vercel instance/region scaling; the node-postgres pool uses its default maximum per process and a serverless fleet can multiply connections.
 - A roommate post at the three-report threshold remains hidden until expiry unless an admin removes it. The current schema has no audited dismiss/restore state; decide whether that workflow needs a future schema change before adding moderator restore actions.
 - The last successful web production dependency audit reported zero vulnerabilities after upgrading Next.js to 16.3.8. The full audit retains five high development-tool findings through `braces` in the ESLint chain; the current upstream advisory lists no patched version, so do not force-downgrade the Next ESLint configuration. A web audit refresh on October 6 at 13:35 UTC could not reach the npm advisory endpoint (`ENOTFOUND registry.npmjs.org`). Mobile was refreshed October 7 with 30 production findings (19 high, 11 moderate, zero critical), but a repeat request in this review failed with the same DNS error; these are the last successful counts.
-- Complete physical-device QA for mobile deep links and push notifications.
 - Create/configure the dedicated private R2 bucket and bucket-scoped token, schedule the abandoned-upload cleanup job, and clean up legacy student documents that remain public in the listing bucket. See [private verification storage setup](docs/PRIVATE-STUDENT-VERIFICATION.md).
 
 ---
@@ -274,16 +253,13 @@ Safepay:
 - `POST /api/payment/webhook` is the server-to-server source of truth. During webhook-key rotation it can temporarily accept an explicitly configured previous secret until an ISO-8601 expiry, capped at 72 hours; unset both overlap variables after the queue drains.
 - Owner Pro currently uses a one-time PKR 3,000 checkout that grants one month of access; it is not automatic recurring billing.
 - Webhook expects the current `payment.succeeded` / `payment.failed` event shape, a matching merchant key, HMAC-SHA512 signature, tracker, order ID, PKR currency, exact paisa amount, and `TRACKER_ENDED` for success. Booking events are bound to a Safepay `paymentMethod` at read and state-write time; legacy null methods retain the Safepay default.
-- Mobile checkout return links carry only the booking ID; the app treats the URL as untrusted, then reads the authenticated booking endpoint and derives its result from the server-recorded payment and booking states. Pending stays in a checking state; resuming reuses the outstanding tracker, and a retry after recorded failure reuses the booking with a new tracker. A payment received after cancellation is shown distinctly. Redirect parameters never confirm a payment.
 - A booking stores its active tracker in the existing `transactionId` field; a checkout retry reuses the tracker. Conditional updates bind the provider and tracker, block duplicate settlement, and prevent delayed success from reviving cancelled bookings. Late successful payments stay CANCELLED + PAID for refund review. Verified webhook evidence is durably stored and signed QStash delivery applies business changes. Retryable delivery failures can be re-queued by an admin after checking the exact Safepay tracker; reconciliation-required events cannot be replayed from the admin queue.
-- Mobile clients send `X-Client: mobile` and receive `hostello://payment/return?...` return paths.
 - Refund helper sends paisa-denominated `amount`/`currency` to `POST /order/payments/v3/{tracker}/refund` and accepts a full refund only when `data.tracker.state` is `TRACKER_REFUNDED`. An unknown/failed response leaves the booking PAID; the admin can record a manual refund after verifying it in Safepay. Merchant sandbox validation remains open.
 
 JazzCash and EasyPaisa:
 
 - Both remain disabled. JazzCash GET returns only redirect to the payment page; POST callbacks fail closed without an integrity salt, use constant-time HMAC comparison before settlement, and enforce the optional configured gateway IP allowlist before parsing callback data. EasyPaisa redirects are unsigned and cannot settle bookings until a server-side transaction inquiry is added.
 - The callback route also checks the enabled-method registry before parsing JazzCash data. Before enabling JazzCash, bind the provider transaction reference and signed bill reference to the selected booking to prevent cross-booking replay.
-- Mobile redirect design work is documented separately; provider enablement and physical-device flows remain out of scope for this launch.
 
 Payouts:
 
@@ -310,25 +286,7 @@ Abandoned payments:
 In-app notifications:
 
 - Written to the `Notification` table.
-- Exposed through the web dashboard and the mobile profile-linked inbox; the mobile inbox loads the latest 100 from the paginated API and supports read/read-all actions.
-- Notification taps route booking updates to bookings, message pushes to the exact conversation when push-only context exists (otherwise the message list), and other events to the inbox.
-
-Push notifications:
-
-- `DeviceToken` stores mobile tokens.
-- The Expo client obtains native FCM/APNs device tokens because Firebase Admin sends directly through FCM; [Expo documents native tokens for direct FCM/APNs delivery](https://docs.expo.dev/versions/v57.0.0/sdk/notifications/#getdevicepushtokenasync).
-- Firebase Admin sends multicast notifications from `createNotification()`.
-- Invalid/stale tokens are deleted when FCM returns invalid-registration errors.
-- Mobile caches its registered token in SecureStore. Sign-out unregisters the saved token and never prompts for permission; an existing installation may read the token only if permission was already granted.
-- Push tap handling covers warm and cold starts using the SDK 57 response listener and last-response API, then clears the consumed response. Destinations are mapped from known event types instead of trusting an arbitrary URL; [Expo's SDK 57 notification API](https://docs.expo.dev/versions/v57.0.0/sdk/notifications/) documents these response APIs.
-- Message bodies stay in the authenticated inbox; lock-screen pushes use a generic “You have a new message” preview. Push payloads include only a conversation ID for routing; the ID is not added to the notification table.
-- Beta scope includes notifications and push. Mobile price alerts remain deferred; web email alerts remain available.
-
-Remaining before mobile beta:
-
-- Verify token registration/deletion on physical devices.
-- Verify foreground/background/killed-state notification behavior.
-- Verify tap routing, lock-screen privacy, and stale-token cleanup on physical devices.
+- Exposed in the web dashboard; notifications are available in the browser inbox.
 
 ---
 
@@ -398,34 +356,17 @@ Migration workflow is enforced.
 - Pre-commit hook blocks staged `prisma/schema.prisma` changes without staged migration files.
 - Migration ledger is in `prisma/MIGRATIONS.md`.
 
-Current migration count: 23.
+Current migration count: 29.
+
+The latest migration removes native device-token storage and remaps any resumable account-deletion jobs from the removed phase before dropping its table. It has not been applied to a database.
 
 Never edit SQL for a migration that has been applied to any shared or production database. Create a corrective migration instead.
 
 ---
 
-## 14. Mobile System Notes
+## 14. Web-Only Product Scope
 
-Mobile app status:
-
-- Expo Router app exists.
-- Auth screens and main tabs exist.
-- SecureStore auth, token refresh, and route guard exist.
-- Hostel detail, booking, conversation, favorites, bookings, messages, profile, and notification inbox screens exist.
-- The `hostello` custom scheme and native iOS associated-domain/Android intent filters are declared for `hostello.pk` and `www.hostello.pk`. Both association files are tracked. The Apple file currently sets `appID` to only `com.hostello.app`; Apple requires the app-ID prefix followed by the bundle ID. The Android file targets package `com.hostello.app`, but its SHA-256 fingerprint must match the release signing certificate (the Play App Signing certificate when enabled). Verify both files at the live HTTPS origins before beta. Sources: [Apple Universal Links](https://developer.apple.com/library/archive/documentation/General/Conceptual/AppSearch/UniversalLinks.html) and [Android App Links](https://developer.android.com/training/app-links/configure-assetlinks?hl=en).
-- Push notification taps open allowlisted booking, message, or inbox destinations; message pushes use generic lock-screen text.
-
-Current mobile risks:
-
-- Safepay return and push delivery need physical-device QA.
-- The `staging` EAS profile explicitly selects the `preview` environment and no longer embeds a placeholder API URL. Configure `EXPO_PUBLIC_API_URL` in EAS preview before building; the EAS dashboard value is not verified here. Follow the current [EAS environment-variable guidance](https://docs.expo.dev/eas/environment-variables/usage/) for builds and updates.
-- Configure and verify Firebase native service files through EAS (`GOOGLE_SERVICES_INFO_PLIST` and `GOOGLE_SERVICES_JSON`) before building. The local iOS `./GoogleService-Info.plist` is absent; an ignored local `google-services.json` exists, but its EAS availability has not been verified. The Android JS export completed while warning about the missing iOS file.
-- EAS signing credentials, first preview build, and mobile Sentry should be confirmed before external beta. The tracked Apple app-site association file needs the actual Apple App ID prefix added; the Android `assetlinks.json` fingerprint needs confirmation against the EAS/Play release signing certificate. The live host responses are also unverified.
-- The app manifest now declares its `@hostello/shared` file dependency and Zod 4 runtime dependency; `packages/shared` also declares Zod as a runtime dependency. This fixes Metro's earlier unresolved shared-package import and allows the app package to install independently. Expo SDK 57 supports on-demand filesystem resolution for linked source outside the app directory. Sources: [Expo Metro file-system guidance](https://docs.expo.dev/versions/v57.0.0/config/metro/) and [EAS monorepo builds](https://docs.expo.dev/build-reference/build-with-monorepos/).
-- The app is on Expo SDK 57.0.26 / React Native 0.86.3 / React 19.2.3 / TypeScript 6.0.3. The increment-by-increment SDK 54 → 55 → 56 → 57 upgrade, native dependency alignment, app-config plugin setup, and Android prebuild are complete. Expo SDK 58 is now stable (Expo 58.0.6 was released October 6) and targets React Native 0.88 / React 19.3. Its migration includes React Native 0.87 strict TypeScript/API changes and the iOS scene-based lifecycle. An SDK-major migration is pending explicit authorization and native migration review. The audit includes GHSA-vcc3-ghjq-m6fr in `decode-uri-component@0.2.2`. Static source tracing shows Expo Router 57 app links use its forked parser and URLSearchParams; the vulnerable `query-string.parse` function remains in React Navigation generic parser code, which ExpoRoot does not wire for app links. No active deep-link path to the decoder was found. Native artifact and remaining advisory review plus device tests still gate beta distribution. Sources: [Expo SDK reference](https://docs.expo.dev/versions/v58.0.0/), [Expo SDK upgrade guide](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/), [SDK 58 beta notes](https://expo.dev/changelog/sdk-58-beta).
-- The last successful October 7 mobile `npm audit --omit=dev` report returned 30 findings (19 high, 11 moderate, zero critical); a recheck failed because registry DNS did not resolve. It initially identified critical command injection in `shell-quote@1.10.0`; the lockfile now resolves `shell-quote@1.12.0`, outside the vulnerable `<1.11.0` range. Compatible Expo SDK 57 patch updates also reduce the high finding count by one; direct Expo and React Native pins remain 57.0.26 / 0.86.3. The latest Android Metro export contains 1,563 bundled modules and 1,570 source records from 68 npm package names. It confirms `query-string@7.1.3` and `decode-uri-component@0.2.2` are in the app bundle; build-tool packages such as `node-forge`, `xcode`, `uuid`, and Metro file-map dependencies do not appear in the JavaScript bundle. The current native app-link call path uses Expo Router forked parsing and URLSearchParams; `query-string.parse` occurs in the generic React Navigation parser, while ExpoRoot supplies the custom Expo linking config. The decoder was not found on the active deep-link path. This remains a JavaScript-only assessment; native artifact and remaining advisory reviews are open. The bundle was exported without Hermes bytecode because the sandbox denied writes to Hermes' temporary output path. Remaining findings require per-advisory path and native artifact review; do not use blanket forced fixes.
-- The generated Android project remains checked in, while `app.config.js` is the configuration source. Expo Doctor reports one native-config synchronization warning because EAS does not reapply app-config fields to an existing native directory. Android was regenerated from the current config; rerun `npx expo prebuild --platform android` after native app-config/plugin changes. There is no checked-in `ios` directory, so EAS generates iOS from config.
-- Android prebuild succeeded, but this workstation has no JDK or Android SDK, so a Gradle build was not available. An EAS preview build, iOS build, signing setup, and physical-device QA remain release gates. The current SDK 57 EAS image is Xcode 26.6; if moving to Xcode 27/iOS 27, enable scene support through `expo-build-properties` as described in the [SDK 57 release notes](https://expo.dev/changelog/sdk-57).
+HostelLo is maintained as a web-only product. Native app builds, app links, and mobile distribution are not part of the active release scope.
 
 ---
 
@@ -433,9 +374,9 @@ Current mobile risks:
 
 Current coverage:
 
-- 119 Vitest unit/integration test files.
+- 122 Vitest unit/integration test files.
 - 5 Playwright specs.
-- Unit/integration coverage for validations, booking/search/review services, CSRF/rate limits, payment initiation, hostels, notifications, profile, UI primitives, layouts/components, and mobile API wrapper.
+- Unit/integration coverage for validations, booking/search/review services, CSRF/rate limits, payment initiation, hostels, notifications, profile, UI primitives, and layouts/components.
 
 Key commands:
 
@@ -444,10 +385,11 @@ npm run lint
 npm run test
 npm run build
 npm run e2e
-npm --prefix apps/mobile run typecheck
 ```
 
-Last successful local verification on October 8, 2026:
+Current verification on October 16, 2026: 725 Vitest tests pass across 122 files; root typecheck passes; changed-file ESLint passes. Full ESLint reports three errors in unchanged files.
+
+Historical local verification on October 8, 2026:
 
 - `npx vitest run`: pass, 122 files and 733 tests. Coverage includes shared web/mobile IP and HMAC-account credential limits, expired encrypted mobile-token rejection, server-supplied expiry metadata, transient refresh preservation, and unauthenticated login 401 handling; JSON-LD inline-script delimiter escaping and round-trip serialization; oversized dynamic API path parameters are rejected before database work; oversized hostel-view slugs are rejected before rate-limit/database work; oversized conversation hostel IDs are rejected before database lookup; primary and destructive button inverse colors survive text-size class merging; About and authentication routes have one main landmark with an identified skip target; anonymous phone OTP issuance is rejected before storage or SMS delivery; trusted-IP public review-read, per-admin all-review-list, shared sensitive admin-queue reads, private verification-document, per-account booking-list/detail, and owner-earnings quotas; active-listing checks on new conversation creation; navbar Suspense fallback coverage; streamed body caps, bounded favorites/admin verification/payout queues, owner earnings history, owner blocked-date history, and account-deletion review batching; sanitized cron failure/health reporting; awaited CronLog persistence; shared five-job cron schedule registry; QStash JWT signature, key rotation, URL, and body verification; rejected token-cleanup auth skips cleanup; disabled JazzCash callback rejection; modal focus-boundary behavior; per-user review, device-token, notification, collection-read, admin-analytics, and password-reset throttles; hashed reset tokens with atomic claims; email-verification tokens stored as SHA-256 digests with legacy-link compatibility; development-only style-guide route behavior plus a desktop/mobile render regression for one H1, no overflow, failed responses, or browser errors; revoked/malformed JWT session rejection before route authorization; atomic OTP attempt/replay controls; student-only favorite mutations (active-hostel creation and user-scoped idempotent deletion) and throttling; Leaflet popup text/attribute escaping, URL restrictions, and unsafe-scheme rejection; review-reply role authorization and throttling; owner listing PATCH throttling; serializable owner plan-quota writes with bounded conflict retries and post-commit notification; stale verification/listing moderation compare-and-set writes; owner review-reply writes conditional on current hostel ownership; price-alert APIs and cron hide non-active hostel data; conversation notification failures log sanitized errors without participant IDs; IP-limited public hostel search with a structured degradation event; correlated payment/reconciliation and notification outcome logs; cron event logs with request/trace IDs; production-mode Redis outage fallback enforces per-instance rate limits without logging provider exception text; batched listing-completeness, owner/moderator analytics, and public availability; bounded conversation/message reads with participant-only access; owner booking relation scoping; owner blocked-date role and current-ownership checks; conditional cron state transitions; payment ingress, payout aggregation, and shared payout eligibility; read-only unsubscribe/payment/verification GETs; signed unsubscribe tokens; atomic one-time email verification; verification POST CSRF enforcement; configured-origin HTTPS link and checkout destinations; profile email preferences; OTP-backed phone changes; SMS limits; roommate moderation; listing edits; password byte limits; mobile push-notification routing, and conditional booking status transitions that prevent duplicate room restoration.
 - Follow-up verification after review-submission authorization: `npx vitest run` passes 115 files and 710 tests, including non-student denial before quota/database work and oversized review hostel-ID rejection before the completed-booking query.
@@ -475,16 +417,10 @@ For local runs, create `.env.e2e` from `.env.e2e.example`; it is loaded before `
 | Safepay/refund reconciliation | P0 | Partially implemented | Durable sanitized webhook evidence, refund audit records, an admin queue for unresolved events, and audited retries limited to `RETRYABLE` events are implemented. Verify current provider state, amount, currency, and tracker before retrying. Verify the configured merchant and refund response in sandbox, resolve legacy in-flight sessions at rollout, and exercise QStash retry/failure recovery before real transaction volume. |
 | Owner payout/accounting | P0 | Partially implemented | New manual payout batches freeze the bank destination in an encrypted snapshot; before marking a batch paid, Hostello rechecks eligible booking claims and reconciles their total to the batch amount. Paid transitions require a transfer reference and the lifecycle is recorded in an append-only audit ledger; void/release requires confirmation no transfer was sent. The ledger is not double-entry, existing batches have no destination snapshot, and transfer execution remains external. Fee accounting, reversal, and provider settlement reconciliation still need an approved accounting model before real transaction volume. |
 | Operational alerting | P1 | Partially implemented | Critical business paths emit privacy-limited structured JSON events with request/trace correlation. `/api/health/payments` returns 207 for both retryable exhausted webhook deliveries and manual-reconciliation events. Configure and exercise Sentry/Vercel alerts for payment health/reconciliation, search degradation, notification delivery, cron failures, and cron-health endpoint failures; choose rate thresholds after production volume is observable. |
-| Mobile native build and dependency review | P1 for mobile beta | Partially complete | Expo SDK 57.0.26 / React Native 0.86.3 are aligned. The last successful production audit has 30 findings (19 high, 11 moderate, zero critical); the current recheck failed because registry DNS does not resolve. Metro's latest Android source map contains 1,563 modules / 1,570 sources / 68 package names and confirms the URL parser packages are bundled. Per-advisory/native review, Android/iOS builds, and device QA remain open. EAS Firebase values and the absent local iOS plist need verification. This workstation has no JDK or Android SDK. |
-| Mobile app-link associations | P1 for mobile beta | Open | Both files are tracked, but the Apple `appID` omits the Apple App ID prefix. Confirm the prefix and Android release signing fingerprint from provider accounts, update the files, and verify HTTPS responses on both declared domains. |
 | Development lint dependency advisory | P2 | Open | The `braces` version in the ESLint toolchain is affected by an upstream advisory with no patch release listed as of October 5, 2026. Track the fixed release; avoid forcing `eslint-config-next` to an older major. |
 | Production build and E2E | P1 | Open | Run against a verified disposable PostgreSQL database. The isolated webpack build compiles and type-checks, but prerendered city/university metadata requires database access; Playwright E2E is also pending. |
-| Physical-device Safepay QA | P1 for mobile beta | Open | Test paid/cancelled/failed/abandoned flows on iOS/Android. |
-| Physical-device push QA | P1 for mobile beta | Open | Test registration, delivery, tap routing, stale cleanup. |
 | Database recovery readiness | P1 | Open | Confirm Neon production retention and restore options, set RPO/RTO, and rehearse recovery against a disposable branch. |
-| Business mobile gate | P1 for launch | Open | Confirm booking volume, support capacity, budget. |
-| JazzCash/EasyPaisa mobile callback flow | Deferred | Investigated | The redirect design spike is complete (`docs/superpowers/specs/2026-07-05-jazzcash-easypaisa-mobile-spike.md`); keep both providers disabled unless they become an explicit beta requirement. |
-| Mobile notification/price-alert coverage | P2 | Partial | Mobile now has an inbox, read actions, and push tap routing. Price alerts stay web-only for beta; device QA and a later parity decision remain open. |
+| JazzCash/EasyPaisa callback flow | Deferred | Investigated | Keep both providers disabled unless they become an explicit web-payment requirement and pass provider/security review. |
 | Production observability | P2 | Open | Add structured/correlated logs and critical-flow indicators; tune Sentry trace sampling from measured production traffic and validate scrubbing. |
 | Database connection budget | P2 | Open | Verify per-process node-postgres pool settings multiplied by peak Vercel instances fit the Neon connection budget; configure an explicit cap/pooler if needed. |
 
@@ -510,19 +446,11 @@ Required/important variables include:
 - `CRON_SECRET`
 - `QSTASH_CURRENT_SIGNING_KEY`
 - `TYPESENSE_*` (optional fallback to Prisma)
-- `FIREBASE_SERVICE_ACCOUNT_JSON` (optional; push gracefully disables if absent)
-
-Mobile also needs:
-
-- `EXPO_PUBLIC_API_URL`
 
 ---
 
 ## 18. Glossary
 
-**Bearer bridge:** The `src/proxy.ts` logic that maps mobile `Authorization: Bearer` tokens into NextAuth-compatible cookies for route handlers.
-
-**Device token:** FCM/APNs token identifying one mobile app installation.
 
 **PITR:** Point-in-time recovery for the production database.
 
@@ -682,18 +610,19 @@ Mobile also needs:
 | 3.123 | October 9, 2026 | Account deletion now runs in resumable, keyset-batched phases, with migration and QStash schedule setup remaining release gates. Owner listing edits now scope the preflight lookup by owner and return the same 404 for foreign and missing listings. Focused ESLint and `git diff --check` pass; route tests were not run. |
 | 3.124 | October 9, 2026 | Restrict the student-verification queue, private document lookup, moderation decision predicate, dashboard count, and analytics scans to `STUDENT` accounts. Route tests were updated but not run. |
 | 3.125 | October 9, 2026 | Public hostel search now rechecks `ACTIVE` status in the database hydration query, preventing temporarily stale Typesense entries from exposing unpublished listings. Existing route expectations were updated; tests were not run. |
+| 3.127 | October 16, 2026 | Retired native mobile support and removed the bearer-token bridge, push delivery, and mobile checkout redirects. The forward migration remaps resumable account-deletion jobs from the removed device-token phase before dropping its table. Full suite: 725 tests across 122 files; root typecheck passes. Changed-file ESLint passes; full ESLint still reports three errors in unchanged files. |
 | 3.126 | October 9, 2026 | Public review reads and their count query now require the related hostel to remain `ACTIVE` at query time, closing the suspension race after the initial visibility check. Existing query expectations were updated; tests were not run. |
 | 3.115 | October 9, 2026 | Added the pending migration for cancellation-policy snapshots, partial refunds, owner-response deadlines, and verification review records. Existing full refunds are backfilled; existing listings keep a null policy until their owner chooses terms. Owner listings now expose the missing-policy state and edit path. The migration remains unapplied. |
 | 3.114 | October 8, 2026 | Conversation GET/POST now require the caller in the participant relation within the preflight query; nonparticipants, including admins, receive 404 before message reads, read-state changes, or sends. Added a message-send boundary regression test. Full suite: 744 tests across 122 files; root typecheck passes; full ESLint: 0 errors, 26 warnings. |
 
 ## 20. Current Practice Baseline
 
-Reviewed October 8, 2026 against current official framework, security, database, and reliability guidance. Apply these as design guardrails; they are not claims that every control is already implemented:
+Reviewed October 16, 2026 against current official framework, security, database, and reliability guidance. Apply these as design guardrails; they are not claims that every control is already implemented:
 
 - **Bound resource consumption at every API boundary:** validate request and response sizes, cap page size, rate-limit by trusted client or account before expensive work, and set provider spending limits/alerts. The public review collection now applies an IP cap, and the admin review list applies an account cap before queries. Source: [OWASP API4:2023](https://api-security.owasp.org/editions/2023/en/0xa4-unrestricted-resource-consumption/).
 - **Authorize server-side reads at the data boundary:** scope private reads by the signed-in principal in the query and return only the fields the render needs. If a Server Component calls an HTTP API, forward the caller's credentials explicitly. Source: [Next.js data security](https://nextjs.org/docs/app/guides/data-security).
-- **Layer anti-automation controls:** combine edge reputation/basic WAF limits, application endpoint and identity quotas, and backend account/transaction-velocity signals; a single IP or IP-plus-account bucket is insufficient against distributed credential attacks. Hostello implements application-level Upstash quotas, including independent trusted-IP and HMAC-keyed account buckets shared by web and mobile sign-in. Hosted edge bot/WAF rules and business anomaly signals remain unverified and require environment-level review. Keep account identifiers pseudonymous in limiter keys and logs. Sources: [OWASP Bot Management and Anti-Automation](https://cheatsheetseries.owasp.org/cheatsheets/Bot_Management_and_Anti-Automation_Cheat_Sheet.html) and [Auth.js Credentials](https://authjs.dev/getting-started/providers/credentials).
-- **Treat Auth.js session tokens as opaque client-side:** Auth.js encrypts JWT-strategy tokens as JWE by default; clients should receive expiry metadata from the server instead of inspecting token segments. The mobile beta follows this pattern and refreshes from the server-provided lifetime. Source: [Auth.js Core reference](https://authjs.dev/reference/core).
+- **Layer anti-automation controls:** combine edge reputation/basic WAF limits, application endpoint and identity quotas, and backend account/transaction-velocity signals; a single IP or IP-plus-account bucket is insufficient against distributed credential attacks. Hostello implements application-level Upstash quotas, including independent trusted-IP and HMAC-keyed account buckets for credential sign-in. Hosted edge bot/WAF rules and business anomaly signals remain unverified and require environment-level review. Keep account identifiers pseudonymous in limiter keys and logs. Sources: [OWASP Bot Management and Anti-Automation](https://cheatsheetseries.owasp.org/cheatsheets/Bot_Management_and_Anti-Automation_Cheat_Sheet.html) and [Auth.js Credentials](https://authjs.dev/getting-started/providers/credentials).
+- **Treat Auth.js session tokens as opaque client-side:** Auth.js encrypts JWT-strategy tokens as JWE by default; browser clients should rely on the server-managed session rather than inspect token segments. Source: [Auth.js Core reference](https://authjs.dev/reference/core).
 - **Use the deployment's documented client-IP trust boundary:** this app keys IP quotas from Vercel's overwritten `x-forwarded-for` value and ignores alternate client-supplied forwarding headers. If another proxy is introduced, configure Vercel Trusted Proxy explicitly before changing the extractor. Source: [Vercel request headers](https://vercel.com/docs/headers/request-headers).
 - **Treat serverless throttling as distributed state:** production quotas use Upstash's Redis-backed sliding-window limiter, with limiter instances cached outside route handlers. The documented in-memory fallback only coordinates within one runtime instance during Redis outages, so outage telemetry and abuse review remain operational requirements. Sources: [Upstash rate-limit overview](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview) and [features](https://upstash.com/docs/redis/sdks/ratelimit-ts/features).
 - **Set explicit contrast targets in both themes:** normal text, including placeholder text and hover/focus text, needs 4.5:1 contrast; large text needs 3:1. Meaningful control states and graphical indicators need 3:1 against adjacent colors. The design-token regression checks CTA states, accent/link text, semantic action foregrounds, and placeholders in light and dark themes; a page-wide visual contrast audit remains open. Sources: [WCAG 2.2 SC 1.4.3](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) and [SC 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html).

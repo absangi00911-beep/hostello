@@ -72,8 +72,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking is already paid." }, { status: 400 });
     }
 
-    const isMobile      = req.headers.get("x-client") === "mobile";
-    const appUrl        = isMobile ? "https://hostello.app" : getAppOrigin();
+    const appUrl        = getAppOrigin();
     const paymentMethod = booking.paymentMethod ?? "safepay";
 
     // Guard 3: reject disabled payment methods
@@ -87,12 +86,6 @@ export async function POST(req: NextRequest) {
 
     // -- JazzCash ------------------------------------------------------------
     if (paymentMethod === "jazzcash") {
-      if (isMobile) {
-        return NextResponse.json(
-          { error: "JazzCash is not supported on mobile yet." },
-          { status: 400 }
-        );
-      }
       const jcSession = createJazzCashSession({
         bookingId:   booking.id,
         amount:      booking.total,
@@ -108,12 +101,6 @@ export async function POST(req: NextRequest) {
 
     // -- EasyPaisa -----------------------------------------------------------
     if (paymentMethod === "easypaisa") {
-      if (isMobile) {
-        return NextResponse.json(
-          { error: "EasyPaisa is not supported on mobile yet." },
-          { status: 400 }
-        );
-      }
       const epSession = createEasypaisaSession({
         bookingId:     booking.id,
         amount:        booking.total,
@@ -133,11 +120,6 @@ export async function POST(req: NextRequest) {
       bookingId:     booking.id,
       orderId:       booking.id,
       appUrl,
-      source: isMobile ? "mobile" as const : "hosted" as const,
-      ...(isMobile && {
-        redirectPath: `hostello://payment/return?bookingId=${encodeURIComponent(booking.id)}`,
-        cancelPath: `hostello://payment/return?bookingId=${encodeURIComponent(booking.id)}`,
-      }),
     };
 
     // Reuse the one outstanding tracker for a pending payment. This avoids

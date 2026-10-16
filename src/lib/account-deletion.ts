@@ -21,7 +21,6 @@ const PHASES = [
   "ROOMMATE_REPORTS",
   "ROOMMATE_POSTS",
   "REVIEWS",
-  "DEVICE_TOKENS",
   "RESET_TOKENS",
   "PHONE_TOKENS",
   "SESSIONS",
@@ -367,8 +366,6 @@ async function fetchPhaseBatch(tx: DeletionTx, phase: DeletionPhase, userId: str
       return { ids: (await tx.roommatePost.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "REVIEWS":
       return { reviews: await tx.review.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true, hostelId: true } }), ids: [] as string[] };
-    case "DEVICE_TOKENS":
-      return { ids: (await tx.deviceToken.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "RESET_TOKENS":
       return { ids: (await tx.passwordResetToken.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "PHONE_TOKENS":
@@ -458,7 +455,6 @@ async function deletePhaseBatch(
       }
       return;
     }
-    case "DEVICE_TOKENS": await tx.deviceToken.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "RESET_TOKENS": await tx.passwordResetToken.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "PHONE_TOKENS": {
       const phoneTokens = batch.phoneTokens ?? [];

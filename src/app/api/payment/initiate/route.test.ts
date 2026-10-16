@@ -61,7 +61,7 @@ describe("POST /api/payment/initiate", () => {
     });
   });
 
-  it("uses the mobile app scheme for mobile Safepay returns", async () => {
+  it("uses web checkout even when a request identifies a mobile client", async () => {
     const req = new NextRequest("https://hostello.test/api/payment/initiate", {
       method: "POST",
       headers: { "x-client": "mobile" },
@@ -73,9 +73,13 @@ describe("POST /api/payment/initiate", () => {
     expect(res.status).toBe(200);
     expect(createCheckoutSession).toHaveBeenCalledWith(
       expect.objectContaining({
-        redirectPath: "hostello://payment/return?bookingId=booking-1",
-        cancelPath: "hostello://payment/return?bookingId=booking-1",
-        source: "mobile",
+        appUrl: "https://hostello.test",
+      }),
+    );
+    expect(createCheckoutSession).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        redirectPath: expect.any(String),
+        cancelPath: expect.any(String),
       }),
     );
     expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
@@ -140,7 +144,6 @@ describe("POST /api/payment/initiate", () => {
 
     const req = new NextRequest("https://hostello.test/api/payment/initiate", {
       method: "POST",
-      headers: { "x-client": "mobile" },
       body: JSON.stringify({ bookingId: "booking-1" }),
     });
     const res = await POST(req);
@@ -149,7 +152,6 @@ describe("POST /api/payment/initiate", () => {
     expect(createCheckoutLink).not.toHaveBeenCalled();
     expect(createCheckoutSession).toHaveBeenCalledWith(expect.objectContaining({
       bookingId: "booking-1",
-      source: "mobile",
     }));
     expect(db.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({

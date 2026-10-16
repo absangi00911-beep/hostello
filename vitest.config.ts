@@ -20,9 +20,6 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     exclude: [...configDefaults.exclude, 'e2e/**'],
-    env: {
-      EXPO_PUBLIC_API_URL: 'http://localhost:3000',
-    },
   },
   resolve: {
     alias: {

@@ -53,7 +53,6 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   AccountDeletionJob: 'AccountDeletionJob',
-  DeviceToken: 'DeviceToken',
   Subscription: 'Subscription',
   Payout: 'Payout',
   PayoutAuditEvent: 'PayoutAuditEvent',
@@ -147,18 +146,6 @@ export const AccountDeletionJobScalarFieldEnum = {
 } as const
 
 export type AccountDeletionJobScalarFieldEnum = (typeof AccountDeletionJobScalarFieldEnum)[keyof typeof AccountDeletionJobScalarFieldEnum]
-
-
-export const DeviceTokenScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  token: 'token',
-  platform: 'platform',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type DeviceTokenScalarFieldEnum = (typeof DeviceTokenScalarFieldEnum)[keyof typeof DeviceTokenScalarFieldEnum]
 
 
 export const SubscriptionScalarFieldEnum = {
