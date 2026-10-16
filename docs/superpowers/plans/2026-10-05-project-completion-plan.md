@@ -1,34 +1,34 @@
 # HostelLo Project Completion Plan
 
-**Last updated:** October 12, 2026
-**Goal:** Production-ready web MVP and a mobile beta, with Safepay as the primary payment method.
+**Last updated:** October 16, 2026
+**Goal:** Production-ready web MVP, with Safepay as the primary payment method.
 **Status:** In progress
 
 ## Scope
 
-Included: the existing student, owner, and admin web journeys; current Safepay booking flow; Expo mobile beta; launch-critical payment, security, support, and recovery readiness.
+Included: the existing student, owner, and admin web journeys; current Safepay booking flow; launch-critical payment, security, support, and recovery readiness.
 
-Deferred unless launch requirements change: JazzCash/EasyPaisa mobile payments, international expansion, automated payouts, commission model, partial/self-service refunds, native owner/admin apps, and other v2 features.
+Deferred unless launch requirements change: JazzCash/EasyPaisa, international expansion, automated payouts, commission model, partial/self-service refunds, and other v2 features.
 
 The repository is on `main`; the redesign is committed, while the available `.playwright-cli` screenshots are untracked captures from October 5. Preserve those artifacts and review fresh screens before release. Do not use production credentials for local checks or run database migrations against an unverified target.
 
 ## Current Baseline
 
-- Repository audit: 53 web page files, 69 API route files, 25 Prisma models, 22 migration folders, 122 Vitest files, 5 Playwright specs, and 16 mobile route/screen files.
-- Latest non-database local verification: 744 tests across 122 files, root TypeScript check passes, full ESLint has 0 errors and 26 warnings. `git diff --check` passes. Production build and broad browser/device checks remain open.
+- Repository audit: 58 web page files, 71 API route files, 28 Prisma models, 29 migration folders, 122 Vitest files, and 5 Playwright specs.
+- Latest local verification: 725 tests across 122 files and root TypeScript check pass. Changed-file ESLint passes; full ESLint reports three errors in unchanged files. `git diff --check` passes. Production build and broad browser checks remain open.
 - The redesign spans public, student, owner, and admin surfaces, shared components, styles, and animation providers. It is not yet verified as a complete release candidate.
 - Payout batches and admin refunds exist. Payout transfers are manual. An uncertain Safepay refund leaves the booking `PAID`; manual confirmation is allowed only after Safepay is checked. Refund-attempt evidence and a verified webhook inbox/queue are implemented; the migration is applied to the disposable local database and Prisma reports it up to date. Merchant sandbox and production verification remain open.
-- The last successful web production audit reported zero vulnerabilities after patching Next.js to 16.3.8. The full web audit has five high development-tool findings through `braces`; the upstream advisory lists no patched version. Mobile is on Expo SDK 57.0.26 / React Native 0.86.3. Its last successful October 7 npm omit-dev audit reports 30 findings (19 high, 11 moderate, zero critical); a recheck on the current turn failed because `registry.npmjs.org` did not resolve. The latest Android Metro export contains 1,563 modules (1,570 source records) across 68 npm package names; `query-string` and `decode-uri-component` are present in shipped JavaScript. Per-advisory and native-binary exposure reviews remain open. SDK 58 is stable, but its migration remains gated on explicit authorization and native review.
+- The last successful web production audit reported zero vulnerabilities after patching Next.js to 16.3.8. The full web audit has five high development-tool findings through `braces`; the upstream advisory lists no patched version.
 - Safepay's current contract has been applied in code: v3 checkout sessions, PKR-to-paisa conversion, current `payment.succeeded` events, HMAC-SHA512 verification, merchant-key/tracker/state/amount checks, and the documented full-refund state (`TRACKER_REFUNDED`). Merchant sandbox checkout/refund behavior and production keys are unverified. `SAFEPAY_API_KEY` is now required alongside the server and webhook secrets.
 - Unsigned EasyPaisa callbacks fail closed; JazzCash callback verification now rejects missing secrets and uses constant-time HMAC comparison. Both alternative providers remain disabled.
-- `.env.e2e` targets PostgreSQL on `localhost:5432`. The initialized PostgreSQL 18 cluster is running locally and the existing `hostello` database was confirmed empty before migrations. The project migrations are applied there; the Windows service itself remains stopped, while the cluster is running under the current user account.
-- Physical-device QA, production database recovery configuration, and the business mobile-beta gate need owner/environment access.
+- `.env.e2e` targets PostgreSQL on `localhost:5432`. The initialized PostgreSQL 18 cluster is running locally and the existing `hostello` database was confirmed empty before migrations. The new October 16 mobile-removal migration has not been applied to any database.
+- Native mobile app support was retired on October 16, 2026; production database recovery configuration and other release evidence still need owner/environment access.
 
 ## Work Plan
 
-### 0. Scope and baseline — In progress
+### 0. Scope and baseline — Complete
 
-- [x] Agree scope: web MVP plus mobile beta; Safepay primary.
+- [x] Agree scope: web-only MVP; Safepay primary.
 - [x] Sequence work as requested: finish non-database items before database changes or database-backed checks.
 - [x] Separate migration deployment from artifact builds: production CI applies migrations after quality checks with Vercel production variables; preview builds do not mutate databases.
 - [x] Inspect the current tree and preserve the existing uncommitted redesign.
@@ -36,7 +36,9 @@ The repository is on `main`; the redesign is committed, while the available `.pl
 - [x] Run the existing safe local checks against the current combined tree; record failures separately from known baseline issues.
 - [x] Confirm the `.env.e2e` target is the disposable local PostgreSQL database before database-backed or migration operations.
 
-**Exit gate:** one current source of truth and a recorded check baseline. The local Hostello database is running and all 22 migrations are up to date. Playwright passed all 26 tests against it. A webpack production build passes with process-only HTTPS URL overrides; deploy-time URL configuration and live provider gates remain open.
+**Exit gate:** one current source of truth and a recorded check baseline. The local Hostello database is running; Playwright previously passed all 26 tests against it. The October 16 mobile-removal migration is pending and must be applied only after confirming the target database. A webpack production build passed earlier with process-only HTTPS URL overrides; deploy-time URL configuration and live provider gates remain open.
+
+The following detailed baseline and dated progress entries are historical records; mobile app checks and launch gates have been retired.
 
 Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type checks passed; shared-package type check passed; lint passed with 0 errors and 32 warnings. After payment hardening, UI review, and telemetry privacy coverage, the suite passed 348 tests across 47 files. After private verification storage it passed 371 tests across 52 files. Latest recorded full suite: 744 tests pass across 122 files; root typecheck passes; full ESLint has 0 errors and 26 warnings. Credentials sign-in now shares separate trusted-IP (10 per 15 minutes) and HMAC-keyed account (5 per 15 minutes) limits across web and mobile, with pseudonymous login events that omit raw email, IP, and password values. The signed Safepay webhook rejects order IDs over 128 characters and tracker values over 256 before database queries. The booking-review Server Component scopes its database query to the signed-in student and selects only render fields; it no longer relies on an unauthenticated server-side fetch to a protected API route. Favorites, admin verification/payout queues, owner earnings history, owner blocked-date history, conversation/message reads, and account-deletion review cleanup are bounded and paginated; pending-listing completeness, owner/moderator analytics, and public availability use 200-row keyset batches. Owner booking queries apply hostel ownership in the paginated database query instead of materializing all hostel IDs. Owner listing totals and booking status/revenue summaries use database aggregates; the six-month chart still scans its bookings. Payout totals use database aggregation, cron booking transitions are conditional and batched, and price-alert failures remain eligible for retry. Owner blocked-date routes check the OWNER role before resource lookup. Public hostel search is capped at 120 requests per trusted client IP per minute before Typesense or PostgreSQL work. Motion animations follow the OS reduced-motion preference, and Lenis smooth scrolling stops while it is enabled. Public availability rejects oversized identifiers and is limited by trusted client IP; range deltas with binary-searched boundaries keep per-window aggregation O(matches × log days + days) across up to 366 days. All JSON write bodies and both multipart upload streams enforce byte caps; password creation/change/reset rejects inputs over bcrypt's 72 UTF-8-byte limit. Admin-only hostel details, active-listing public read boundaries, signed unsubscribe links and payment/verification callbacks with read-only GET semantics, per-IP SMS OTP caps, owner-only subscription checkout, and student-only conversation creation are in place. QStash scheduling now uses its official SDK and signed JWT receiver, with five schedules shared between registration and health monitoring; cron health persistence is awaited. Disabled JazzCash callbacks cannot settle bookings. Booking status actions now use conditional transitions so concurrent cancel/confirm/decline attempts cannot restore room inventory twice, with a 30/min per-user cap. Owner payout bank-detail writes are capped at five per user per hour. The mobile beta now has a notification inbox, allowlisted push-tap routing, push-only conversation context, cached token unregistration, and generic lock-screen message text; price alerts remain web-only. Mobile is on Expo SDK 57.0.26 / React Native 0.86.3 and TypeScript 6.0.3; Expo dependency check, config evaluation, and Android prebuild pass. Expo Doctor passes 20/21 checks; the only warning concerns app config versus checked-in native directories. A real native build could not run because this workstation has no JDK or Android SDK. The final Playwright suite passes 26/26 tests against the disposable local PostgreSQL database. A local `npx next build --webpack` now passes with process-only HTTPS URL overrides and the local database; a prior default Turbopack build exited during worker startup. The `/about` missing-Suspense error was fixed by wrapping the navbar city selector.
 
@@ -210,32 +212,9 @@ Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type c
 
 **Exit gate:** recovery has been exercised, critical failures are observable, security/resource controls are reviewed, and support/admin runbooks exist.
 
-### 4. Prepare the mobile beta — In progress (SDK 57 upgrade and Android prebuild complete; SDK 58 review open)
+### 4. Native mobile app — Retired
 
-- [x] Upgrade Expo SDK 54 → 55 → 56 → 57.0.26 incrementally; align React Native 0.86.3, React 19.2.3, TypeScript 6.0.3, and native modules; remove the deprecated TypeScript `baseUrl` setting.
-- [x] Add the SDK 57 Expo config plugins/system UI dependency and required monochrome notification icon; regenerate the checked-in Android project from app config.
-- [x] Verify mobile TypeScript, Expo package alignment, and Expo config parsing. Expo Doctor passes 20/21 checks; its sole warning is that EAS does not sync dynamic app-config fields into checked-in native folders. Keep Android regenerated after future config/plugin edits.
-- [x] Fix mobile session expiry handling for Auth.js encrypted tokens: return server-side lifetime metadata, refresh within five days of expiry and on foreground resume, preserve sessions during transient refresh failures, and require sign-in for expired/revoked tokens.
-- [x] Set the `staging` EAS profile to the explicit `preview` environment and remove its committed placeholder API URL.
-- [x] Verify Safepay return state through the authenticated booking API; deep-link query parameters cannot mark a booking paid. Pending webhook delivery remains a checkable state, and late payment after cancellation is distinct.
-- [ ] Configure and verify `EXPO_PUBLIC_API_URL`, `GOOGLE_SERVICES_INFO_PLIST`, and `GOOGLE_SERVICES_JSON` in EAS preview; obtain the Apple App ID prefix, confirm the Android release signing fingerprint, update the tracked association files, and verify their live HTTPS responses before distribution. The local iOS plist is absent; the Android Firebase JSON exists only as an ignored local file.
-- [x] Add a mobile notification inbox, read/read-all actions, and allowlisted notification-tap routing; include push-only conversation context without a schema change, cache tokens for sign-out, and use generic lock-screen message text. Beta scope keeps price alerts web-only.
-- [ ] Run Android/iOS Gradle or EAS preview builds. This workstation has no JDK or Android SDK; iOS/EAS signing credentials also need verification.
-- [ ] Review the refreshed SDK 57 production dependency audit (30 findings remain: 19 high, 11 moderate, zero critical) against shipped JS and native artifacts, then resolve or explicitly accept each relevant finding.
-  - [x] Declare the missing mobile `@hostello/shared` local-package dependency and Zod 4 runtime dependency; move Zod to `packages/shared` runtime dependencies. Mobile TypeScript passes, and Metro now bundles the app instead of failing to resolve the shared package.
-  - [x] Export the Android JS bundle with an external source map: Metro bundled 1,563 modules (1,570 source records) across 68 npm package names. Hermes bytecode output is unavailable because the sandbox denies writes to Hermes' temp path, so this audit export used `--no-bytecode`.
-  - [x] Refresh the npm audit and fix critical `shell-quote@1.10.0` to 1.12.0 within the existing dependency range. Compatible Expo SDK 57 tooling patches reduced the audit from 31 findings (20 high / 11 moderate) to 30 (19 high / 11 moderate); there are zero critical findings and the Expo/RN pins remain unchanged.
-  - [ ] Complete per-advisory matching. The source map confirms `query-string@7.1.3` and `decode-uri-component@0.2.2` are present in the bundle; `node-forge@1.4.0`, `uuid@7.0.3`, `xcode@3.0.1`, and Metro file-map packages are absent from the JS bundle. Native exposure and the vulnerable-function reachability of all remaining paths still need review.
-  - [x] Trace GHSA-vcc3-ghjq-m6fr (`decode-uri-component`): the module is bundled through `query-string@7.1.3`, but ExpoRoot supplies Expo Router’s custom linking config, whose active fork parser uses URLSearchParams. The vulnerable `query-string.parse` call exists in React Navigation’s generic parser and was not found on the app’s external deep-link path. The fixed 0.5.0 decoder is ESM-only while query-string 7 uses CommonJS `require`, so no unverified override was added. Native artifacts and the rest of the advisory set remain open.
-  - [ ] Build Android/iOS artifacts and review native dependencies; the JS source map does not cover them.
-- [ ] Evaluate an incremental SDK 57 → 58 migration before broad mobile distribution. Expo SDK 58 is stable as of October 7 (Expo 58.0.6, React Native 0.88 / React 19.3); it includes React Native 0.87 strict TypeScript/API changes and adopts the iOS scene-based lifecycle. Complete an SDK 57 EAS preview build first, then migrate and repeat type, native build, and device checks. Sources: [Expo SDK reference](https://docs.expo.dev/versions/v58.0.0/), [Expo SDK upgrade guide](https://docs.expo.dev/workflow/upgrading-expo-sdk-walkthrough/), [SDK 58 beta notes](https://expo.dev/changelog/sdk-58-beta).
-- [ ] Test Safepay paid/cancelled/failed/abandoned returns on physical iOS and Android devices.
-- [ ] Test push registration, foreground/background/killed delivery, tap routing, and stale-token cleanup on devices.
-- [x] Set beta notification scope: include the notification inbox and push; leave price alerts web-only pending beta demand.
-- [ ] Confirm EAS signing/build profiles, privacy disclosures, app links, and release monitoring.
-- [x] Keep JazzCash/EasyPaisa mobile flows deferred unless they become an explicit beta requirement.
-
-**Exit gate:** a distributable beta build passes the agreed device matrix and its core payment/auth/notification paths have evidence from physical devices.
+The project is web-only. Native app code and its distribution, device, push, and app-link release gates were removed on October 16, 2026. The dated progress entries below document the earlier mobile work and are historical, not active requirements.
 
 ### 5. Controlled release and stabilization — Not started
 
@@ -244,23 +223,23 @@ Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type c
      - **Acceptance:** The candidate diff is reviewable and contains only approved release changes; the JazzCash callback replay fix is either included and reviewed or explicitly held out.
      - **Verification:** Review `git status` and the candidate diff; run the focused payment tests for any included payment changes.
      - **Dependencies:** None.
-  2. **Restore deterministic CI.** Reconcile `package.json` and `package-lock.json` so a clean `npm ci` succeeds; use a Node version supported by the locked dependencies (the latest observed CI logs warned that dependencies require Node 22); scope the mobile type-check to application sources rather than tests that import unavailable Vitest; give the shared package a valid, narrow type-check command/configuration rather than compiling unrelated repository files.
-     - **Acceptance:** Clean installs and all web, mobile, and shared checks pass on the same Node version used by deployment.
+  2. **Restore deterministic CI.** Reconcile `package.json` and `package-lock.json` so a clean `npm ci` succeeds; use a Node version supported by the locked dependencies (the latest observed CI logs warned that dependencies require Node 22); give the shared package a valid, narrow type-check command/configuration rather than compiling unrelated repository files.
+     - **Acceptance:** Clean installs and all web and shared checks pass on the same Node version used by deployment.
      - **Verification:** Run clean installs in each workflow working directory, then the exact CI type-check commands locally and in a PR run.
      - **Dependencies:** Task 1.
   3. **Make the existing suite green without hiding failures.** Fix the CSS token regression in `src/app/globals.test.ts` so it tests the actual CSS variable-based tokens, and resolve any other failures discovered by the full suite. Do not skip tests, weaken assertions, or suppress lint/type errors to clear the gate.
      - **Acceptance:** Full Vitest suite, root typecheck, and lint complete successfully; existing warning counts are reviewed rather than mistaken for errors.
      - **Verification:** `npm test -- --run`, `npm run typecheck`, and `npm run lint`.
      - **Dependencies:** Task 2.
-  4. **Close dependency audit findings safely.** Re-run full and production-only web audits plus the mobile audit. Investigate the currently observed five high web findings through `braces` in the ESLint dependency chain; use a compatible patched transitive version if available, otherwise document the upstream status and explicit risk acceptance. Never force a breaking downgrade to `eslint-config-next`. Match mobile advisories to shipped JS/native artifacts and record remediation or risk decisions.
+  4. **Close dependency audit findings safely.** Re-run full and production-only web audits. Investigate the currently observed five high web findings through `braces` in the ESLint dependency chain; use a compatible patched transitive version if available, otherwise document the upstream status and explicit risk acceptance. Never force a breaking downgrade to `eslint-config-next`.
      - **Acceptance:** No unresolved critical/high production dependency advisory; any non-production exception has an owner, rationale, and recheck date.
-     - **Verification:** `npm audit --audit-level=high`, `npm audit --omit=dev --audit-level=high`, and equivalent mobile audit commands; rerun CI after lockfile changes.
+     - **Verification:** `npm audit --audit-level=high` and `npm audit --omit=dev --audit-level=high`; rerun CI after lockfile changes.
      - **Dependencies:** Task 2.
   5. **Make production promotion safe.** Change deployment ordering so the production artifact is built and verified before any production migration runs. Keep migrations backward-compatible with both the currently deployed version and the rollback artifact; separate artifact build from deployment where necessary so a failed build cannot leave the database migrated without the application release.
      - **Acceptance:** A simulated build failure cannot reach the production migration step; a migration failure cannot promote traffic; rollback compatibility is documented for each pending migration.
      - **Verification:** Review the workflow dependency graph and exercise build/migration failure paths in a non-production workflow/environment. Never test this by intentionally failing against production.
      - **Dependencies:** Tasks 2–4.
-  6. **Enforce merge gates.** After CI job names stabilize, configure GitHub rules for `main`: require the web, mobile, shared, and deployment-preview/build checks as applicable, require review, and block direct pushes/force-pushes. Ensure preview-deployment credentials are not exposed to untrusted fork code.
+  6. **Enforce merge gates.** After CI job names stabilize, configure GitHub rules for `main`: require the web, shared, and deployment-preview/build checks as applicable, require review, and block direct pushes/force-pushes. Ensure preview-deployment credentials are not exposed to untrusted fork code.
      - **Acceptance:** GitHub reports `main` protected by rules that require the agreed checks/review; direct pushes cannot bypass the release gate.
      - **Verification:** Inspect repository rules/branch protection in GitHub and confirm a test PR cannot merge while a required check is failing.
      - **Dependencies:** Tasks 2–5.
@@ -272,7 +251,7 @@ Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type c
      - **Acceptance:** No student verification document is publicly reachable; cleanup and health checks are current; each required alert has an owner, response path, and observed test event.
      - **Verification:** Use the document-exposure and monitoring checklists in [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md); query the health endpoints and confirm alert delivery without including secrets or personal data.
      - **Dependencies:** Task 1; requires Cloudflare, Vercel, and Sentry access.
-  9. **Run staged-release checks and decide go/no-go.** Verify production configuration, public/student/owner/admin critical paths, smoke checks, rollback target, support contacts, and a small cohort. Complete the mobile physical-device/EAS gates before advertising the mobile beta; otherwise explicitly limit the release to web.
+  9. **Run staged-release checks and decide go/no-go.** Verify production configuration, public/student/owner/admin critical paths, smoke checks, rollback target, support contacts, and a small cohort.
      - **Acceptance:** Every applicable gate in [LAUNCH-OPERATIONS-RUNBOOK.md](../../LAUNCH-OPERATIONS-RUNBOOK.md) has recorded pass evidence and an owner; no payment, recovery, security, or privacy blocker remains.
      - **Verification:** Release lead signs off on a recorded SHA, deployment URL, smoke results, monitoring window, and rollback plan before cohort expansion.
      - **Dependencies:** Tasks 1–8.
@@ -291,12 +270,9 @@ Initial baseline: 344 Vitest tests passed across 43 files; web and mobile type c
 
 ## Decisions Requiring Owner or Provider Access
 
-- Business approval for mobile beta (support capacity, booking volume, budget).
 - Production Neon retention/restore settings and target RPO/RTO.
 - Safepay sandbox credentials plus a disposable paid transaction for refund validation.
-- Physical iOS/Android devices and EAS signing credentials.
-- Apple App ID prefix/Team ID and Android release signing fingerprint for the tracked app-link association files (owner confirmed these are not available yet; keep app-link verification gated until supplied).
-- Whether mobile alerts/notifications and additional payment providers are launch requirements.
+- Whether additional payment providers are launch requirements.
 - Whether moderator restore/audited dismissal is needed for posts hidden at the three-report threshold; the selected non-migration policy leaves hidden posts unavailable until expiry unless an admin removes them.
 
 ## Progress Log

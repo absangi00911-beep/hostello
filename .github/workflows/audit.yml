@@ -8,8 +8,6 @@ on:
     paths:
       - 'package.json'
       - 'package-lock.json'
-      - 'apps/mobile/package.json'
-      - 'apps/mobile/package-lock.json'
 
 jobs:
   audit:
@@ -27,10 +25,5 @@ jobs:
           node-version: 20
 
       - name: Audit web dependencies
-        run: npm audit --audit-level=high
-        continue-on-error: false
-
-      - name: Audit mobile dependencies
-        working-directory: apps/mobile
         run: npm audit --audit-level=high
         continue-on-error: false

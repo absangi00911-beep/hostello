@@ -21,7 +21,7 @@ work, and sends a response.
 For a hostel search:
 
 ```text
-Browser / mobile app                        Hostello server
+Browser                                     Hostello server
        │                                          │
        │ GET /api/hostels?q=lahore&limit=5        │
        ├─────────────────────────────────────────►│
@@ -82,8 +82,8 @@ authorization, validation, and protection against repeated requests.
   designed `PUT` or `DELETE` is often idempotent. A `POST` that creates a
   record usually is not.
 
-These concepts matter for browser refreshes, mobile retries, network timeouts,
-and payment callbacks. If a client retries a non-idempotent action after a
+These concepts matter for browser refreshes, network timeouts, and payment
+callbacks. If a client retries a non-idempotent action after a
 timeout, the server may have completed it even though the client never saw the
 response. Critical operations need a deliberate duplicate-request strategy
 (for example, a persisted idempotency key or a unique provider event ID).
@@ -229,7 +229,6 @@ set their own maximum page size.
 Headers carry request metadata:
 
 - `Content-Type: application/json` tells the server the body is JSON.
-- `Authorization: Bearer ...` carries a mobile session token.
 - `Origin` is checked for browser state-changing requests.
 - A provider signature header authenticates a webhook payload.
 
@@ -331,17 +330,12 @@ Typical meanings:
 Use the route's intended policy consistently. An API may return `404` rather
 than `403` when revealing another person's resource would leak information.
 
-### Browser and mobile authentication
+### Browser authentication
 
-Browser requests use NextAuth's HTTP-only session cookies. Mobile requests
-use a bearer token; [`src/proxy.ts`](../src/proxy.ts) bridges that token into
-the cookie shape NextAuth expects. The mobile request helper is
-[`apps/mobile/src/services/api.ts`](../apps/mobile/src/services/api.ts).
-
-The proxy's CSRF checks are an additional request-shaping/security layer,
-not a replacement for authentication and authorization inside the route.
-State-changing browser requests also need CSRF protection; mobile bearer
-requests follow the project's separate flow.
+Browser requests use NextAuth's HTTP-only session cookies. The proxy's CSRF
+checks are an additional request-shaping/security layer, not a replacement
+for authentication and authorization inside the route. State-changing
+browser requests also need CSRF protection.
 
 ## 9. Business rules and data access
 
@@ -433,7 +427,7 @@ Think of errors in two groups:
 
 When debugging:
 
-1. Inspect the browser/mobile Network panel or the API client result.
+1. Inspect the browser Network panel or the API response.
 2. Record method, path, status, and a redacted response body.
 3. Find the route file from the URL.
 4. Find the corresponding test and client call.

@@ -28,11 +28,6 @@ export type User = Prisma.UserModel
  */
 export type AccountDeletionJob = Prisma.AccountDeletionJobModel
 /**
- * Model DeviceToken
- * 
- */
-export type DeviceToken = Prisma.DeviceTokenModel
-/**
  * Model Subscription
  * 
  */

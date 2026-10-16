@@ -186,12 +186,6 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
     description: "Typesense server host/endpoint (falls back to Prisma if not set)",
   },
 
-  // -- Firebase (Push Notifications) --------------------------------------
-  {
-    name: "FIREBASE_SERVICE_ACCOUNT_JSON",
-    requiredInProduction: false,
-    description: "Firebase service account JSON string for FCM push notifications (optional, gracefully disabled if not set)",
-  },
 ];
 
 /**

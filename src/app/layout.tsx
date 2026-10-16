@@ -61,11 +61,14 @@ export const viewport: Viewport = {
   themeColor: "#f6f2eb",
 };
 
-export default function RootLayout({
-  children,
-}: {
+export default function RootLayout(props: {
   children: React.ReactNode;
 }) {
+  const { children } = props;
+  // Next's generated layout validator omits named slot props, so read the
+  // parallel route slot separately while keeping the layout signature valid.
+  const auth = (props as typeof props & { auth: React.ReactNode }).auth;
+
   return (
     <html
       lang="en"
@@ -75,7 +78,10 @@ export default function RootLayout({
       )}
     >
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          {auth}
+        </Providers>
       </body>
     </html>
   );

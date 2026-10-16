@@ -22,7 +22,7 @@ Developer
    │                             │
    │                             ▼
    │                    GitHub Actions: CI checks
-   │                    web / mobile / shared
+   │                    web / shared
    │                             │ all pass
    │                             ▼
    │                    Vercel Preview deployment
@@ -55,7 +55,7 @@ workflows.
 
 | File | Responsibility |
 |---|---|
-| [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Pull-request CI for web, mobile, and shared package; deploys a Vercel Preview for qualifying PRs. |
+| [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Pull-request CI for the web app and shared package; deploys a Vercel Preview for qualifying PRs. |
 | [`../.github/workflows/production.yml`](../.github/workflows/production.yml) | Re-runs production quality gates, applies production database migrations, builds and deploys production after a push to `main`. |
 | [`../.github/workflows/audit.yml`](../.github/workflows/audit.yml) | Runs `npm audit` on a weekly schedule or when dependency manifests/lockfiles are pushed. |
 | [`../.github/workflows/migrate-preview.yml`](../.github/workflows/migrate-preview.yml) | Manually triggered workflow for applying committed migrations to the guarded Preview database. |
@@ -79,26 +79,22 @@ Its checks run on GitHub-hosted Ubuntu machines:
 1. **Web:** installs the exact dependency versions from `package-lock.json`
    with `npm ci`, generates the Prisma client, runs TypeScript type checking,
    Vitest, and ESLint.
-2. **Mobile:** installs from `apps/mobile/package-lock.json` and type-checks
-   the Expo app.
-3. **Shared package:** installs its locked dependencies and type-checks
+2. **Shared package:** installs its locked dependencies and type-checks
    `packages/shared`.
-4. **Preview deploy:** for a pull request only, and only after all three
+3. **Preview deploy:** for a pull request only, and only after both
    checks pass, builds and deploys a Vercel Preview, then posts or updates a
    comment with the deployment URL.
 
-`needs: [web, mobile, shared]` is the dependency gate: the Preview deploy job
+`needs: [web, shared]` is the dependency gate: the Preview deploy job
 does not proceed unless each required check succeeds.
 
 ### Production: checks, migration, deployment
 
 The production workflow listens to pushes to `main`. It does not deploy until
-both gate jobs pass:
+the web quality gate passes:
 
 - **Gate — Web checks:** install, Prisma client generation, type-check, tests,
   and lint.
-- **Gate — Mobile type-check:** install and mobile type-check.
-
 Then the deployment job:
 
 1. Pulls the Vercel **Production** environment.
@@ -123,7 +119,7 @@ The audit workflow runs:
 - On its configured weekly schedule.
 - On a push that changes one of the listed dependency manifests or lockfiles.
 
-It runs `npm audit --audit-level=high` for web and mobile dependencies. It is a
+It runs `npm audit --audit-level=high` for the web dependency tree. It is a
 separate workflow: it is **not listed as a prerequisite** of the Preview or
 production deploy jobs, and it is not triggered by `pull_request` in its
 current configuration. If passing the audit must block a merge or release,
@@ -202,9 +198,6 @@ branch-promotion model.
    npm test -- --run
    npm run lint
 
-   Set-Location apps/mobile
-   npm ci
-   npx tsc --noEmit
    ```
 
 4. Inspect the diff and confirm no secrets, local `.env` files, or unintended
@@ -217,7 +210,7 @@ jobs are configured to check.
 
 ### After opening the PR
 
-1. Wait for the web, mobile, and shared checks.
+1. Wait for the web and shared checks.
 2. If a check fails, open the failed job and read the first meaningful error
    near the end of the failed step. Fix the cause, push another commit, and
    let the workflow rerun.
@@ -249,7 +242,7 @@ jobs are configured to check.
 | Continuous Deployment | Automatically release every qualifying change without a separate manual production approval. | Production deployment is automatic after a push to `main` and its workflow gates. |
 | Workflow | A YAML-defined GitHub Actions automation. | Files under `.github/workflows/`. |
 | Event/trigger | The event that starts a workflow, such as `push`, `pull_request`, schedule, or manual dispatch. | Each workflow defines its own triggers. |
-| Job | A unit of work running on a runner. | `web`, `mobile`, `shared`, and `deploy` are jobs. |
+| Job | A unit of work running on a runner. | `web`, `shared`, and `preview` are jobs. |
 | Step | A command or action inside a job. | `npm ci`, type-checking, migrations, and Vercel commands are steps. |
 | Runner | The machine that executes a job. | Workflows use GitHub-hosted `ubuntu-latest` runners. |
 | Gate | A condition that must succeed before a later job proceeds. | Production deploy depends on the gate jobs; Preview deploy depends on the CI checks. |

@@ -14,7 +14,7 @@ Key event names:
 | Authentication | `auth.login.throttled`, `auth.login.rejected`, `auth.login.succeeded`, `auth.login.processing_failed` | Review changes in throttled/rejected volume and correlate only with the HMAC pseudonyms. Login events intentionally omit raw email, IP, and password values; hosted alert rules still need console configuration. |
 | Booking payments | `booking.payment_confirmed`, `booking.payment_failed`, `payment.reconciliation_required`, `payment.webhook.*` | Reconcile every `payment.reconciliation_required` event with the provider transaction before changing booking state. Investigate webhook processing failures and concurrent-state conflicts. |
 | Search | `search.degraded` | Check Typesense health and indexing, then watch database fallback load. Alert on sustained degradation or a rate above the production baseline. |
-| Notifications | `notification.dispatch_failed`, `notification.push.partial_failure`, `notification.email.dispatch_failed`, `notification.email.scan_failed` | Check the email/FCM provider and retry behavior; email price alerts remain active after delivery failure. |
+| Notifications | `notification.dispatch_failed`, `notification.email.dispatch_failed`, `notification.email.scan_failed` | Check notification persistence/email delivery and retry behavior; email price alerts remain active after delivery failure. |
 | Scheduled jobs | `cron.success`, `cron.error`, `cron.health_log_failure` | Alert on any `cron.error` or `cron.health_log_failure`; also alert when `GET /api/health/crons` is not 200. |
 
 Create these alert rules in the Sentry/Vercel project console and exercise them in preview before release. Alert on any payment reconciliation event and cron failure immediately. `/api/health/payments` returns 207 when a retryable exhausted webhook or a manual-reconciliation event is waiting for an operator; its `counts` include both categories and their combined `webhookIssues` total. Set search and notification rate thresholds after representative traffic establishes a baseline; these workspace changes do not configure hosted alert rules.
@@ -55,7 +55,7 @@ Do not replay a failed job until checking its retry history and whether its side
 
 | Job | Schedule (UTC) | Retry guidance |
 |---|---|---|
-| `mark-completed-stays` | Daily at 00:00 | Conditional booking transitions prevent a second completion transition. Check the persisted notification if a push send was interrupted. |
+| `mark-completed-stays` | Daily at 00:00 | Conditional booking transitions prevent a second completion transition. Check the persisted in-app notification if it is missing. |
 | `cancel-abandoned-payments` | Every 5 minutes | Conditional cancellation updates prevent duplicate inventory restoration. Confirm the booking is still eligible before a manual replay. |
 | `check-price-alerts` | Every 6 hours | A provider-accepted email can be duplicated if the process stops before the alert is deactivated. Check provider delivery and alert state before replaying. |
 | `cleanup-tokens` | Daily at 01:00 | Repeating expiry/used-token deletion is safe. |
@@ -86,7 +86,7 @@ Do not manually change `CronLog` rows to clear an alert; health should reflect a
 - Refund requests and operator decisions are recorded in append-only `RefundAuditEvent` rows; `Booking.refundState` tracks `NONE`, `PROCESSING`, `UNCERTAIN`, or `REFUNDED`. For a timeout or stale `PROCESSING` attempt, verify the transaction in Safepay before recording a manual confirmation or recovering the attempt. The audit ledger is evidence of Hostello's actions, not proof that Safepay completed a refund.
 - For a pending or failed booking, compare the Hostello booking state and transaction reference with the Safepay transaction before taking action.
 - If a refund outcome is uncertain, leave the booking in its existing paid state until Safepay confirms the result. Do not issue the refund again or mark it refunded based only on a timeout. Record a manual refund in Hostello only after the completed refund is confirmed in Safepay.
-- Keep JazzCash and EasyPaisa disabled for the mobile beta until their complete transaction inquiry, callback, and refund paths have been verified in their sandboxes.
+- Keep JazzCash and EasyPaisa disabled until their complete transaction inquiry, callback, and refund paths have been verified in their sandboxes.
 
 ## Manual owner payouts
 

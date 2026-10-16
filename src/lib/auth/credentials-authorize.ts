@@ -48,7 +48,7 @@ function getLogIdentifiers(clientIp: string, email?: string) {
   };
 }
 
-/** Consume the shared source-IP bucket before reading a mobile request body. */
+/** Consume the source-IP bucket shared by credential sign-in attempts. */
 export async function checkCredentialLoginIpLimit(
   request: Request,
   email?: string,
@@ -69,7 +69,7 @@ export async function checkCredentialLoginIpLimit(
   return result.ok;
 }
 
-/** Consume a separate, pseudonymous account bucket for every sign-in client. */
+/** Consume a separate, pseudonymous account bucket for every sign-in attempt. */
 export async function checkCredentialLoginAccountLimit(
   email: string,
   request: Request,
@@ -92,13 +92,12 @@ export async function checkCredentialLoginAccountLimit(
 export async function authorizeCredentials(
   credentials: Partial<Record<string, unknown>>,
   request: Request,
-  options: { ipLimitAlreadyChecked?: boolean } = {},
 ) {
   const parsed = credentialLoginSchema.safeParse(credentials);
   if (!parsed.success) return null;
 
   const { email, password } = parsed.data;
-  if (!options.ipLimitAlreadyChecked && !(await checkCredentialLoginIpLimit(request, email))) {
+  if (!(await checkCredentialLoginIpLimit(request, email))) {
     throw new CredentialLoginRateLimitError();
   }
   if (!(await checkCredentialLoginAccountLimit(email, request))) {

@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { Card } from "@/components/ui/card";
 import { inputCls } from "@/components/ui/input";
 import { PhotoImage } from "@/components/landing/PhotoImage";
+import Link from "next/link";
 
 const AUTH_IMAGE =
   "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&q=80&auto=format&fit=crop";
@@ -12,6 +13,8 @@ interface AuthCardLayoutProps {
   subheading?: string;
   footer?: React.ReactNode;
   children: React.ReactNode;
+  presentation?: "page" | "modal";
+  activeMode?: "login" | "register";
 }
 
 export function AuthCardLayout({
@@ -19,7 +22,55 @@ export function AuthCardLayout({
   subheading,
   footer,
   children,
+  presentation = "page",
+  activeMode,
 }: AuthCardLayoutProps) {
+  if (presentation === "modal") {
+    return (
+      <section className="w-full px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 sm:px-0 sm:pb-0 sm:pt-0">
+        <div className="mb-6">
+          <h1 className="auth-editorial-heading mb-5 text-[length:var(--text-h3)] text-[color:var(--color-text-heading)]">
+            Welcome to HostelLo
+          </h1>
+          <nav
+            className="grid grid-cols-2 border-b border-[var(--color-border-subtle)]"
+            aria-label="Log in or create an account"
+          >
+            <Link
+              href="/login"
+              aria-current={activeMode === "login" ? "page" : undefined}
+              className={`border-b-2 px-3 py-3 text-center text-[length:var(--text-body-sm)] font-[600] transition-colors ${
+                activeMode === "login"
+                  ? "border-[var(--color-action)] text-[color:var(--color-text-heading)]"
+                  : "border-transparent text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-heading)]"
+              }`}
+            >
+              Log in
+            </Link>
+            <Link
+              href="/register"
+              aria-current={activeMode === "register" ? "page" : undefined}
+              className={`border-b-2 px-3 py-3 text-center text-[length:var(--text-body-sm)] font-[600] transition-colors ${
+                activeMode === "register"
+                  ? "border-[var(--color-action)] text-[color:var(--color-text-heading)]"
+                  : "border-transparent text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-heading)]"
+              }`}
+            >
+              Create account
+            </Link>
+          </nav>
+        </div>
+
+        {subheading && (
+          <p className="mb-5 text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)]">
+            {subheading}
+          </p>
+        )}
+        {children}
+      </section>
+    );
+  }
+
   return (
     <main id="main-content" className="auth-editorial-shell min-h-dvh bg-[var(--color-bg-page)] px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:py-12">
       <div className="auth-editorial-grid grid w-full max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center">

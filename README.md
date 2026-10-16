@@ -7,15 +7,14 @@ A Pakistan-focused marketplace connecting students with verified hostel/PG accom
 | Layer | Implementation |
 |---|---|
 | Web | Next.js 16 (App Router), React 19, TypeScript |
-| Mobile | Expo 54 / React Native 0.81 (`apps/mobile/`) |
 | Database | Neon PostgreSQL via Prisma 7 |
-| Auth | NextAuth v5 (JWT) + mobile Bearer-token bridge (`src/proxy.ts`) |
+| Auth | NextAuth v5 (JWT) |
 | Search | Typesense, with automatic Prisma fallback |
 | Cache / rate limits | Upstash Redis |
 | Cron | Upstash QStash |
 | Storage | Cloudflare R2 |
 | Payments | Safepay (live) · JazzCash / EasyPaisa (built, intentionally disabled) |
-| Notifications | Resend (email) · Twilio (SMS/OTP) · Firebase Admin (push) |
+| Notifications | Resend (email) · Twilio (SMS/OTP) · in-app web inbox |
 | Errors | Sentry — see [`SENTRY_SETUP.md`](./SENTRY_SETUP.md) |
 | Tests | Vitest (unit/integration) · Playwright (E2E) |
 
@@ -29,16 +28,7 @@ npx prisma migrate dev
 npm run dev
 ```
 
-The app runs at `http://localhost:3000`.
-
-For the mobile app:
-
-```bash
-cd apps/mobile
-npm install
-cp .env.example .env.development   # set EXPO_PUBLIC_API_URL
-npm start
-```
+The web app runs at `http://localhost:3000`.
 
 ## Scripts
 

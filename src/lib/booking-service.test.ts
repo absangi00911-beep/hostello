@@ -255,7 +255,7 @@ describe("createBooking — happy path", () => {
   });
 
   it("notification failure does NOT throw or roll back", async () => {
-    vi.mocked(createNotification).mockRejectedValue(new Error("FCM down"));
+    vi.mocked(createNotification).mockRejectedValue(new Error("Notification persistence failed"));
     makeTx();
 
     // Should resolve without throwing
