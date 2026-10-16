@@ -61,13 +61,13 @@ export const viewport: Viewport = {
   themeColor: "#f6f2eb",
 };
 
-export default function RootLayout(props: {
+export default function RootLayout({
+  children,
+  auth,
+}: {
   children: React.ReactNode;
+  auth: React.ReactNode;
 }) {
-  const { children } = props;
-  // Next's generated layout validator omits named slot props, so read the
-  // parallel route slot separately while keeping the layout signature valid.
-  const auth = (props as typeof props & { auth: React.ReactNode }).auth;
 
   return (
     <html
