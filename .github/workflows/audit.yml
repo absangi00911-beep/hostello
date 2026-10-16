@@ -25,5 +25,5 @@ jobs:
           node-version: 20
 
       - name: Audit web dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev
         continue-on-error: false
