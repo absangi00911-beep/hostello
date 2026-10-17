@@ -42,6 +42,17 @@ export interface ListingFormData {
   images: string[];
   coverImage: string;
   rules: string[];
+  roomTypes: ListingRoomFormData[];
+}
+
+export interface ListingRoomFormData {
+  id?: string;
+  name: string;
+  description: string;
+  pricePerMonth: number | "";
+  capacity: number | "";
+  facilities: string[];
+  images: string[];
 }
 
 const DEFAULT_FORM: ListingFormData = {
@@ -51,6 +62,7 @@ const DEFAULT_FORM: ListingFormData = {
   pricePerMonth: "", rooms: "", capacity: "", minStay: 1, maxStay: "",
   latitude: "", longitude: "",
   amenities: [], images: [], coverImage: "", rules: [],
+  roomTypes: [{ name: "", description: "", pricePerMonth: "", capacity: "", facilities: [], images: [] }],
 };
 
 const AMENITY_PRESETS = AMENITIES.map((a) => a.label);
@@ -64,7 +76,7 @@ const RULE_PRESETS = [
 ];
 
 /* -- Step indicator ---------------------------------------- */
-const STEPS = ["Basic info","Location","Amenities","Photos","Rules","Cancellation terms","Review"];
+const STEPS = ["Basic info","Rooms","Location","Amenities","Photos","Rules","Cancellation terms","Review"];
 
 function StepProgress({ step }: { step: number }) {
   return (
@@ -114,10 +126,11 @@ function StepProgress({ step }: { step: number }) {
 
 /* -- Tag input --------------------------------------------- */
 function TagInput({
-  label, values, onChange, placeholder, presets,
+  label, values, onChange, placeholder, presets, id,
 }: {
   label: string; values: string[]; onChange: (v: string[]) => void;
   placeholder?: string; presets?: string[];
+  id?: string;
 }) {
   const [input, setInput] = useState("");
   function add(val: string) {
@@ -129,7 +142,7 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">{label}</label>
+      <label htmlFor={id} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">{label}</label>
       {presets && (
         <div className="flex flex-wrap gap-1.5">
           {presets.map((p) => (
@@ -149,7 +162,7 @@ function TagInput({
       )}
       <div className="flex gap-2">
         <input
-          type="text" value={input}
+          id={id} type="text" value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(input); } }}
           placeholder={placeholder ?? "Type and press Enter"}
@@ -182,12 +195,13 @@ function TagInput({
 
 /* -- Photo uploader ---------------------------------------- */
 function PhotoUploader({
-  images, coverImage, onChange, onCoverChange, hostelId,
+  images, coverImage, onChange, onCoverChange, hostelId, label = "Photos",
 }: {
-  images: string[]; coverImage: string;
+  images: string[]; coverImage?: string;
   onChange: (imgs: string[]) => void;
-  onCoverChange: (url: string) => void;
+  onCoverChange?: (url: string) => void;
   hostelId?: string;
+  label?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -221,7 +235,7 @@ function PhotoUploader({
     if (newUrls.length) {
       const updated = [...images, ...newUrls];
       onChange(updated);
-      if (!coverImage && updated.length) onCoverChange(updated[0]);
+      if (!coverImage && updated.length) onCoverChange?.(updated[0]);
     }
     setUploading(false);
   }
@@ -229,13 +243,13 @@ function PhotoUploader({
   function removeImage(url: string) {
     const updated = images.filter((i) => i !== url);
     onChange(updated);
-    if (coverImage === url) onCoverChange(updated[0] ?? "");
+    if (coverImage === url) onCoverChange?.(updated[0] ?? "");
   }
 
   return (
     <div className="space-y-4">
       <label className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">
-        Photos <span className="text-[color:var(--color-text-muted)] font-[400]">(max 15, 4MB each)</span>
+        {label} <span className="text-[color:var(--color-text-muted)] font-[400]">(max 15, 4MB each)</span>
       </label>
 
       {/* Upload zone */}
@@ -257,6 +271,7 @@ function PhotoUploader({
       </button>
       <input
         ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp"
+        aria-label={`Upload ${label.toLowerCase()}`}
         multiple className="sr-only"
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
       />
@@ -269,13 +284,13 @@ function PhotoUploader({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
               {/* Cover badge */}
-              {url === coverImage && (
+              {onCoverChange && url === coverImage && (
                 <span className="absolute left-1 top-1 rounded-sm bg-[var(--color-primary)] px-1 text-[9px] font-[700] text-[color:var(--color-text-inverse)] leading-4">
                   Cover
                 </span>
               )}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-[var(--transition-fast)] flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-                {url !== coverImage && (
+                {onCoverChange && url !== coverImage && (
                   <button
                     type="button" onClick={() => onCoverChange(url)}
                     className="rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-[600] text-[color:var(--color-text-heading)]"
@@ -317,8 +332,32 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function updateRoom(index: number, changes: Partial<ListingRoomFormData>) {
+    update(
+      "roomTypes",
+      form.roomTypes.map((room, roomIndex) =>
+        roomIndex === index ? { ...room, ...changes } : room,
+      ),
+    );
+  }
+
   function next() {
-    if (step === 6 && !form.cancellationPolicy) {
+    if (step === 2 && (
+      form.roomTypes.length === 0 ||
+      form.roomTypes.some((room) =>
+        room.name.trim().length < 2 ||
+        !Number.isInteger(room.pricePerMonth) ||
+        Number(room.pricePerMonth) < 1000 ||
+        Number(room.pricePerMonth) > 100000 ||
+        !Number.isInteger(room.capacity) ||
+        Number(room.capacity) < 1 ||
+        Number(room.capacity) > 100
+      )
+    )) {
+      toast.error("Add a name, monthly price, and capacity for every room.");
+      return;
+    }
+    if (step === 7 && !form.cancellationPolicy) {
       toast.error("Choose a cancellation policy before continuing.");
       return;
     }
@@ -348,6 +387,13 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
         images:        form.images,
         coverImage:    form.coverImage || form.images[0] || undefined,
         rules:         form.rules,
+        roomTypes:     form.roomTypes.map((room) => ({
+          ...room,
+          name: room.name.trim(),
+          description: room.description.trim() || undefined,
+          pricePerMonth: Number(room.pricePerMonth),
+          capacity: Number(room.capacity),
+        })),
         status:        "PENDING_REVIEW" as const,
       };
 
@@ -491,6 +537,86 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       {/* -- Step 2: Location ------------------------- */}
       {step === 2 && (
         <div className={sectionCls}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className={headingCls}>Room types</h2>
+              <p className="-mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                Add room-specific prices, photos, and facilities. Hostel photos and shared facilities are listed separately.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => update("roomTypes", [
+                ...form.roomTypes,
+                { name: "", description: "", pricePerMonth: "", capacity: "", facilities: [], images: [] },
+              ])}
+              className="shrink-0"
+            >
+              <Plus size={15} aria-hidden="true" />
+              Add room
+            </Button>
+          </div>
+          <div className="space-y-5">
+            {form.roomTypes.map((room, index) => (
+              <fieldset key={room.id ?? `room-${index}`} className="space-y-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] p-4">
+                <legend className="px-1 text-[length:var(--text-body-sm)] font-[600] text-[color:var(--color-text-heading)]">
+                  Room {index + 1}
+                </legend>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="m-0 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
+                    Photos and facilities here belong only to this room type.
+                  </p>
+                  {form.roomTypes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => update("roomTypes", form.roomTypes.filter((_, roomIndex) => roomIndex !== index))}
+                      aria-label={`Remove room ${index + 1}`}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[color:var(--color-error)] hover:bg-[var(--color-error-bg)]"
+                    >
+                      <X size={16} aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor={`room-name-${index}`} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Room name</label>
+                  <input id={`room-name-${index}`} value={room.name} onChange={(event) => updateRoom(index, { name: event.target.value })} placeholder="e.g. Private room" className={inputCls} />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor={`room-description-${index}`} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Room description <span className="text-[color:var(--color-text-muted)] font-[400]">(optional)</span></label>
+                  <textarea id={`room-description-${index}`} value={room.description} onChange={(event) => updateRoom(index, { description: event.target.value })} rows={3} maxLength={1000} className={`${inputCls} h-auto resize-none py-2.5`} />
+                </div>
+                <div className="owner-field-grid-2 grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor={`room-price-${index}`} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Monthly price (PKR)</label>
+                    <input id={`room-price-${index}`} type="number" min={1000} max={100000} value={room.pricePerMonth} onChange={(event) => updateRoom(index, { pricePerMonth: event.target.value ? Number(event.target.value) : "" })} className={inputCls} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor={`room-capacity-${index}`} className="block text-[length:var(--text-label)] font-[500] text-[color:var(--color-text-body)]">Occupant capacity</label>
+                    <input id={`room-capacity-${index}`} type="number" min={1} max={100} value={room.capacity} onChange={(event) => updateRoom(index, { capacity: event.target.value ? Number(event.target.value) : "" })} className={inputCls} />
+                  </div>
+                </div>
+                <TagInput
+                  id={`room-facilities-${index}`}
+                  label="Room-specific facilities"
+                  values={room.facilities}
+                  onChange={(facilities) => updateRoom(index, { facilities })}
+                  placeholder="e.g. Attached bathroom, study desk"
+                />
+                <PhotoUploader
+                  label="Room photos"
+                  images={room.images}
+                  onChange={(images) => updateRoom(index, { images })}
+                  hostelId={hostelId}
+                />
+              </fieldset>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className={sectionCls}>
           <h2 className={headingCls}>Pin your location <span className="text-[color:var(--color-text-muted)] text-[length:var(--text-body-sm)] font-[400]">(optional)</span></h2>
           <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] -mt-2">
             Pinning your hostel helps students judge the commute to their university before they book.
@@ -520,7 +646,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       )}
 
       {/* -- Step 3: Amenities ------------------------ */}
-      {step === 3 && (
+      {step === 4 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>Amenities</h2>
           <TagInput label="What does your hostel offer?" values={form.amenities} onChange={(v) => update("amenities", v)} placeholder="Type a custom amenity and press Enter" presets={AMENITY_PRESETS} />
@@ -528,13 +654,14 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       )}
 
       {/* -- Step 4: Photos --------------------------- */}
-      {step === 4 && (
+      {step === 5 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>Photos</h2>
           <p className="text-[length:var(--text-body-sm)] text-[color:var(--color-text-muted)] -mt-2">
             At least one photo is required before submitting for review. First photo or the one you mark as "Cover" appears in search results.
           </p>
           <PhotoUploader
+            label="Hostel photos"
             images={form.images}
             coverImage={form.coverImage}
             onChange={(imgs) => update("images", imgs)}
@@ -545,7 +672,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       )}
 
       {/* -- Step 5: Rules ---------------------------- */}
-      {step === 5 && (
+      {step === 6 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>House rules</h2>
           <TagInput label="Rules students must follow" values={form.rules} onChange={(v) => update("rules", v)} placeholder="Type a custom rule and press Enter" presets={RULE_PRESETS} />
@@ -553,7 +680,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       )}
 
       {/* -- Step 6: Review & submit ------------------- */}
-      {step === 6 && (
+      {step === 7 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>Choose cancellation terms</h2>
           <p className="-mt-2 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
@@ -590,7 +717,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
       )}
 
       {/* -- Step 7: Review & submit ------------------- */}
-      {step === 7 && (
+      {step === 8 && (
         <div className={sectionCls}>
           <h2 className={headingCls}>Review and submit</h2>
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-sidebar)] divide-y divide-[var(--color-border-subtle)]">
@@ -601,6 +728,7 @@ export function ListingFormWizard({ initialData, hostelId, mode }: ListingFormWi
               { label: "Cancellations", value: form.cancellationPolicy ? CANCELLATION_POLICY_DETAILS[form.cancellationPolicy].label : "Choose a policy" },
               { label: "Price",      value: form.pricePerMonth ? `PKR ${Number(form.pricePerMonth).toLocaleString()}/mo` : "—" },
               { label: "Rooms",      value: form.rooms ? `${form.rooms} rooms, ${form.capacity} capacity` : "—" },
+              { label: "Room types", value: form.roomTypes.map((room) => room.name || "Unnamed room").join(", ") },
               { label: "Amenities",  value: form.amenities.length ? form.amenities.join(", ") : "None added" },
               { label: "Photos",     value: `${form.images.length} photo${form.images.length !== 1 ? "s" : ""}` },
               { label: "Rules",      value: form.rules.length ? `${form.rules.length} rule${form.rules.length !== 1 ? "s" : ""}` : "None added" },
