@@ -2,12 +2,9 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import {
   ShieldCheck,
   Star,
-  BedDouble,
   CheckCircle2,
   XCircle,
   User,
@@ -16,14 +13,13 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ImageGallery } from "@/components/hostel/ImageGallery";
 import { ReviewList, type ReviewData } from "@/components/hostel/ReviewList";
-import { BookingPanel } from "@/components/hostel/BookingPanel";
+import { RoomTypeCard } from "@/components/hostel/RoomTypeCard";
 import { HostelMap, NoMapAvailable } from "@/components/hostel/HostelMap";
-import { StatusBadge, formatPKR } from "@/components/ui/shared";
+import { StatusBadge } from "@/components/ui/shared";
 import { ShareButton } from "@/components/hostel/ShareButton";
 import { TrustSummary } from "@/components/hostel/TrustSummary";
 import { db } from "@/lib/db";
 import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
-import { auth } from "@/lib/auth/config";
 import { getAppUrl } from "@/lib/app-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -50,7 +46,6 @@ const getHostel = cache(async (slug: string) => {
           include: { user: { select: { id: true, name: true, avatar: true } } },
         },
         rooms_rel: {
-          where:   { available: { gt: 0 } },
           orderBy: { pricePerMonth: "asc" },
         },
       },
@@ -126,9 +121,6 @@ export default async function HostelDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const session = await auth();
-  const currentUserRole = session?.user.role ?? null;
-  const canRequestBooking = !session || currentUserRole === "STUDENT";
   const hostel = await getHostel(slug);
 
   if (!hostel) notFound();
@@ -205,11 +197,8 @@ export default async function HostelDetailPage({
         </div>
       </div>
 
-      {/* ── Main layout: 8-col content + 4-col booking ─── */}
       <div className="container-app">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-8 lg:gap-12 py-8 pb-32 lg:pb-12">
-
-          {/* ── LEFT: content area ─────────────────────── */}
+        <div className="py-8 pb-12">
           <div className="hostel-detail-content min-w-0">
 
             {/* Owner info strip */}
@@ -344,78 +333,15 @@ export default async function HostelDetailPage({
                     No room details added yet.
                   </p>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2" aria-label="Room types and availability">
+                  <div>
+                    <p className="mb-5 max-w-[68ch] text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-muted)]">
+                      Each room has its own photos, facilities, and rate. Open a room to review its details before requesting a stay.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Room types and availability">
                     {rooms.map((room: any) => (
-                      <article
-                        key={room.id}
-                        className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-card)] transition-colors duration-[var(--transition-fast)] hover:border-[var(--color-border-default)]"
-                      >
-                        <div className="relative aspect-[16/8] bg-[var(--color-bg-sidebar)]">
-                          {room.images?.[0] ? (
-                            <Image
-                              src={room.images[0]}
-                              alt={`${room.name} at ${hostel.name}`}
-                              fill
-                              sizes="(min-width: 640px) 50vw, 100vw"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-[color:var(--color-text-muted)]">
-                              <BedDouble size={28} strokeWidth={1.4} aria-hidden="true" />
-                              <span className="sr-only">No photo available</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="p-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-[length:var(--text-body)] font-[600] text-[color:var(--color-text-heading)]">
-                                {room.name}
-                              </h3>
-                              <p className="mt-1 text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">
-                                {room.capacity} occupant{room.capacity !== 1 ? "s" : ""}
-                              </p>
-                            </div>
-                            <div className="shrink-0 text-right">
-                              <p className="text-[length:var(--text-body)] font-[700] text-[color:var(--color-primary-deep)]">
-                                {formatPKR(room.pricePerMonth)}
-                              </p>
-                              <p className="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)]">per month</p>
-                            </div>
-                          </div>
-
-                          {room.description && (
-                            <p className="mt-3 text-[length:var(--text-body-sm)] leading-relaxed text-[color:var(--color-text-body)]">
-                              {room.description}
-                            </p>
-                          )}
-
-                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--color-border-subtle)] pt-3">
-                            <span
-                              className={`inline-flex items-center gap-1.5 text-[length:var(--text-body-sm)] font-[500] ${
-                                room.available > 0
-                                  ? "text-[color:var(--color-success)]"
-                                  : "text-[color:var(--color-error)]"
-                              }`}
-                            >
-                              <CheckCircle2 size={14} strokeWidth={1.7} aria-hidden="true" />
-                              {room.available > 0
-                                ? `${room.available} spot${room.available !== 1 ? "s" : ""} available`
-                                : "Currently full"}
-                            </span>
-                            {room.available > 0 && canRequestBooking && (
-                              <Link
-                                href={`/hostels/${hostel.slug}?room=${encodeURIComponent(room.id)}#booking-panel`}
-                                className="inline-flex h-8 items-center rounded-[var(--radius-md)] bg-[var(--color-action)] px-3 text-[length:var(--text-caption)] font-[600] text-[color:var(--color-text-inverse)] no-underline transition-colors hover:bg-[var(--color-action-dark)] hover:no-underline"
-                              >
-                                Book this room
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      </article>
+                      <RoomTypeCard key={room.id} hostelSlug={hostel.slug} room={room} />
                     ))}
+                    </div>
                   </div>
                 )}
               </TabsContent>
@@ -445,19 +371,6 @@ export default async function HostelDetailPage({
 
             </Tabs>
           </div>
-
-          {/* ── RIGHT: sticky booking panel ────────────── */}
-          {currentUserRole !== "ADMIN" && (
-            <BookingPanel
-              hostelId={hostel.id}
-              hostelSlug={hostel.slug}
-              hostelName={hostel.name}
-              ownerId={hostel.ownerId}
-              basePricePerMonth={hostel.pricePerMonth}
-              cancellationPolicy={hostel.cancellationPolicy}
-              rooms={rooms}
-            />
-          )}
         </div>
       </div>
     </PublicLayout>

@@ -16,7 +16,7 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
  * - Database record creation
  */
 export async function createHostelRecord(
-  client: Pick<Prisma.TransactionClient, "hostel">,
+  client: Pick<Prisma.TransactionClient, "hostel" | "room">,
   ownerId: string,
   data: HostelCreateInput
 ) {
@@ -39,7 +39,7 @@ export async function createHostelRecord(
     slug = `${baseSlug}-${Date.now()}`;
   }
 
-  return client.hostel.create({
+  const hostel = await client.hostel.create({
     data: {
       name: data.name,
       slug,
@@ -65,6 +65,21 @@ export async function createHostelRecord(
     },
     select: { id: true, slug: true, name: true, status: true, city: true, pricePerMonth: true },
   });
+
+  await client.room.createMany({
+    data: data.roomTypes.map((room) => ({
+      hostelId: hostel.id,
+      name: room.name,
+      description: room.description ?? null,
+      pricePerMonth: room.pricePerMonth,
+      capacity: room.capacity,
+      available: room.capacity,
+      images: room.images,
+      facilities: room.facilities,
+    })),
+  });
+
+  return hostel;
 }
 
 export function notifyAdminOfNewListing(

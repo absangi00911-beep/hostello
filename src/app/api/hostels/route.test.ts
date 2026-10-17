@@ -51,6 +51,15 @@ const validListing = {
   minStay: 1,
   amenities: ["WiFi"],
   rules: [],
+  roomTypes: [
+    {
+      name: "Standard room",
+      pricePerMonth: 15_000,
+      capacity: 3,
+      facilities: ["Shared bathroom"],
+      images: [],
+    },
+  ],
 };
 
 beforeEach(() => {

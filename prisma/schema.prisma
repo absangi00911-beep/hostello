@@ -381,6 +381,7 @@ model Room {
   version       Int     @default(0) // optimistic lock version
 
   images String[]
+  facilities String[] @default([])
 
   bookings Booking[]
 

@@ -290,6 +290,7 @@ export const RoomScalarFieldEnum = {
   available: 'available',
   version: 'version',
   images: 'images',
+  facilities: 'facilities',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

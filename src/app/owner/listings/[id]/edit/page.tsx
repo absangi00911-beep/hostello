@@ -32,6 +32,17 @@ async function getHostel(id: string) {
       coverImage: true,
       rules: true,
       status: true,
+      rooms_rel: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          pricePerMonth: true,
+          capacity: true,
+          images: true,
+          facilities: true,
+        },
+      },
     },
   });
 }
@@ -91,6 +102,15 @@ export default async function EditListingPage({
     images: (hostel.images as string[]) ?? [],
     coverImage: hostel.coverImage ?? "",
     rules: (hostel.rules as string[]) ?? [],
+    roomTypes: hostel.rooms_rel.map((room) => ({
+      id: room.id,
+      name: room.name,
+      description: room.description ?? "",
+      pricePerMonth: room.pricePerMonth,
+      capacity: room.capacity,
+      facilities: room.facilities,
+      images: room.images,
+    })),
   };
 
   return (
