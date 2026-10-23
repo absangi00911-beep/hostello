@@ -196,8 +196,6 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
  * @throws Error if a required production variable is missing
  */
 export function validateEnvironment(): void {
-  if (process.env.HOSTELLO_E2E === "1") return;
-
   // Vercel Preview runs with NODE_ENV=production, but it must not require
   // production-only provider credentials to serve the rest of the app.
   // Keep local production-mode checks strict when VERCEL_ENV is unavailable.

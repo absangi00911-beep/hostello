@@ -1,6 +1,6 @@
 # Sentry Setup
 
-**Last updated:** October 5, 2026
+**Last updated:** October 19, 2026
 
 HostelLo uses [`@sentry/nextjs`](https://www.npmjs.com/package/@sentry/nextjs) (10.74.0 in the current lockfile) for error tracking across all three Next.js runtimes.
 
@@ -40,4 +40,10 @@ Sentry is optional in local development — without `NEXT_PUBLIC_SENTRY_DSN` set
 
 ## Session replay
 
-Replay is enabled client-side only, with `maskAllText: true` and `blockAllMedia: true` — text content and media are masked/blocked in recordings by default, which matters given the platform handles real booking and payment data. Don't loosen these without a specific reason; if you do, re-check what's visible in a recorded session on the payment and profile pages first. Keep the 100% tracing sample rate temporary until production event volume and Sentry quota use are measured; sampling should preserve high-value error events and critical payment traces.
+Replay remains configured client-side with `maskAllText: true` and
+`blockAllMedia: true`. Hostello currently has no first-party pages or screens,
+so there are no active product UI flows to review in browser replays. If the
+interface is restored, re-check what appears in recordings before changing
+these privacy controls. Keep the 100% tracing sample rate temporary until
+production event volume and Sentry quota use are measured; sampling should
+preserve high-value API errors and critical payment traces.

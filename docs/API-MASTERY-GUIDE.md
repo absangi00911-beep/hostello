@@ -5,6 +5,10 @@ eventually write Hostello API endpoints. It starts from the basics and moves
 toward production concerns. You do not need to understand every route in the
 repository at once.
 
+Hostello currently ships API routes without a first-party web interface. The
+former pages and UI components have been removed for a future redesign; API
+consumers should work directly with the JSON responses described here.
+
 The API implementation is the source of truth. Start exploring at
 [`../src/app/api/`](../src/app/api/), and use
 [`../SYSTEM.md`](../SYSTEM.md) for the wider architecture and security
@@ -21,7 +25,7 @@ work, and sends a response.
 For a hostel search:
 
 ```text
-Browser                                     Hostello server
+API client                                  Hostello server
        │                                          │
        │ GET /api/hostels?q=lahore&limit=5        │
        ├─────────────────────────────────────────►│
@@ -30,7 +34,7 @@ Browser                                     Hostello server
        │                                          │ search and fetch records
        │  200 OK + JSON response                  │
        │◄─────────────────────────────────────────┤
-       │ display the hostel cards                 │
+       │ inspect the JSON response                │
 ```
 
 The important parts of an HTTP request are:

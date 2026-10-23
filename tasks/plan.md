@@ -1,5 +1,10 @@
 # Implementation Plan: Owner-Managed Room Inventory
 
+> **Paused (October 19, 2026):** This plan depends on owner listing screens
+> that have been removed. Do not implement its UI tasks until the redesign is
+> scoped. The backend requirements below are historical planning notes and
+> must be checked against the current API and schema before reuse.
+
 ## Overview
 
 Implement the `room-inventory` capability from

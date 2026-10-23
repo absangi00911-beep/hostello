@@ -12,8 +12,9 @@ reference. Workflow behavior can change, so the files under
 checks pass.
 
 Hostello uses GitHub Actions to run checks and coordinate deployments, Vercel
-to build and host the web app, and Prisma migrations to manage database schema
-changes.
+to build and host the Next.js API application, and Prisma migrations to manage
+database schema changes. The former web pages and UI components have been
+removed; only API routes and the framework-required root layout remain.
 
 ```text
 Developer
@@ -55,7 +56,7 @@ workflows.
 
 | File | Responsibility |
 |---|---|
-| [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Pull-request CI for the web app and shared package; deploys a Vercel Preview for qualifying PRs. |
+| [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Pull-request CI for the Next.js application and shared package; deploys a Vercel Preview for qualifying PRs. |
 | [`../.github/workflows/production.yml`](../.github/workflows/production.yml) | Re-runs production quality gates, applies production database migrations, builds and deploys production after a push to `main`. |
 | [`../.github/workflows/audit.yml`](../.github/workflows/audit.yml) | Runs `npm audit` on a weekly schedule or when dependency manifests/lockfiles are pushed. |
 | [`../.github/workflows/migrate-preview.yml`](../.github/workflows/migrate-preview.yml) | Manually triggered workflow for applying committed migrations to the guarded Preview database. |
@@ -214,9 +215,11 @@ jobs are configured to check.
 2. If a check fails, open the failed job and read the first meaningful error
    near the end of the failed step. Fix the cause, push another commit, and
    let the workflow rerun.
-3. When the Preview URL appears, smoke-test the changed feature and important
-   related routes. Check browser/server logs and verify the behavior, not
-   just that the homepage renders.
+3. When the Preview URL appears, test the changed API route and its required
+   integrations with an authorized API client. The PR comment still links to
+   former homepage, search, city, and login pages; those page URLs now return
+   not found and are not valid smoke checks. Review API responses and
+   application logs instead.
 4. Review the PR diff, migration SQL, and audit status. Get the appropriate
    human approval and merge only when project policy is satisfied.
 
@@ -228,8 +231,9 @@ jobs are configured to check.
 3. Merge/push to `main`; the production workflow starts automatically.
 4. Watch the workflow through the migration, build, and deploy steps. A
    successful migration alone is not a successful release.
-5. Open the resulting deployment and run production smoke tests. Check
-   application error monitoring (Sentry) and operational signals.
+5. Check the deployed API routes with production-safe requests. Check
+   application error monitoring (Sentry) and operational signals; do not use
+   a real payment unless the provider has approved the merchant environment.
 6. If something is wrong, follow the incident/rollback process; do not assume
    reverting application code will undo a database migration.
 
@@ -250,7 +254,7 @@ jobs are configured to check.
 | Environment | A deployment context with distinct settings/secrets and optional protections. | Vercel Production/Preview environments; GitHub `preview-migrations` environment. |
 | Secret | Sensitive configuration provided to a workflow at runtime. | Vercel token and IDs are GitHub secrets; database URL is read from Vercel. |
 | Migration | A versioned database schema change. | Prisma migration files under `prisma/migrations/`. |
-| Smoke test | A short, high-value check that a deployed service works. | The PR comment suggests key routes; a human should verify changed behavior too. |
+| Smoke test | A short, high-value check that a deployed service works. | Test the changed API route and its required integrations; the existing PR comment's former page links are stale. |
 | Concurrency | Control whether overlapping runs may execute together. | Production deploys are serialized; same-ref CI runs cancel older in-flight runs. |
 
 ## 7. Common CI/CD concepts not currently configured here
@@ -264,7 +268,7 @@ need justifies the extra maintenance.
 | CI for PRs targeting `preview` | Run quality checks before merging into the preview branch. | Not configured by `ci.yml`, whose PR base is `main`. |
 | Dedicated staging promotion | Promote the exact Preview artifact to production after acceptance. | The current Production workflow builds again on `main`; explicit artifact promotion is not shown. |
 | Production approval gate | Require a reviewer to approve before a production job can run. | No explicit GitHub Environment approval is declared for the production deploy job. |
-| End-to-end browser tests in CI | Exercise complete user journeys in a browser on each change. | Playwright exists in the project, but `ci.yml` does not run it. |
+| End-to-end browser tests in CI | Exercise complete user journeys in a browser on each change. | The Playwright configuration and E2E suite have been removed; `ci.yml` does not run browser tests. |
 | Coverage threshold gate | Fail CI if line/branch coverage drops below a defined threshold. | No coverage threshold is configured in the workflow. |
 | SAST/code scanning | Scan source code for vulnerability patterns. | The shown workflows do not configure a SAST scanner. `npm audit` checks known dependency advisories, not application source code. |
 | Container build and registry | Package the application as a Docker image and store it in a container registry. | Not part of the shown deployment path; Vercel builds and hosts the app. |

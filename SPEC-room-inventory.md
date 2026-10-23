@@ -1,5 +1,11 @@
 # Spec: Owner-Managed Room Inventory
 
+**Current status (October 19, 2026):** The owner create/edit screens described
+here were removed with the rest of the first-party UI and must be redesigned
+before this UI scope is resumed. Backend/API requirements remain a proposal;
+review them against current code before treating this dated spec as an active
+implementation plan.
+
 ## Objective
 
 Let hostel owners define and maintain the individual room entries that students

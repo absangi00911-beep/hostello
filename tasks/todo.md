@@ -1,5 +1,10 @@
 # Tasks: Owner-Managed Room Inventory
 
+> **Paused (October 19, 2026):** The owner UI tasks below reference removed
+> pages and components. Do not use this checklist as an active implementation
+> plan until the redesign is scoped and the remaining backend work is checked
+> against the current API and schema.
+
 ## Task 1: Defining the roomTypes request contract
 
 **Description:** Add a shared validated `roomTypes` payload for room name,

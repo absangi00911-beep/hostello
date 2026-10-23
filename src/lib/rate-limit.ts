@@ -48,7 +48,7 @@ function getRedis() {
   if (redisClient !== undefined) return redisClient;
 
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (process.env.NODE_ENV === "production" && process.env.HOSTELLO_E2E !== "1") {
+    if (process.env.NODE_ENV === "production") {
       throw new Error(
         "Upstash Redis is not configured. " +
           "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in production.",

@@ -9,8 +9,8 @@ Use this checklist before and after a production release. It records operational
 - [ ] Confirm Vercel has the production Safepay merchant key, secret, webhook signing secret, and private R2 verification credentials in the correct environment.
 - [ ] Confirm the QStash schedules match `src/lib/cron-schedules.ts`, including `expire-unanswered-bookings` every 15 minutes and `process-account-deletions` every minute.
 - [ ] If account-deletion schema changes are included, confirm the environment migration completed and the deletion worker has a recent successful run.
-- [ ] Open `/api/health/crons` as an admin and confirm every scheduled job is healthy.
-- [ ] Open `/api/health/payments` as an admin and confirm there are no unanswered bookings past deadline, old unpaid checkouts, refund issues, retryable exhausted webhook deliveries, or webhook events awaiting manual reconciliation.
+- [ ] Call `/api/health/crons` with an admin session or the configured internal health secret and confirm every scheduled job is healthy.
+- [ ] Call `/api/health/payments` with an admin session or the configured internal health secret and confirm there are no unanswered bookings past deadline, old unpaid checkouts, refund issues, retryable exhausted webhook deliveries, or webhook events awaiting manual reconciliation.
 - [ ] Run one production-safe checkout and verify the booking remains pending until its owner accepts it. Do not use a real charge for this check unless Safepay has approved the merchant environment for live payments.
 
 ## Alerts to configure in Vercel and Sentry
@@ -19,16 +19,16 @@ Use this checklist before and after a production release. It records operational
 - [ ] Alert when `/api/health/payments` returns `207` or `500`.
 - [ ] Confirm payment health alerts include both retryable exhausted webhook deliveries and manual-reconciliation events.
 - [ ] Alert on `payment.reconciliation_required`, `payment.webhook.processing_failed`, `cron.error`, and repeated `notification.dispatch_failed` events.
-- [ ] Route payment and refund alerts to a person who can inspect the Safepay merchant dashboard and the admin refund queue.
+- [ ] Route payment and refund alerts to a person who can inspect the Safepay merchant dashboard and use the authorized admin API routes.
 
 The health endpoints contain aggregate counts only. Keep their internal check secret in the monitoring service, never in browser code or a public URL.
 
 ## Payment or refund incident
 
-1. Find the booking in the admin booking/refund tools using its booking reference.
+1. Find the booking using an authorized API client and its booking reference.
 2. Compare the stored transaction reference, amount, and currency with the Safepay merchant record.
 3. For an `UNCERTAIN` refund, inspect Safepay first. Confirm the refund manually only after the provider shows it completed; otherwise leave the case open and contact Safepay support.
-4. Check that the student-facing booking page shows the same state. Never tell a student that a refund is complete until the provider outcome is confirmed.
+4. Verify the booking state through the API. Never tell a student that a refund is complete until the provider outcome is confirmed.
 5. Record the provider reference and resolution in the existing refund audit trail, then recheck `/api/health/payments`.
 
 ## Database recovery
