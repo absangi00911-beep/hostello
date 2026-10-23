@@ -9,9 +9,12 @@ on:
       - 'package.json'
       - 'package-lock.json'
 
+permissions:
+  contents: read
+
 jobs:
   audit:
-    name: npm audit --omit=dev
+    name: npm audit (production dependencies)
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -22,8 +25,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
 
-      - name: Audit web dependencies
+      - name: Audit production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit all dependencies (informational)
+        # Development-only findings are tracked in SYSTEM.md (R-06) and must
+        # not turn this workflow red.
         run: npm audit --audit-level=high
-        continue-on-error: false
+        continue-on-error: true

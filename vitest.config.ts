@@ -19,7 +19,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // scripts/ holds node:test files (npm run test:scripts), not Vitest suites.
+    exclude: [...configDefaults.exclude, 'e2e/**', 'scripts/**'],
   },
   resolve: {
     alias: {

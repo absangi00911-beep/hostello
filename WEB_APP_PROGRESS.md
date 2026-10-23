@@ -1,7 +1,29 @@
-# HostelLo — Web App Progress
+# HostelLo — Progress
 
-**Last updated:** October 16, 2026
-**Status:** MVP feature set is implemented; launch hardening is in progress. The web redesign is committed on `main`; its full visual review remains open, and the available screenshots date from October 5. Safepay v3 and safer refund handling are implemented; the persistent refund/webhook ledger migration is applied to the confirmed disposable local PostgreSQL database. Provider sandbox verification and production readiness remain open. See the active [project completion plan](./docs/superpowers/plans/2026-10-05-project-completion-plan.md).
+**Current status (October 19, 2026):** The first-party web pages, screens, UI
+components, styles, and browser E2E suite have been removed. The Next.js
+application now exposes the existing backend through API routes; backend
+services and database code were not changed as part of that removal. The UI
+redesign is deferred.
+
+**Latest verification after UI removal:** production build and typecheck pass;
+657 Vitest tests pass across 96 files. ESLint was run on the required root
+layout only; a full lint run was not part of that verification. Preview and
+production provider readiness remains a separate operational check.
+
+This file retains a progress log from the previous web-product state. The
+dated entries and sections below are historical snapshots; UI routes,
+components, and Playwright files mentioned there no longer exist. Do not use
+those entries as a current implementation inventory.
+
+## Historical UI and backend progress snapshot (October 16, 2026)
+
+**Status at that time:** MVP features were implemented and launch hardening
+was in progress. The web redesign was committed on `main`; its full visual
+review remained open. Safepay v3 and safer refund handling were implemented,
+with provider sandbox verification and production readiness still open. See
+the [project completion plan](./docs/superpowers/plans/2026-10-05-project-completion-plan.md)
+for that earlier snapshot.
 
 The design-system contrast review found ambiguous Tailwind text utilities: font-size CSS variables could compile as color declarations and override a CTA foreground. Added explicit length/color hints to 2,173 utility references across 103 source files. The homepage primary CTA now measures 5.25:1 in light mode and 8.06:1 in dark mode. The light muted/placeholder neutral was adjusted from #717171 to #686868 after finding a 4.09:1 overlay pair; it now reaches 4.67:1 there. Seven public routes were smoke-checked at desktop/mobile widths in both themes; each returned 200 with one H1/main landmark, no horizontal overflow, and no page errors. Full cross-surface contrast review remains open.
 
@@ -21,7 +43,7 @@ This file was recreated on July 1, 2026 after being found missing from a repo ex
 
 ---
 
-## Shipped
+## Shipped before UI removal (historical)
 
 **Discovery & trust** — search (Typesense, with automatic Prisma fallback), city/university landing pages, three-way comparison with sticky tray, favorites, safety score surfacing, verified student badge with admin review flow.
 
@@ -39,7 +61,7 @@ This file was recreated on July 1, 2026 after being found missing from a repo ex
 
 ---
 
-## Open
+## Open as of the historical October 16 snapshot
 
 ### P0 — before real transaction volume
 - [x] Owner payout operator path — manual batches ship; settlement reconciliation and financial controls remain open.

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege for the default token; jobs that need more declare it.
+permissions:
+  contents: read
+
 # Cancel in-flight runs for the same branch when a new push arrives
 concurrency:
   group: ci-${{ github.ref }}
@@ -13,10 +17,10 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────
-  # Job 1: Web — type check + tests + lint
+  # Job 1: Web — type check + tests + lint + docs check
   # ─────────────────────────────────────────────
   web:
-    name: Web (type-check · tests · lint)
+    name: Web (type-check · tests · lint · docs)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -24,8 +28,8 @@ jobs:
       # Vitest needs these to be present even if not connecting to real services.
       # Real secrets live in GitHub Actions secrets — these are CI-safe dummies.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-      NEXTAUTH_SECRET: ci-secret-not-used-in-unit-tests
-      NEXTAUTH_URL: http://localhost:3000
+      AUTH_SECRET: ci-secret-not-used-in-unit-tests
+      AUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       # Disable telemetry
       NEXT_TELEMETRY_DISABLED: 1
@@ -37,11 +41,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Documentation drift check
+        run: npm run docs:check
+
+      - name: Script tests
+        run: npm run test:scripts
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -54,6 +64,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+        
+      - name: Check docs
+        run: npm run docs:check
 
   # ─────────────────────────────────────────────
   # Job 2: Shared package — type check
@@ -74,7 +87,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: packages/shared/package-lock.json
 
@@ -99,6 +112,7 @@ jobs:
     needs: [web, shared]
 
     permissions:
+      contents: read        # job-level permissions replace the defaults, so checkout needs this
       pull-requests: write  # needed to post the URL comment
 
     env:
@@ -112,11 +126,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@62.7.0
 
       - name: Pull Vercel environment (preview)
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
@@ -149,10 +163,7 @@ jobs:
               `| **Deployed by** | @${actor} |`,
               '',
               '### Quick smoke test',
-              `- [ ] [Homepage](${previewUrl}) loads`,
-              `- [ ] [Search page](${previewUrl}/hostels) loads`,
-              `- [ ] [Lahore city page](${previewUrl}/hostels/in/lahore) loads`,
-              `- [ ] [Login page](${previewUrl}/login) loads`,
+              `- [ ] [Hostel search API](${previewUrl}/api/hostels) returns JSON`,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({

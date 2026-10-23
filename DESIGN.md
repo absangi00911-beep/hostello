@@ -326,6 +326,12 @@ components:
     typography: "{typography.caption-sm}"
 ---
 
+> **Historical reference only:** This is an extracted third-party marketplace
+> design analysis, not Hostello's current design system. Hostello's UI pages
+> and components were removed on October 19, 2026; no screens currently
+> implement these tokens or patterns. Revisit or replace this reference when
+> the interface redesign begins.
+
 ## Overview
 
 Airbnb is the canonical example of a generous, photography-led consumer marketplace. The base canvas is **pure white** (`{colors.canvas}` — #ffffff) with deep near-black ink (`{colors.ink}` — #222222) for headlines and body, and a single voltage of **Rausch** (`{colors.primary}` — #ff385c) carrying every primary CTA, the search-button orb, the heart save state, and inline brand links. There is no secondary brand color in mainline marketing — the **Luxe purple** (`{colors.luxe}` — #460479) and **Plus magenta** (`{colors.plus}` — #92174d) tokens are sub-brand accents that only appear inside Airbnb Luxe / Plus contexts.

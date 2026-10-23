@@ -26,7 +26,7 @@ The release lead records a pass/fail result for each gate:
 
 | Gate | Pass condition |
 | --- | --- |
-| Web artifact | Production build, route checks, and browser smoke checks complete against a safe database target |
+| API artifact | Production build succeeds; authorized API smoke checks complete against a compatible database and required integrations |
 | Database | Neon retention/PITR setting, RPO/RTO, connection budget, and an isolated restore rehearsal are recorded |
 | Payments | Safepay sandbox checkout/refund and a controlled production transaction have signed webhook evidence and booking-state reconciliation |
 | Documents | The verification R2 bucket is private, its token is bucket-scoped, admin document access works, and public/legacy exposure has been checked |
@@ -101,7 +101,7 @@ Copy this table into the launch ticket and fill it with links or restricted refe
 | Gate | Result | Evidence/reference | Owner | UTC time |
 | --- | --- | --- | --- | --- |
 | Deployment | Pass / fail | Production deployment URL and Git SHA |  |  |
-| Web checks | Pass / fail | Build, route, and browser smoke output |  |  |
+| API checks | Pass / fail | Build and authorized API smoke output |  |  |
 | Database recovery | Pass / fail | Retention, RPO/RTO, isolated restore rehearsal |  |  |
 | Safepay | Pass / fail | Sandbox and controlled live transaction reconciliation |  |  |
 | Private documents | Pass / fail | Bucket access review and legacy URL test |  |  |
