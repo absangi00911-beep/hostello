@@ -12,10 +12,6 @@ vi.mock("@/lib/verify-upstash", () => ({
   verifyUpstashRequest: vi.fn(),
 }));
 
-vi.mock("@/lib/notifications", () => ({
-  sendPushNotification: vi.fn(),
-}));
-
 vi.mock("@/lib/cron-utils", () => ({
   runCronJob: vi.fn(async (
     _name: string,
@@ -28,7 +24,6 @@ vi.mock("@/lib/cron-utils", () => ({
 
 import { POST } from "@/app/api/cron/mark-completed-stays/route";
 import { db } from "@/lib/db";
-import { sendPushNotification } from "@/lib/notifications";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 const tx = {
@@ -100,13 +95,6 @@ describe("POST /api/cron/mark-completed-stays", () => {
         type: "BOOKING_COMPLETED",
         bookingId: "booking-completed",
       }),
-    }));
-    expect(sendPushNotification).toHaveBeenCalledTimes(1);
-    expect(sendPushNotification).toHaveBeenCalledWith("user-1", expect.objectContaining({
-      data: expect.objectContaining({ notificationId: "notification-1" }),
-    }), expect.objectContaining({
-      notificationType: "BOOKING_COMPLETED",
-      logContext: expect.objectContaining({ request_id: expect.any(String) }),
     }));
     expect(db.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
   });

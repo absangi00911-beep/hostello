@@ -103,14 +103,13 @@ describe("PATCH /api/admin/payouts/[id]", () => {
     expect(markPayoutPaid).not.toHaveBeenCalled();
   });
 
-  it("works without a reference (optional field)", async () => {
+  it("requires a nonblank transfer reference", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(markPayoutPaid).mockResolvedValue({ id: "pay-1", status: "PAID" } as any);
 
     const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "pay-1" }) });
 
-    expect(res.status).toBe(200);
-    expect(markPayoutPaid).toHaveBeenCalledWith("pay-1", "usr_admin_1", undefined);
+    expect(res.status).toBe(400);
+    expect(markPayoutPaid).not.toHaveBeenCalled();
   });
 
   it("returns 400 with the service's message when the payout isn't PENDING", async () => {
@@ -119,7 +118,7 @@ describe("PATCH /api/admin/payouts/[id]", () => {
       new PayoutServiceError("Cannot mark a PAID payout as paid.", 409),
     );
 
-    const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "pay-1" }) });
+    const res = await PATCH(patchRequest({ reference: "BANK-1" }), { params: Promise.resolve({ id: "pay-1" }) });
     const body = await res.json();
 
     expect(res.status).toBe(409);
@@ -130,7 +129,7 @@ describe("PATCH /api/admin/payouts/[id]", () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(markPayoutPaid).mockRejectedValue(new PayoutServiceError("Payout not found.", 404));
 
-    const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "nonexistent" }) });
+    const res = await PATCH(patchRequest({ reference: "BANK-1" }), { params: Promise.resolve({ id: "nonexistent" }) });
 
     expect(res.status).toBe(404);
   });
@@ -141,7 +140,7 @@ describe("PATCH /api/admin/payouts/[id]", () => {
       new Error("Database connection failed: sensitive-host.internal"),
     );
 
-    const res = await PATCH(patchRequest({}), { params: Promise.resolve({ id: "pay-1" }) });
+    const res = await PATCH(patchRequest({ reference: "BANK-1" }), { params: Promise.resolve({ id: "pay-1" }) });
 
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Could not update payout. Please try again." });

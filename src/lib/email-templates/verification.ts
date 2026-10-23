@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/verification.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton } from "./layout";
+import { emailLayout, emailButton, emailTheme } from "./layout";
 
 export function verificationEmail({
   name,
@@ -12,18 +12,18 @@ export function verificationEmail({
   const firstName = escapeHtml(name.split(" ")[0]);
 
   const content = `
-    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:${emailTheme.heading};">
       Confirm your email address
     </h1>
-    <p style="margin:0 0 24px 0;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px 0;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       Hi ${firstName}, click the button below to verify your HostelLo account.
       This link expires in 24 hours.
     </p>
 
     ${emailButton("Verify email address", verifyUrl)}
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
-    <p style="margin:0;font-size:12px;color:#A68B5B;">
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
+    <p style="margin:0;font-size:12px;color:${emailTheme.muted};">
       Didn't create a HostelLo account? You can safely ignore this email.
     </p>
   `;

@@ -1,7 +1,80 @@
 // Path: src/lib/validations.test.ts
 
 import { describe, it, expect } from "vitest";
-import { newPasswordSchema, sanitizeString } from "./validations";
+import {
+  hostelCreateSchema,
+  bookingSchema,
+  newPasswordSchema,
+  roomTypeSchema,
+  sanitizeString,
+} from "./validations";
+
+describe("roomTypeSchema", () => {
+  it("accepts a room with its own description, facilities, and photos", () => {
+    const result = roomTypeSchema.safeParse({
+      name: "Private room",
+      description: "A quiet room with a study desk.",
+      pricePerMonth: 32_000,
+      capacity: 1,
+      facilities: ["Attached bathroom", "Study desk"],
+      images: ["https://images.hostello.test/private-room.jpg"],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid room capacity and price", () => {
+    const result = roomTypeSchema.safeParse({
+      name: "Private room",
+      pricePerMonth: 0,
+      capacity: 0,
+      facilities: [],
+      images: [],
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("hostelCreateSchema room inventory", () => {
+  it("requires at least one room type for a bookable listing", () => {
+    const result = hostelCreateSchema.safeParse({
+      name: "Campus Hostel",
+      description: "A comfortable hostel with secure access and shared study facilities.",
+      city: "Lahore",
+      address: "123 Main Road, Lahore",
+      pricePerMonth: 25_000,
+      rooms: 8,
+      capacity: 24,
+      gender: "MIXED",
+      cancellationPolicy: "STANDARD",
+      minStay: 1,
+      amenities: ["WiFi"],
+      rules: [],
+      images: [],
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("bookingSchema room selection", () => {
+  const booking = {
+    hostelId: "clh1234567890123456789012",
+    checkIn: "2027-01-01T00:00:00.000Z",
+    checkOut: "2027-02-01T00:00:00.000Z",
+    guests: 1,
+    paymentMethod: "safepay",
+  };
+
+  it("requires a selected room for every booking request", () => {
+    expect(bookingSchema.safeParse(booking).success).toBe(false);
+  });
+
+  it("accepts a selected room ID from the room inventory", () => {
+    expect(bookingSchema.safeParse({ ...booking, roomId: "room-bsh-1" }).success).toBe(true);
+  });
+});
 
 describe("newPasswordSchema", () => {
   it("accepts passwords within bcrypt's UTF-8 input limit", () => {

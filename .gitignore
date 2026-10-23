@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-**/.expo/
 .pnp
 .pnp.js
 
@@ -62,6 +61,7 @@ build-*.txt
 
 # Test outputs and temporary files
 test-results/
+.playwright-cli/
 tmp_del.sql
 
 # Covers logs nested anywhere: logs/ci/build.log, packages/app/logs/build.log
@@ -78,3 +78,5 @@ graphify-out/cost.json        # local only
 
 e2e/.auth/
 e2e/.test-state.json
+
+.tmp-vitest/

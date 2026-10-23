@@ -10,6 +10,13 @@ export const CRON_SCHEDULES = {
     label: "Cancel abandoned payments",
     description: "Cancel bookings stuck in PENDING for 30+ minutes",
   },
+  "expire-unanswered-bookings": {
+    cron: "*/15 * * * *",
+    endpoint: "/api/cron/expire-unanswered-bookings",
+    maxAgeMs: 30 * 60 * 1000,
+    label: "Expire unanswered bookings",
+    description: "Remind owners and cancel paid requests they do not answer within 24 hours",
+  },
   "check-price-alerts": {
     cron: "0 */6 * * *",
     endpoint: "/api/cron/check-price-alerts",
@@ -37,6 +44,13 @@ export const CRON_SCHEDULES = {
     maxAgeMs: 26 * 60 * 60 * 1000,
     label: "Mark completed stays",
     description: "Mark bookings as completed after checkout",
+  },
+  "process-account-deletions": {
+    cron: "*/1 * * * *",
+    endpoint: "/api/cron/process-account-deletions",
+    maxAgeMs: 3 * 60 * 1000,
+    label: "Process account deletions",
+    description: "Remove account data in resumable batches and retain anonymized financial history",
   },
 } as const;
 

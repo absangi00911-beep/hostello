@@ -34,4 +34,19 @@ describe("proxy CSRF policy for email verification", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
+
+  it("does not exempt bearer-authenticated API mutations from CSRF checks", () => {
+    const response = proxy(new NextRequest(
+      "https://hostello.test/api/bookings",
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer legacy-mobile-token",
+          origin: "https://attacker.test",
+        },
+      },
+    ));
+
+    expect(response.status).toBe(403);
+  });
 });

@@ -16,7 +16,6 @@ const CSRF_EXEMPT: string[] = [
   "/api/auth/session",      // NextAuth session reads
   "/api/auth/csrf",         // NextAuth CSRF token
   "/api/auth/providers",    // NextAuth providers list
-  "/api/auth/mobile/login", // Mobile login — no Origin header
   "/api/cron/",             // Upstash QStash — Bearer token auth
   "/api/payment/webhook",   // Safepay — HMAC signature auth
 ];
@@ -31,21 +30,8 @@ export function proxy(req: NextRequest) {
   // -- Bearer Token Support (Mobile) --
   // Mobile clients send the JWT in the Authorization header. We detect it
   // and inject it into the cookies so NextAuth's auth() helper can find it.
-  const authHeader = req.headers.get("authorization");
-  const isBearer = authHeader?.startsWith("Bearer ");
-  
-  if (isBearer && authHeader) {
-    const token = authHeader.split(" ")[1];
-    // Set for both standard and secure cookie names to be safe.
-    // NextAuth uses __Secure- prefix in production for HTTPS.
-    req.cookies.set("authjs.session-token", token);
-    req.cookies.set("__Secure-authjs.session-token", token);
-  }
-
   // -- CSRF protection --
   // Applied to every state-mutating API route that isn't exempt.
-  // Bearer-authenticated requests (mobile) are exempt as they don't use
-  // browser-style ambient authority (cookies) for the initial request detection.
   const isMethodBasedExempt = METHOD_BASED_CSRF_EXEMPT.some(
     (rule) => pathname.startsWith(rule.path) && rule.methods.includes(req.method)
   );
@@ -53,14 +39,12 @@ export function proxy(req: NextRequest) {
   if (
     pathname.startsWith("/api/") &&
     !CSRF_EXEMPT.some((p) => pathname.startsWith(p)) &&
-    !isMethodBasedExempt &&
-    !isBearer
+    !isMethodBasedExempt
   ) {
     const csrfError = verifyCsrfOrigin(req);
     if (csrfError) return csrfError;
   }
 
-  // Ensure headers (including injected cookies) are passed to the next handler
   return NextResponse.next({
     request: {
       headers: new Headers(req.headers),

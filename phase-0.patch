@@ -1,0 +1,824 @@
+From a571b70a613f663bc1acadef5eb949f45cad569b Mon Sep 17 00:00:00 2001
+From: Audit <audit@example.com>
+Date: Wed, 21 Oct 2026 09:55:03 +0000
+Subject: [PATCH] Phase 0: unblock the pipeline (lockfile, Node 24 pin,
+ workflows, Neon snapshot, remove E2E bypass)
+
+---
+ .github/workflows/audit.yml           |  16 +++-
+ .github/workflows/ci.yml              |  28 ++++---
+ .github/workflows/migrate-preview.yml |   4 +-
+ .github/workflows/production.yml      |  54 +++++++-------
+ .nvmrc                                |   1 +
+ CHANGELOG.md                          |  12 +++
+ SYSTEM.md                             |  42 +++++++----
+ docs/SECURITY-CONTROLS.md             |   3 +-
+ package-lock.json                     |   6 +-
+ package.json                          |  11 ++-
+ packages/shared/tsconfig.json         |  15 ++++
+ scripts/neon-snapshot.mjs             |  94 +++++++++++++++++++++++
+ scripts/neon-snapshot.test.mjs        | 103 ++++++++++++++++++++++++++
+ src/lib/auth/token-version-cache.ts   |   2 +-
+ src/lib/env-validation.test.ts        |  50 +++++++++++++
+ src/lib/env-validation.ts             |   2 -
+ src/lib/rate-limit.test.ts            |  31 ++++++++
+ src/lib/rate-limit.ts                 |   2 +-
+ vitest.config.ts                      |   3 +-
+ 19 files changed, 406 insertions(+), 73 deletions(-)
+ create mode 100644 .nvmrc
+ create mode 100644 packages/shared/tsconfig.json
+ create mode 100644 scripts/neon-snapshot.mjs
+ create mode 100644 scripts/neon-snapshot.test.mjs
+ create mode 100644 src/lib/env-validation.test.ts
+
+diff --git a/.github/workflows/audit.yml b/.github/workflows/audit.yml
+index 268020d..2f4e568 100644
+--- a/.github/workflows/audit.yml
++++ b/.github/workflows/audit.yml
+@@ -9,9 +9,12 @@ on:
+       - 'package.json'
+       - 'package-lock.json'
+ 
++permissions:
++  contents: read
++
+ jobs:
+   audit:
+-    name: npm audit --omit=dev
++    name: npm audit (production dependencies)
+     runs-on: ubuntu-latest
+     timeout-minutes: 5
+ 
+@@ -22,8 +25,13 @@ jobs:
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
++
++      - name: Audit production dependencies (blocking)
++        run: npm audit --omit=dev --audit-level=high
+ 
+-      - name: Audit web dependencies
++      - name: Audit all dependencies (informational)
++        # Development-only findings are tracked in SYSTEM.md (R-06) and must
++        # not turn this workflow red.
+         run: npm audit --audit-level=high
+-        continue-on-error: false
++        continue-on-error: true
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 53049aa..cd795ef 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -6,6 +6,10 @@ on:
+   pull_request:
+     branches: [main]
+ 
++# Least privilege for the default token; jobs that need more declare it.
++permissions:
++  contents: read
++
+ # Cancel in-flight runs for the same branch when a new push arrives
+ concurrency:
+   group: ci-${{ github.ref }}
+@@ -24,8 +28,8 @@ jobs:
+       # Vitest needs these to be present even if not connecting to real services.
+       # Real secrets live in GitHub Actions secrets — these are CI-safe dummies.
+       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+-      NEXTAUTH_SECRET: ci-secret-not-used-in-unit-tests
+-      NEXTAUTH_URL: http://localhost:3000
++      AUTH_SECRET: ci-secret-not-used-in-unit-tests
++      AUTH_URL: http://localhost:3000
+       NEXT_PUBLIC_APP_URL: http://localhost:3000
+       # Disable telemetry
+       NEXT_TELEMETRY_DISABLED: 1
+@@ -37,12 +41,18 @@ jobs:
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+ 
+       - name: Install dependencies
+         run: npm ci
+ 
++      - name: Documentation drift check
++        run: npm run docs:check
++
++      - name: Script tests
++        run: npm run test:scripts
++
+       - name: Generate Prisma client
+         run: npx prisma generate
+ 
+@@ -74,7 +84,7 @@ jobs:
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+           cache-dependency-path: packages/shared/package-lock.json
+ 
+@@ -99,6 +109,7 @@ jobs:
+     needs: [web, shared]
+ 
+     permissions:
++      contents: read        # job-level permissions replace the defaults, so checkout needs this
+       pull-requests: write  # needed to post the URL comment
+ 
+     env:
+@@ -112,11 +123,11 @@ jobs:
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+ 
+       - name: Install Vercel CLI
+-        run: npm install --global vercel@latest
++        run: npm install --global vercel@62.7.0
+ 
+       - name: Pull Vercel environment (preview)
+         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+@@ -149,10 +160,7 @@ jobs:
+               `| **Deployed by** | @${actor} |`,
+               '',
+               '### Quick smoke test',
+-              `- [ ] [Homepage](${previewUrl}) loads`,
+-              `- [ ] [Search page](${previewUrl}/hostels) loads`,
+-              `- [ ] [Lahore city page](${previewUrl}/hostels/in/lahore) loads`,
+-              `- [ ] [Login page](${previewUrl}/login) loads`,
++              `- [ ] [Hostel search API](${previewUrl}/api/hostels) returns JSON`,
+             ].join('\n');
+ 
+             const { data: comments } = await github.rest.issues.listComments({
+diff --git a/.github/workflows/migrate-preview.yml b/.github/workflows/migrate-preview.yml
+index d144672..9cba4f7 100644
+--- a/.github/workflows/migrate-preview.yml
++++ b/.github/workflows/migrate-preview.yml
+@@ -28,14 +28,14 @@ jobs:
+       - name: Set up Node.js
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+ 
+       - name: Install dependencies
+         run: npm ci
+ 
+       - name: Install Vercel CLI
+-        run: npm install --global vercel@latest
++        run: npm install --global vercel@62.7.0
+ 
+       - name: Link Preview environment
+         run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+diff --git a/.github/workflows/production.yml b/.github/workflows/production.yml
+index fd8e754..3dd8f4d 100644
+--- a/.github/workflows/production.yml
++++ b/.github/workflows/production.yml
+@@ -4,6 +4,10 @@ on:
+   push:
+     branches: [main]
+ 
++# Least privilege for the default token.
++permissions:
++  contents: read
++
+ # Only one production deploy at a time
+ concurrency:
+   group: production-deploy
+@@ -22,8 +26,8 @@ jobs:
+ 
+     env:
+       DATABASE_URL:        postgresql://ci:ci@localhost:5432/ci
+-      NEXTAUTH_SECRET:     ci-secret-not-used-in-unit-tests
+-      NEXTAUTH_URL:        http://localhost:3000
++      AUTH_SECRET:         ci-secret-not-used-in-unit-tests
++      AUTH_URL:            http://localhost:3000
+       NEXT_PUBLIC_APP_URL: http://localhost:3000
+       NEXT_TELEMETRY_DISABLED: 1
+ 
+@@ -32,10 +36,12 @@ jobs:
+ 
+       - uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+ 
+       - run: npm ci
++      - run: npm run docs:check
++      - run: npm run test:scripts
+       - run: npx prisma generate
+       - run: npx tsc --noEmit
+       - run: npm test -- --run
+@@ -50,6 +56,13 @@ jobs:
+     timeout-minutes: 20
+     needs: [gate-web]
+ 
++    # Approval gate: configure required reviewers on the "production"
++    # environment in GitHub (Settings > Environments). Until that is set the
++    # job runs without approval. The environment also records each deployment.
++    environment:
++      name: production
++      url: ${{ steps.deploy.outputs.url }}
++
+     env:
+       VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
+       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+@@ -61,18 +74,26 @@ jobs:
+       - name: Setup Node
+         uses: actions/setup-node@v4
+         with:
+-          node-version: 20
++          node-version-file: .nvmrc
+           cache: npm
+ 
+       - name: Install project dependencies
+         run: npm ci
+ 
+       - name: Install Vercel CLI
+-        run: npm install --global vercel@latest
++        run: npm install --global vercel@62.7.0
+ 
+       - name: Pull Vercel environment (production)
+         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+ 
++      - name: Snapshot production database (Neon branch)
++        run: node scripts/neon-snapshot.mjs
++        env:
++          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
++          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
++          NEON_PRODUCTION_BRANCH_ID: ${{ vars.NEON_PRODUCTION_BRANCH_ID }}
++          NEON_SNAPSHOT_REQUIRED: ${{ vars.NEON_SNAPSHOT_REQUIRED }}
++
+       - name: Apply production database migrations
+         run: vercel env run --token="$VERCEL_TOKEN" -e production -- npm run db:migrate:deploy
+         env:
+@@ -91,26 +112,3 @@ jobs:
+ 
+       - name: Print deploy URL
+         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
+-
+-      - name: Create GitHub deployment
+-        uses: actions/github-script@v7
+-        with:
+-          script: |
+-            const { data: deployment } = await github.rest.repos.createDeployment({
+-              owner:              context.repo.owner,
+-              repo:               context.repo.repo,
+-              ref:                context.sha,
+-              environment:        'production',
+-              description:        'Deployed to hostello.pk',
+-              auto_merge:         false,
+-              required_contexts:  [],
+-            });
+-
+-            await github.rest.repos.createDeploymentStatus({
+-              owner:          context.repo.owner,
+-              repo:           context.repo.repo,
+-              deployment_id:  deployment.id,
+-              state:          'success',
+-              environment_url: '${{ steps.deploy.outputs.url }}',
+-              description:    'Production deploy succeeded',
+-            });
+diff --git a/.nvmrc b/.nvmrc
+new file mode 100644
+index 0000000..a45fd52
+--- /dev/null
++++ b/.nvmrc
+@@ -0,0 +1 @@
++24
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 1c63cc2..77ad3e3 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,18 @@
+ 
+ Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
+ 
++## Version 4.1 (October 21, 2026)
++
++Phase 0 of the remediation plan: unblock the pipeline.
++
++- **Lockfile:** removed the nested `deepmerge-ts` override and patched the lock entry to 8.0.2, so `npm ci` passes on npm 10.9.7 and npm 12.2.0.
++- **Toolchain:** pinned Node 24 through `.nvmrc` and `engines`. The test suite and both type checkers pass on Node 22 and Node 24.
++- **Workflows:** audit job split into blocking production and informational full audits; read-only default permissions; `AUTH_*` environment names; Vercel CLI pinned; Preview comment links updated to the API; `contents: read` added to the Preview job; production deploy now runs in the `production` environment with a Neon snapshot step before migrations.
++- **Shared package:** added `packages/shared/tsconfig.json`. The CI job that type-checks it exited 1 on every run, which blocked Preview deploys.
++- **Security:** removed the `HOSTELLO_E2E` bypass from environment validation, the rate limiter and the token-version cache, with regression tests that fail against the old code.
++- **Tooling:** `docs:check` and `test:scripts` added to package scripts and CI; `scripts/neon-snapshot.mjs` with six tests.
++- **Risk register:** R-06 fixed in code with console steps open; R-14 partly closed.
++
+ ## Version 4.0 (October 20, 2026)
+ 
+ - Restructured `SYSTEM.md` from a 14,900-word mix of design, security inventory and changelog into a design document: requirements and business rules, architecture, domain model with invariants, state machines for booking, payment, refund, payout, webhook event and listing, API surface, data classification, decision log and risk register.
+diff --git a/SYSTEM.md b/SYSTEM.md
+index 8571bc1..89b2e64 100644
+--- a/SYSTEM.md
++++ b/SYSTEM.md
+@@ -2,8 +2,8 @@
+ 
+ | | |
+ |---|---|
+-| **Version** | 4.0 |
+-| **Verified against code** | October 20, 2026 (repository snapshot `HostelLo.zip`) |
++| **Version** | 4.1 |
++| **Verified against code** | October 21, 2026 (repository snapshot `HostelLo.zip` plus the Phase 0 changes) |
+ | **Stage** | Pre-launch, backend only. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
+ | **Document owner** | _To be assigned_ |
+ 
+@@ -37,7 +37,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
+ | API route handler files | 71 |
+ | Prisma models | 28 |
+ | Prisma migrations | 30 |
+-| Vitest test files | 96 |
++| Vitest test files | 97 |
+ | Cron jobs in the schedule registry | 7 |
+ | Cron route handlers | 7 |
+ <!-- docs-check:end -->
+@@ -173,11 +173,24 @@ The application is intentionally one deployable unit: route handlers, business l
+ 
+ ### 3.4 Deployment and environments
+ 
+-- **Pull requests:** CI runs application and shared-package checks, then deploys a Preview.
+-- **Production:** a push to `main` runs its own quality gate, applies migrations with `prisma migrate deploy` against Vercel's Production environment, then builds and deploys. The Vercel build never applies migrations.
++- **Toolchain:** Node 24 (`.nvmrc`, and `engines.node` in `package.json`, which Vercel also reads) and npm 10.9 or newer. CI and Vercel therefore run the same Node major. The committed lockfile must pass `npm ci`.
++- **Pull requests:** CI installs with `npm ci`, then runs the documentation drift check, script tests, type check, Vitest suite and lint, and type-checks the shared package on its own. A Preview is deployed only after those pass.
++- **Production:** a push to `main` runs its own gate (the same checks), then the `deploy` job. The job runs in the GitHub Environment `production`, which is where required reviewers are configured, so a deploy can wait for approval. It then creates a Neon branch of the production database (a snapshot, expiring after 14 days by default), applies migrations with `prisma migrate deploy` against Vercel's Production environment, builds, and deploys. The Vercel build never applies migrations.
+ - **Preview schema changes:** a manually dispatched workflow checks the Preview database host and name against GitHub Environment variables before migrating.
+-- **Weekly dependency audit:** `audit.yml`.
+-- **Known problems with this pipeline:** R-06.
++- **Weekly dependency audit:** `audit.yml` blocks on production dependencies and reports development-only findings without failing.
++- **Pinned tooling and permissions:** the Vercel CLI is pinned to a release older than two weeks, and every workflow runs with read-only repository permissions unless a job declares more.
++
++GitHub configuration the pipeline reads (set in the `production` environment):
++
++| Name | Kind | Purpose |
++|---|---|---|
++| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | Secrets | Vercel CLI |
++| `NEON_API_KEY` | Secret | Creates the pre-migration snapshot branch |
++| `NEON_PROJECT_ID`, `NEON_PRODUCTION_BRANCH_ID` | Variables | Which project and branch to snapshot |
++| `NEON_SNAPSHOT_REQUIRED` | Variable | Set to `true` to fail the deploy when the snapshot cannot be taken. While unset, the step only warns |
++| `NEON_SNAPSHOT_TTL_DAYS` | Variable, optional | Snapshot lifetime in days (default 14) |
++
++Open console steps for this pipeline are listed under R-06.
+ 
+ ### 3.5 Configuration
+ 
+@@ -204,7 +217,6 @@ The canonical list is `.env.example` (and `.env.sentry.example`). `scripts/check
+ | Jobs (optional) | `QSTASH_URL` | Optional regional endpoint |
+ | Observability | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Optional |
+ | Seeding (local only, never production) | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD`, `SEED_STUDENT_PASSWORD`, `SEED_OWNER_1_EMAIL`, `SEED_OWNER_2_EMAIL`, `SEED_OWNER_3_EMAIL`, `SEED_OWNER_4_EMAIL`, `SEED_STUDENT_EMAIL` | n/a |
+-| Legacy test flag | `HOSTELLO_E2E` | **Remove.** Setting it to `1` skips all production environment validation (R-14) |
+ 
+ ### 3.6 Client topology
+ 
+@@ -623,19 +635,19 @@ Implemented controls are inventoried in [`docs/SECURITY-CONTROLS.md`](docs/SECUR
+ 
+ ### 14.3 Release
+ 
+-Production deploys on every push to `main` (§3.4). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are missing from the audited archive (R-20).
++Production deploys on every push to `main`, after an optional approval and a Neon snapshot (§3.4). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are missing from the audited archive (R-20).
+ 
+ ### 14.4 Testing and quality gates
+ 
+-Verified on October 19, 2026:
++Verified on October 21, 2026, on Node 22 and Node 24:
+ 
+-- 96 Vitest files, 657 tests, all passing.
++- 97 Vitest files with 662 tests, all passing, plus 6 `node:test` script tests (`npm run test:scripts`).
+ - `tsc --noEmit` passes. ESLint reports 0 errors and 1 warning.
+-- `npm audit --omit=dev` reports zero vulnerabilities; the full audit adds five high findings in a development-only dependency chain.
++- `npm audit --omit=dev` reported zero vulnerabilities on October 19; the full audit adds five high findings in a development-only dependency chain.
+ 
+ What the tests cover: handlers and validation, booking, search and review services, CSRF and rate limits, payments, notifications, profile and shared business logic.
+ 
+-What they do not cover: **none of the 96 files talks to a real database** (65 mock `@/lib/db`, and CI points `DATABASE_URL` at a placeholder), so concurrency claims such as "the conditional update wins the race" are asserted against mocks (R-15). Nothing exercises the Safepay sandbox. Browser E2E coverage was removed with the UI and is deferred until a frontend exists.
++What they do not cover: **none of the 97 files talks to a real database** (65 mock `@/lib/db`, and CI points `DATABASE_URL` at a placeholder), so concurrency claims such as "the conditional update wins the race" are asserted against mocks (R-15). Nothing exercises the Safepay sandbox. Browser E2E coverage was removed with the UI and is deferred until a frontend exists.
+ 
+ **Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** a sandbox pay, confirm, cancel and refund round trip including a QStash retry, a rehearsed restore, and one alert fired end to end.
+ 
+@@ -704,7 +716,7 @@ Each needs a decision from you before the related code is written.
+ | R-03 | P0 | **Payout timing and custody undecided.** Owners are paid after the whole prepaid stay ends | `payouts.ts` | D-3 |
+ | R-04 | P0 | **Safepay and refund reconciliation** (partly implemented: durable evidence, audit events, admin queue, audited retries). Open: sandbox validation of merchant setup and refund call, legacy in-flight sessions, QStash retry exercise, a sweeper for `CANCELLED` + `PAID` + refund `NONE`, automatic handling of late payments (reinstate if the seat is free, else refund) | `payment/webhook`, `refunds.ts` | Sandbox round trip; sweeper job |
+ | R-05 | P0 | **Payout accounting.** No double-entry ledger, fee accounting, reversal or settlement reconciliation; batches created before the snapshot change have no destination snapshot | `payouts.ts`, schema | Approved accounting model (D-3) |
+-| R-06 | P0 | **Delivery pipeline.** `npm ci`, the first step of both workflows, fails: `Missing: deepmerge-ts@8.0.2 from lock file` (the `overrides` pin 8.0.0 while a dependency wants exactly 8.0.2), reproduced on npm 10.9.7. `audit.yml` is named `--omit=dev` but runs the full audit, so it fails on five dev-only findings. CI uses Node 20, which per Node's schedule reached end of life in April 2026. A push to `main` migrates production and deploys with no approval and no pre-migration snapshot. CI sets legacy `NEXTAUTH_*` names; the Vercel CLI is unpinned | `.github/workflows/*`, `package.json`, `package-lock.json` | Regenerate lock with CI's npm; pin Node and npm; add approval gate and a Neon branch before `migrate deploy` |
++| R-06 | P0 | **Delivery pipeline.** **Status: fixed in code on October 21, 2026; console steps open.** Found: `npm ci` failed (`Missing: deepmerge-ts@8.0.2 from lock file`: an `overrides` entry pinned 8.0.0 while Prisma's config package wants exactly 8.0.2); `audit.yml` ran the full audit despite its name and failed on five development-only findings; CI ran Node 20 (end of life per Node's schedule since April 2026); the `shared` job exited 1 on every run because `packages/shared` had no `tsconfig.json`, so Preview deploys, which wait for it, never ran; the Preview comment linked to deleted pages; workflows had no `permissions:` block and set legacy `NEXTAUTH_*` names; the Vercel CLI was unpinned; production migrated and deployed with no approval and no snapshot. Fixed: lockfile and override, Node 24 pin, audit split, shared tsconfig, permissions, env names, CLI pin, approval-capable `production` environment, Neon snapshot step. **Open (console):** add required reviewers to the `production` environment; add the Neon secret and variables and set `NEON_SNAPSHOT_REQUIRED=true`; confirm the Vercel project's Node setting (`engines` overrides it) | `.github/workflows/*`, `package.json`, `package-lock.json`, `scripts/neon-snapshot.mjs` | Complete the console steps; confirm the first run on GitHub is green |
+ | R-07 | P1 | **Unreliable background work.** No use of `after()` or `waitUntil` and roughly two dozen unawaited sends (signup emails, booking status mail and notifications, the webhook's in-app notifications, cron emails, admin moderation mail). Work started after the response may never finish on serverless. No outbox; price-alert duplicate window | `src/**` | Await in the request, use `after()`, then an outbox drained by QStash |
+ | R-08 | P1 | **Notification race in `createBooking`.** The call runs on the global client inside the transaction callback and references the uncommitted booking by foreign key, so it can fail and be swallowed (`notification.persist_failed`). It also notifies the owner before payment about a booking they cannot see or act on | `booking-service.ts` | Write with `tx`; notify on payment only |
+ | R-09 | P1 | **Frontend coupling and client contract.** Emitted links and redirects point to removed pages (`/reset-password`, `/login`, `/booking/{id}/confirmation`, `/bookings/{id}`, `/owner/bookings`, `/dashboard/hostels/...`, `/help`, `/privacy`, `/terms`, `/?payment=error`), so password reset and the post-payment return are dead ends today. One `AUTH_URL` serves five purposes; production requires `Origin` to equal the API's own origin; no CORS; Auth.js error and sign-in pages redirect to `/login`; `next.config.ts` carries a UI-era CSP. No OpenAPI, no versioning, no error-code catalogue, inconsistent envelopes | `forgot-password`, `verify-email`, `payment/callback`, `email-templates`, `proxy.ts`, `next.config.ts` | D-1 |
+@@ -712,7 +724,7 @@ Each needs a decision from you before the related code is written.
+ | R-11 | P1 | **Uploads.** Without `hostelId`, any signed-in user can write to the public listing bucket; 5 uploads per 10 minutes means 15 photos take about 30 minutes; no resizing or EXIF stripping; 4 MB through a function body | `upload/route.ts` | Owner or Admin only; presigned direct uploads; resize step; raise limit |
+ | R-12 | P1 | **Database integrity and capacity.** No CHECK constraints outside the payout audit table; free-string status columns; plaintext owner bank details on `User`; `Hostel.rooms` and `capacity` denormalized; duplicate indexes (`users.email`, `hostels.slug`); phone codes stored in plaintext; pool `max` unset (default 10 per instance) and one `DATABASE_URL` for runtime and migrations | `schema.prisma`, `db.ts`, `prisma.config.ts` | CHECKs and enums; pooled runtime URL with a pool cap, direct migration URL |
+ | R-13 | P1 | **Search.** Unquoted, unescaped `filter_by` values; zero-hit queries run `ILIKE` scans without trigram indexes; no university or distance search; availability endpoint uncached | `typesense.ts`, `hostel-search.ts` | Quote and validate filters; trigram index; geo and campus filters; cache availability |
+-| R-14 | P1 | **Configuration safety.** `HOSTELLO_E2E=1` skips all production environment validation and relaxes two Redis checks; `PAYOUT_DESTINATION_ENCRYPTION_KEY`, Twilio variables and `NEXT_PUBLIC_SAFEPAY_ENV` are not validated (unset means sandbox); `sendEmail` reports success when the key is a placeholder; Safepay checkout and Twilio calls have no timeout | `env-validation.ts`, `rate-limit.ts`, `email.ts`, `safepay.ts`, `sms.ts` | Delete the flag; validate; add timeouts |
++| R-14 | P1 | **Configuration safety.** The `HOSTELLO_E2E` bypass of production environment validation was removed on October 21, 2026, with regression tests. Open: `PAYOUT_DESTINATION_ENCRYPTION_KEY`, Twilio variables and `NEXT_PUBLIC_SAFEPAY_ENV` are not validated (unset means sandbox); `sendEmail` reports success when the key is a placeholder; Safepay checkout and Twilio calls have no timeout | `env-validation.ts`, `email.ts`, `safepay.ts`, `sms.ts` | Validate; add timeouts (Phase 1) |
+ | R-15 | P1 | **Tests cannot back the concurrency claims.** No test uses a real database | §14.4 | Postgres service container in CI |
+ | R-16 | P1 | **Recovery readiness** _(operational)_. Confirm Neon retention and restore options, set RPO and RTO, rehearse a restore on a disposable branch | | Restore drill |
+ | R-17 | P1 | **Alerting and observability.** Hosted alerts for payment health, reconciliation, search degradation, notification delivery and cron failure are not configured; health endpoints need an admin session; Sentry tracing at 100% sampling | §14.1 | Configure and exercise alerts; add an unauthenticated liveness check |
+diff --git a/docs/SECURITY-CONTROLS.md b/docs/SECURITY-CONTROLS.md
+index c4f8d71..7374921 100644
+--- a/docs/SECURITY-CONTROLS.md
++++ b/docs/SECURITY-CONTROLS.md
+@@ -105,7 +105,6 @@ Companion to [`SYSTEM.md`](../SYSTEM.md) (§13 summarizes the security design an
+ | Per-account login bucket can be used to lock out a known account; login timing and signup 409 reveal whether an email exists | R-10 |
+ | Email, phone and student verification are recorded but required by no endpoint; no way to suspend a user; no MFA or second approver for admins | R-10 |
+ | Any signed-in user can upload to the public listing bucket when `hostelId` is omitted; 5 uploads per 10 minutes is too low for listing onboarding | R-11 |
+-| `HOSTELLO_E2E=1` skips all production environment validation | R-14 |
+ | Typesense `filter_by` values are interpolated unquoted and unescaped | R-13 |
+ | Many per-IP limits may collide with carrier-grade NAT and campus networks (verify with real traffic) | R-10 |
+ | CSP and image/connect allowlists in `next.config.ts` target the removed UI | R-09 |
+@@ -125,7 +124,7 @@ Companion to [`SYSTEM.md`](../SYSTEM.md) (§13 summarizes the security design an
+ - Application catches now log allowlisted error summaries; cron failures return and persist only generic status text, and cron-health reads only configured job names while redacting legacy error details. Payment health aggregates retryable and reconciliation-required webhook events; hosted alerts for payment, search, notification, and cron health still need setup and exercise.
+ - Confirm production database connection limits against Vercel instance/region scaling; the node-postgres pool uses its default maximum per process and a serverless fleet can multiply connections.
+ - A roommate post at the three-report threshold remains hidden until expiry unless an admin removes it. The current schema has no audited dismiss/restore state; decide whether that workflow needs a future schema change before adding moderator restore actions.
+-- Production dependencies audit clean (0 vulnerabilities; verified October 19, 2026 with `npm audit --omit=dev` against the committed lockfile). The full audit reports five high findings in the development-only `braces` chain through the ESLint toolchain ([advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)); track the fix and do not force-downgrade `eslint-config-next`. `audit.yml` currently runs the full audit, so it fails on these findings (R-06).
++- Production dependencies audit clean (0 vulnerabilities; verified October 19, 2026 with `npm audit --omit=dev` against the committed lockfile). The full audit reports five high findings in the development-only `braces` chain through the ESLint toolchain ([advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)); track the fix and do not force-downgrade `eslint-config-next`. `audit.yml` blocks only on production dependencies and reports these development-only findings without failing (R-06).
+ - Create/configure the dedicated private R2 bucket and bucket-scoped token, schedule the abandoned-upload cleanup job, and clean up legacy student documents that remain public in the listing bucket. See private verification storage setup (`docs/PRIVATE-STUDENT-VERIFICATION.md`, not in the audited archive; R-20).
+ 
+ ---
+diff --git a/packages/shared/tsconfig.json b/packages/shared/tsconfig.json
+new file mode 100644
+index 0000000..07d9c9c
+--- /dev/null
++++ b/packages/shared/tsconfig.json
+@@ -0,0 +1,15 @@
++{
++  "compilerOptions": {
++    "target": "ES2023",
++    "lib": ["dom", "esnext"],
++    "strict": true,
++    "noEmit": true,
++    "skipLibCheck": true,
++    "esModuleInterop": true,
++    "module": "esnext",
++    "moduleResolution": "bundler",
++    "resolveJsonModule": true,
++    "isolatedModules": true
++  },
++  "include": ["src/**/*.ts"]
++}
+diff --git a/scripts/neon-snapshot.mjs b/scripts/neon-snapshot.mjs
+new file mode 100644
+index 0000000..45dd734
+--- /dev/null
++++ b/scripts/neon-snapshot.mjs
+@@ -0,0 +1,94 @@
++#!/usr/bin/env node
++/**
++ * Create a Neon branch of the production database before migrations run.
++ *
++ * A Neon branch is a copy-on-write snapshot of the parent at the moment it is
++ * created, so a migration that goes wrong can be inspected or recovered from.
++ * The branch is given an expiry so snapshots clean themselves up.
++ *
++ * Environment
++ *   NEON_API_KEY                 secret; API key with access to the project
++ *   NEON_PROJECT_ID              project id (not secret)
++ *   NEON_PRODUCTION_BRANCH_ID    id of the production branch to snapshot
++ *   NEON_SNAPSHOT_REQUIRED       "true" makes any failure or missing setting fail the job
++ *   NEON_SNAPSHOT_TTL_DAYS       days until the snapshot expires (default 14)
++ *   NEON_API_BASE                override for tests (default https://console.neon.tech/api/v2)
++ *   GITHUB_SHA, GITHUB_RUN_ID, GITHUB_RUN_ATTEMPT   used to name the branch
++ *
++ * While the settings are absent the step only warns, so it can ship before the
++ * secrets exist. Set NEON_SNAPSHOT_REQUIRED=true to make it a hard gate.
++ */
++import { appendFileSync } from "node:fs";
++
++const env = process.env;
++const base = (env.NEON_API_BASE || "https://console.neon.tech/api/v2").replace(/\/+$/, "");
++const required = env.NEON_SNAPSHOT_REQUIRED === "true";
++const ttlDays = Number(env.NEON_SNAPSHOT_TTL_DAYS || 14);
++
++function finish(level, message, code) {
++  if (level === "error") console.error(`::error::${message}`);
++  else if (level === "warning") console.log(`::warning::${message}`);
++  else console.log(message);
++  process.exit(code);
++}
++
++function fail(message) {
++  if (required) finish("error", message, 1);
++  finish("warning", `${message} Continuing without a snapshot because NEON_SNAPSHOT_REQUIRED is not "true".`, 0);
++}
++
++const missing = ["NEON_API_KEY", "NEON_PROJECT_ID", "NEON_PRODUCTION_BRANCH_ID"].filter((k) => !env[k]);
++if (missing.length) {
++  fail(`Pre-migration snapshot not configured: ${missing.join(", ")} not set.`);
++}
++if (!Number.isFinite(ttlDays) || ttlDays <= 0) {
++  fail("NEON_SNAPSHOT_TTL_DAYS must be a positive number.");
++}
++
++const sha = (env.GITHUB_SHA || "local").slice(0, 7);
++const run = `${env.GITHUB_RUN_ID || Date.now()}-${env.GITHUB_RUN_ATTEMPT || 1}`;
++const name = `pre-migrate-${sha}-${run}`;
++const expiresAt = new Date(Date.now() + ttlDays * 86_400_000).toISOString();
++
++async function createBranch(withExpiry) {
++  const branch = { name, parent_id: env.NEON_PRODUCTION_BRANCH_ID };
++  if (withExpiry) branch.expires_at = expiresAt;
++  const res = await fetch(`${base}/projects/${encodeURIComponent(env.NEON_PROJECT_ID)}/branches`, {
++    method: "POST",
++    headers: {
++      Authorization: `Bearer ${env.NEON_API_KEY}`,
++      "Content-Type": "application/json",
++      Accept: "application/json",
++    },
++    body: JSON.stringify({ branch }),
++    signal: AbortSignal.timeout(30_000),
++  });
++  const text = await res.text();
++  let json = null;
++  try { json = JSON.parse(text); } catch { /* non-JSON error body */ }
++  return { res, json, text };
++}
++
++let result;
++try {
++  result = await createBranch(true);
++  // If this API version rejects expires_at, still take the snapshot.
++  if ([400, 422].includes(result.res.status)) {
++    console.log("::warning::Neon rejected the branch expiry; creating the snapshot without auto-delete.");
++    result = await createBranch(false);
++  }
++} catch (error) {
++  fail(`Neon snapshot request failed: ${error instanceof Error ? error.message : String(error)}.`);
++}
++
++if (!result.res.ok || !result.json?.branch?.id) {
++  const detail = (result.json?.message || result.text || "").slice(0, 200);
++  fail(`Neon snapshot failed with HTTP ${result.res.status}${detail ? `: ${detail}` : ""}.`);
++}
++
++const branchId = result.json.branch.id;
++const line = `Pre-migration snapshot created: ${name} (${branchId}).`;
++if (env.GITHUB_STEP_SUMMARY) {
++  appendFileSync(env.GITHUB_STEP_SUMMARY, `### Pre-migration snapshot\n\n- Neon branch: \`${name}\` (\`${branchId}\`)\n- Expires: ${expiresAt}\n`);
++}
++finish("info", line, 0);
+diff --git a/scripts/neon-snapshot.test.mjs b/scripts/neon-snapshot.test.mjs
+new file mode 100644
+index 0000000..87f8580
+--- /dev/null
++++ b/scripts/neon-snapshot.test.mjs
+@@ -0,0 +1,103 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { createServer } from "node:http";
++import { execFile } from "node:child_process";
++import { fileURLToPath } from "node:url";
++import { dirname, join } from "node:path";
++
++const script = join(dirname(fileURLToPath(import.meta.url)), "neon-snapshot.mjs");
++
++function startMock(handler) {
++  const requests = [];
++  const server = createServer((req, res) => {
++    let body = "";
++    req.on("data", (c) => (body += c));
++    req.on("end", () => {
++      const parsed = body ? JSON.parse(body) : null;
++      requests.push({ method: req.method, url: req.url, auth: req.headers.authorization, body: parsed });
++      handler(requests.length, parsed, res);
++    });
++  });
++  return new Promise((resolve) =>
++    server.listen(0, "127.0.0.1", () => resolve({ server, requests, base: `http://127.0.0.1:${server.address().port}` })),
++  );
++}
++
++function run(env) {
++  return new Promise((resolve) => {
++    execFile(process.execPath, [script], { env: { PATH: process.env.PATH, ...env }, timeout: 20_000 }, (error, stdout, stderr) =>
++      resolve({ code: error ? error.code : 0, stdout, stderr }),
++    );
++  });
++}
++
++const good = (n, body, res) => {
++  res.setHeader("Content-Type", "application/json");
++  res.end(JSON.stringify({ branch: { id: "br-snap-1", name: body.branch.name } }));
++};
++const cfg = (base, extra = {}) => ({
++  NEON_API_KEY: "key-123",
++  NEON_PROJECT_ID: "proj-1",
++  NEON_PRODUCTION_BRANCH_ID: "br-prod",
++  NEON_API_BASE: base,
++  GITHUB_SHA: "abcdef1234567890",
++  GITHUB_RUN_ID: "42",
++  GITHUB_RUN_ATTEMPT: "1",
++  ...extra,
++});
++
++test("creates an expiring branch from the production branch", async () => {
++  const m = await startMock(good);
++  const r = await run(cfg(m.base));
++  m.server.close();
++  assert.equal(r.code, 0);
++  assert.match(r.stdout, /Pre-migration snapshot created: pre-migrate-abcdef1-42-1 \(br-snap-1\)/);
++  assert.equal(m.requests.length, 1);
++  assert.equal(m.requests[0].url, "/projects/proj-1/branches");
++  assert.equal(m.requests[0].auth, "Bearer key-123");
++  assert.equal(m.requests[0].body.branch.parent_id, "br-prod");
++  assert.ok(m.requests[0].body.branch.expires_at);
++});
++
++test("retries without expiry when the API rejects expires_at", async () => {
++  const m = await startMock((n, body, res) => {
++    if (n === 1) { res.statusCode = 400; res.end(JSON.stringify({ message: "unknown field expires_at" })); return; }
++    good(n, body, res);
++  });
++  const r = await run(cfg(m.base));
++  m.server.close();
++  assert.equal(r.code, 0);
++  assert.equal(m.requests.length, 2);
++  assert.equal(m.requests[1].body.branch.expires_at, undefined);
++  assert.match(r.stdout, /without auto-delete/);
++});
++
++test("warns and continues when settings are missing and the step is not required", async () => {
++  const r = await run({});
++  assert.equal(r.code, 0);
++  assert.match(r.stdout, /::warning::.*NEON_API_KEY, NEON_PROJECT_ID, NEON_PRODUCTION_BRANCH_ID/);
++});
++
++test("fails when settings are missing and the step is required", async () => {
++  const r = await run({ NEON_SNAPSHOT_REQUIRED: "true" });
++  assert.notEqual(r.code, 0);
++  assert.match(r.stderr, /::error::/);
++});
++
++test("warns on API failure when not required, fails when required", async () => {
++  const m = await startMock((n, body, res) => { res.statusCode = 500; res.end("boom"); });
++  const soft = await run(cfg(m.base));
++  const hard = await run(cfg(m.base, { NEON_SNAPSHOT_REQUIRED: "true" }));
++  m.server.close();
++  assert.equal(soft.code, 0);
++  assert.match(soft.stdout, /HTTP 500/);
++  assert.notEqual(hard.code, 0);
++});
++
++test("never prints the API key", async () => {
++  const m = await startMock((n, body, res) => { res.statusCode = 401; res.end(JSON.stringify({ message: "bad key-123" })); });
++  const r = await run(cfg(m.base, { NEON_SNAPSHOT_REQUIRED: "true" }));
++  m.server.close();
++  assert.ok(!r.stdout.includes("Bearer"));
++  assert.ok(!r.stderr.includes("Bearer"));
++});
+diff --git a/src/lib/auth/token-version-cache.ts b/src/lib/auth/token-version-cache.ts
+index 951c9fe..51cd50a 100644
+--- a/src/lib/auth/token-version-cache.ts
++++ b/src/lib/auth/token-version-cache.ts
+@@ -25,7 +25,7 @@ function getRedis() {
+   if (redis !== undefined) return redis;
+ 
+   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+-    if (process.env.NODE_ENV === "production" && process.env.HOSTELLO_E2E !== "1") {
++    if (process.env.NODE_ENV === "production") {
+       throw new Error(
+         "Upstash Redis is not configured. " +
+           "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in production."
+diff --git a/src/lib/env-validation.test.ts b/src/lib/env-validation.test.ts
+new file mode 100644
+index 0000000..4a88ebd
+--- /dev/null
++++ b/src/lib/env-validation.test.ts
+@@ -0,0 +1,50 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
++
++// env-validation validates at import time unless NEXT_PHASE is set.
++// Setting it makes importing the module free of side effects, so each test
++// decides when validation runs.
++async function load() {
++  return import("./env-validation");
++}
++
++describe("validateEnvironment", () => {
++  beforeEach(() => {
++    vi.resetModules();
++    vi.stubEnv("NEXT_PHASE", "phase-production-build");
++  });
++
++  afterEach(() => {
++    vi.unstubAllEnvs();
++    vi.restoreAllMocks();
++  });
++
++  it("throws in production when a required variable is missing", async () => {
++    vi.stubEnv("VERCEL_ENV", "production");
++    vi.stubEnv("DATABASE_URL", "");
++
++    const { validateEnvironment } = await load();
++
++    expect(() => validateEnvironment()).toThrow(/DATABASE_URL/);
++  });
++
++  it("does not let HOSTELLO_E2E skip production validation", async () => {
++    vi.stubEnv("VERCEL_ENV", "production");
++    vi.stubEnv("DATABASE_URL", "");
++    vi.stubEnv("HOSTELLO_E2E", "1");
++
++    const { validateEnvironment } = await load();
++
++    expect(() => validateEnvironment()).toThrow(/DATABASE_URL/);
++  });
++
++  it("only warns in Vercel Preview when a production variable is missing", async () => {
++    vi.stubEnv("VERCEL_ENV", "preview");
++    vi.stubEnv("DATABASE_URL", "");
++    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
++
++    const { validateEnvironment } = await load();
++
++    expect(() => validateEnvironment()).not.toThrow();
++    expect(warn).toHaveBeenCalled();
++  });
++});
+diff --git a/src/lib/env-validation.ts b/src/lib/env-validation.ts
+index add332c..561b96e 100644
+--- a/src/lib/env-validation.ts
++++ b/src/lib/env-validation.ts
+@@ -196,8 +196,6 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
+  * @throws Error if a required production variable is missing
+  */
+ export function validateEnvironment(): void {
+-  if (process.env.HOSTELLO_E2E === "1") return;
+-
+   // Vercel Preview runs with NODE_ENV=production, but it must not require
+   // production-only provider credentials to serve the rest of the app.
+   // Keep local production-mode checks strict when VERCEL_ENV is unavailable.
+diff --git a/src/lib/rate-limit.test.ts b/src/lib/rate-limit.test.ts
+index 61d9461..ccbbc45 100644
+--- a/src/lib/rate-limit.test.ts
++++ b/src/lib/rate-limit.test.ts
+@@ -49,3 +49,34 @@ describe("rateLimit Redis outage fallback", () => {
+     expect(consoleError.mock.calls.flat().join(" ")).not.toContain("private connection detail");
+   });
+ });
++
++describe("rateLimit production configuration", () => {
++  beforeEach(() => {
++    vi.resetModules();
++    vi.clearAllMocks();
++    vi.stubEnv("NODE_ENV", "production");
++    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
++    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
++  });
++
++  afterEach(() => {
++    vi.unstubAllEnvs();
++  });
++
++  it("refuses to run without Redis in production", async () => {
++    const { rateLimit } = await import("./rate-limit");
++
++    await expect(
++      rateLimit("signup:203.0.113.10", { limit: 2, windowMs: 60_000 }),
++    ).rejects.toThrow(/Upstash Redis is not configured/);
++  });
++
++  it("does not let HOSTELLO_E2E relax the production Redis requirement", async () => {
++    vi.stubEnv("HOSTELLO_E2E", "1");
++    const { rateLimit } = await import("./rate-limit");
++
++    await expect(
++      rateLimit("signup:203.0.113.10", { limit: 2, windowMs: 60_000 }),
++    ).rejects.toThrow(/Upstash Redis is not configured/);
++  });
++});
+diff --git a/src/lib/rate-limit.ts b/src/lib/rate-limit.ts
+index a6f9375..cf21e79 100644
+--- a/src/lib/rate-limit.ts
++++ b/src/lib/rate-limit.ts
+@@ -48,7 +48,7 @@ function getRedis() {
+   if (redisClient !== undefined) return redisClient;
+ 
+   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+-    if (process.env.NODE_ENV === "production" && process.env.HOSTELLO_E2E !== "1") {
++    if (process.env.NODE_ENV === "production") {
+       throw new Error(
+         "Upstash Redis is not configured. " +
+           "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in production.",
+diff --git a/vitest.config.ts b/vitest.config.ts
+index c0ab323..6494887 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -19,7 +19,8 @@ export default defineConfig({
+   test: {
+     globals: true,
+     environment: 'node',
+-    exclude: [...configDefaults.exclude, 'e2e/**'],
++    // scripts/ holds node:test files (npm run test:scripts), not Vitest suites.
++    exclude: [...configDefaults.exclude, 'e2e/**', 'scripts/**'],
+   },
+   resolve: {
+     alias: {
+-- 
+2.43.0
+

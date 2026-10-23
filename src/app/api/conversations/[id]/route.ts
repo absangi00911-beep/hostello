@@ -231,7 +231,6 @@ export async function POST(
         title:    message.sender.name,   // sender name as title (messaging app convention)
         message:  preview,
         hostelId: conversation.hostelId, // lets the UI deep-link to the right hostel
-        conversationId: id,             // push-only context for the mobile tap route
       }).catch((err) =>
         console.error(
           "[conversations] Notification delivery failed:",

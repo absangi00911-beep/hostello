@@ -49,3 +49,34 @@ describe("rateLimit Redis outage fallback", () => {
     expect(consoleError.mock.calls.flat().join(" ")).not.toContain("private connection detail");
   });
 });
+
+describe("rateLimit production configuration", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("refuses to run without Redis in production", async () => {
+    const { rateLimit } = await import("./rate-limit");
+
+    await expect(
+      rateLimit("signup:203.0.113.10", { limit: 2, windowMs: 60_000 }),
+    ).rejects.toThrow(/Upstash Redis is not configured/);
+  });
+
+  it("does not let HOSTELLO_E2E relax the production Redis requirement", async () => {
+    vi.stubEnv("HOSTELLO_E2E", "1");
+    const { rateLimit } = await import("./rate-limit");
+
+    await expect(
+      rateLimit("signup:203.0.113.10", { limit: 2, windowMs: 60_000 }),
+    ).rejects.toThrow(/Upstash Redis is not configured/);
+  });
+});

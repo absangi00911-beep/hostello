@@ -720,7 +720,7 @@ async function main() {
   if (greenValley) {
     await db.room.upsert({
       where: { id: "room-gv-1" },
-      update: {},
+      update: { facilities: ["Two single beds", "Shared bathroom", "Wardrobe"] },
       create: {
         id: "room-gv-1",
         hostelId: greenValley.id,
@@ -729,12 +729,13 @@ async function main() {
         pricePerMonth: 8500,
         capacity: 2,
         available: 2,
+        facilities: ["Two single beds", "Shared bathroom", "Wardrobe"],
       },
     });
 
     await db.room.upsert({
       where: { id: "room-gv-2" },
-      update: {},
+      update: { facilities: ["Air conditioning", "Three single beds", "Study desks"] },
       create: {
         id: "room-gv-2",
         hostelId: greenValley.id,
@@ -743,6 +744,7 @@ async function main() {
         pricePerMonth: 9500,
         capacity: 3,
         available: 3,
+        facilities: ["Air conditioning", "Three single beds", "Study desks"],
       },
     });
   }
@@ -755,7 +757,7 @@ async function main() {
   if (sitara) {
     await db.room.upsert({
       where: { id: "room-sitara-1" },
-      update: {},
+      update: { facilities: ["Attached bathroom", "Two single beds", "Wardrobe"] },
       create: {
         id: "room-sitara-1",
         hostelId: sitara.id,
@@ -764,6 +766,7 @@ async function main() {
         pricePerMonth: 10000,
         capacity: 2,
         available: 2,
+        facilities: ["Attached bathroom", "Two single beds", "Wardrobe"],
       },
     });
   }
@@ -781,7 +784,8 @@ async function main() {
         description: "Bright shared room with two single beds and space for study desks.",
         pricePerMonth: 5800,
         capacity: 2,
-        available: 4,
+        available: 2,
+        facilities: ["Two single beds", "Shared bathroom", "Study desks"],
         images: ["https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80"],
       },
       {
@@ -790,7 +794,8 @@ async function main() {
         description: "Three-bed room with individual study space, ideal for students sharing costs.",
         pricePerMonth: 5200,
         capacity: 3,
-        available: 6,
+        available: 3,
+        facilities: ["Three beds", "Individual study desks", "Shared bathroom"],
         images: ["https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80"],
       },
       {
@@ -799,7 +804,8 @@ async function main() {
         description: "Private room for focused study and extra quiet during exam season.",
         pricePerMonth: 7500,
         capacity: 1,
-        available: 2,
+        available: 1,
+        facilities: ["Private room", "Study space", "Lockable door"],
         images: ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80"],
       },
     ];
@@ -815,6 +821,7 @@ async function main() {
           capacity: room.capacity,
           available: room.available,
           images: room.images,
+          facilities: room.facilities,
         },
         create: {
           ...room,
@@ -849,7 +856,8 @@ async function main() {
         description: `Comfortable shared accommodation near ${data.area}, with ${data.amenities.slice(0, 2).join(" and ")}.`,
         pricePerMonth: data.pricePerMonth,
         capacity: 2,
-        available: 4,
+        available: 2,
+        facilities: ["Two single beds", "Shared bathroom", "Wardrobe"],
       },
       {
         id: `room-${data.slug}-single`,
@@ -857,7 +865,8 @@ async function main() {
         description: `A quieter private room for students who want more personal study space in ${data.city}.`,
         pricePerMonth: data.pricePerMonth + 1500,
         capacity: 1,
-        available: 2,
+        available: 1,
+        facilities: ["Private room", "Study space", "Lockable door"],
       },
     ];
 

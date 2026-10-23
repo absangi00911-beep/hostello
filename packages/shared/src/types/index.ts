@@ -110,12 +110,6 @@ export type BookingWithHostel = Booking & {
   hostel: Pick<Hostel, "id" | "name" | "slug" | "coverImage" | "city">;
 };
 
-export interface CompareItem {
-  slug: string;
-  name: string;
-  image: string | null;
-}
-
 export interface AmenityConfig {
   id: string;
   label: string;

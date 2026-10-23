@@ -1,7 +1,7 @@
 // Path: src/lib/email-templates/welcome.ts
 
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton } from "./layout";
+import { emailLayout, emailButton, emailTheme } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface WelcomeEmailProps {
@@ -21,10 +21,10 @@ export function welcomeEmail({ name, role }: WelcomeEmailProps) {
   const isOwner = role === "OWNER";
 
   const content = `
-    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:700;color:${emailTheme.heading};">
       Welcome, ${firstName} 👋
     </h1>
-    <p style="margin:0 0 20px 0;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 20px 0;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       ${
         isOwner
           ? "Your HostelLo owner account is ready. Start by listing your first hostel — it takes about 5 minutes."
@@ -38,11 +38,11 @@ export function welcomeEmail({ name, role }: WelcomeEmailProps) {
         : emailButton("Browse hostels", `${APP_URL}/hostels`)
     }
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
 
-    <p style="margin:0;font-size:13px;color:#A68B5B;line-height:1.6;">
+    <p style="margin:0;font-size:13px;color:${emailTheme.muted};line-height:1.6;">
       If you have any questions, reply to this email or visit our
-      <a href="${APP_URL}/help" style="color:#0D3B2E;">Help Centre</a>.
+      <a href="${APP_URL}/help" style="color:${emailTheme.link};">Help Centre</a>.
     </p>
   `;
 

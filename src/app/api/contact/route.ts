@@ -2,28 +2,34 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/contact/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { rateLimit } from "@/lib/rate-limit";
+import { getIp, rateLimit } from "@/lib/rate-limit";
 import { contactSchema, sendContactMessage } from "@/lib/support";
 import { readBoundedJson } from "@/lib/bounded-json";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) {
-    return NextResponse.json(
-      { error: "Sign in to contact support." },
-      { status: 401 },
-    );
-  }
-
-  const rl = await rateLimit(`contact:${session.user.id}`, {
+  const ipLimit = await rateLimit(`contact:ip:${getIp(req)}`, {
     limit: 5,
     windowMs: 15 * 60 * 1000,
   });
-  if (!rl.ok) {
+  if (!ipLimit.ok) {
     return NextResponse.json(
       { error: "Too many messages. Please try again shortly." },
       { status: 429 },
     );
+  }
+
+  if (session) {
+    const userLimit = await rateLimit(`contact:user:${session.user.id}`, {
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+    if (!userLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many messages. Please try again shortly." },
+        { status: 429 },
+      );
+    }
   }
 
   try {

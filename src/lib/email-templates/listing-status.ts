@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/listing-status.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton } from "./layout";
+import { emailLayout, emailButton, emailTheme } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface ListingStatusEmailProps {
@@ -26,23 +26,23 @@ export function listingApprovedEmail({
   const escapedHostelName = escapeHtml(hostelName);
 
   const content = `
-    <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:${emailTheme.heading};">
       Your listing is live 🎉
     </h1>
-    <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 20px;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       Hi ${firstName}, your hostel <strong>${escapedHostelName}</strong> has been approved
       and is now visible to students on HostelLo.
     </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px;font-size:14px;color:${emailTheme.body};line-height:1.6;">
       You can manage bookings, update details, and view inquiries from your dashboard.
       Students can now send booking requests.
     </p>
 
     ${emailButton("View your listing", `${APP_URL}/dashboard/hostels/${hostelId}`)}
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
-    <p style="margin:0;font-size:12px;color:#A68B5B;">
-      Questions? Visit our <a href="${APP_URL}/help" style="color:#0D3B2E;">Help Centre</a>
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
+    <p style="margin:0;font-size:12px;color:${emailTheme.muted};">
+      Questions? Visit our <a href="${APP_URL}/help" style="color:${emailTheme.link};">Help Centre</a>
       or reply to this email.
     </p>
   `;
@@ -69,25 +69,25 @@ export function listingSuspendedEmail({
   const escapedReason = escapeHtml(reason);
 
   const content = `
-    <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#1A1209;">
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:700;color:${emailTheme.heading};">
       Your listing has been suspended
     </h1>
-    <p style="margin:0 0 20px;font-size:15px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 20px;font-size:15px;color:${emailTheme.body};line-height:1.6;">
       Hi ${firstName}, your hostel <strong>${escapedHostelName}</strong> has been suspended
       and is no longer visible to students.
     </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px;font-size:14px;color:${emailTheme.body};line-height:1.6;">
       <strong>Reason:</strong> ${escapedReason}
     </p>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6354;line-height:1.6;">
+    <p style="margin:0 0 24px;font-size:14px;color:${emailTheme.body};line-height:1.6;">
       If you believe this was a mistake or would like to update your listing, please reach out
       to our support team.
     </p>
 
     ${emailButton("Contact support", `${APP_URL}/help`)}
 
-    <hr style="margin:32px 0;border:none;border-top:1px solid #EAE0D0;" />
-    <p style="margin:0;font-size:12px;color:#A68B5B;">
+    <hr style="margin:32px 0;border:none;border-top:1px solid ${emailTheme.border};" />
+    <p style="margin:0;font-size:12px;color:${emailTheme.muted};">
       You received this because your HostelLo listing was suspended.
     </p>
   `;
