@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         },
         orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: BATCH_SIZE,
-        select: { id: true, roomId: true },
+        select: { id: true, roomId: true, guests: true },
       });
 
       if (candidates.length === 0) break;
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
           if (booking.roomId) {
             const roomResult = await tx.room.updateMany({
               where: { id: booking.roomId },
-              data: { available: { increment: 1 }, version: { increment: 1 } },
+              data: { available: { increment: booking.guests }, version: { increment: 1 } },
             });
             batchRoomsRestored += roomResult.count;
           }

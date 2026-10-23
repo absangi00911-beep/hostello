@@ -17,6 +17,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import { hostelCreateSchema } from "@hostello/shared";
 import { removeHostelIndex } from "@/lib/typesense-sync";
+import { RoomInventoryConflictError, syncHostelRooms } from "@/lib/room-inventory-service";
 
 // Owners can only move their own listing between these two states from
 // this endpoint — ACTIVE<->PENDING_REVIEW and SUSPENDED are admin-only,
@@ -123,15 +124,12 @@ export async function PATCH(
     const requestedStatus = bodyData.status;
 
     const hostel = await db.hostel.findFirst({
-      where: hostelIdOrSlugWhere(param),
-      select: { id: true, ownerId: true, status: true, slug: true },
+      where: { ...hostelIdOrSlugWhere(param), ownerId: session.user.id },
+      select: { id: true, status: true, slug: true },
     });
 
     if (!hostel) {
       return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
-    }
-    if (hostel.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (isListingEdit) {
@@ -148,30 +146,48 @@ export async function PATCH(
       }
 
       const listing = parsed.data;
-      const result = await db.hostel.updateMany({
-        where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
-        data: {
-          name: listing.name,
-          description: listing.description,
-          city: listing.city,
-          area: listing.area ?? null,
-          address: listing.address,
-          latitude: listing.latitude ?? null,
-          longitude: listing.longitude ?? null,
-          pricePerMonth: listing.pricePerMonth,
-          rooms: listing.rooms,
-          capacity: listing.capacity,
-          gender: listing.gender,
-          minStay: listing.minStay,
-          maxStay: listing.maxStay ?? null,
-          amenities: listing.amenities,
-          rules: listing.rules ?? [],
-          images: listing.images ?? [],
-          coverImage: listing.coverImage ?? listing.images?.[0] ?? null,
-          status: "PENDING_REVIEW",
-        },
-      });
-      if (result.count !== 1) {
+      let transactionResult: { kind: "changed" | "updated" };
+      try {
+        transactionResult = await db.$transaction(async (tx) => {
+          const result = await tx.hostel.updateMany({
+            where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
+            data: {
+              name: listing.name,
+              description: listing.description,
+              city: listing.city,
+              area: listing.area ?? null,
+              address: listing.address,
+              latitude: listing.latitude ?? null,
+              longitude: listing.longitude ?? null,
+              pricePerMonth: listing.pricePerMonth,
+              rooms: listing.rooms,
+              capacity: listing.capacity,
+              gender: listing.gender,
+              cancellationPolicy: listing.cancellationPolicy,
+              minStay: listing.minStay,
+              maxStay: listing.maxStay ?? null,
+              amenities: listing.amenities,
+              rules: listing.rules ?? [],
+              images: listing.images ?? [],
+              coverImage: listing.coverImage ?? listing.images?.[0] ?? null,
+              status: "PENDING_REVIEW",
+            },
+          });
+          if (result.count !== 1) return { kind: "changed" } as const;
+
+          await syncHostelRooms(tx, hostel.id, listing.roomTypes);
+          return { kind: "updated" } as const;
+        }, { isolationLevel: "Serializable" });
+      } catch (error) {
+        if (error instanceof RoomInventoryConflictError) {
+          return NextResponse.json(
+            { error: "Room inventory conflicts with existing bookings. Refresh and review the rooms." },
+            { status: 409 },
+          );
+        }
+        throw error;
+      }
+      if (transactionResult.kind === "changed") {
         return NextResponse.json(
           { error: "This listing has changed. Refresh and try again." },
           { status: 409 },

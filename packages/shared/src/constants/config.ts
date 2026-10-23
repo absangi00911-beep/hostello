@@ -12,9 +12,6 @@ export const PRIVACY_EMAIL = "privacy@hostello.pk";
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 50;
 
-// Compare
-export const MAX_COMPARE_ITEMS = 3;
-
 // Booking constraints
 export const MIN_BOOKING_MONTHS = 1;
 export const MAX_BOOKING_MONTHS = 24;
@@ -31,7 +28,6 @@ export const MAX_IMAGES_PER_HOSTEL = 15;
 // Rate limiting (attempts / window)
 export const AUTH_RATE_LIMIT = { attempts: 5, windowMinutes: 15 };
 export const API_RATE_LIMIT = { attempts: 100, windowMinutes: 1 };
-export const MOBILE_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 // Revalidation intervals (seconds)
 export const HOSTEL_REVALIDATE = 3600;   // 1 hour

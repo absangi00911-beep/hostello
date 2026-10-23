@@ -42,12 +42,12 @@ export async function GET(req: NextRequest) {
 
   // The selected reporting window is date-bounded, but its row count still
   // grows with usage. Aggregate incrementally to cap memory per request.
-  const pendingCount = await db.user.count({ where: { verificationStatus: "PENDING" } });
+  const pendingCount = await db.user.count({ where: { role: "STUDENT", verificationStatus: "PENDING" } });
   const byDay = new Map<string, { submissions: number; approvals: number }>();
   let submissionCursor: string | undefined;
   while (true) {
     const submittedBatch = await db.user.findMany({
-      where: { verificationSubmittedAt: { gte: since } },
+      where: { role: "STUDENT", verificationSubmittedAt: { gte: since } },
       orderBy: [{ verificationSubmittedAt: "asc" }, { id: "asc" }],
       ...(submissionCursor ? { cursor: { id: submissionCursor }, skip: 1 } : {}),
       take: ANALYTICS_BATCH_SIZE,
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
   let decisionCursor: string | undefined;
   while (true) {
     const decidedBatch = await db.user.findMany({
-      where: { verificationDecidedAt: { gte: since } },
+      where: { role: "STUDENT", verificationDecidedAt: { gte: since } },
       orderBy: [{ verificationDecidedAt: "asc" }, { id: "asc" }],
       ...(decisionCursor ? { cursor: { id: decisionCursor }, skip: 1 } : {}),
       take: ANALYTICS_BATCH_SIZE,

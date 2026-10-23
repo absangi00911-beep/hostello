@@ -12,6 +12,7 @@ vi.mock("@/lib/db", () => ({
       findFirst: vi.fn(),
       updateMany: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -24,6 +25,13 @@ import { auth } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { removeHostelIndex } from "@/lib/typesense-sync";
+
+const transactionRoom = {
+  findMany: vi.fn(),
+  updateMany: vi.fn(),
+  createMany: vi.fn(),
+  deleteMany: vi.fn(),
+};
 
 function ownerSession(id = "usr_owner_1") {
   return { user: { id, role: "OWNER" } } as any;
@@ -64,11 +72,21 @@ function listingEditBody(overrides = {}) {
     pricePerMonth: 18_000,
     rooms: 10,
     capacity: 30,
+    cancellationPolicy: "STANDARD",
     minStay: 1,
     amenities: ["WiFi"],
     images: [image, image, image],
     coverImage: image,
     rules: ["Keep shared spaces clean"],
+    roomTypes: [
+      {
+        name: "Standard room",
+        pricePerMonth: 18_000,
+        capacity: 3,
+        facilities: ["Shared bathroom"],
+        images: [image],
+      },
+    ],
     status: "PENDING_REVIEW",
     ...overrides,
   };
@@ -82,6 +100,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60 * 60 * 1000 });
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
+  transactionRoom.findMany.mockResolvedValue([]);
+  vi.mocked(db.$transaction).mockImplementation(async (operation: any) =>
+    operation({ hostel: db.hostel, room: transactionRoom }),
+  );
 });
 
 describe("GET /api/hostels/[param]", () => {
@@ -194,13 +216,17 @@ describe("PATCH /api/hostels/[param]", () => {
     expect(res.status).toBe(404);
   });
 
-  it("returns 403 when the session user doesn't own the hostel", async () => {
+  it("returns the same 404 for a hostel owned by someone else", async () => {
     vi.mocked(auth).mockResolvedValue(ownerSession("usr_someone_else"));
-    vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel() as any);
+    vi.mocked(db.hostel.findFirst).mockResolvedValue(null);
 
     const res = await PATCH(patchReq({ status: "DRAFT" }), paramsFor("hst_1"));
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
+    expect(db.hostel.findFirst).toHaveBeenCalledWith({
+      where: { OR: [{ id: "hst_1" }, { slug: "hst_1" }], ownerId: "usr_someone_else" },
+      select: { id: true, status: true, slug: true },
+    });
     expect(db.hostel.updateMany).not.toHaveBeenCalled();
   });
 
@@ -258,7 +284,39 @@ describe("PATCH /api/hostels/[param]", () => {
         status: "PENDING_REVIEW",
       }),
     }));
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+    expect(transactionRoom.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          hostelId: "hst_1",
+          name: "Standard room",
+          facilities: ["Shared bathroom"],
+        }),
+      ],
+    });
     expect(removeHostelIndex).toHaveBeenCalledWith("hst_1");
+  });
+
+  it("rejects inventory replacement when an omitted room has booking history", async () => {
+    vi.mocked(auth).mockResolvedValue(ownerSession());
+    vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
+    transactionRoom.findMany.mockResolvedValue([
+      {
+        id: "room_1",
+        capacity: 2,
+        available: 2,
+        version: 0,
+        _count: { bookings: 1 },
+      },
+    ]);
+
+    const res = await PATCH(patchReq(listingEditBody()), paramsFor("hst_1"));
+
+    expect(res.status).toBe(409);
+    expect(transactionRoom.deleteMany).not.toHaveBeenCalled();
+    expect(removeHostelIndex).not.toHaveBeenCalled();
   });
 
   it("does not allow owners to edit suspended listings", async () => {

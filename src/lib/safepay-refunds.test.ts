@@ -28,19 +28,20 @@ describe("refundPayment", () => {
     expect(result).toMatchObject({ success: true, state: "TRACKER_REFUNDED" });
   });
 
-  it("does not accept partial, pending, or undocumented 2xx responses as completed", async () => {
+  it("accepts a partial refund state for a policy-approved partial amount", async () => {
     vi.stubEnv("NEXT_PUBLIC_SAFEPAY_ENV", "sandbox");
     vi.stubEnv("SAFEPAY_SECRET", "test-secret");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ data: { tracker: { state: "TRACKER_PARTIAL_REFUND" } } }),
-      }),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { tracker: { state: "TRACKER_PARTIAL_REFUND" } } }),
+    }));
 
-    await expect(refundPayment({ transactionId: "track_123", amount: 45000 })).rejects.toThrow(
-      "did not confirm a full refund",
+    const result = await refundPayment({ transactionId: "track_123", amount: 22_500 });
+
+    expect(result).toMatchObject({ success: true, state: "TRACKER_PARTIAL_REFUND" });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ body: JSON.stringify({ amount: 2_250_000, currency: "PKR" }) }),
     );
   });
 

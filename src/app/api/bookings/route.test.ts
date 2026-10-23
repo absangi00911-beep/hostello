@@ -76,6 +76,7 @@ describe("POST /api/bookings", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         hostelId: "clh1234567890123456789012",
+        roomId: "room-bsh-1",
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
         guests: 1,

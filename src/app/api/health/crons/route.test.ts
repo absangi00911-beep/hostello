@@ -34,10 +34,12 @@ describe("GET /api/health/crons", () => {
         name: {
           in: [
             "cancel-abandoned-payments",
+            "expire-unanswered-bookings",
             "check-price-alerts",
             "cleanup-tokens",
             "cleanup-verification-uploads",
             "mark-completed-stays",
+            "process-account-deletions",
           ],
         },
       },

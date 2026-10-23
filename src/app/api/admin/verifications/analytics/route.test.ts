@@ -83,11 +83,13 @@ describe("GET /api/admin/verifications/analytics", () => {
       avgHours: 4,
     }]);
     expect(db.user.findMany).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      where: { role: "STUDENT", verificationSubmittedAt: { gte: expect.any(Date) } },
       take: 200,
       cursor: { id: "submitted_199" },
       skip: 1,
     }));
     expect(db.user.findMany).toHaveBeenNthCalledWith(4, expect.objectContaining({
+      where: { role: "STUDENT", verificationDecidedAt: { gte: expect.any(Date) } },
       take: 200,
       cursor: { id: "decided_199" },
       skip: 1,

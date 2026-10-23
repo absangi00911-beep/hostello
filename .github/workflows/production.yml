@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+# Least privilege for the default token.
+permissions:
+  contents: read
+
 # Only one production deploy at a time
 concurrency:
   group: production-deploy
@@ -22,8 +26,8 @@ jobs:
 
     env:
       DATABASE_URL:        postgresql://ci:ci@localhost:5432/ci
-      NEXTAUTH_SECRET:     ci-secret-not-used-in-unit-tests
-      NEXTAUTH_URL:        http://localhost:3000
+      AUTH_SECRET:         ci-secret-not-used-in-unit-tests
+      AUTH_URL:            http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: 1
 
@@ -32,31 +36,16 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
+      - run: npm run docs:check
+      - run: npm run test:scripts
       - run: npx prisma generate
       - run: npx tsc --noEmit
       - run: npm test -- --run
       - run: npm run lint
-
-  gate-mobile:
-    name: Gate — Mobile type-check
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: apps/mobile
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: apps/mobile/package-lock.json
-      - run: npm ci
-      - run: npx tsc --noEmit
 
   # ─────────────────────────────────────────────────────────────────────────
   # Deploy: only runs after the gate jobs pass
@@ -65,7 +54,14 @@ jobs:
     name: Deploy to production
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [gate-web, gate-mobile]
+    needs: [gate-web]
+
+    # Approval gate: configure required reviewers on the "production"
+    # environment in GitHub (Settings > Environments). Until that is set the
+    # job runs without approval. The environment also records each deployment.
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
 
     env:
       VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
@@ -78,17 +74,25 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install project dependencies
         run: npm ci
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@62.7.0
 
       - name: Pull Vercel environment (production)
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Snapshot production database (Neon branch)
+        run: node scripts/neon-snapshot.mjs
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          NEON_PRODUCTION_BRANCH_ID: ${{ vars.NEON_PRODUCTION_BRANCH_ID }}
+          NEON_SNAPSHOT_REQUIRED: ${{ vars.NEON_SNAPSHOT_REQUIRED }}
 
       - name: Apply production database migrations
         run: vercel env run --token="$VERCEL_TOKEN" -e production -- npm run db:migrate:deploy
@@ -108,26 +112,3 @@ jobs:
 
       - name: Print deploy URL
         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
-
-      - name: Create GitHub deployment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: deployment } = await github.rest.repos.createDeployment({
-              owner:              context.repo.owner,
-              repo:               context.repo.repo,
-              ref:                context.sha,
-              environment:        'production',
-              description:        'Deployed to hostello.pk',
-              auto_merge:         false,
-              required_contexts:  [],
-            });
-
-            await github.rest.repos.createDeploymentStatus({
-              owner:          context.repo.owner,
-              repo:           context.repo.repo,
-              deployment_id:  deployment.id,
-              state:          'success',
-              environment_url: '${{ steps.deploy.outputs.url }}',
-              description:    'Production deploy succeeded',
-            });

@@ -81,9 +81,13 @@ export async function GET(req: NextRequest) {
     });
     if (!publicHostel) return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
 
+    const publicReviewWhere = {
+      hostelId,
+      hostel: { is: { status: "ACTIVE" as const } },
+    };
     const [reviews, total] = await Promise.all([
       db.review.findMany({
-        where: { hostelId },
+        where: publicReviewWhere,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -91,7 +95,7 @@ export async function GET(req: NextRequest) {
           user: { select: { id: true, name: true, avatar: true } },
         },
       }),
-      db.review.count({ where: { hostelId } }),
+      db.review.count({ where: publicReviewWhere }),
     ]);
 
     return NextResponse.json({ data: reviews, total, page, limit });

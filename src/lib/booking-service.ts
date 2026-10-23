@@ -38,11 +38,14 @@ export async function createBooking(userId: string, input: BookingInput) {
   // 1. Fetch hostel and optional room
   const hostel = await db.hostel.findUnique({
     where: { id: hostelId },
-    select: { id: true, name: true, ownerId: true, status: true, pricePerMonth: true, capacity: true },
+    select: { id: true, name: true, ownerId: true, status: true, pricePerMonth: true, capacity: true, cancellationPolicy: true },
   });
 
   if (!hostel || hostel.status !== "ACTIVE") {
     throw new BookingServiceError("Hostel not found or not available for booking.", 404);
+  }
+  if (!hostel.cancellationPolicy) {
+    throw new BookingServiceError("This hostel is updating its cancellation terms and is temporarily unavailable for booking.", 409);
   }
 
   let pricePerMonth = hostel.pricePerMonth;
@@ -70,6 +73,14 @@ export async function createBooking(userId: string, input: BookingInput) {
 
   // 3. Atomic transaction with optimistic locking
   return await db.$transaction(async (tx) => {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { deletionRequestedAt: true },
+    });
+    if (!user || user.deletionRequestedAt) {
+      throw new BookingServiceError("Account deletion is being processed.", 409);
+    }
+
     // If a specific room was selected, decrement availability with optimistic lock
     if (roomId && targetRoom) {
       let updatedRoom;
@@ -107,6 +118,7 @@ export async function createBooking(userId: string, input: BookingInput) {
         months,
         guests,
         total,
+        cancellationPolicy: hostel.cancellationPolicy,
         paymentMethod,
         paymentStatus: "PENDING",
         status: "PENDING",

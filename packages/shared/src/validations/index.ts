@@ -39,6 +39,50 @@ export const rulesSchema = z
   )
   .max(20, "Cannot have more than 20 rules");
 
+export const roomTypeSchema = z.object({
+  id: z.string().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/).optional(),
+  name: z
+    .string()
+    .min(2)
+    .max(100)
+    .transform(sanitizeString)
+    .refine((name) => name.length >= 2, "Room name must contain at least 2 characters"),
+  description: z
+    .string()
+    .max(1000)
+    .optional()
+    .transform((description) => (description ? sanitizeString(description) : undefined))
+    .refine(
+      (description) => description === undefined || description.length > 0,
+      "Room description cannot be empty",
+    ),
+  pricePerMonth: z.number().int().min(1000).max(100000),
+  capacity: z.number().int().min(1).max(100),
+  facilities: z
+    .array(
+      z
+        .string()
+        .min(1)
+        .max(100)
+        .transform(sanitizeString)
+        .refine((facility) => facility.length > 0, "Facility cannot be empty"),
+    )
+    .max(30),
+  images: z.array(z.string().max(2048)).max(15),
+});
+
+const roomTypesSchema = z
+  .array(roomTypeSchema)
+  .min(1, "Add at least one room type")
+  .max(100, "Cannot add more than 100 room types")
+  .refine(
+    (rooms) => {
+      const ids = rooms.flatMap((room) => room.id ? [room.id] : []);
+      return new Set(ids).size === ids.length;
+    },
+    "Room IDs must be unique",
+  );
+
 // -- Auth --
 
 export const newPasswordSchema = z
@@ -96,12 +140,14 @@ export const hostelCreateSchema = z.object({
   rooms: z.number().int().min(1).max(500),
   capacity: z.number().int().min(1).max(1000),
   gender: z.enum(["MALE", "FEMALE", "MIXED"]),
+  cancellationPolicy: z.enum(["FLEXIBLE", "STANDARD", "STRICT"]),
   minStay: z.number().int().min(1),
   maxStay: z.number().int().optional(),
   amenities: z.array(z.string()).min(1, "Select at least one amenity"),
   rules: rulesSchema,
   images: z.array(z.string().max(2_048)).max(15).optional(),
   coverImage: z.string().max(2_048).optional(),
+  roomTypes: roomTypesSchema,
 });
 
 // --- Review -------------------------------------------------------------------
@@ -124,7 +170,7 @@ export const reviewSchema = z.object({
 export const bookingSchema = z
   .object({
     hostelId: z.string().cuid(),
-    roomId: z.string().cuid().optional(),
+    roomId: z.string().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/),
     checkIn: z.coerce.date(),
     checkOut: z.coerce.date(),
     guests: z.number().int().min(1).max(4),
@@ -185,6 +231,7 @@ export const passwordSchema = z
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
 export type HostelCreateInput = z.infer<typeof hostelCreateSchema>;
+export type RoomTypeInput = z.infer<typeof roomTypeSchema>;
 export type ReviewInput = z.infer<typeof reviewSchema>;
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type SearchParamsInput = z.infer<typeof searchParamsSchema>;

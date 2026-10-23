@@ -1,8 +1,8 @@
 # HostelLo Launch Operations Runbook
 
 **Status:** Draft — external-account validation and named owners remain required  
-**Last reviewed:** October 7, 2026  
-**Scope:** Web MVP, Safepay checkout, private student verification documents, and mobile beta release gates.
+**Last reviewed:** October 16, 2026
+**Scope:** Web MVP, Safepay checkout, private student verification documents, and web release gates.
 
 This is the operator procedure for a controlled launch and for the first response to a production incident. It does not authorize database restoration, payment settlement, refund, bucket reconfiguration, or deployment rollback by itself. Record the actor, UTC timestamp, affected deployment, and supporting evidence for every production action.
 
@@ -26,12 +26,11 @@ The release lead records a pass/fail result for each gate:
 
 | Gate | Pass condition |
 | --- | --- |
-| Web artifact | Production build, route checks, and browser smoke checks complete against a safe database target |
+| API artifact | Production build succeeds; authorized API smoke checks complete against a compatible database and required integrations |
 | Database | Neon retention/PITR setting, RPO/RTO, connection budget, and an isolated restore rehearsal are recorded |
 | Payments | Safepay sandbox checkout/refund and a controlled production transaction have signed webhook evidence and booking-state reconciliation |
 | Documents | The verification R2 bucket is private, its token is bucket-scoped, admin document access works, and public/legacy exposure has been checked |
 | Observability | Sentry scrubbing/IP controls and Vercel/Sentry alerts for payments, search, notifications, crons, and cron health are enabled and exercised |
-| Mobile beta | EAS production values, signing, app links, native artifacts, device payment returns, and push behavior are verified |
 | Operations | On-call contacts, a launch cohort/area, support macros, and this runbook are approved |
 
 Any failed gate blocks broader distribution. A controlled transaction or restore rehearsal must use an explicitly approved disposable or production target and should be recorded in the release evidence.
@@ -102,12 +101,11 @@ Copy this table into the launch ticket and fill it with links or restricted refe
 | Gate | Result | Evidence/reference | Owner | UTC time |
 | --- | --- | --- | --- | --- |
 | Deployment | Pass / fail | Production deployment URL and Git SHA |  |  |
-| Web checks | Pass / fail | Build, route, and browser smoke output |  |  |
+| API checks | Pass / fail | Build and authorized API smoke output |  |  |
 | Database recovery | Pass / fail | Retention, RPO/RTO, isolated restore rehearsal |  |  |
 | Safepay | Pass / fail | Sandbox and controlled live transaction reconciliation |  |  |
 | Private documents | Pass / fail | Bucket access review and legacy URL test |  |  |
 | Monitoring | Pass / fail | Alert test IDs and scrubbing/IP setting review |  |  |
-| Mobile beta | Pass / fail | EAS artifact, app-link, device test results |  |  |
 | Rollback readiness | Pass / fail | Known-good deployment and assigned release owner |  |  |
 | Cohort decision | Approved / held | Cohort, support coverage, decision log |  |  |
 

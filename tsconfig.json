@@ -44,7 +44,6 @@
   "node_modules",
   "**/*.test.ts",
   "scripts",
-  "apps/mobile",
   "playwright.config.ts",
   "e2e"
 ]

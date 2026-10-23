@@ -105,6 +105,7 @@ export async function GET(req: NextRequest) {
           gender:        true,
           coverImage:    true,
           verified:      true,
+          cancellationPolicy: true,
           featured:      true,
           rating:        true,
           reviewCount:   true,

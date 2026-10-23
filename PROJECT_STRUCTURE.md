@@ -1,33 +1,28 @@
 # Hostello Project Structure
 
-**Last updated:** October 7, 2026
-**Verification source:** file-system audit of the current workspace
-**Status:** Synchronized with the active Next.js web app, Expo mobile app, shared package, Prisma schema, migrations, scripts, and docs.
+**Last updated:** October 19, 2026
+**Verification source:** current workspace
+**Status:** API-only Next.js application; former pages and UI components have
+been removed for a future redesign.
 
 ---
 
 ## Repository Overview
 
-Hostello is a monorepo-style hostel booking platform:
+- `src/app/api/` contains the Next.js Route Handlers.
+- `src/lib/` contains backend services, auth, validation, integrations, and
+  shared server utilities.
+- `src/proxy.ts` applies environment validation and API CSRF checks.
+- `packages/shared/` contains shared constants, schemas, types, and utilities.
+- `prisma/` contains the Prisma schema, client setup, seed code, migration
+  documentation, and 30 migration directories.
+- `scripts/` contains deployment, migration, cron, and maintenance scripts.
+- `docs/` and `.github/` contain operational guides and workflow
+  documentation.
 
-- `src/` contains the Next.js 16 web app, API route handlers, services, UI components, and tests.
-- `apps/mobile/` contains the Expo SDK 57.0.26 / React Native 0.86.3 mobile app.
-- `packages/shared/` contains shared constants, schemas, types, API helpers, and utilities used by web/mobile.
-- `prisma/` contains the Prisma 7 schema, client, seed, migration workflow docs, and 21 committed migrations.
-- `e2e/` contains Playwright tests for auth, homepage, search, owner, and booking flows.
-- `docs/superpowers/` contains the design references, earlier implementation specs, and the active project completion plan.
-
-Current counts from the audit:
-
-| Area | Count |
-|---|---:|
-| Web page files | 53 |
-| API route files | 69 |
-| Prisma models | 23 |
-| Prisma migrations | 21 |
-| Vitest unit/integration test files | 110 |
-| Playwright E2E specs | 5 |
-| Mobile Expo route/screen files | 16 |
+There are currently 71 API route files, 0 page files, 0 UI component files,
+and 96 Vitest test files. The most recent source test run passed 657 tests.
+Playwright configuration and E2E files have been removed.
 
 ---
 
@@ -35,16 +30,15 @@ Current counts from the audit:
 
 | Path | Purpose |
 |---|---|
-| `package.json` / `package-lock.json` | Root dependency graph and scripts for web, tests, migrations, build, and hooks. |
-| `next.config.ts` | Next.js build/security configuration. |
-| `tsconfig.json` | TypeScript config for the web app. |
-| `vitest.config.ts` | Vitest config for unit/integration tests. |
-| `playwright.config.ts` | Playwright E2E config. |
-| `eslint.config.mjs` | ESLint rules. |
-| `tailwind.config.js`, `postcss.config.js`, `components.json` | Tailwind/shadcn-style UI configuration. |
-| `prisma.config.ts` | Prisma config. |
-| `vercel.json` | Vercel deployment config. |
-| `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts` | Sentry initialization through the current Next.js server, browser, and edge hooks. |
+| `package.json` / `package-lock.json` | Root dependencies and scripts. The `e2e` script remains, but the Playwright config and test files are gone. |
+| `next.config.ts` | Next.js build, image, and security-header configuration. |
+| `tsconfig.json` | TypeScript configuration. |
+| `vitest.config.ts` | Vitest configuration and aliases. |
+| `eslint.config.mjs` | ESLint configuration. |
+| `tailwind.config.js`, `postcss.config.js`, `components.json` | Legacy UI tooling configuration; no app UI currently consumes it. |
+| `prisma.config.ts` | Prisma configuration. |
+| `vercel.json`, `scripts/vercel-build.mjs` | Vercel custom build command. |
+| `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts` | Sentry initialization for Next.js runtimes. |
 | `.env.example`, `.env.sentry.example` | Environment variable templates. |
 | `skills-lock.json` | Agent/skill lock metadata. |
 
@@ -54,113 +48,64 @@ Current counts from the audit:
 
 | Path | Purpose |
 |---|---|
-| `README.md` | Root orientation — what this is, how to run it, where to look next. Added July 1, 2026. |
-| `WEB_APP_PROGRESS.md` | Current implementation progress and open risks. Recreated July 1, 2026 (see below). |
-| `SYSTEM.md` | System architecture, data model, APIs, operations, and current technical audit. |
-| `DESIGN.md` | Web design system and product UX rules. Recreated September 2026 — see the file. |
-| `DESIGN_MOBILE.md` | Native mobile design system and UX rules. **Confirmed gone, not yet recreated.** |
-| `MOBILE_APP_STRATEGY.md` | Native mobile product/engineering strategy. **Confirmed gone, not yet recreated.** |
-| `MOBILE_ALIGNMENT.md` | Web/mobile alignment audit and current gaps. **Confirmed gone, not yet recreated.** |
-| `Mobile_Dev_Plan.md` | Solo-founder mobile execution plan. **Confirmed gone, not yet recreated.** |
-| `SENTRY_SETUP.md` | Sentry setup guide. Recreated July 1, 2026 from the actual config files. |
+| `README.md` | Project overview, setup, commands, and documentation index. |
+| `SYSTEM.md` | Architecture, data model, API surface, security, and current audit. |
+| `PROJECT_STRUCTURE.md` | This repository map. |
+| `WEB_APP_PROGRESS.md` | Current API-only status and historical UI implementation notes. |
+| `DESIGN.md` | Historical third-party marketplace design analysis; not the current design system. |
+| `SENTRY_SETUP.md` | Sentry configuration and operational caveats. |
 | `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
-| `.github/VERCEL_SETUP.md` | GitHub Actions/Vercel deployment setup. |
-| `docs/superpowers/specs/` | UI/UX optimization design spec. |
-| `docs/superpowers/plans/2026-10-05-project-completion-plan.md` | Active production-readiness and project-completion checklist. |
-
-Five docs above were confirmed gone as of the July 1, 2026 audit — not on another branch or machine, per the founder. `WEB_APP_PROGRESS.md` and `SENTRY_SETUP.md` were recreated the same day since both were reconstructable from the codebase without guesswork; `DESIGN.md` was recreated September 2026 as part of the Airbnb-style redesign (see the file). The remaining four need either deeper code archaeology (`DESIGN_MOBILE.md`, `MOBILE_ALIGNMENT.md`) or founder input on strategy/planning content that can't be inferred from code (`MOBILE_APP_STRATEGY.md`, `Mobile_Dev_Plan.md`).
+| `.github/VERCEL_SETUP.md` | GitHub Actions/Vercel setup and deployment behavior. |
+| `docs/API-MASTERY-GUIDE.md` | API learning guide and Hostello route examples. |
+| `docs/CI-CD-GUIDE.md` | Current CI/CD workflow behavior and deployment concepts. |
+| `docs/OPERATIONS-RUNBOOK.md`, `docs/LAUNCH_RUNBOOK.md`, `docs/LAUNCH-OPERATIONS-RUNBOOK.md` | Backend operations, launch, and recovery procedures. |
+| `docs/PRIVATE-STUDENT-VERIFICATION.md` | Private document storage setup and legacy-data notes. |
+| `docs/superpowers/` | Dated design specifications and implementation plans; consult their status before treating them as current. |
 
 ---
 
-## Web App (`src/`)
+## Next.js Application (`src/app/`)
 
-### App Router
-
-`src/app/` contains public pages, authenticated dashboards, owner/admin surfaces, and route handlers.
-
-Key page groups:
-
-- Public: `/`, `/hostels`, `/hostels/in/[city]`, `/hostels/[slug]`, `/compare`, `/university/[slug]`, `/contact`, `/privacy`, `/terms`, `/report`.
-- Auth: `/login`, `/register`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email-sent`.
-- Student dashboard: `/dashboard`, `/dashboard/bookings`, `/dashboard/messages`, `/dashboard/notifications`, `/dashboard/price-alerts`, `/dashboard/saved`.
-- Owner: `/owner`, `/owner/dashboard`, `/owner/listings`, `/owner/listings/new`, `/owner/listings/[id]/edit`, `/owner/bookings`, `/owner/messages`, `/owner/reviews`, `/owner/analytics`, `/owner/subscription`, `/owner/settings`.
-- Admin: `/admin`, `/admin/listings`, `/admin/bookings`, `/admin/reviews`, `/admin/search`, `/admin/verifications`.
-- Booking: `/booking/[id]/payment`, `/booking/[id]/confirmation`, `/booking/[id]/review`.
+The root app directory contains the required `layout.tsx` and API routes.
+There are no `page.tsx` files, visual components, or app stylesheets. Former
+product pages are no longer served; unsupported page URLs return not found.
 
 ### API Routes
 
-`src/app/api/` currently has 69 route files covering:
+The 71 route files under `src/app/api/` cover:
 
-- Auth: NextAuth, signup, email verification, password reset, mobile login/refresh, phone OTP, account deletion.
-- Hostels: search/list/create, owner listing edits/status, admin detail, availability, favorites, view tracking, and roommate posts/reports.
-- Bookings: create/list/detail/status changes.
-- Payments: initiate, webhook, gateway callback.
-- Conversations/messages.
-- Reviews and owner replies.
-- Notifications and device-token registration.
-- Price alerts and unsubscribe.
-- Profile and password changes.
-- Uploads.
-- Owner analytics, subscription, and blocked dates.
-- Admin listings/hostels/search/verifications, roommate moderation, payouts, and refunds.
-- Cron endpoints and cron health, including abandoned private verification upload cleanup.
-- Contact and reports.
+- Authentication, signup, verification, password reset, phone OTP, and account
+  deletion.
+- Hostels, search, availability, favorites, roommate posts, and reports.
+- Bookings, payment initiation, callbacks, webhooks, refunds, and payouts.
+- Conversations, reviews, notifications, price alerts, and profile updates.
+- Owner analytics, subscriptions, and blocked dates.
+- Admin listings, search synchronization, verifications, payment events,
+  roommate moderation, payouts, and refunds.
+- Cron jobs, health checks, uploads, contact, and reports.
 
-### Components
-
-`src/components/` contains:
-
-- `ui/`: reusable primitives such as button, card, dialog, form, input, tabs, slider, sheet, and shared state/empty/recovery primitives.
-- `layout/`: public/admin/owner layouts, account menu, notification bell, city selector.
-- `hostel/`: hostel cards, filters, booking panel, maps, comparison, gallery, reviews, roommate board, trust summary.
-- `booking/`: booking step layout and summary card.
-- `dashboard/`: student verification card and review dialog.
-- `owner/`: listing wizard and blocked dates manager.
-- `admin/`: review drawer, verification client, rejection modal.
-- `landing/`: hero search.
-- `auth/`: auth card layout.
-
-### Services And Utilities
-
-`src/lib/` contains database, auth, CSRF, rate limiting, search, bookings, hostels, payments, notifications, email/SMS, Firebase Admin, environment validation, and support utilities.
-
-Notable files:
-
-- `src/proxy.ts` is the active Next.js proxy/middleware entry. It handles environment validation, mobile Bearer token cookie injection, and CSRF origin checks.
-- `src/lib/auth/config.ts`, `session.ts`, `token-version-cache.ts` contain NextAuth and revocation logic.
-- `src/lib/notifications.ts` writes in-app notifications and dispatches FCM push notifications.
-- `src/lib/price-alerts.ts` powers scheduled price-drop alerts.
-- `src/lib/payment-methods.ts`, `safepay.ts`, `jazzcash.ts`, `easypaisa.ts` power gateway integrations.
+API contracts and authorization are implemented in the route handlers and
+their backend service modules; no first-party screen currently consumes them.
 
 ---
 
-## Mobile App (`apps/mobile/`)
+## Backend Services (`src/lib/`)
 
-The mobile app uses Expo Router with SecureStore-backed authentication.
+`src/lib/` contains database access, authentication, CSRF, rate limiting,
+search, hostel and booking services, payment integrations, notifications,
+email/SMS, environment validation, and support utilities.
 
-Key files:
+Notable modules:
 
-| Path | Purpose |
-|---|---|
-| `apps/mobile/app.config.js` | Expo config, app scheme, bundle IDs, associated domains, Android app links, and notification plugin. |
-| `apps/mobile/eas.json` | EAS build profiles; staging uses the preview environment and requires `EXPO_PUBLIC_API_URL` to be configured in EAS. |
-| `apps/mobile/package.json` | Mobile dependencies and scripts. |
-| `apps/mobile/app/_layout.tsx` | Root mobile layout. |
-| `apps/mobile/app/(auth)/` | Login, register, forgot-password screens. |
-| `apps/mobile/app/(app)/(tabs)/` | Main screens for home/search, bookings, favorites, messages, profile, and the notification inbox. |
-| `apps/mobile/app/(app)/hostel/[slug].tsx` | Hostel detail screen. |
-| `apps/mobile/app/(app)/booking/[id]/index.tsx` | Mobile booking/payment flow. |
-| `apps/mobile/app/(app)/conversation/[id].tsx` | Conversation thread screen. |
-| `apps/mobile/src/services/api.ts` | Fetch wrapper with Bearer token headers, refresh retry, SecureStore token helpers. |
-| `apps/mobile/src/context/AuthContext.tsx` | Auth state, proactive refresh, route guard, push token registration. |
-| `apps/mobile/src/services/notifications.ts` | Push permission and native device token helper. |
-| `apps/mobile/src/theme.ts` | Mobile theme tokens. |
-
-Current mobile follow-up:
-
-- Set and verify the EAS preview `EXPO_PUBLIC_API_URL`, signing credentials, and live app-link association files before a preview build.
-- Refresh npm advisories when registry access is available and assess both shipped JavaScript and native build artifacts; the local Android source-map inventory does not cover native libraries.
-- Run Android/iOS builds and physical-device checks for Safepay returns, push delivery/tap routing, and stale-token cleanup. This workstation currently lacks the JDK and Android SDK.
+- `src/lib/auth/` — NextAuth configuration, session helpers, credential
+  authorization, and token revocation support.
+- `src/lib/booking-service.ts`, `src/lib/hostel-service.ts` — booking and
+  listing business logic.
+- `src/lib/safepay.ts`, `src/lib/jazzcash.ts`, `src/lib/easypaisa.ts` —
+  payment provider integrations.
+- `src/lib/cron-schedules.ts` and `scripts/schedule-cron-jobs.ts` — shared
+  scheduled-job registry and QStash setup.
+- `src/lib/verification-storage.ts` — private verification document storage.
 
 ---
 
@@ -168,11 +113,10 @@ Current mobile follow-up:
 
 | Path | Purpose |
 |---|---|
-| `packages/shared/src/constants/` | Shared amenities, university list, and config values. |
+| `packages/shared/src/constants/` | Shared amenities, university list, and configuration values. |
 | `packages/shared/src/types/` | Shared TypeScript types. |
 | `packages/shared/src/validations/` | Shared Zod validation schemas. |
 | `packages/shared/src/utils/` | Currency, date, and string helpers. |
-| `packages/shared/src/api/client.ts` | Shared API client helper. |
 | `packages/shared/src/index.ts` | Package exports. |
 
 ---
@@ -181,13 +125,16 @@ Current mobile follow-up:
 
 | Path | Purpose |
 |---|---|
-| `prisma/schema.prisma` | Data model with 23 models. |
+| `prisma/schema.prisma` | Data model with 28 models. |
 | `prisma/client.ts` | Prisma client setup. |
 | `prisma/seed.ts` | Local seed script. |
 | `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
-| `prisma/migrations/` | 21 committed migration folders plus migration lock. |
+| `prisma/migrations/` | Versioned SQL migrations. |
 
-Current schema areas include users/auth, hostels, rooms, bookings, reviews, favorites, conversations, price alerts, notifications, device tokens, cron logs, blocked dates, subscriptions, student verification fields, and roommate finder posts/reports.
+Schema areas include users and auth, hostels, rooms, bookings, reviews,
+favorites, conversations, price alerts, notifications, cron logs, blocked
+dates, subscriptions, student verification, roommate posts/reports, and
+payment/refund audit records.
 
 ---
 
@@ -195,31 +142,31 @@ Current schema areas include users/auth, hostels, rooms, bookings, reviews, favo
 
 | Path | Purpose |
 |---|---|
-| `scripts/check-price-alerts.ts` | Scheduled/manual price-alert checks. |
-| `scripts/schedule-cron-jobs.ts` | QStash cron registration. |
-| `scripts/setup-typesense.ts` | Typesense collection/index setup. |
-| `scripts/verify-typesense-fallback.ts` | Search fallback verification. |
-| `scripts/reset-review-stats.ts` | Review aggregate maintenance. |
-| `scripts/fix-phantom-reviews.ts` | Review data repair. |
-| `scripts/migrate-rename-fix.ts`, `scripts/show-migration-sql.ts`, `scripts/fix-migration-names.sql`, `scripts/One-Time-Migration.ps1` | Migration repair/inspection helpers. |
+| `scripts/vercel-build.mjs` | Runs the production build without applying migrations. |
+| `scripts/migrate-preview.mjs` | Verifies Preview and Production database identities before Preview migration. |
+| `scripts/schedule-cron-jobs.ts` | Registers QStash schedules. |
+| `scripts/check-price-alerts.ts` | Scheduled/manual price-alert processing. |
+| `scripts/setup-typesense.ts`, `scripts/verify-typesense-fallback.ts` | Search index setup and fallback verification. |
+| `scripts/reset-review-stats.ts`, `scripts/fix-phantom-reviews.ts` | Review aggregate maintenance and repair. |
 | `scripts/patch-routes-manifest.mjs` | Post-build Next.js route manifest patch. |
+| Other `scripts/` files | Migration inspection/repair and data maintenance. |
 
 ---
 
 ## Tests
 
-| Area | Files |
+| Area | Current state |
 |---|---|
-| Unit/integration | `src/**/*.test.ts`, `src/**/*.test.tsx`, and `apps/mobile/src/services/api.test.ts`. |
-| E2E | `e2e/auth.spec.ts`, `e2e/homepage.spec.ts`, `e2e/search.spec.ts`, `e2e/owner-flow.spec.ts`, `e2e/booking-flow.spec.ts`. |
-| Setup | `e2e/global.setup.ts`, `e2e/global.teardown.ts`, `e2e/fixtures/auth.ts`. |
+| Unit/integration | 96 Vitest test files under `src/`; 657 tests passed in the most recent run. |
+| Browser E2E | Playwright config and E2E files were removed. The `e2e` npm script is stale and unsupported. |
 
-Primary commands:
+Primary supported commands:
 
 ```bash
-npm run test
-npm run e2e
-npm --prefix apps/mobile run typecheck
+npm run test -- --run
+npm run typecheck
+npm run lint
+npm run build
 ```
 
 ---
@@ -228,23 +175,20 @@ npm --prefix apps/mobile run typecheck
 
 | Path | Purpose |
 |---|---|
-| `.github/workflows/ci.yml` | Pull request checks. |
-| `.github/workflows/production.yml` | Production deployment workflow. |
-| `.github/workflows/audit.yml` | Audit workflow. |
-| `.github/VERCEL_SETUP.md` | Required Vercel secrets and branch protection setup. |
-| `public/.well-known/apple-app-site-association`, `public/.well-known/assetlinks.json` | Tracked app-link association files. The Apple `appID` still needs the Apple App ID prefix; validate the Android fingerprint against the release signing certificate and verify both files on the live host. |
-| `graphify-out/` | Generated code graph/report artifacts. |
+| `.github/workflows/ci.yml` | Application/shared-package checks and pull-request Preview deployment. |
+| `.github/workflows/production.yml` | Production checks, migration, build, and deployment. |
+| `.github/workflows/migrate-preview.yml` | Manually dispatched guarded Preview migration. |
+| `.github/workflows/audit.yml` | Scheduled and dependency-change audit. |
+| `.github/VERCEL_SETUP.md` | Vercel secrets and deployment setup. |
+
+The preview PR comment still links to removed UI pages. Use API routes and
+their required integrations for Preview verification.
 
 ---
 
-## Git-Ignored Or Generated Areas
-
-These exist locally but are not source-of-truth implementation docs:
+## Generated Or Local-Only Areas
 
 - `.next/`
 - `node_modules/`
-- `apps/mobile/node_modules/`
 - `test-results/`
-- `.code-review-graph/`
-- `graphify-out/cache/`
 - `tsconfig.tsbuildinfo`
