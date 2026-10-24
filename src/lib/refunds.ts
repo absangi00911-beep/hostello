@@ -2,6 +2,7 @@
 
 import { createHash, randomUUID } from "node:crypto";
 import { db } from "@/lib/db";
+import { runAfterResponse } from "@/lib/background";
 import { refundPayment } from "@/lib/safepay";
 import { createNotification } from "@/lib/notifications";
 import { sendEmail } from "@/lib/email";
@@ -180,26 +181,31 @@ async function recordAutomaticConfirmation(
 }
 
 async function notifyRefunded(booking: Awaited<ReturnType<typeof loadRefundableBooking>>, amount: number) {
-  createNotification({
-    userId: booking.userId,
-    type: "BOOKING_REFUNDED",
-    title: "Refund processed",
-    message: `Your refund of PKR ${Math.round(amount).toLocaleString("en-PK")} for ${booking.hostel.name} has been processed.`,
-    bookingId: booking.id,
-  }).catch((err) =>
-    console.error("[processRefund] In-app notification failed:", getSafeErrorSummary(err)),
-  );
-
-  sendEmail(
-    bookingRefundedEmail({
-      studentName: booking.user.name ?? "there",
-      studentEmail: booking.user.email,
-      hostelName: booking.hostel.name,
+  // The refund is already confirmed with the provider at this point, so nothing
+  // here may make processRefund report failure. The in-app notice is a quick
+  // database write and is awaited; the email runs after the response.
+  try {
+    await createNotification({
+      userId: booking.userId,
+      type: "BOOKING_REFUNDED",
+      title: "Refund processed",
+      message: `Your refund of PKR ${Math.round(amount).toLocaleString("en-PK")} for ${booking.hostel.name} has been processed.`,
       bookingId: booking.id,
-      amount,
-    }),
-  ).catch((err) =>
-    console.error("[processRefund] Refund email failed:", getSafeErrorSummary(err)),
+    });
+  } catch (err) {
+    console.error("[processRefund] In-app notification failed:", getSafeErrorSummary(err));
+  }
+
+  void runAfterResponse("email.refund_processed", () =>
+    sendEmail(
+      bookingRefundedEmail({
+        studentName: booking.user.name ?? "there",
+        studentEmail: booking.user.email,
+        hostelName: booking.hostel.name,
+        bookingId: booking.id,
+        amount,
+      }),
+    ),
   );
 }
 

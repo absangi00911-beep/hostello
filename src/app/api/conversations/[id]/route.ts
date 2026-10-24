@@ -225,7 +225,7 @@ export async function POST(
         : parsed.data.content;
 
     for (const recipientId of recipientIds) {
-      void createNotification({
+      await createNotification({
         userId:   recipientId,
         type:     "MESSAGE_RECEIVED",
         title:    message.sender.name,   // sender name as title (messaging app convention)

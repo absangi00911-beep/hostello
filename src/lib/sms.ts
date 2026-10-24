@@ -82,6 +82,8 @@ export function generateOTP(): string {
  * OTPs, phone numbers, provider response bodies, and authorization headers
  * must never be written to application logs.
  */
+const TWILIO_REQUEST_TIMEOUT_MS = 10_000;
+
 export async function sendSms({ to, message }: SendSmsOptions): Promise<SendSmsResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -119,6 +121,7 @@ export async function sendSms({ to, message }: SendSmsOptions): Promise<SendSmsR
           To: normalized,
           Body: message,
         }).toString(),
+        signal: AbortSignal.timeout(TWILIO_REQUEST_TIMEOUT_MS),
       }
     );
 

@@ -72,3 +72,46 @@ describe("Safepay currency boundary", () => {
     expect(result.token).toBe("track_test");
   });
 });
+
+describe("Safepay request timeouts", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  const input = {
+    bookingId: "booking-1",
+    amount: 12000,
+    orderId: "booking-1",
+    customerEmail: "ali@example.com",
+    customerName: "Ali Khan",
+    appUrl: "https://hostello.test",
+  };
+
+  it("gives both checkout-creation requests a timeout signal", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SAFEPAY_ENV", "sandbox");
+    vi.stubEnv("SAFEPAY_SECRET", "test-secret");
+    vi.stubEnv("SAFEPAY_API_KEY", "sec_test-public-key");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { tracker: { token: "track_test" } } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: "short-lived-auth" }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCheckoutSession(input);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const call of fetchMock.mock.calls) {
+      expect((call[1] as RequestInit).signal).toBeInstanceOf(AbortSignal);
+    }
+  });
+
+  it("surfaces a provider timeout to the caller instead of hanging", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SAFEPAY_ENV", "sandbox");
+    vi.stubEnv("SAFEPAY_SECRET", "test-secret");
+    vi.stubEnv("SAFEPAY_API_KEY", "sec_test-public-key");
+    const timeout = Object.assign(new Error("The operation was aborted due to timeout"), { name: "TimeoutError" });
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(timeout));
+
+    await expect(createCheckoutSession(input)).rejects.toMatchObject({ name: "TimeoutError" });
+  });
+});

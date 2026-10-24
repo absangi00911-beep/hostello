@@ -1,4 +1,5 @@
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { runAfterResponse } from "@/lib/background";
 // Path: src/app/api/auth/signup/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
@@ -61,31 +62,34 @@ export async function POST(req: NextRequest) {
 
     const origin = getAppOrigin();
 
-    // Generate and store a verification token, then send the email.
-    // Both are fire-and-forget — a failure never breaks signup.
-    void (async () => {
-      try {
-        // Delete any lingering tokens for this address
-        await db.verificationToken.deleteMany({ where: { identifier: email } });
+    // Store the verification token before responding, so a signup that returns
+    // 201 always has a valid token. A failure here never breaks signup; the user
+    // can request a new link with /api/auth/resend-verification.
+    let verifyUrl: string | null = null;
+    try {
+      // Delete any lingering tokens for this address
+      await db.verificationToken.deleteMany({ where: { identifier: email } });
 
-        const token = randomBytes(32).toString("hex");
-        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 h
+      const token = randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 h
 
-        await db.verificationToken.create({
-          data: { token: hashOneTimeToken(token), identifier: email, expires },
-        });
+      await db.verificationToken.create({
+        data: { token: hashOneTimeToken(token), identifier: email, expires },
+      });
+      verifyUrl = `${origin}/api/auth/verify-email?token=${token}`;
+    } catch (err) {
+      console.error("[signup] Failed to store verification token:", getSafeErrorSummary(err));
+    }
 
-        const verifyUrl = `${origin}/api/auth/verify-email?token=${token}`;
-        const verifyTemplate = verificationEmail({ name: user.name, verifyUrl });
-        await sendEmail({ to: user.email, ...verifyTemplate });
-      } catch (err) {
-        console.error("[signup] Failed to send verification email:", getSafeErrorSummary(err));
-      }
-    })();
-
-    // Welcome email (separate, fire-and-forget)
+    // The emails are sent after the response so they are not cut off.
+    if (verifyUrl) {
+      const link = verifyUrl;
+      void runAfterResponse("email.verification", () =>
+        sendEmail({ to: user.email, ...verificationEmail({ name: user.name, verifyUrl: link }) }),
+      );
+    }
     const welcomeTemplate = welcomeEmail({ name: user.name, role: user.role as "STUDENT" | "OWNER" });
-    sendEmail({ to: user.email, ...welcomeTemplate }).catch(() => {});
+    void runAfterResponse("email.welcome", () => sendEmail({ to: user.email, ...welcomeTemplate }));
 
     return NextResponse.json(
       { data: user, message: "Account created successfully." },

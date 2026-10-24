@@ -239,19 +239,14 @@ describe("createBooking — happy path", () => {
     expect(tx.booking.create).toHaveBeenCalled();
   });
 
-  it("notifies owner after booking is created", async () => {
+  it("does not notify the owner before payment", async () => {
     makeTx();
     await createBooking(USER_ID, baseInput());
 
-    // Allow fire-and-forget microtask to flush
+    // The owner cannot see or act on an unpaid booking. The payment webhook
+    // notifies them once payment is confirmed.
     await new Promise((r) => setTimeout(r, 0));
-
-    expect(createNotification).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: OWNER_ID,
-        type:   "BOOKING_REQUEST",
-      }),
-    );
+    expect(createNotification).not.toHaveBeenCalled();
   });
 
   it("notification failure does NOT throw or roll back", async () => {
