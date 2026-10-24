@@ -6,6 +6,8 @@ import crypto from "crypto";
 const mocks = vi.hoisted(() => ({
   bookingFindUnique: vi.fn(),
   bookingUpdateMany: vi.fn(),
+  notificationCreateMany: vi.fn(),
+  notificationCreate: vi.fn(),
   subscriptionFindUnique: vi.fn(),
   subscriptionUpdateMany: vi.fn(),
   userUpdate: vi.fn(),
@@ -82,6 +84,8 @@ vi.mock("@/lib/db", () => ({
       updateMany: mocks.webhookUpdateMany,
     },
     $transaction: vi.fn(async (work: (tx: unknown) => Promise<unknown>) => work({
+      booking: { updateMany: mocks.bookingUpdateMany },
+      notification: { createMany: mocks.notificationCreateMany, create: mocks.notificationCreate },
       subscription: { updateMany: mocks.subscriptionUpdateMany },
       user: { update: mocks.userUpdate },
     })),
@@ -351,6 +355,7 @@ describe("Safepay webhook", () => {
     vi.mocked(sendEmail).mockResolvedValue({ success: true } as any);
     mocks.bookingFindUnique.mockResolvedValue(makeBooking());
     mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.notificationCreateMany.mockResolvedValue({ count: 2 });
     mocks.subscriptionFindUnique.mockResolvedValue({
       id: "sub-1",
       userId: "owner-1",
@@ -365,6 +370,11 @@ describe("Safepay webhook", () => {
     const log = vi.spyOn(console, "info").mockImplementation(() => {});
     const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
     expect(response.status).toBe(200);
+    expect(mocks.notificationCreateMany).toHaveBeenCalledTimes(1);
+    expect(mocks.notificationCreateMany.mock.calls[0][0].data).toEqual([
+      expect.objectContaining({ userId: "owner-1", type: "BOOKING_REQUEST", bookingId: BOOKING_ID }),
+      expect.objectContaining({ userId: "user-1", type: "BOOKING_REQUEST", bookingId: BOOKING_ID }),
+    ]);
     expect(mocks.bookingUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({
         id: BOOKING_ID,
@@ -471,6 +481,25 @@ describe("Safepay webhook", () => {
     expect(mocks.bookingUpdateMany.mock.calls[0][0].data).toMatchObject({ paymentStatus: "PAID", transactionId: TRACKER });
     expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
     expect(sendEmail).not.toHaveBeenCalled();
+    expect(mocks.notificationCreateMany).not.toHaveBeenCalled();
+  });
+
+  it("writes no notifications when the booking changed concurrently", async () => {
+    mocks.bookingUpdateMany.mockResolvedValue({ count: 0 });
+    mocks.bookingFindUnique
+      .mockResolvedValueOnce(makeBooking())
+      .mockResolvedValueOnce({ paymentMethod: "safepay", paymentStatus: "CANCELLED", transactionId: TRACKER });
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).not.toBe(200);
+    expect(mocks.notificationCreateMany).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("fails the event, so QStash retries it, when the notifications cannot be saved", async () => {
+    mocks.notificationCreateMany.mockRejectedValue(new Error("database unavailable"));
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).toBe(500);
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("does not change a refunded booking after a late payment event", async () => {
@@ -559,6 +588,10 @@ describe("Safepay webhook", () => {
       where: { id: "sub-1", status: "PENDING", paymentRef: TRACKER },
     }));
     expect(mocks.userUpdate).toHaveBeenCalledWith({ where: { id: "owner-1" }, data: { plan: "PRO" } });
+    // The welcome notice is written in the same transaction as the plan change.
+    expect(mocks.notificationCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({ userId: "owner-1", type: "HOSTEL_APPROVED" }),
+    });
   });
 
   it("does not activate a subscription with the wrong amount or tracker", async () => {

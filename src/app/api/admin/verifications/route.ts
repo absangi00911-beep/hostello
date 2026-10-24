@@ -190,7 +190,7 @@ export async function PUT(req: NextRequest) {
       });
     }
 
-    void createNotification({
+    await createNotification({
       userId,
       type: action === "approve" ? "STUDENT_VERIFICATION_APPROVED" : "STUDENT_VERIFICATION_REJECTED",
       title: action === "approve" ? "Student verification approved" : "Student verification rejected",

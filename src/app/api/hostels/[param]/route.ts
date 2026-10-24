@@ -1,4 +1,5 @@
-import { getSafeErrorSummary } from "@/lib/safe-error";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { runAfterResponse } from "@/lib/background";
 import { readBoundedJson } from "@/lib/bounded-json";
 // Path: src/app/api/hostels/[param]/route.ts
 //
@@ -197,9 +198,7 @@ export async function PATCH(
       const updated = { id: hostel.id, slug: hostel.slug, name: listing.name, status: "PENDING_REVIEW" as const };
 
       if (hostel.status === "ACTIVE") {
-        void removeHostelIndex(hostel.id).catch((err) => {
-          console.error("[PATCH /api/hostels/[param]] Search removal failed:", getSafeErrorSummary(err));
-        });
+        void runAfterResponse("search.remove_hostel", () => removeHostelIndex(hostel.id));
       }
 
       return NextResponse.json({ data: updated, message: "Listing updated and submitted for review." });

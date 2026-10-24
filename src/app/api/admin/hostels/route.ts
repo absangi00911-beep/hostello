@@ -1,6 +1,7 @@
 // Path: src/app/api/admin/hostels/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
+import { runAfterResponse } from "@/lib/background";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { listingApprovedEmail, listingSuspendedEmail } from "@/lib/email-templates/listing-status";
@@ -138,63 +139,56 @@ export async function PATCH(req: NextRequest) {
 
     // -- Typesense sync --
     if (action === "verify" || action === "activate") {
-      void indexSingleHostel(hostel.id).catch((err) =>
-        console.error("[typesense] Failed to index hostel:", getSafeErrorSummary(err)),
-      );
+      void runAfterResponse("search.index_hostel", () => indexSingleHostel(hostel.id));
     } else if (action === "suspend") {
-      void removeHostelIndex(hostel.id).catch((err) =>
-        console.error("[typesense] Failed to remove hostel from index:", getSafeErrorSummary(err)),
-      );
+      void runAfterResponse("search.remove_hostel", () => removeHostelIndex(hostel.id));
     }
 
     // -- Email + in-app notification --
-    // Both are fire-and-forget. A failure in either must never block the
-    // admin action — the DB is already updated at this point.
+    // The email runs after the response; the in-app notification is a quick
+    // database write that is awaited. Neither can fail the admin action, because
+    // the database is already updated at this point.
     if (action === "verify" || action === "activate") {
-      void sendEmail(
-        listingApprovedEmail({
-          ownerEmail: hostel.owner.email,
-          ownerName:  hostel.owner.name,
-          hostelName: hostel.name,
-          hostelId:   hostel.id,
-          status:     "APPROVED",
-        }),
-      ).catch((err) =>
-        console.error("[email] Listing approval email dispatch failed:", getSafeErrorSummary(err)),
+      void runAfterResponse("email.listing_approved", () =>
+        sendEmail(
+          listingApprovedEmail({
+            ownerEmail: hostel.owner.email,
+            ownerName:  hostel.owner.name,
+            hostelName: hostel.name,
+            hostelId:   hostel.id,
+            status:     "APPROVED",
+          }),
+        ),
       );
 
-      void createNotification({
+      await createNotification({
         userId:   hostel.owner.id,
         type:     "HOSTEL_APPROVED",
         title:    "Listing approved 🎉",
         message:  `Your hostel "${hostel.name}" is now live and visible to students.`,
         hostelId: hostel.id,
-      }).catch((err) =>
-        console.error("[notifications] Listing approval notification failed:", getSafeErrorSummary(err)),
-      );
+      });
     } else if (action === "suspend") {
-      void sendEmail(
-        listingSuspendedEmail({
-          ownerEmail: hostel.owner.email,
-          ownerName:  hostel.owner.name,
-          hostelName: hostel.name,
-          hostelId:   hostel.id,
-          status:     "SUSPENDED",
-          reason:     reason,
-        }),
-      ).catch((err) =>
-        console.error("[email] Listing suspension email dispatch failed:", getSafeErrorSummary(err)),
+      void runAfterResponse("email.listing_suspended", () =>
+        sendEmail(
+          listingSuspendedEmail({
+            ownerEmail: hostel.owner.email,
+            ownerName:  hostel.owner.name,
+            hostelName: hostel.name,
+            hostelId:   hostel.id,
+            status:     "SUSPENDED",
+            reason:     reason,
+          }),
+        ),
       );
 
-      void createNotification({
+      await createNotification({
         userId:   hostel.owner.id,
         type:     "HOSTEL_REJECTED",
         title:    "Listing suspended",
         message:  `Your hostel "${hostel.name}" has been suspended. Check your email for details and next steps.`,
         hostelId: hostel.id,
-      }).catch((err) =>
-        console.error("[notifications] Listing suspension notification failed:", getSafeErrorSummary(err)),
-      );
+      });
     }
 
     return NextResponse.json({

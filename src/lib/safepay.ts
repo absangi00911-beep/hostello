@@ -12,6 +12,14 @@
 
 import { getAppUrl } from "@/lib/app-url";
 
+// Checkout creation runs inside a user's request. Without a limit, a slow
+// provider would hold the function until the platform's own timeout.
+const SAFEPAY_REQUEST_TIMEOUT_MS = 10_000;
+
+function safepayFetch(url: string, init: RequestInit) {
+  return fetch(url, { ...init, signal: init.signal ?? AbortSignal.timeout(SAFEPAY_REQUEST_TIMEOUT_MS) });
+}
+
 function getSafepayBaseUrl() {
   return process.env.NEXT_PUBLIC_SAFEPAY_ENV === "production"
     ? "https://api.getsafepay.com"
@@ -73,7 +81,7 @@ export async function createCheckoutLink({
   const redirectUrl = resolveUrl(redirectPath ?? `/booking/${bookingId}/confirmation?payment=return`);
   const cancelUrl = resolveUrl(cancelPath ?? `/booking/${bookingId}/payment?payment=cancelled`);
 
-  const authResponse = await fetch(`${baseUrl}/client/passport/v1/token`, {
+  const authResponse = await safepayFetch(`${baseUrl}/client/passport/v1/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -137,7 +145,7 @@ export async function createCheckoutSession({
 
   // Callers pass whole PKR, matching the integer convention in our database.
   // Convert once here to Safepay's lowest-denomination units (paisa).
-  const sessionResponse = await fetch(`${baseUrl}/order/payments/v3/`, {
+  const sessionResponse = await safepayFetch(`${baseUrl}/order/payments/v3/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

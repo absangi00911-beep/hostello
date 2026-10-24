@@ -1,4 +1,5 @@
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { runAfterResponse } from "@/lib/background";
 // Path: src/app/api/bookings/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
@@ -236,7 +237,7 @@ export async function PATCH(
       }
 
       // Notify owner that student cancelled
-      void createNotification({
+      await createNotification({
         userId: booking.hostel.ownerId,
         type: "BOOKING_CANCELLED",
         title: "Booking Cancelled",
@@ -381,19 +382,20 @@ export async function PATCH(
     // provider outcome is uncertain, send a cancellation update without
     // claiming that the refund has completed.
     if (newStatus === "CONFIRMED" || !refundAutomatic) {
-      void sendEmail(
-        bookingStatusEmail({
-          studentName:  booking.user.name,
-          studentEmail: booking.user.email,
-          hostelName:   booking.hostel.name,
-          hostelSlug:   booking.hostel.slug,
-          bookingId:    booking.id,
-          status:       newStatus,
-          refundPending: refundNeedsReview,
-        })
-      ).catch(() => {
-        // A failed status email does not roll back the booking transition.
-      });
+      // A failed status email does not roll back the booking transition.
+      void runAfterResponse("email.booking_status", () =>
+        sendEmail(
+          bookingStatusEmail({
+            studentName:  booking.user.name,
+            studentEmail: booking.user.email,
+            hostelName:   booking.hostel.name,
+            hostelSlug:   booking.hostel.slug,
+            bookingId:    booking.id,
+            status:       newStatus,
+            refundPending: refundNeedsReview,
+          }),
+        ),
+      );
     }
 
     // Notify student in-app
@@ -407,7 +409,7 @@ export async function PATCH(
           ? `Your booking for ${booking.hostel.name} was declined and your full refund was processed.`
           : `Your booking for ${booking.hostel.name} has been declined.`;
 
-    void createNotification({
+    await createNotification({
       userId: booking.userId,
       type: notificationType,
       title: notificationTitle,

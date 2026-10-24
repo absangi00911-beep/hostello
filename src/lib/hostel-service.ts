@@ -1,11 +1,11 @@
 // Path: src/lib/hostel-service.ts
 
 import { Prisma } from "@/generated/client";
-import { sendEmail } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
+import { runAfterResponse } from "@/lib/background";
 import { newListingAdminEmail } from "@/lib/email-templates/new-listing";
 import { slugify } from "@/lib/utils";
 import type { HostelCreateInput } from "@/lib/validations";
-import { getSafeErrorSummary } from "@/lib/safe-error";
 
 /**
  * Creates a hostel record inside the caller's transaction. Notification is
@@ -93,19 +93,16 @@ export function notifyAdminOfNewListing(
   },
 ) {
   // Notify admin only after the listing transaction has committed.
-  void sendEmail(
-    newListingAdminEmail({
-      ownerName,
-      ownerEmail,
-      hostelName: hostel.name,
-      hostelId: hostel.id,
-      city: hostel.city,
-      pricePerMonth: hostel.pricePerMonth,
-    })
-  ).catch((err) =>
-    console.error(
-      "[hostel-service] Admin notification failed:",
-      getSafeErrorSummary(err),
+  void runAfterResponse("email.new_listing_admin", () =>
+    sendEmail(
+      newListingAdminEmail({
+        ownerName,
+        ownerEmail,
+        hostelName: hostel.name,
+        hostelId: hostel.id,
+        city: hostel.city,
+        pricePerMonth: hostel.pricePerMonth,
+      }),
     ),
   );
 
