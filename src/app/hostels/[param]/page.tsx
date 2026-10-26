@@ -140,6 +140,8 @@ export default async function HostelDetailPage({
             }}
             hostelId={hostel.id}
             hostelName={hostel.name}
+            rating={hostel.rating}
+            reviewCount={hostel.reviewCount}
             isOwner={session?.user.id === hostel.owner.id}
             viewerRole={session?.user.role ?? null}
           />

@@ -2307,33 +2307,57 @@ textarea {
 }
 
 .hostel-host-section {
-  display: grid;
   min-width: 0;
-  gap: 18px;
   margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
+  padding: 24px 0 32px;
+  border-block: 1px solid var(--line);
 }
 
 .hostel-host-section h2 {
-  margin: 0;
+  margin: 0 0 22px;
   font-size: 1.3125rem;
   font-weight: 700;
   line-height: 1.43;
 }
 
-.hostel-host-profile {
-  display: flex;
+.hostel-host-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: clamp(32px, 5vw, 64px);
+}
+
+.hostel-host-primary {
+  display: grid;
   min-width: 0;
+  gap: 20px;
+}
+
+.hostel-host-card {
+  display: grid;
+  width: min(100%, 440px);
+  grid-template-columns: minmax(0, 1fr) minmax(108px, 0.46fr);
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgb(34 34 34 / 9%);
+}
+
+.hostel-host-card-identity {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
 }
 
 .hostel-host-avatar,
 .hostel-host-avatar-fallback {
-  flex: 0 0 72px;
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
 }
 
@@ -2346,7 +2370,7 @@ textarea {
   place-items: center;
   background: var(--brand-soft);
   color: var(--brand-dark);
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -2356,47 +2380,161 @@ textarea {
 
 .hostel-host-identity h3 {
   margin: 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 650;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.hostel-host-identity p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.hostel-host-listing-stats {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+}
+
+.hostel-host-listing-stats div {
+  display: grid;
+  gap: 3px;
+  padding: 8px 0;
+}
+
+.hostel-host-listing-stats div + div {
+  border-top: 1px solid var(--line);
+}
+
+.hostel-host-listing-stats dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.hostel-host-listing-stats dd {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.hostel-host-listing-stats div:last-child dd {
+  font-size: 0.82rem;
+}
+
+.hostel-host-listing-stats svg {
+  flex: 0 0 auto;
+}
+
+.hostel-host-facts {
+  display: grid;
+  gap: 10px;
+}
+
+.hostel-host-facts p {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.hostel-host-facts svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--ink);
+}
+
+.hostel-host-facts span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.hostel-host-contact {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  justify-items: start;
+  gap: 16px;
+}
+
+.hostel-host-contact h3 {
+  margin: 0;
   font-size: 1rem;
   font-weight: 650;
 }
 
-.hostel-host-identity p,
-.hostel-host-bio {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-
-.hostel-host-bio {
-  max-width: 68ch;
-  margin: 0;
-  white-space: pre-line;
-}
-
 .hostel-host-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 28px;
+  display: grid;
+  gap: 5px;
   margin: 0;
 }
 
 .hostel-host-metrics div {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.hostel-host-metrics dt,
+.hostel-host-metrics dd {
+  font-size: 0.92rem;
+  line-height: 1.4;
 }
 
 .hostel-host-metrics dt {
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.hostel-host-metrics dt::after {
+  content: ":";
 }
 
 .hostel-host-metrics dd {
   margin: 0;
-  font-size: 0.92rem;
-  font-weight: 650;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+.hostel-host-inquiry {
+  width: min(100%, 560px);
+}
+
+.hostel-host-inquiry summary {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.94rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.hostel-host-inquiry summary::-webkit-details-marker {
+  display: none;
+}
+
+.hostel-host-inquiry summary:focus-visible {
+  outline: 2px solid var(--brand-dark);
+  outline-offset: 3px;
 }
 
 .hostel-inquiry-form {
@@ -2404,7 +2542,7 @@ textarea {
   width: min(100%, 560px);
   min-width: 0;
   gap: 9px;
-  padding-top: 4px;
+  padding-top: 14px;
 }
 
 .hostel-inquiry-form label {
@@ -2435,6 +2573,24 @@ textarea {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 650;
+}
+
+.hostel-host-protection {
+  display: flex;
+  width: min(100%, 560px);
+  align-items: flex-start;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.hostel-host-protection svg {
+  flex: 0 0 auto;
+  color: var(--brand-dark);
 }
 
 .hostel-inquiry-submit:hover:not(:disabled) {
@@ -2710,6 +2866,11 @@ textarea {
   .hostel-booking-card {
     position: static;
   }
+
+  .hostel-host-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -2742,14 +2903,22 @@ textarea {
   }
 
   .hostel-host-section {
-    gap: 14px;
     margin-top: 24px;
-    padding-top: 20px;
   }
 
-  .hostel-host-profile {
-    align-items: flex-start;
-    gap: 12px;
+  .hostel-host-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .hostel-host-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 20px;
+  }
+
+  .hostel-host-contact {
+    gap: 13px;
   }
 
   .hostel-host-avatar,

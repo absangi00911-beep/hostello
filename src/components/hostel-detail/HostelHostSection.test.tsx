@@ -10,6 +10,8 @@ import { HostelHostSection } from "./HostelHostSection";
 const baseProps = {
   hostelId: "hostel-1",
   hostelName: "Canal View Hostel",
+  rating: 4.8,
+  reviewCount: 12,
   host: {
     name: "Amina Khan",
     avatar: null,
@@ -39,6 +41,17 @@ describe("HostelHostSection", () => {
     expect(markup).toContain("October 2021");
     expect(markup).toContain("75%");
     expect(markup).toContain("2 minutes");
+    expect(markup).toContain("Hostel reviews");
+    expect(markup).toContain("12");
+    expect(markup).toContain("Hostel rating");
+    expect(markup).toContain("4.8");
+    expect(markup).toContain("Host details");
+    expect(markup).toContain("Message host");
+    expect(markup).toContain("For your safety, keep conversations with hosts on HostelLo.");
+    expect(markup).toContain('class="hostel-host-layout"');
+    expect(markup).toContain("<details");
+    expect(markup).not.toContain("Born in");
+    expect(markup).not.toContain("school");
     expect(markup).not.toContain("email");
     expect(markup).not.toContain("phone");
   });

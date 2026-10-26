@@ -277,6 +277,7 @@ test("signed-in students navigate to the returned conversation after delivery", 
   await expect(
     page.getByRole("region", { name: "Meet your host" }),
   ).toBeVisible();
+  await page.locator(".hostel-host-inquiry summary").click();
 
   await page
     .getByRole("textbox", { name: "Your message" })
@@ -317,6 +318,7 @@ test("signed-out inquiry saves a session draft without putting its body in a URL
 }) => {
   await page.goto(`/hostels/${hostelId}`);
   const hostelName = await page.getByRole("heading", { level: 1 }).innerText();
+  await page.locator(".hostel-host-inquiry summary").click();
   await page
     .getByRole("textbox", { name: "Your message" })
     .fill("Could I move in next month?");
@@ -357,6 +359,7 @@ test("signed-out inquiry stays put and reports when session storage fails", asyn
   await expect(
     page.getByRole("region", { name: "Meet your host" }),
   ).toBeVisible();
+  await page.locator(".hostel-host-inquiry summary").click();
   await page
     .getByRole("textbox", { name: "Your message" })
     .fill("Could I move in next month?");
