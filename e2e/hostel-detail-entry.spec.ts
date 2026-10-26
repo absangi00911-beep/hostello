@@ -131,32 +131,59 @@ test("hostel detail uses centered content and a responsive one-photo gallery", a
   expect(photoBounds.x).toBeCloseTo(galleryBounds.x, 0);
   expect(photoBounds.width).toBeCloseTo(galleryBounds.width, 0);
 
+  const photoDialog = page.getByRole("dialog", {
+    name: "Photos of Baloch Scholars Hostel",
+  });
+  await page.getByRole("button", { name: /Show all \d+ photos/ }).click();
+  await expect(photoDialog).toBeVisible();
+  await photoDialog.getByRole("button", { name: "Close photos" }).click();
+  await expect(photoDialog).not.toBeVisible();
+
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(search).toBeVisible();
   await expect(
     page.getByRole("searchbox", { name: "Search by city" }),
   ).toBeVisible();
+  await page.locator(".hostel-detail-title-row h1").evaluate((element) => {
+    element.textContent = "LongHostelName".repeat(20);
+  });
+  await page
+    .locator(".hostel-detail-area span")
+    .evaluate((element) => {
+      element.textContent = "LongLocation".repeat(20);
+    });
   const documentWidth = await page.evaluate(
-    () => document.documentElement.scrollWidth,
+    () => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }),
   );
-  expect(documentWidth).toBeLessThanOrEqual(375);
+  expect(documentWidth.scrollWidth).toBeLessThanOrEqual(
+    documentWidth.clientWidth,
+  );
 });
 
 test("hostel details show the public listing overview", async ({ page }) => {
   await page.goto(`/hostels/${hostelId}`);
 
+  const gallery = page.locator(".hostel-detail-gallery");
+  const overview = page.getByRole("region", { name: "Hostel overview" });
   await expect(
-    page.getByRole("group", { name: "Guest rating and verification" }),
+    overview.getByRole("heading", { name: "Men’s hostel in Quetta" }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Stay highlights" })).toBeVisible();
+  await expect(overview.getByText("Sariab Road")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "About this hostel" }),
+    overview.getByRole("group", { name: "Listing rating and verification" }),
   ).toBeVisible();
   await expect(
-    page
-      .getByRole("region", { name: "Stay highlights" })
-      .getByText(/Up to \d+ residents?/),
+    overview.getByRole("heading", { name: "About this hostel" }),
   ).toBeVisible();
+
+  const [galleryBottom, overviewTop] = await Promise.all([
+    gallery.evaluate((element) => element.getBoundingClientRect().bottom),
+    overview.evaluate((element) => element.getBoundingClientRect().top),
+  ]);
+  expect(overviewTop).toBeGreaterThan(galleryBottom);
 });
 
 test("hostel details show available rooms with listing photos and monthly rates", async ({

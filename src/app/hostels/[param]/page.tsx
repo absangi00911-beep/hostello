@@ -52,9 +52,6 @@ export default async function HostelDetailPage({
         )
       : false;
 
-  const location = hostel.area
-    ? `${hostel.area}, ${hostel.city}`
-    : hostel.city;
   const photos = getHostelGalleryImages(hostel.coverImage, hostel.images);
 
   return (
@@ -99,7 +96,6 @@ export default async function HostelDetailPage({
         <div className="browse-shell hostel-detail-shell">
           <HostelDetailGallery
             initiallySaved={isSaved}
-            location={location}
             name={hostel.name}
             photos={photos}
             slug={hostel.slug}
@@ -109,7 +105,9 @@ export default async function HostelDetailPage({
             <div className="hostel-detail-layout">
               <div className="hostel-detail-primary-column">
                 <HostelDetailOverview
+                  area={hostel.area}
                   capacity={hostel.capacity}
+                  city={hostel.city}
                   description={hostel.description}
                   genderLabel={genderLabel(hostel.gender)}
                   rating={hostel.rating}
