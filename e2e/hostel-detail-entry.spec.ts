@@ -44,6 +44,57 @@ test("hostel cards open their detail route from browse and search", async ({ pag
   ).toHaveAttribute("href", `/hostels/${hostelId}`);
 });
 
+test("hostel detail destination search loads results for the requested city", async ({
+  page,
+}) => {
+  await mockHostelSearch(page);
+  await page.goto(`/hostels/${hostelId}`);
+
+  const city = "Rawalpindi";
+  const apiRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname === "/api/hostels" &&
+      url.searchParams.get("city") === city
+    );
+  });
+
+  await page.getByRole("searchbox", { name: "Search by city" }).fill(city);
+  await page.getByRole("button", { name: "Search hostels" }).click();
+  await expect(page).toHaveURL(/\/search\?city=Rawalpindi$/);
+  await expect(
+    page.getByRole("heading", { name: `Best hostel in ${city}` }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Garden View Hostel/ }),
+  ).toBeVisible();
+  await apiRequest;
+});
+
+test("hostel detail destination search encodes and restores punctuation", async ({
+  page,
+}) => {
+  await mockHostelSearch(page);
+  await page.goto(`/hostels/${hostelId}`);
+
+  const city = "New Town & Gardens";
+  const apiRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname === "/api/hostels" &&
+      url.searchParams.get("city") === city
+    );
+  });
+
+  await page.getByRole("searchbox", { name: "Search by city" }).fill(city);
+  await page.getByRole("button", { name: "Search hostels" }).click();
+  await expect(page).toHaveURL((url) => url.searchParams.get("city") === city);
+  await expect(
+    page.getByRole("heading", { name: `Best hostel in ${city}` }),
+  ).toBeVisible();
+  await apiRequest;
+});
+
 test("hostel details show the public listing overview", async ({ page }) => {
   await page.goto(`/hostels/${hostelId}`);
 

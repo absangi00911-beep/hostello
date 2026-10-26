@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserRound } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import { notFound } from "next/navigation";
 import { HostelAmenitiesSection } from "@/components/hostel-detail/HostelAmenitiesSection";
 import { HostelBookingCard } from "@/components/hostel-detail/HostelBookingCard";
@@ -65,6 +65,25 @@ export default async function HostelDetailPage({
             <span className="browse-brand-mark" aria-hidden="true">H</span>
             <span>HostelLo</span>
           </Link>
+          <form
+            action="/search"
+            aria-label="Search for hostels by destination"
+            className="hostel-detail-destination-search"
+            method="get"
+            role="search"
+          >
+            <input
+              aria-label="Search by city"
+              autoComplete="off"
+              name="city"
+              placeholder="Search destinations"
+              required
+              type="search"
+            />
+            <button aria-label="Search hostels" type="submit">
+              <Search aria-hidden="true" size={18} />
+            </button>
+          </form>
           <div className="browse-account-actions">
             <Link className="browse-host-link" href="/signup?role=OWNER">
               Become a host

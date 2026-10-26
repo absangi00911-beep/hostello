@@ -1563,10 +1563,65 @@ textarea {
 }
 
 .hostel-detail-header-inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 360px) minmax(0, 1fr);
+  gap: 24px;
   min-height: 84px;
   align-items: center;
-  justify-content: space-between;
+}
+
+.hostel-detail-destination-search {
+  display: flex;
+  width: min(100%, 360px);
+  min-width: 0;
+  align-items: center;
+  justify-self: center;
+  gap: 8px;
+  padding: 5px 6px 5px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.hostel-detail-destination-search:focus-within {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.hostel-detail-destination-search input {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.hostel-detail-destination-search input:focus {
+  outline: 0;
+}
+
+.hostel-detail-destination-search button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+}
+
+.hostel-detail-destination-search button:hover {
+  background: var(--brand-dark);
+}
+
+.hostel-detail-header-inner > .browse-account-actions {
+  justify-self: end;
 }
 
 .hostel-detail-main {
@@ -3005,6 +3060,32 @@ textarea {
 
   .hostel-detail-dialog-photos {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .hostel-detail-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 10px;
+    min-height: unset;
+    padding-block: 12px;
+  }
+
+  .hostel-detail-header-inner > .browse-brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .hostel-detail-header-inner > .browse-account-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .hostel-detail-destination-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: min(100%, 480px);
+    justify-self: center;
   }
 }
 
