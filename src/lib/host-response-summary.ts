@@ -20,9 +20,10 @@ export async function refreshHostResponseSummary(
     ),
     first_messages AS (
       SELECT DISTINCT ON (m."conversationId")
-        m."conversationId", m."senderId", m."createdAt", m."id"
+        m."conversationId", m."senderId", sender."role" AS "senderRole", m."createdAt", m."id"
       FROM "messages" m
       JOIN host_conversations hc ON hc."conversationId" = m."conversationId"
+      JOIN "users" sender ON sender."id" = m."senderId"
       ORDER BY m."conversationId", m."createdAt", m."id"
     ),
     guest_started AS (
@@ -33,7 +34,8 @@ export async function refreshHostResponseSummary(
         fm."id" AS "guestMessageId"
       FROM first_messages fm
       JOIN host_conversations hc ON hc."conversationId" = fm."conversationId"
-      WHERE fm."senderId" <> hc."ownerId"
+      WHERE fm."senderRole" = 'STUDENT'
+        AND fm."senderId" <> hc."ownerId"
     ),
     owner_replies AS (
       SELECT DISTINCT ON (gs."conversationId")

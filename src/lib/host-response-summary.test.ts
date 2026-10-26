@@ -63,6 +63,24 @@ describe("refreshHostResponseSummary", () => {
     expect(query.sql).toContain('(reply."createdAt", reply."id") > (gs."guestCreatedAt", gs."guestMessageId")');
   });
 
+  it("does_not_count_a_non_student_non_owner_first_sender_as_guest_started", async () => {
+    const tx = transactionWithAggregate({
+      guestStartedThreadCount: 0,
+      repliedThreadCount: 0,
+      medianResponseSeconds: null,
+    });
+
+    await refreshHostResponseSummary("owner-1", tx);
+
+    const query = vi.mocked(tx.$queryRaw).mock.calls[0][0] as ReturnType<typeof Prisma.sql>;
+    expect(query.sql).toContain('JOIN "users" sender ON sender."id" = m."senderId"');
+    expect(query.sql).toContain('sender."role" AS "senderRole"');
+    expect(query.sql).toContain('fm."senderRole" = \'STUDENT\'');
+    expect(query.sql).toContain('ORDER BY m."conversationId", m."createdAt", m."id"');
+    expect(query.sql).toContain('JOIN "hostels" h ON h."id" = c."hostelId"');
+    expect(query.sql).not.toContain('"status"');
+  });
+
   it("omits_summary_without_guest_started_threads", async () => {
     const tx = transactionWithAggregate({
       guestStartedThreadCount: 0,
