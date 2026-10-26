@@ -95,6 +95,30 @@ test("hostel detail destination search encodes and restores punctuation", async 
   await apiRequest;
 });
 
+test("search ignores whitespace-only city query parameters", async ({ page }) => {
+  const requestedCities: Array<string | null> = [];
+
+  await page.route("**/api/hostels**", async (route) => {
+    requestedCities.push(
+      new URL(route.request().url()).searchParams.get("city"),
+    );
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ data: [], total: 0 }),
+    });
+  });
+
+  await page.goto("/search?city=+++");
+  const citySearch = page.getByLabel("Search for a city");
+  await citySearch.fill("No city with this name");
+  await expect(page.getByText("No matching city found.")).toBeVisible();
+  await citySearch.fill("");
+  await expect(page.getByText("No matching city found.")).not.toBeVisible();
+  await expect(page.getByText(/Selected city:/)).toHaveCount(0);
+  expect(requestedCities).toEqual([]);
+});
+
 test("hostel detail uses centered content and a responsive one-photo gallery", async ({
   page,
 }) => {
