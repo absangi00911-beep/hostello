@@ -344,7 +344,11 @@ test("a nonparticipant_cannot_load_an_existing_private_conversation", async ({
     await otherOwnerPage.goto(
       `/messages?conversationId=${encodeURIComponent(privateConversationId)}`,
     );
-    await expect(otherOwnerPage.getByRole("alert")).toContainText(
+    await expect(
+      otherOwnerPage
+        .getByRole("region", { name: "Conversation" })
+        .getByRole("alert"),
+    ).toContainText(
       "Conversation not found",
     );
   } finally {
