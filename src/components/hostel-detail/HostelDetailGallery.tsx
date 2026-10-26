@@ -130,7 +130,11 @@ export function HostelDetailGallery({
               </div>
             ))
           ) : (
-            <div className="hostel-detail-photo-fallback" role="img">
+            <div
+              aria-label="Photos are not available for this hostel yet."
+              className="hostel-detail-photo-fallback"
+              role="img"
+            >
               Photos are not available for this hostel yet.
             </div>
           )}
