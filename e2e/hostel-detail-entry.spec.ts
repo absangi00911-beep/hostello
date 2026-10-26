@@ -95,6 +95,53 @@ test("hostel detail destination search encodes and restores punctuation", async 
   await apiRequest;
 });
 
+test("hostel detail uses centered content and a responsive one-photo gallery", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`/hostels/${hostelId}`);
+
+  const search = page.getByRole("search", {
+    name: "Search for hostels by destination",
+  });
+  await expect(search).toBeVisible();
+
+  const shell = page.locator(".hostel-detail-shell");
+  const shellBounds = await shell.evaluate((element) => {
+    const { left, width } = element.getBoundingClientRect();
+    return { left, width };
+  });
+  const viewportWidth = await page.evaluate(
+    () => document.documentElement.clientWidth,
+  );
+  expect(shellBounds.width).toBeLessThanOrEqual(1120);
+  expect(shellBounds.left).toBeCloseTo(
+    (viewportWidth - shellBounds.width) / 2,
+    0,
+  );
+
+  const gallery = page.locator('.hostel-detail-gallery[data-photo-count="1"]');
+  const galleryBounds = await gallery.boundingBox();
+  const photoBounds = await gallery.locator(".hostel-detail-photo").boundingBox();
+  expect(galleryBounds).not.toBeNull();
+  expect(photoBounds).not.toBeNull();
+  if (!galleryBounds || !photoBounds) {
+    throw new Error("The one-photo gallery must have measurable dimensions.");
+  }
+  expect(photoBounds.x).toBeCloseTo(galleryBounds.x, 0);
+  expect(photoBounds.width).toBeCloseTo(galleryBounds.width, 0);
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(search).toBeVisible();
+  await expect(
+    page.getByRole("searchbox", { name: "Search by city" }),
+  ).toBeVisible();
+  const documentWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(documentWidth).toBeLessThanOrEqual(375);
+});
+
 test("hostel details show the public listing overview", async ({ page }) => {
   await page.goto(`/hostels/${hostelId}`);
 

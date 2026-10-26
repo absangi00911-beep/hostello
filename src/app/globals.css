@@ -1629,6 +1629,10 @@ textarea {
   background: #fff;
 }
 
+.hostel-detail-shell {
+  width: min(1120px, calc(100% - 64px));
+}
+
 .hostel-detail-intro {
   margin-bottom: 28px;
 }
