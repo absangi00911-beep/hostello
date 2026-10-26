@@ -4,12 +4,17 @@ import { ConversationList } from "./ConversationList";
 import { ConversationThread } from "./ConversationThread";
 import { MessagesInbox } from "./MessagesInbox";
 import {
+  applyThreadPageResponse,
+  getSelectedThread,
+} from "./thread-state";
+import {
   PENDING_INQUIRY_STORAGE_KEY,
   deliverPendingInquiry,
   fetchConversation,
   fetchConversationList,
   sendMessageAndRefresh,
 } from "@/lib/messages-inbox";
+import type { ConversationThread as ConversationThreadData } from "@/lib/messages-inbox";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -45,7 +50,129 @@ function response(data: unknown, ok = true) {
   } as Response;
 }
 
+function thread(
+  id: string,
+  messageId: string,
+  messagePage: number,
+): ConversationThreadData {
+  return {
+    ...conversation,
+    id,
+    messages: [
+      {
+        id: messageId,
+        content: messageId,
+        read: true,
+        senderId: "student-1",
+        sender: { id: "student-1", name: "Student", avatar: null },
+        createdAt: "2026-10-26T12:00:00.000Z",
+      },
+    ],
+    booking: null,
+    messageTotal: messagePage,
+    messagePage,
+    messageLimit: 50,
+    messageHasMore: messagePage > 1,
+  };
+}
+
 describe("MessagesInbox API behavior", () => {
+  it.each([
+    ["refresh", "replace", 1],
+    ["load older", "append", 2],
+    ["send", "replace", 1],
+  ] as const)(
+    "ignores a stale %s response after switching conversations",
+    (_requestType, mode, responsePage) => {
+      const selectedThread = thread("conversation-b", "b-newest", 1);
+      const currentPages = { 1: selectedThread };
+      const staleResponse = thread("conversation-a", "a-stale", responsePage);
+
+      const updatedPages = applyThreadPageResponse(
+        currentPages,
+        { conversationId: "conversation-a", requestId: 1 },
+        "conversation-b",
+        2,
+        staleResponse,
+        mode,
+      );
+
+      expect(updatedPages).toBe(currentPages);
+      expect(getSelectedThread(updatedPages, "conversation-b")).toBe(
+        selectedThread,
+      );
+    },
+  );
+
+  it("ignores_a_request_from_an_earlier_selection_of_the_same_conversation", () => {
+    const selectedThread = thread("conversation-a", "a-current", 1);
+    const currentPages = { 1: selectedThread };
+
+    const updatedPages = applyThreadPageResponse(
+      currentPages,
+      { conversationId: "conversation-a", requestId: 1 },
+      "conversation-a",
+      3,
+      thread("conversation-a", "a-stale", 1),
+      "replace",
+    );
+
+    expect(updatedPages).toBe(currentPages);
+    expect(getSelectedThread(updatedPages, "conversation-a")).toBe(
+      selectedThread,
+    );
+  });
+
+  it("applies_a_response_for_the_current_thread_selection", () => {
+    const previousThread = thread("conversation-b", "b-old", 1);
+    const refreshedThread = thread("conversation-b", "b-new", 1);
+
+    const updatedPages = applyThreadPageResponse(
+      { 1: previousThread },
+      { conversationId: "conversation-b", requestId: 2 },
+      "conversation-b",
+      2,
+      refreshedThread,
+      "replace",
+    );
+
+    expect(updatedPages[1]).toBe(refreshedThread);
+    expect(getSelectedThread(updatedPages, "conversation-b")).toBe(
+      refreshedThread,
+    );
+  });
+
+  it("does_not_expose_a_stale_thread_to_the_selected_conversation_composer", () => {
+    const staleThread = thread("conversation-a", "a-message", 1);
+    const selectedThread = getSelectedThread(
+      { 1: staleThread },
+      "conversation-b",
+    );
+    const markup = renderToStaticMarkup(
+      <ConversationThread
+        conversationId="conversation-b"
+        currentUserId="student-1"
+        error=""
+        loading={true}
+        message=""
+        messages={selectedThread?.messages ?? []}
+        onLoadOlder={vi.fn()}
+        onMessageChange={vi.fn()}
+        onRefresh={vi.fn()}
+        onRetry={vi.fn()}
+        onSend={vi.fn()}
+        pendingInquiry={false}
+        refreshing={false}
+        sendError=""
+        sending={false}
+        thread={selectedThread}
+      />,
+    );
+
+    expect(selectedThread).toBeUndefined();
+    expect(markup).not.toContain('id="messages-compose-input"');
+  });
+
   it("renders_an_accessible_inbox_shell_without_a_selected_thread", () => {
     const markup = renderToStaticMarkup(
       <MessagesInbox currentUserId="student-1" />,

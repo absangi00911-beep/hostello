@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   MessagesSendRefreshError,
@@ -15,6 +22,12 @@ import type {
   ConversationPreview,
   ConversationThread,
 } from "@/lib/messages-inbox";
+import {
+  applyThreadPageResponse,
+  getSelectedThread,
+  isCurrentThreadRequest,
+} from "./thread-state";
+import type { ThreadRequestContext } from "./thread-state";
 
 export function useMessagesInbox() {
   const router = useRouter();
@@ -38,6 +51,20 @@ export function useMessagesInbox() {
   const [pendingAttempt, setPendingAttempt] = useState(0);
   const pendingDeliveryInProgress = useRef(false);
   const selectedThreadRequest = useRef(0);
+  const selectedConversationIdRef = useRef(selectedConversationId);
+  useLayoutEffect(() => {
+    selectedConversationIdRef.current = selectedConversationId;
+  }, [selectedConversationId]);
+
+  const isCurrentRequest = useCallback(
+    (request: ThreadRequestContext) =>
+      isCurrentThreadRequest(
+        request,
+        selectedConversationIdRef.current,
+        selectedThreadRequest.current,
+      ),
+    [],
+  );
 
   const loadConversationList = useCallback(
     async (page: number, append = false) => {
@@ -64,24 +91,42 @@ export function useMessagesInbox() {
 
   const refreshThread = useCallback(
     async (conversationId: string, showRefreshing = false) => {
+      const request = {
+        conversationId,
+        requestId: selectedThreadRequest.current,
+      };
+      if (!isCurrentRequest(request)) return;
       if (showRefreshing) setThreadRefreshing(true);
       else setThreadLoading(true);
       setThreadError("");
       try {
         const latestPage = await fetchConversation(conversationId, 1);
-        setThreadPages({ 1: latestPage });
+        if (!isCurrentRequest(request)) return;
+        setThreadPages((current) =>
+          applyThreadPageResponse(
+            current,
+            request,
+            selectedConversationIdRef.current,
+            selectedThreadRequest.current,
+            latestPage,
+            "replace",
+          ),
+        );
         setThreadError("");
         await loadConversationList(1);
       } catch (error) {
+        if (!isCurrentRequest(request)) return;
         setThreadError(
           error instanceof Error ? error.message : "Couldn't refresh this conversation.",
         );
       } finally {
-        setThreadLoading(false);
-        setThreadRefreshing(false);
+        if (isCurrentRequest(request)) {
+          setThreadLoading(false);
+          setThreadRefreshing(false);
+        }
       }
     },
-    [loadConversationList],
+    [isCurrentRequest, loadConversationList],
   );
 
   useEffect(() => {
@@ -115,41 +160,67 @@ export function useMessagesInbox() {
       setThreadError("");
       setMessage("");
       setSendError("");
+      setSending(false);
+      setThreadRefreshing(false);
       return;
     }
     setThreadPages({});
     setThreadError("");
+    setMessage("");
+    setSendError("");
+    setSending(false);
+    setThreadRefreshing(false);
     setThreadLoading(true);
+    const request = { conversationId: selectedConversationId, requestId };
     void fetchConversation(selectedConversationId, 1)
       .then((thread) => {
-        if (selectedThreadRequest.current !== requestId) return;
-        setThreadPages({ 1: thread });
+        if (!isCurrentRequest(request)) return;
+        setThreadPages((current) =>
+          applyThreadPageResponse(
+            current,
+            request,
+            selectedConversationIdRef.current,
+            selectedThreadRequest.current,
+            thread,
+            "replace",
+          ),
+        );
         return loadConversationList(1);
       })
       .catch((error: unknown) => {
-        if (selectedThreadRequest.current !== requestId) return;
+        if (!isCurrentRequest(request)) return;
         setThreadError(
           error instanceof Error ? error.message : "Couldn't load this conversation.",
         );
       })
       .finally(() => {
-        if (selectedThreadRequest.current === requestId) setThreadLoading(false);
+        if (isCurrentRequest(request)) setThreadLoading(false);
       });
     return () => {
-      selectedThreadRequest.current += 1;
+      if (selectedThreadRequest.current === requestId) {
+        selectedThreadRequest.current += 1;
+      }
     };
-  }, [hasPendingInquiry, loadConversationList, selectedConversationId]);
+  }, [
+    hasPendingInquiry,
+    isCurrentRequest,
+    loadConversationList,
+    selectedConversationId,
+  ]);
 
   const visibleMessages = useMemo(
     () =>
       Object.keys(threadPages)
         .map(Number)
         .sort((left, right) => right - left)
+        .filter((page) => threadPages[page].id === selectedConversationId)
         .flatMap((page) => threadPages[page].messages),
-    [threadPages],
+    [selectedConversationId, threadPages],
   );
-  const selectedThread = selectedConversationId ? threadPages[1] : undefined;
-  const oldestLoadedPage = Math.max(0, ...Object.keys(threadPages).map(Number));
+  const selectedThread = getSelectedThread(threadPages, selectedConversationId);
+  const oldestLoadedPage = selectedThread
+    ? Math.max(0, ...Object.keys(threadPages).map(Number))
+    : 0;
 
   const selectConversation = (conversationId: string) => {
     router.push(`/messages?conversationId=${encodeURIComponent(conversationId)}`);
@@ -162,7 +233,17 @@ export function useMessagesInbox() {
   };
 
   const loadOlderMessages = async () => {
-    if (!selectedConversationId || !selectedThread?.messageHasMore) return;
+    if (
+      !selectedConversationId ||
+      selectedThread?.id !== selectedConversationId ||
+      !selectedThread.messageHasMore
+    ) {
+      return;
+    }
+    const request = {
+      conversationId: selectedConversationId,
+      requestId: selectedThreadRequest.current,
+    };
     setThreadError("");
     setThreadRefreshing(true);
     try {
@@ -170,34 +251,65 @@ export function useMessagesInbox() {
         selectedConversationId,
         oldestLoadedPage + 1,
       );
-      setThreadPages((current) => ({
-        ...current,
-        [olderPage.messagePage]: olderPage,
-      }));
+      if (!isCurrentRequest(request)) return;
+      setThreadPages((current) =>
+        applyThreadPageResponse(
+          current,
+          request,
+          selectedConversationIdRef.current,
+          selectedThreadRequest.current,
+          olderPage,
+          "append",
+        ),
+      );
     } catch (error) {
+      if (!isCurrentRequest(request)) return;
       setThreadError(
         error instanceof Error ? error.message : "Couldn't load older messages.",
       );
     } finally {
-      setThreadRefreshing(false);
+      if (isCurrentRequest(request)) setThreadRefreshing(false);
     }
   };
 
   const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!selectedConversationId || !message.trim()) return;
+    if (
+      !selectedConversationId ||
+      selectedThread?.id !== selectedConversationId ||
+      !message.trim()
+    ) {
+      return;
+    }
+    const conversationId = selectedConversationId;
+    const content = message.trim();
+    const request = {
+      conversationId,
+      requestId: selectedThreadRequest.current,
+    };
     setSending(true);
     setSendError("");
     try {
       const refreshedThread = await sendMessageAndRefresh(
-        selectedConversationId,
-        message.trim(),
+        conversationId,
+        content,
       );
-      setThreadPages({ 1: refreshedThread });
+      if (!isCurrentRequest(request)) return;
+      setThreadPages((current) =>
+        applyThreadPageResponse(
+          current,
+          request,
+          selectedConversationIdRef.current,
+          selectedThreadRequest.current,
+          refreshedThread,
+          "replace",
+        ),
+      );
       setMessage("");
       setThreadError("");
       await loadConversationList(1);
     } catch (error) {
+      if (!isCurrentRequest(request)) return;
       if (error instanceof MessagesSendRefreshError) {
         setMessage("");
         setThreadError(error.message);
@@ -208,7 +320,7 @@ export function useMessagesInbox() {
         );
       }
     } finally {
-      setSending(false);
+      if (isCurrentRequest(request)) setSending(false);
     }
   };
 
