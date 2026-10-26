@@ -8,6 +8,16 @@ import { parsePagination } from "@/lib/pagination";
 import type { Prisma } from "@/generated/client";
 import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
+import { refreshHostResponseSummary } from "@/lib/host-response-summary";
+
+const MAX_MESSAGE_TRANSACTION_ATTEMPTS = 3;
+
+function isSerializableTransactionConflict(error: unknown) {
+  return error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "P2034";
+}
 
 const conversationSchema = z.object({
   hostelId: z.string().min(1, "Hostel ID is required").max(128, "Hostel ID is too long"),
@@ -188,48 +198,71 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if conversation already exists
-    const existingConversation = await db.conversation.findFirst({
-      where: {
-        hostelId,
-        participants: {
-          some: {
-            userId: session.user.id,
-          },
-        },
-      },
-      select: { id: true },
-    });
+    let result: { id: string; created: boolean } | undefined;
+    for (let attempt = 0; attempt < MAX_MESSAGE_TRANSACTION_ATTEMPTS; attempt++) {
+      try {
+        result = await db.$transaction(async (tx) => {
+          const existingConversation = await tx.conversation.findFirst({
+            where: {
+              hostelId,
+              participants: { some: { userId: session.user.id } },
+            },
+            select: { id: true },
+          });
 
-    if (existingConversation) {
-      // Conversation already exists, just return it
-      return NextResponse.json({ data: { id: existingConversation.id } }, { status: 200 });
+          if (existingConversation) {
+            await tx.message.create({
+              data: {
+                conversationId: existingConversation.id,
+                senderId: session.user.id,
+                content: initialMessage,
+              },
+            });
+            await tx.conversation.update({
+              where: { id: existingConversation.id },
+              data: { updatedAt: new Date() },
+            });
+            await refreshHostResponseSummary(hostel.ownerId, tx);
+            return { id: existingConversation.id, created: false };
+          }
+
+          const conversation = await tx.conversation.create({
+            data: {
+              hostelId,
+              hostelName: hostel.name,
+              participants: {
+                createMany: {
+                  data: [
+                    { userId: session.user.id },
+                    { userId: hostel.ownerId },
+                  ],
+                },
+              },
+              messages: {
+                create: {
+                  senderId: session.user.id,
+                  content: initialMessage,
+                },
+              },
+            },
+            select: { id: true },
+          });
+          await refreshHostResponseSummary(hostel.ownerId, tx);
+          return { id: conversation.id, created: true };
+        }, { isolationLevel: "Serializable" });
+        break;
+      } catch (error) {
+        if (!isSerializableTransactionConflict(error) || attempt + 1 === MAX_MESSAGE_TRANSACTION_ATTEMPTS) {
+          throw error;
+        }
+      }
     }
 
-    // Create new conversation
-    const conversation = await db.conversation.create({
-      data: {
-        hostelId,
-        hostelName: hostel.name,
-        participants: {
-          createMany: {
-            data: [
-              { userId: session.user.id },
-              { userId: hostel.ownerId },
-            ],
-          },
-        },
-        messages: {
-          create: {
-            senderId: session.user.id,
-            content: initialMessage,
-          },
-        },
-      },
-      select: { id: true },
-    });
-
-    return NextResponse.json({ data: { id: conversation.id } }, { status: 201 });
+    if (!result) throw new Error("Conversation transaction did not return a result.");
+    return NextResponse.json(
+      { data: { id: result.id } },
+      { status: result.created ? 201 : 200 },
+    );
   } catch (err) {
     console.error("[POST /api/conversations]", getSafeErrorSummary(err));
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
