@@ -152,6 +152,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   hostels       Hostel[]
+  hostResponseSummary HostResponseSummary?
   bookings      Booking[]
   payouts       Payout[]
   reviews       Review[]
@@ -606,6 +607,17 @@ model Conversation {
 
   @@index([hostelId])
   @@map("conversations")
+}
+
+model HostResponseSummary {
+  hostId                  String   @id
+  host                    User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  guestStartedThreadCount Int
+  repliedThreadCount      Int
+  medianResponseSeconds  Float?
+  calculatedAt            DateTime @default(now())
+
+  @@map("host_response_summaries")
 }
 
 model ConversationParticipant {
