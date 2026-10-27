@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Share2, X } from "lucide-react";
 import { useRef, useState } from "react";
+import type { HostelDetailPhoto } from "@/lib/hostel-gallery";
 
 interface HostelDetailGalleryProps {
   slug: string;
   name: string;
-  photos: string[];
+  photos: HostelDetailPhoto[];
   initiallySaved: boolean;
 }
 
@@ -119,13 +120,13 @@ export function HostelDetailGallery({
         >
           {mosaicPhotos.length > 0 ? (
             mosaicPhotos.map((photo, index) => (
-              <div className="hostel-detail-photo" key={`${photo}-${index}`}>
+              <div className="hostel-detail-photo" key={`${photo.src}-${index}`}>
                 <Image
-                  alt={`${name} photo ${index + 1}`}
+                  alt={photo.alt}
                   fill
                   priority={index === 0}
                   sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 34vw"
-                  src={photo}
+                  src={photo.src}
                 />
               </div>
             ))
@@ -180,10 +181,10 @@ export function HostelDetailGallery({
           <div className="hostel-detail-dialog-photos">
             {photos.map((photo, index) => (
               <Image
-                alt={`${name} photo ${index + 1}`}
+                alt={photo.alt}
                 height={720}
-                key={`${photo}-all-${index}`}
-                src={photo}
+                key={`${photo.src}-all-${index}`}
+                src={photo.src}
                 width={960}
               />
             ))}

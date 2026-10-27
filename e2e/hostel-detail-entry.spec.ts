@@ -119,7 +119,7 @@ test("search ignores whitespace-only city query parameters", async ({ page }) =>
   expect(requestedCities).toEqual([]);
 });
 
-test("hostel detail uses centered content and a responsive one-photo gallery", async ({
+test("hostel detail uses centered content and a responsive gallery of real hostel and room photos", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -144,16 +144,25 @@ test("hostel detail uses centered content and a responsive one-photo gallery", a
     0,
   );
 
-  const gallery = page.locator('.hostel-detail-gallery[data-photo-count="1"]');
+  const gallery = page.locator('.hostel-detail-gallery[data-photo-count="4"]');
+  await expect(gallery.locator(".hostel-detail-photo img")).toHaveCount(4);
+  await expect(
+    gallery.getByRole("img", {
+      name: "Triple Study Room room photo for Baloch Scholars Hostel",
+    }),
+  ).toBeVisible();
   const galleryBounds = await gallery.boundingBox();
-  const photoBounds = await gallery.locator(".hostel-detail-photo").boundingBox();
+  const photoBounds = await gallery
+    .locator(".hostel-detail-photo")
+    .first()
+    .boundingBox();
   expect(galleryBounds).not.toBeNull();
   expect(photoBounds).not.toBeNull();
   if (!galleryBounds || !photoBounds) {
     throw new Error("The one-photo gallery must have measurable dimensions.");
   }
   expect(photoBounds.x).toBeCloseTo(galleryBounds.x, 0);
-  expect(photoBounds.width).toBeCloseTo(galleryBounds.width, 0);
+  expect(photoBounds.width).toBeGreaterThan(galleryBounds.width * 0.45);
 
   const photoDialog = page.getByRole("dialog", {
     name: "Photos of Baloch Scholars Hostel",

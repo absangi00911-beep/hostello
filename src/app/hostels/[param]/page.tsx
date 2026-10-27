@@ -13,8 +13,8 @@ import { HostelReviewsSection } from "@/components/hostel-detail/HostelReviewsSe
 import { HostelRoomSection } from "@/components/hostel-detail/HostelRoomSection";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { getHostelGalleryImages } from "@/lib/hostel-detail-presentation";
 import { getPublicHostelDetail } from "@/lib/hostel-detail";
+import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
 
 function genderLabel(gender: string): string {
   switch (gender) {
@@ -52,7 +52,12 @@ export default async function HostelDetailPage({
         )
       : false;
 
-  const photos = getHostelGalleryImages(hostel.coverImage, hostel.images);
+  const photos = getHostelGalleryPhotos(
+    hostel.name,
+    hostel.coverImage,
+    hostel.images,
+    hostel.rooms_rel,
+  );
 
   return (
     <div className="browse-home hostel-detail-page">

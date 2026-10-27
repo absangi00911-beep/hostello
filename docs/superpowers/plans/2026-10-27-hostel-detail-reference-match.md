@@ -32,11 +32,12 @@
 ### Task 1: Compose truthful gallery imagery
 
 **Files:**
-- Modify: `src/lib/hostel-detail-presentation.ts`
-- Modify: `src/lib/hostel-detail-presentation.test.ts`
+- Create: `src/lib/hostel-gallery.ts`
+- Create: `src/lib/hostel-gallery.test.ts`
 - Modify: `src/app/hostels/[param]/page.tsx`
 - Modify: `src/components/hostel-detail/HostelDetailGallery.tsx`
 - Modify: `src/components/hostel-detail/HostelDetailGallery.test.tsx`
+- Modify: `e2e/hostel-detail-entry.spec.ts`
 
 **Interfaces:**
 - Produces: `HostelDetailPhoto = { src: string; alt: string }`.
@@ -44,12 +45,12 @@
 - Consumes: the existing `hostel.coverImage`, `hostel.images`, and `hostel.rooms_rel` page data.
 - The helper returns all unique usable photos in cover/gallery/room order. `HostelDetailGallery` displays at most five in its mosaic and retains all returned photos in the photo dialog.
 
-- [ ] **Step 1: Write helper tests** for cover-first ordering; unique URLs across listing and room photos; room-specific alt text for room images; ignored whitespace URLs; and empty input returning no photos.
+- [ ] **Step 1: Write helper tests** for cover-first ordering; unique URLs across listing and room photos; room-specific alt text for room images; ignored whitespace URLs; and empty input returning no photos. Update the detail gallery E2E test to assert the seeded listing’s four real unique cover/room photos and truthful room-photo alt text.
 - [ ] **Step 2: Run `npm test -- --run src/lib/hostel-detail-presentation.test.ts`** and confirm the new helper tests fail before implementation.
-- [ ] **Step 3: Implement `HostelDetailPhoto` and `getHostelGalleryPhotos(...)`** in `src/lib/hostel-detail-presentation.ts`; trim URLs, preserve first occurrence, and label listing photos with the hostel name and room photos with the room name.
+- [ ] **Step 3: Implement `HostelDetailPhoto` and `getHostelGalleryPhotos(...)`** in `src/lib/hostel-gallery.ts`; trim URLs, preserve first occurrence, and label listing photos with the hostel name and room photos with the room name.
 - [ ] **Step 4: Pass the composed photo objects from the detail route** and update `HostelDetailGallery` to render `src` and each photo’s `alt` in both mosaic and dialog.
 - [ ] **Step 5: Update gallery tests** to assert the five-tile mosaic limit, the complete photo dialog, accurate alt text, and the empty state.
-- [ ] **Step 6: Run `npm test -- --run src/lib/hostel-detail-presentation.test.ts src/components/hostel-detail/HostelDetailGallery.test.tsx`** and confirm all tests pass.
+- [ ] **Step 6: Run `npm test -- --run src/lib/hostel-gallery.test.ts src/components/hostel-detail/HostelDetailGallery.test.tsx`** and the focused E2E gallery test; confirm all tests pass.
 - [ ] **Step 7: Commit** as `feat: include real room photos in hostel gallery`.
 
 ### Task 2: Match the first viewport geometry

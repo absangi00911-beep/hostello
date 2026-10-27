@@ -26,7 +26,10 @@ describe("HostelDetailGallery", () => {
   it("limits the mosaic to five photos while retaining all photos in the dialog", () => {
     const photos = Array.from(
       { length: 6 },
-      (_, index) => `/hostel-photo-${index + 1}.jpg`,
+      (_, index) => ({
+        src: `/hostel-photo-${index + 1}.jpg`,
+        alt: `Sample Hostel photo ${index + 1}`,
+      }),
     );
     const markup = renderToStaticMarkup(
       <HostelDetailGallery {...baseProps} photos={photos} />,
