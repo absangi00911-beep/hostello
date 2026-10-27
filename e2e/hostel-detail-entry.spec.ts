@@ -462,6 +462,118 @@ test("the public host section follows location and avoids horizontal overflow", 
   }
 });
 
+test("hostel detail lower sections keep a compact responsive layout", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`/hostels/${hostelId}`);
+
+  const roomSection = page.locator(".hostel-room-section");
+  const amenitiesSection = page.locator(".hostel-amenities-section");
+  const calendarSection = page.locator(".hostel-date-calendar");
+  const reviewsSection = page.locator(".hostel-reviews-section");
+  const locationSection = page.locator(".hostel-location-section");
+  const hostSection = page.locator(".hostel-host-section");
+  const sections = [
+    roomSection,
+    amenitiesSection,
+    calendarSection,
+    reviewsSection,
+    locationSection,
+    hostSection,
+  ];
+
+  const sectionBounds = await Promise.all(
+    sections.map((section) => section.boundingBox()),
+  );
+  expect(sectionBounds.every(Boolean)).toBe(true);
+  for (let index = 1; index < sectionBounds.length; index += 1) {
+    const previous = sectionBounds[index - 1];
+    const current = sectionBounds[index];
+    if (!previous || !current) {
+      throw new Error("Every lower detail section must be measurable.");
+    }
+    expect(current.y).toBeGreaterThan(previous.y);
+  }
+
+  const getColumnCount = (selector: string) =>
+    page.locator(selector).evaluate(
+      (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+    );
+  await expect(roomSection.locator(".hostel-room-grid")).toHaveCount(1);
+  expect(await getColumnCount(".hostel-room-grid")).toBe(2);
+  expect(await getColumnCount(".hostel-amenities-list")).toBe(2);
+  expect(await getColumnCount(".hostel-review-category-list")).toBe(2);
+  expect(await getColumnCount(".hostel-review-list")).toBe(2);
+
+  const [categoryBounds, reviewListBounds] = await Promise.all([
+    page.locator(".hostel-review-category-list").boundingBox(),
+    page.locator(".hostel-review-list").boundingBox(),
+  ]);
+  expect(categoryBounds).not.toBeNull();
+  expect(reviewListBounds).not.toBeNull();
+  if (!categoryBounds || !reviewListBounds) {
+    throw new Error("Review ratings and review content must be measurable.");
+  }
+  expect(categoryBounds.x).toBeCloseTo(reviewListBounds.x, 0);
+  expect(categoryBounds.width).toBeCloseTo(reviewListBounds.width, 0);
+
+  const map = page.locator(".hostel-location-map");
+  const mapBounds = await map.boundingBox();
+  expect(mapBounds).not.toBeNull();
+  if (!mapBounds) {
+    throw new Error("The approximate location map must be measurable.");
+  }
+  expect(mapBounds.height).toBeLessThanOrEqual(320);
+
+  const hostCardStyle = await page
+    .locator(".hostel-host-card")
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        borderRadius: Number.parseFloat(style.borderRadius),
+        boxShadow: style.boxShadow,
+      };
+    });
+  expect(hostCardStyle.borderRadius).toBeLessThanOrEqual(12);
+  expect(hostCardStyle.boxShadow).toBe("none");
+
+  const locationBounds = await locationSection.boundingBox();
+  const hostBounds = await hostSection.boundingBox();
+  expect(locationBounds).not.toBeNull();
+  expect(hostBounds).not.toBeNull();
+  if (!locationBounds || !hostBounds) {
+    throw new Error("Location and host sections must be measurable.");
+  }
+  expect(hostBounds.y - (locationBounds.y + locationBounds.height)).toBeLessThanOrEqual(
+    40,
+  );
+
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const [viewportWidth, documentWidth] = await page.evaluate(() => [
+      document.documentElement.clientWidth,
+      document.documentElement.scrollWidth,
+    ]);
+    expect(documentWidth).toBeLessThanOrEqual(viewportWidth);
+  }
+
+  for (const width of [768, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await getColumnCount(".hostel-room-grid")).toBe(2);
+    expect(await getColumnCount(".hostel-amenities-list")).toBe(2);
+    expect(await getColumnCount(".hostel-review-category-list")).toBe(2);
+    expect(await getColumnCount(".hostel-review-list")).toBe(2);
+  }
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await getColumnCount(".hostel-room-grid")).toBe(1);
+  expect(await getColumnCount(".hostel-amenities-list")).toBe(1);
+  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
+  expect(await getColumnCount(".hostel-review-category-list")).toBe(1);
+  expect(await getColumnCount(".hostel-review-list")).toBe(1);
+});
+
 test("signed-in students navigate to the returned conversation after delivery", async ({
   page,
 }) => {
