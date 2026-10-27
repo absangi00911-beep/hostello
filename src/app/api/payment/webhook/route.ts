@@ -537,15 +537,20 @@ async function processSafepayWebhook(event: SafepayEvent) {
 }
 
 async function processQueuedSafepayEvent(req: NextRequest) {
-  try {
-    await verifyUpstashRequest(req, { acceptBearerToken: false });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const boundedBody = await readBoundedText(req, 4 * 1024);
+  const boundedBody = req.body
+    ? await readBoundedText(req, 4 * 1024)
+    : { ok: true as const, text: "" };
   if (!boundedBody.ok) {
     return NextResponse.json({ error: boundedBody.error }, { status: boundedBody.status });
+  }
+
+  try {
+    await verifyUpstashRequest(req, {
+      acceptBearerToken: false,
+      body: boundedBody.text,
+    });
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let eventId: string;

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Search, UserRound } from "lucide-react";
+import { Search } from "lucide-react";
 import { notFound } from "next/navigation";
 import { HostelAmenitiesSection } from "@/components/hostel-detail/HostelAmenitiesSection";
+import { BrowseAccountActions } from "@/components/auth/BrowseAccountActions";
 import { HostelBookingCard } from "@/components/hostel-detail/HostelBookingCard";
 import { HostelDetailGallery } from "@/components/hostel-detail/HostelDetailGallery";
 import { HostelDetailOverview } from "@/components/hostel-detail/HostelDetailOverview";
@@ -63,9 +64,8 @@ export default async function HostelDetailPage({
     <div className="browse-home hostel-detail-page">
       <header className="browse-header hostel-detail-header">
         <div className="browse-shell hostel-detail-header-inner">
-          <Link className="browse-brand" href="/" aria-label="HostelLo home">
-            <span className="browse-brand-mark" aria-hidden="true">H</span>
-            <span>HostelLo</span>
+          <Link className="browse-brand" href="/" aria-label="hostello home">
+            <span>hostello</span>
           </Link>
           <form
             action="/search"
@@ -86,14 +86,17 @@ export default async function HostelDetailPage({
               <Search aria-hidden="true" size={18} />
             </button>
           </form>
-          <div className="browse-account-actions">
-            <Link className="browse-host-link" href="/signup?role=OWNER">
-              Become a host
-            </Link>
-            <Link className="browse-sign-in" href="/login" aria-label="Sign in">
-              <UserRound aria-hidden="true" size={18} />
-            </Link>
-          </div>
+          <BrowseAccountActions
+            user={
+              session?.user
+                ? {
+                    name: session.user.name,
+                    email: session.user.email,
+                    role: session.user.role,
+                  }
+                : null
+            }
+          />
         </div>
       </header>
 

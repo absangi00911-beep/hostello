@@ -2,6 +2,7 @@ import {
   displayMessageDate,
   participantName,
 } from "@/lib/messages-inbox";
+import Image from "next/image";
 import type {
   ConversationListPage,
   ConversationPreview,
@@ -55,6 +56,9 @@ export function ConversationList({
           {conversations.map((conversation) => {
             const latestMessage = conversation.messages[0];
             const selected = conversation.id === selectedConversationId;
+            const otherParticipant = conversation.participants.find(
+              (participant) => participant.userId !== currentUserId,
+            );
             const otherName = participantName(conversation.participants, currentUserId);
             return (
               <li key={conversation.id}>
@@ -65,7 +69,17 @@ export function ConversationList({
                   type="button"
                 >
                   <span className="messages-avatar" aria-hidden="true">
-                    {otherName.slice(0, 1).toUpperCase()}
+                    {otherParticipant?.user.avatar ? (
+                      <Image
+                        alt=""
+                        height={38}
+                        src={otherParticipant.user.avatar}
+                        unoptimized
+                        width={38}
+                      />
+                    ) : (
+                      otherName.slice(0, 1).toUpperCase()
+                    )}
                   </span>
                   <span className="messages-conversation-copy">
                     <span className="messages-conversation-topline">

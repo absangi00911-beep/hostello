@@ -28,6 +28,49 @@ async function mockHostelSearch(page: Page) {
   );
 }
 
+test("hostel detail header matches homepage size and wordmark alignment", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  const getHeaderMetrics = async () =>
+    page.locator(".browse-header").evaluate((header) => {
+      const brand = header.querySelector(".browse-brand");
+      const headerBounds = header.getBoundingClientRect();
+      const brandBounds = brand?.getBoundingClientRect();
+
+      if (!brandBounds) {
+        throw new Error("Browse header wordmark is missing");
+      }
+
+      return {
+        height: headerBounds.height,
+        brandLeft: brandBounds.left,
+        brandCenterY: brandBounds.top + brandBounds.height / 2,
+      };
+    });
+
+  await page.goto("/");
+  const homepageHeader = await getHeaderMetrics();
+
+  await page.goto(`/hostels/${hostelId}`);
+  const detailHeader = page.locator(".hostel-detail-header");
+  await expect(detailHeader).toBeVisible();
+  await expect(
+    detailHeader.getByRole("search", {
+      name: "Search for hostels by destination",
+    }),
+  ).toBeVisible();
+  const detailHeaderMetrics = await getHeaderMetrics();
+
+  expect(detailHeaderMetrics.height).toBe(homepageHeader.height);
+  expect(detailHeaderMetrics.brandLeft).toBe(homepageHeader.brandLeft);
+  expect(detailHeaderMetrics.brandCenterY).toBeCloseTo(
+    homepageHeader.brandCenterY,
+    1,
+  );
+});
+
 test("hostel cards open their detail route from browse and search", async ({ page }) => {
   await mockHostelSearch(page);
   await page.goto("/");
@@ -124,6 +167,10 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`/hostels/${hostelId}`);
+
+  const wordmark = page.getByRole("link", { name: "hostello home" });
+  await expect(wordmark).toHaveText("hostello");
+  await expect(wordmark.locator(".browse-brand-mark")).toHaveCount(0);
 
   const search = page.getByRole("search", {
     name: "Search for hostels by destination",

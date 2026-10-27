@@ -1,5 +1,6 @@
 import { createJwtCallback } from "@/lib/auth/auth-callbacks";
 import { authorizeCredentials } from "@/lib/auth/credentials-authorize";
+import { authorizeEmailOtp } from "@/lib/auth/email-otp-authorize";
 // Path: src/lib/auth/config.ts
 
 import NextAuth from "next-auth";
@@ -78,6 +79,17 @@ const credentialsProvider = Credentials({
   authorize: (credentials, request) => authorizeCredentials(credentials, request),
 });
 
+const emailOtpProvider = Credentials({
+  id: "email-otp",
+  name: "Email code",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    grant: { label: "Verification grant", type: "text" },
+    name: { label: "Name", type: "text" },
+  },
+  authorize: (credentials, request) => authorizeEmailOtp(credentials, request),
+});
+
 const googleProvider =
   process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
     ? Google({
@@ -120,6 +132,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   providers: [
     credentialsProvider,
+    emailOtpProvider,
     ...(googleProvider ? [googleProvider] : []),
   ],
 
@@ -131,7 +144,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Credentials sign-ins bypass the adapter, so account is populated
       // but the user object comes from our authorize() callback directly.
       // No extra checks needed here for credentials.
-      if (account?.provider === "credentials") return true;
+      if (account?.provider === "credentials" || account?.provider === "email-otp") return true;
 
       // For OAuth providers: make sure the returned user has an id (i.e. the
       // adapter successfully created or retrieved the DB record). If the DB

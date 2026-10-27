@@ -102,7 +102,7 @@ describe("getPublicHostelDetail", () => {
     expect(query.select.owner.select).not.toHaveProperty("subscription");
   });
 
-  it("selects recent public review details and reviewer display names", async () => {
+  it("selects recent public review details, display names, and avatar URLs", async () => {
     await getPublicHostelDetail("murree-student-hostel");
 
     const query = mocks.findFirst.mock.calls[0][0];
@@ -121,7 +121,7 @@ describe("getPublicHostelDetail", () => {
         ownerReply: true,
         createdAt: true,
         verified: true,
-        user: { select: { name: true } },
+        user: { select: { name: true, avatar: true } },
       },
     });
   });

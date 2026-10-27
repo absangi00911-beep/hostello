@@ -23,10 +23,12 @@ vi.mock("@/lib/safepay", () => ({
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn() }));
 vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn() }));
 vi.mock("@/lib/email-templates/booking-status", () => ({ bookingStatusEmail: vi.fn() }));
+vi.mock("@/lib/verify-upstash", () => ({ verifyUpstashRequest: vi.fn() }));
 
 import { POST } from "./route";
 import { verifyWebhookSignature } from "@/lib/safepay";
 import { db } from "@/lib/db";
+import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 function request(body: string, headers: Record<string, string> = {}) {
   return new NextRequest("https://hostello.test/api/payment/webhook", {
@@ -48,6 +50,28 @@ describe("POST /api/payment/webhook", () => {
     expect(body.error).toBe("Request body is too large.");
     expect(verifyWebhookSignature).not.toHaveBeenCalled();
     expect(db.booking.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("rejects an oversized queued event before QStash signature verification", async () => {
+    const res = await POST(request("x".repeat(4 * 1024 + 1), { "upstash-signature": "invalid" }));
+
+    expect(res.status).toBe(413);
+    expect(verifyUpstashRequest).not.toHaveBeenCalled();
+    expect(db.safepayWebhookEvent.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("passes the bounded raw queued-event body to QStash verification", async () => {
+    const rawBody = '{"eventId":"event_1"}';
+    const req = request(rawBody, { "upstash-signature": "invalid" });
+    vi.mocked(verifyUpstashRequest).mockRejectedValue(new Error("Request verification failed"));
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(401);
+    expect(verifyUpstashRequest).toHaveBeenCalledWith(req, {
+      acceptBearerToken: false,
+      body: rawBody,
+    });
   });
 
   it("verifies the exact bounded raw text before parsing an event", async () => {

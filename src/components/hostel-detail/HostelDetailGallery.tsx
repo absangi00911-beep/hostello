@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import { Heart, Share2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type { HostelDetailPhoto } from "@/lib/hostel-gallery";
@@ -155,7 +155,7 @@ export function HostelDetailGallery({
             {actionMessage === "Sign in to save this hostel." && (
               <>
                 {" "}
-                <Link href="/login">Sign in</Link>
+                <LoginDialogTrigger>Sign in</LoginDialogTrigger>
               </>
             )}
           </p>

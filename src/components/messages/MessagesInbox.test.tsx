@@ -77,6 +77,42 @@ function thread(
 }
 
 describe("MessagesInbox API behavior", () => {
+  it("renders a conversation participant's photo avatar", () => {
+    const markup = renderToStaticMarkup(
+      <ConversationList
+        conversations={[
+          {
+            ...conversation,
+            participants: [
+              {
+                userId: "host-1",
+                user: {
+                  id: "host-1",
+                  name: "Ali Raza",
+                  avatar: "https://images.unsplash.com/ali.jpg",
+                  role: "OWNER",
+                  studentVerified: false,
+                },
+              },
+            ],
+          },
+        ]}
+        currentUserId="student-1"
+        error=""
+        loading={false}
+        onLoadMore={vi.fn()}
+        onRetry={vi.fn()}
+        onSelect={vi.fn()}
+        page={{ data: [], total: 1, page: 1, limit: 20, hasMore: false }}
+        paging={false}
+        selectedConversationId={null}
+      />,
+    );
+
+    expect(markup).toContain('src="https://images.unsplash.com/ali.jpg"');
+    expect(markup).toContain('alt=""');
+  });
+
   it.each([
     ["refresh", "replace", 1],
     ["load older", "append", 2],

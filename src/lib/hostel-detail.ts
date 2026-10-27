@@ -80,7 +80,7 @@ export async function getPublicHostelDetail(param: string) {
           ownerReply: true,
           createdAt: true,
           verified: true,
-          user: { select: { name: true } },
+          user: { select: { name: true, avatar: true } },
         },
       },
     },

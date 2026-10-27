@@ -15,9 +15,8 @@ export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
   return (
     <main className="messages-page">
       <header className="messages-header">
-        <Link className="messages-brand" href="/" aria-label="HostelLo home">
-          <span aria-hidden="true">H</span>
-          <span>HostelLo</span>
+        <Link className="messages-brand" href="/" aria-label="hostello home">
+          <span>hostello</span>
         </Link>
         <div className="messages-header-actions">
           <Link href="/">Explore hostels</Link>

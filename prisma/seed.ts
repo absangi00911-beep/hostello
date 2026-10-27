@@ -33,11 +33,14 @@ async function main() {
 
   await db.user.upsert({
     where: { email: seedAdminEmail },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: seedAdminEmail,
       password: adminPassword,
       name: "HostelLo Admin",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&h=256&q=80",
       role: "ADMIN",
       emailVerified: new Date(),
     },
@@ -45,11 +48,14 @@ async function main() {
 
   const owner1 = await db.user.upsert({
     where: { email: process.env.SEED_OWNER_1_EMAIL as string },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: process.env.SEED_OWNER_1_EMAIL as string,
       password: ownerPassword,
       name: "Ali Raza",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&h=256&q=80",
       phone: "+92-300-1234567",
       role: "OWNER",
       city: "Lahore",
@@ -59,11 +65,14 @@ async function main() {
 
   const owner2 = await db.user.upsert({
     where: { email: process.env.SEED_OWNER_2_EMAIL as string },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: process.env.SEED_OWNER_2_EMAIL as string,
       password: ownerPassword,
       name: "Sara Khan",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80",
       phone: "+92-311-9876543",
       role: "OWNER",
       city: "Islamabad",
@@ -73,11 +82,14 @@ async function main() {
 
   const owner3 = await db.user.upsert({
     where: { email: process.env.SEED_OWNER_3_EMAIL as string },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: process.env.SEED_OWNER_3_EMAIL as string,
       password: ownerPassword,
       name: "Hassan Mirza",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80",
       phone: "+92-321-5554321",
       role: "OWNER",
       city: "Karachi",
@@ -87,11 +99,14 @@ async function main() {
 
   const owner4 = await db.user.upsert({
     where: { email: process.env.SEED_OWNER_4_EMAIL as string },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: process.env.SEED_OWNER_4_EMAIL as string,
       password: ownerPassword,
       name: "Amna Sheikh",
+      avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=256&h=256&q=80",
       phone: "+92-333-7778899",
       role: "OWNER",
       city: "Faisalabad",
@@ -101,11 +116,14 @@ async function main() {
 
   const student1 = await db.user.upsert({
     where: { email: process.env.SEED_STUDENT_EMAIL as string },
-    update: {},
+    update: {
+      avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=256&h=256&q=80",
+    },
     create: {
       email: process.env.SEED_STUDENT_EMAIL as string,
       password: studentPassword,
       name: "Hamza Malik",
+      avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=256&h=256&q=80",
       role: "STUDENT",
       city: "Lahore",
       emailVerified: new Date(),
