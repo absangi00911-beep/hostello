@@ -417,6 +417,7 @@ export const ModelName = {
   PasswordResetToken: 'PasswordResetToken',
   Favorite: 'Favorite',
   Conversation: 'Conversation',
+  HostResponseSummary: 'HostResponseSummary',
   ConversationParticipant: 'ConversationParticipant',
   Message: 'Message',
   PriceAlert: 'PriceAlert',
@@ -440,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1924,6 +1925,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HostResponseSummary: {
+      payload: Prisma.$HostResponseSummaryPayload<ExtArgs>
+      fields: Prisma.HostResponseSummaryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HostResponseSummaryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HostResponseSummaryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        findFirst: {
+          args: Prisma.HostResponseSummaryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HostResponseSummaryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        findMany: {
+          args: Prisma.HostResponseSummaryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>[]
+        }
+        create: {
+          args: Prisma.HostResponseSummaryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        createMany: {
+          args: Prisma.HostResponseSummaryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HostResponseSummaryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>[]
+        }
+        delete: {
+          args: Prisma.HostResponseSummaryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        update: {
+          args: Prisma.HostResponseSummaryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        deleteMany: {
+          args: Prisma.HostResponseSummaryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HostResponseSummaryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HostResponseSummaryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>[]
+        }
+        upsert: {
+          args: Prisma.HostResponseSummaryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HostResponseSummaryPayload>
+        }
+        aggregate: {
+          args: Prisma.HostResponseSummaryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHostResponseSummary>
+        }
+        groupBy: {
+          args: Prisma.HostResponseSummaryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HostResponseSummaryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HostResponseSummaryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HostResponseSummaryCountAggregateOutputType> | number
+        }
+      }
+    }
     ConversationParticipant: {
       payload: Prisma.$ConversationParticipantPayload<ExtArgs>
       fields: Prisma.ConversationParticipantFieldRefs
@@ -2911,6 +2986,17 @@ export const ConversationScalarFieldEnum = {
 export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
 
 
+export const HostResponseSummaryScalarFieldEnum = {
+  hostId: 'hostId',
+  guestStartedThreadCount: 'guestStartedThreadCount',
+  repliedThreadCount: 'repliedThreadCount',
+  medianResponseSeconds: 'medianResponseSeconds',
+  calculatedAt: 'calculatedAt'
+} as const
+
+export type HostResponseSummaryScalarFieldEnum = (typeof HostResponseSummaryScalarFieldEnum)[keyof typeof HostResponseSummaryScalarFieldEnum]
+
+
 export const ConversationParticipantScalarFieldEnum = {
   id: 'id',
   conversationId: 'conversationId',
@@ -3489,6 +3575,7 @@ export type GlobalOmitConfig = {
   passwordResetToken?: Prisma.PasswordResetTokenOmit
   favorite?: Prisma.FavoriteOmit
   conversation?: Prisma.ConversationOmit
+  hostResponseSummary?: Prisma.HostResponseSummaryOmit
   conversationParticipant?: Prisma.ConversationParticipantOmit
   message?: Prisma.MessageOmit
   priceAlert?: Prisma.PriceAlertOmit

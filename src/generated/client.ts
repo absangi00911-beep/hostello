@@ -142,6 +142,11 @@ export type Favorite = Prisma.FavoriteModel
  */
 export type Conversation = Prisma.ConversationModel
 /**
+ * Model HostResponseSummary
+ * 
+ */
+export type HostResponseSummary = Prisma.HostResponseSummaryModel
+/**
  * Model ConversationParticipant
  * 
  */

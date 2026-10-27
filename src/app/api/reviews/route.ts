@@ -2,6 +2,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { reviewSchema } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
+import { runAfterResponse } from "@/lib/background";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
 import { indexSingleHostel } from "@/lib/typesense-sync";
@@ -215,7 +216,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (hostel) {
-      void createNotification({
+      await createNotification({
         userId: hostel.ownerId,
         type: "REVIEW_RECEIVED",
         title: "New Review",
@@ -223,12 +224,7 @@ export async function POST(req: NextRequest) {
         reviewId: review.id,
         hostelId,
       });
-      void indexSingleHostel(hostelId).catch((err) => {
-        console.warn(
-          "[POST /api/reviews] Typesense sync failed:",
-          getSafeErrorSummary(err),
-        );
-      });
+      void runAfterResponse("search.index_hostel", () => indexSingleHostel(hostelId));
     }
 
     return NextResponse.json(

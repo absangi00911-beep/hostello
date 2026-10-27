@@ -2,6 +2,19 @@
 
 Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
 
+## Version 4.2 (October 24, 2026)
+
+Phase 1 of the remediation plan: stop silent failures.
+
+- **After-response work:** new `runAfterResponse` helper (Next's `after()`). Every email and search-index update that was started and not awaited now uses it, so serverless invocations are not cut off before they finish. Failures are logged as `<event>.failed`.
+- **Notifications:** in-app notifications are awaited. The booking-paid and Pro-activation notifications are written in the same database transaction as the state change, so they cannot be lost or orphaned; a failed write fails the webhook event and QStash retries it. The refund notice can never turn a confirmed refund into a reported failure.
+- **Booking creation:** removed the pre-payment owner notification. It raced the transaction and notified the owner about a booking they cannot see.
+- **Signup:** the verification token is stored before the response; the emails are sent after it.
+- **Timeouts:** Safepay checkout requests (10 s) and Twilio requests (10 s).
+- **Configuration:** production requires an explicit `NEXT_PUBLIC_SAFEPAY_ENV`, rejects a placeholder or malformed `RESEND_API_KEY`, and warns about missing payout-encryption and Twilio settings. `sendEmail` now reports failure in production when it cannot send.
+- **Tests:** 24 new tests (662 to 686) and 4 updated. Nine of the new and updated tests fail against the Phase 0 code.
+- **Risk register:** R-07 and R-08 fixed in code (outbox still open), R-14 fixed in code (Resend timeout open).
+
 ## Version 4.1 (October 21, 2026)
 
 Phase 0 of the remediation plan: unblock the pipeline.

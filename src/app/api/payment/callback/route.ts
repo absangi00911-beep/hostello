@@ -195,14 +195,14 @@ async function confirmBooking(
         result.status === "rejected" ? getSafeErrorSummary(result.reason) : { name: "EmailProviderRejected" },
       );
     }
-    void createNotification({
+    await createNotification({
       userId: booking.hostel.owner.id,
       type: "BOOKING_REQUEST",
       title: "New paid booking request",
       message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
       bookingId: booking.id,
     });
-    void createNotification({
+    await createNotification({
       userId: booking.userId,
       type: "BOOKING_REQUEST",
       title: "Payment received — awaiting owner",

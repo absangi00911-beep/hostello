@@ -9,6 +9,17 @@ import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { parsePagination } from "@/lib/pagination";
 import { isBoundedRouteParam } from "@/lib/route-params";
+import { refreshHostResponseSummary } from "@/lib/host-response-summary";
+import type { Prisma } from "@/generated/client";
+
+const MAX_MESSAGE_TRANSACTION_ATTEMPTS = 3;
+
+function isSerializableTransactionConflict(error: unknown) {
+  return error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "P2034";
+}
 
 const messageSchema = z.object({
   content: z.string().min(1, "Message cannot be empty").max(2000),
@@ -165,6 +176,7 @@ export async function POST(
       select: {
         id: true,
         hostelId: true,
+        hostel: { select: { ownerId: true } },
         participants: {
           select: { userId: true },
         },
@@ -193,22 +205,40 @@ export async function POST(
       );
     }
 
-    const [message] = await db.$transaction([
-      db.message.create({
-        data: {
-          conversationId: id,
-          senderId: session.user.id,
-          content: parsed.data.content,
-        },
-        include: {
-          sender: { select: { id: true, name: true, avatar: true } },
-        },
-      }),
-      db.conversation.update({
-        where: { id },
-        data: { updatedAt: new Date() },
-      }),
-    ]);
+    let message: Prisma.MessageGetPayload<{
+      include: { sender: { select: { id: true; name: true; avatar: true } } };
+    }> | undefined;
+    for (let attempt = 0; attempt < MAX_MESSAGE_TRANSACTION_ATTEMPTS; attempt++) {
+      try {
+        message = await db.$transaction(async (tx) => {
+          const createdMessage = await tx.message.create({
+            data: {
+              conversationId: id,
+              senderId: session.user.id,
+              content: parsed.data.content,
+            },
+            include: {
+              sender: { select: { id: true, name: true, avatar: true } },
+            },
+          });
+          await tx.conversation.update({
+            where: { id },
+            data: { updatedAt: new Date() },
+          });
+          if (session.user.id === conversation.hostel.ownerId) {
+            await refreshHostResponseSummary(conversation.hostel.ownerId, tx);
+          }
+          return createdMessage;
+        }, { isolationLevel: "Serializable" });
+        break;
+      } catch (error) {
+        if (!isSerializableTransactionConflict(error) || attempt + 1 === MAX_MESSAGE_TRANSACTION_ATTEMPTS) {
+          throw error;
+        }
+      }
+    }
+
+    if (!message) throw new Error("Message transaction did not return a result.");
 
     // -- Notify recipient(s) ------------------------------------------------
     // Find every participant who is NOT the sender and notify them.
@@ -225,7 +255,7 @@ export async function POST(
         : parsed.data.content;
 
     for (const recipientId of recipientIds) {
-      void createNotification({
+      await createNotification({
         userId:   recipientId,
         type:     "MESSAGE_RECEIVED",
         title:    message.sender.name,   // sender name as title (messaging app convention)

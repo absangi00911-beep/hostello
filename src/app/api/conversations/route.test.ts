@@ -17,7 +17,14 @@ vi.mock("@/lib/db", () => ({
     hostel: {
       findUnique: vi.fn(),
     },
+    message: {
+      create: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@/lib/host-response-summary", () => ({
+  refreshHostResponseSummary: vi.fn(),
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
@@ -28,6 +35,22 @@ import { GET, POST } from "@/app/api/conversations/route";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
+import { refreshHostResponseSummary } from "@/lib/host-response-summary";
+
+const transactionClient = {
+  conversation: {
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+  message: {
+    create: vi.fn(),
+  },
+};
+
+function runTransaction(callback: (tx: typeof transactionClient) => unknown) {
+  return callback(transactionClient);
+}
 
 describe("/api/conversations collection route", () => {
   beforeEach(() => {
@@ -41,6 +64,15 @@ describe("/api/conversations collection route", () => {
       remaining: 19,
       resetAt: Date.now() + 60_000,
     });
+    vi.mocked(db.$transaction).mockImplementation((async (callback: (tx: typeof transactionClient) => unknown) =>
+      runTransaction(callback)) as typeof db.$transaction);
+    transactionClient.conversation.findFirst.mockResolvedValue(null as never);
+    transactionClient.conversation.create.mockResolvedValue({
+      id: "conversation-1",
+    } as never);
+    transactionClient.conversation.update.mockResolvedValue({} as never);
+    transactionClient.message.create.mockResolvedValue({ id: "message-1" } as never);
+    vi.mocked(refreshHostResponseSummary).mockResolvedValue(undefined);
   });
 
   it("lists conversations for the current user", async () => {
@@ -97,10 +129,10 @@ describe("/api/conversations collection route", () => {
       ownerId: "owner-1",
     } as Awaited<ReturnType<typeof db.hostel.findUnique>>);
 
-    vi.mocked(db.conversation.findFirst).mockResolvedValue(null);
-    vi.mocked(db.conversation.create).mockResolvedValue({
+    transactionClient.conversation.findFirst.mockResolvedValue(null as never);
+    transactionClient.conversation.create.mockResolvedValue({
       id: "conversation-1",
-    } as Awaited<ReturnType<typeof db.conversation.create>>);
+    } as never);
 
     const req = new NextRequest("https://hostello.test/api/conversations", {
       method: "POST",
@@ -117,14 +149,91 @@ describe("/api/conversations collection route", () => {
       where: { id: "clhostel000000000000000001", status: "ACTIVE" },
       select: { id: true, name: true, ownerId: true },
     });
-    expect(db.conversation.create).toHaveBeenCalledWith(
+    expect(transactionClient.conversation.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           hostelId: "clhostel000000000000000001",
           hostelName: "Canal View Hostel",
+          messages: {
+            create: {
+              senderId: "user-1",
+              content: "Is a room available?",
+            },
+          },
         }),
       }),
     );
+    expect(refreshHostResponseSummary).toHaveBeenCalledWith("owner-1", transactionClient);
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+  });
+
+  it("appends_initial_message_to_existing_conversation", async () => {
+    vi.mocked(db.hostel.findUnique).mockResolvedValue({
+      id: "hostel-1",
+      name: "Canal View Hostel",
+      ownerId: "owner-1",
+    } as Awaited<ReturnType<typeof db.hostel.findUnique>>);
+    transactionClient.conversation.findFirst.mockResolvedValue({ id: "conversation-existing" } as never);
+
+    const response = await POST(new NextRequest("https://hostello.test/api/conversations", {
+      method: "POST",
+      body: JSON.stringify({ hostelId: "hostel-1", initialMessage: "Is a room available?" }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: { id: "conversation-existing" } });
+    expect(transactionClient.message.create).toHaveBeenCalledWith({
+      data: {
+        conversationId: "conversation-existing",
+        senderId: "user-1",
+        content: "Is a room available?",
+      },
+    });
+    expect(transactionClient.conversation.update).toHaveBeenCalled();
+    expect(refreshHostResponseSummary).toHaveBeenCalledWith("owner-1", transactionClient);
+  });
+
+  it("creates_first_message_and_summary_atomically", async () => {
+    vi.mocked(db.hostel.findUnique).mockResolvedValue({
+      id: "hostel-1",
+      name: "Canal View Hostel",
+      ownerId: "owner-1",
+    } as Awaited<ReturnType<typeof db.hostel.findUnique>>);
+
+    const response = await POST(new NextRequest("https://hostello.test/api/conversations", {
+      method: "POST",
+      body: JSON.stringify({ hostelId: "hostel-1", initialMessage: "Is a room available?" }),
+    }));
+
+    expect(response.status).toBe(201);
+    expect(transactionClient.conversation.create).toHaveBeenCalled();
+    expect(refreshHostResponseSummary).toHaveBeenCalledWith("owner-1", transactionClient);
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+  });
+
+  it("rolls_back_message_when_summary_refresh_fails", async () => {
+    vi.mocked(db.hostel.findUnique).mockResolvedValue({
+      id: "hostel-1",
+      name: "Canal View Hostel",
+      ownerId: "owner-1",
+    } as Awaited<ReturnType<typeof db.hostel.findUnique>>);
+    vi.mocked(refreshHostResponseSummary).mockRejectedValue(new Error("summary failed"));
+
+    const response = await POST(new NextRequest("https://hostello.test/api/conversations", {
+      method: "POST",
+      body: JSON.stringify({ hostelId: "hostel-1", initialMessage: "Is a room available?" }),
+    }));
+
+    expect(response.status).toBe(500);
+    expect(transactionClient.conversation.create).toHaveBeenCalled();
+    expect(refreshHostResponseSummary).toHaveBeenCalledWith("owner-1", transactionClient);
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
   });
 
   it("rejects an oversized hostel ID before querying the database", async () => {
@@ -141,7 +250,7 @@ describe("/api/conversations collection route", () => {
     expect(res.status).toBe(400);
     expect(db.hostel.findUnique).not.toHaveBeenCalled();
     expect(db.conversation.findFirst).not.toHaveBeenCalled();
-    expect(db.conversation.create).not.toHaveBeenCalled();
+    expect(transactionClient.conversation.create).not.toHaveBeenCalled();
   });
 
   it("does not start a conversation about a non-active hostel", async () => {
@@ -158,8 +267,8 @@ describe("/api/conversations collection route", () => {
     const res = await POST(req);
 
     expect(res.status).toBe(404);
-    expect(db.conversation.findFirst).not.toHaveBeenCalled();
-    expect(db.conversation.create).not.toHaveBeenCalled();
+    expect(transactionClient.conversation.findFirst).not.toHaveBeenCalled();
+    expect(transactionClient.conversation.create).not.toHaveBeenCalled();
   });
 
   it("does not allow non-students to start conversations", async () => {
@@ -180,6 +289,6 @@ describe("/api/conversations collection route", () => {
 
     expect(res.status).toBe(403);
     expect(db.hostel.findUnique).not.toHaveBeenCalled();
-    expect(db.conversation.create).not.toHaveBeenCalled();
+    expect(transactionClient.conversation.create).not.toHaveBeenCalled();
   });
 });

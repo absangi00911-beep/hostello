@@ -388,6 +388,7 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   hostels?: Prisma.HostelListRelationFilter
+  hostResponseSummary?: Prisma.XOR<Prisma.HostResponseSummaryNullableScalarRelationFilter, Prisma.HostResponseSummaryWhereInput> | null
   bookings?: Prisma.BookingListRelationFilter
   payouts?: Prisma.PayoutListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
@@ -433,6 +434,7 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   hostels?: Prisma.HostelOrderByRelationAggregateInput
+  hostResponseSummary?: Prisma.HostResponseSummaryOrderByWithRelationInput
   bookings?: Prisma.BookingOrderByRelationAggregateInput
   payouts?: Prisma.PayoutOrderByRelationAggregateInput
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
@@ -481,6 +483,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   hostels?: Prisma.HostelListRelationFilter
+  hostResponseSummary?: Prisma.XOR<Prisma.HostResponseSummaryNullableScalarRelationFilter, Prisma.HostResponseSummaryWhereInput> | null
   bookings?: Prisma.BookingListRelationFilter
   payouts?: Prisma.PayoutListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
@@ -592,6 +595,7 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -637,6 +641,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -682,6 +687,7 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -727,6 +733,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1115,6 +1122,20 @@ export type UserUpdateOneRequiredWithoutFavoritesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFavoritesInput, Prisma.UserUpdateWithoutFavoritesInput>, Prisma.UserUncheckedUpdateWithoutFavoritesInput>
 }
 
+export type UserCreateNestedOneWithoutHostResponseSummaryInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutHostResponseSummaryInput, Prisma.UserUncheckedCreateWithoutHostResponseSummaryInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutHostResponseSummaryInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutHostResponseSummaryNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutHostResponseSummaryInput, Prisma.UserUncheckedCreateWithoutHostResponseSummaryInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutHostResponseSummaryInput
+  upsert?: Prisma.UserUpsertWithoutHostResponseSummaryInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutHostResponseSummaryInput, Prisma.UserUpdateWithoutHostResponseSummaryInput>, Prisma.UserUncheckedUpdateWithoutHostResponseSummaryInput>
+}
+
 export type UserCreateNestedOneWithoutConversationParticipantsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutConversationParticipantsInput, Prisma.UserUncheckedCreateWithoutConversationParticipantsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationParticipantsInput
@@ -1229,6 +1250,7 @@ export type UserCreateWithoutSubscriptionInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -1273,6 +1295,7 @@ export type UserUncheckedCreateWithoutSubscriptionInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -1333,6 +1356,7 @@ export type UserUpdateWithoutSubscriptionInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -1377,6 +1401,7 @@ export type UserUncheckedUpdateWithoutSubscriptionInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1422,6 +1447,7 @@ export type UserCreateWithoutPayoutsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -1466,6 +1492,7 @@ export type UserUncheckedCreateWithoutPayoutsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -1526,6 +1553,7 @@ export type UserUpdateWithoutPayoutsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -1570,6 +1598,7 @@ export type UserUncheckedUpdateWithoutPayoutsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -1613,6 +1642,7 @@ export type UserCreateWithoutAccountsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -1657,6 +1687,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -1717,6 +1748,7 @@ export type UserUpdateWithoutAccountsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -1761,6 +1793,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1805,6 +1838,7 @@ export type UserCreateWithoutSessionsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -1849,6 +1883,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -1909,6 +1944,7 @@ export type UserUpdateWithoutSessionsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -1953,6 +1989,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -1998,6 +2035,7 @@ export type UserCreateWithoutPhoneVerificationTokensInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -2042,6 +2080,7 @@ export type UserUncheckedCreateWithoutPhoneVerificationTokensInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -2102,6 +2141,7 @@ export type UserUpdateWithoutPhoneVerificationTokensInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -2146,6 +2186,7 @@ export type UserUncheckedUpdateWithoutPhoneVerificationTokensInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -2189,6 +2230,7 @@ export type UserCreateWithoutHostelsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -2233,6 +2275,7 @@ export type UserUncheckedCreateWithoutHostelsInput = {
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -2293,6 +2336,7 @@ export type UserUpdateWithoutHostelsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -2337,6 +2381,7 @@ export type UserUncheckedUpdateWithoutHostelsInput = {
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -2382,6 +2427,7 @@ export type UserCreateWithoutBookingsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2426,6 +2472,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2486,6 +2533,7 @@ export type UserUpdateWithoutBookingsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2530,6 +2578,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2574,6 +2623,7 @@ export type UserCreateWithoutReviewsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
@@ -2618,6 +2668,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
@@ -2678,6 +2729,7 @@ export type UserUpdateWithoutReviewsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
@@ -2722,6 +2774,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
@@ -2766,6 +2819,7 @@ export type UserCreateWithoutPasswordResetsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -2810,6 +2864,7 @@ export type UserUncheckedCreateWithoutPasswordResetsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -2870,6 +2925,7 @@ export type UserUpdateWithoutPasswordResetsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -2914,6 +2970,7 @@ export type UserUncheckedUpdateWithoutPasswordResetsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -2958,6 +3015,7 @@ export type UserCreateWithoutFavoritesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3002,6 +3060,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -3062,6 +3121,7 @@ export type UserUpdateWithoutFavoritesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -3106,9 +3166,206 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
+}
+
+export type UserCreateWithoutHostResponseSummaryInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
+}
+
+export type UserUncheckedCreateWithoutHostResponseSummaryInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
+}
+
+export type UserCreateOrConnectWithoutHostResponseSummaryInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutHostResponseSummaryInput, Prisma.UserUncheckedCreateWithoutHostResponseSummaryInput>
+}
+
+export type UserUpsertWithoutHostResponseSummaryInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutHostResponseSummaryInput, Prisma.UserUncheckedUpdateWithoutHostResponseSummaryInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutHostResponseSummaryInput, Prisma.UserUncheckedCreateWithoutHostResponseSummaryInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutHostResponseSummaryInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutHostResponseSummaryInput, Prisma.UserUncheckedUpdateWithoutHostResponseSummaryInput>
+}
+
+export type UserUpdateWithoutHostResponseSummaryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
+}
+
+export type UserUncheckedUpdateWithoutHostResponseSummaryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -3150,6 +3407,7 @@ export type UserCreateWithoutConversationParticipantsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3194,6 +3452,7 @@ export type UserUncheckedCreateWithoutConversationParticipantsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -3254,6 +3513,7 @@ export type UserUpdateWithoutConversationParticipantsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -3298,6 +3558,7 @@ export type UserUncheckedUpdateWithoutConversationParticipantsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -3342,6 +3603,7 @@ export type UserCreateWithoutMessagesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3386,6 +3648,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -3446,6 +3709,7 @@ export type UserUpdateWithoutMessagesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -3490,6 +3754,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -3534,6 +3799,7 @@ export type UserCreateWithoutPriceAlertsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3578,6 +3844,7 @@ export type UserUncheckedCreateWithoutPriceAlertsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -3638,6 +3905,7 @@ export type UserUpdateWithoutPriceAlertsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -3682,6 +3950,7 @@ export type UserUncheckedUpdateWithoutPriceAlertsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -3726,6 +3995,7 @@ export type UserCreateWithoutNotificationsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3770,6 +4040,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -3830,6 +4101,7 @@ export type UserUpdateWithoutNotificationsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -3874,6 +4146,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -3918,6 +4191,7 @@ export type UserCreateWithoutRoommmatePostsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -3962,6 +4236,7 @@ export type UserUncheckedCreateWithoutRoommmatePostsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -4022,6 +4297,7 @@ export type UserUpdateWithoutRoommmatePostsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -4066,6 +4342,7 @@ export type UserUncheckedUpdateWithoutRoommmatePostsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -4110,6 +4387,7 @@ export type UserCreateWithoutRoommateReportsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
@@ -4154,6 +4432,7 @@ export type UserUncheckedCreateWithoutRoommateReportsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
@@ -4214,6 +4493,7 @@ export type UserUpdateWithoutRoommateReportsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
@@ -4258,6 +4538,7 @@ export type UserUncheckedUpdateWithoutRoommateReportsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
@@ -4459,6 +4740,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   hostels?: boolean | Prisma.User$hostelsArgs<ExtArgs>
+  hostResponseSummary?: boolean | Prisma.User$hostResponseSummaryArgs<ExtArgs>
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
   payouts?: boolean | Prisma.User$payoutsArgs<ExtArgs>
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
@@ -4567,6 +4849,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   hostels?: boolean | Prisma.User$hostelsArgs<ExtArgs>
+  hostResponseSummary?: boolean | Prisma.User$hostResponseSummaryArgs<ExtArgs>
   bookings?: boolean | Prisma.User$bookingsArgs<ExtArgs>
   payouts?: boolean | Prisma.User$payoutsArgs<ExtArgs>
   reviews?: boolean | Prisma.User$reviewsArgs<ExtArgs>
@@ -4591,6 +4874,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     hostels: Prisma.$HostelPayload<ExtArgs>[]
+    hostResponseSummary: Prisma.$HostResponseSummaryPayload<ExtArgs> | null
     bookings: Prisma.$BookingPayload<ExtArgs>[]
     payouts: Prisma.$PayoutPayload<ExtArgs>[]
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
@@ -5029,6 +5313,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hostels<T extends Prisma.User$hostelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$hostelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HostelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hostResponseSummary<T extends Prisma.User$hostResponseSummaryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$hostResponseSummaryArgs<ExtArgs>>): Prisma.Prisma__HostResponseSummaryClient<runtime.Types.Result.GetResult<Prisma.$HostResponseSummaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   bookings<T extends Prisma.User$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payouts<T extends Prisma.User$payoutsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$payoutsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PayoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviews<T extends Prisma.User$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5577,6 +5862,25 @@ export type User$hostelsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.HostelScalarFieldEnum | Prisma.HostelScalarFieldEnum[]
+}
+
+/**
+ * User.hostResponseSummary
+ */
+export type User$hostResponseSummaryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HostResponseSummary
+   */
+  select?: Prisma.HostResponseSummarySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HostResponseSummary
+   */
+  omit?: Prisma.HostResponseSummaryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HostResponseSummaryInclude<ExtArgs> | null
+  where?: Prisma.HostResponseSummaryWhereInput
 }
 
 /**

@@ -388,9 +388,9 @@ The shape language is **soft**. Buttons are 8px radius (`{rounded.sm}`), propert
 ## Typography
 
 ### Font Family
-The system runs **Airbnb Cereal VF** for everything — display, body, navigation, captions, microcopy. Fallbacks walk `Circular, -apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif`. **Circular** is the historic in-house typeface still kept as the first non-variable fallback; system stacks back it up.
+**Inter** is used for headings and emphasized monetary values such as listing prices and booking totals. Next.js self-hosts the font. Body copy, navigation, captions, and form labels keep the existing system sans-serif stack.
 
-There is no separate display family. The variable font carries the entire scale.
+The font-family distinction is limited to those display roles. Active page titles and section headings follow the scale below, while compact listing cards use 14px titles and prices to preserve scanability.
 
 ### Hierarchy
 
@@ -416,12 +416,12 @@ There is no separate display family. The variable font carries the entire scale.
 | `{typography.nav-link}` | 16px | 600 | 1.25 | 0 | Top product-nav labels (Homes, Experiences, Services) |
 
 ### Principles
-Display weights stay modest. The homepage h1 at 28px / 700 is deliberately small — it tucks under the search bar so photography and the city-link grid carry visual hierarchy. The listing-detail h1 at 22px / 500 is even quieter; the listing photo banner does the work above it.
+Display weights stay modest. The search page title at 28px / 700 is deliberately small, keeping the interface focused on discovery. The listing-detail h1 at 22px / 500 is even quieter; the listing photo gallery carries the visual hierarchy.
 
 The single typographically loud moment in the entire system is the **rating display** (`{typography.rating-display}` — 64px / 700) on listing pages. That is the only place the system trusts type alone to carry hierarchy — rating numbers are a peak trust signal, so they get the loudest treatment.
 
 ### Note on Font Substitutes
-If Airbnb Cereal VF and Circular are unavailable, **Inter** is the closest open-source substitute. Adjust display headlines down by ~2% in line-height to match Cereal's slightly tighter cap height; otherwise the proportions transfer cleanly.
+Airbnb Cereal VF and Circular remain reference fonts, not project dependencies. Inter is the open-source approximation for headings and emphasized prices; the existing system sans-serif stack remains in place for body text and as a fallback.
 
 ## Layout
 

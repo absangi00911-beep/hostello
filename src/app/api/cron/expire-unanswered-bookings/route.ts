@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { runAfterResponse } from "@/lib/background";
 import { processRefund } from "@/lib/refunds";
 import { sendEmail } from "@/lib/email";
 import { bookingOwnerReminderEmail } from "@/lib/email-templates/booking";
@@ -211,16 +212,18 @@ export async function POST(req: NextRequest) {
           },
         });
         if (!booking) return;
-        void sendEmail(bookingStatusEmail({
-          studentName: booking.user.name,
-          studentEmail: booking.user.email,
-          hostelName: booking.hostel.name,
-          hostelSlug: "",
-          bookingId: booking.id,
-          status: "CANCELLED",
-          refundPending: true,
-        })).catch(() => undefined);
-        void createNotification({
+        void runAfterResponse("email.booking_expired", () =>
+          sendEmail(bookingStatusEmail({
+            studentName: booking.user.name,
+            studentEmail: booking.user.email,
+            hostelName: booking.hostel.name,
+            hostelSlug: "",
+            bookingId: booking.id,
+            status: "CANCELLED",
+            refundPending: true,
+          })),
+        );
+        await createNotification({
           userId: booking.userId,
           type: "BOOKING_CANCELLED",
           title: "Request expired — refund being checked",

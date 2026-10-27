@@ -45,6 +45,19 @@ describe("verifyUpstashRequest", () => {
     await expect(verifyUpstashRequest(request("{}"))).resolves.toBe(true);
   });
 
+  it("verifies a caller-supplied bounded raw body", async () => {
+    process.env.QSTASH_CURRENT_SIGNING_KEY = currentKey;
+    process.env.QSTASH_NEXT_SIGNING_KEY = nextKey;
+    const boundedBody = '{"eventId":"event_1"}';
+    const signedRequest = new NextRequest(url, {
+      method: "POST",
+      headers: { "upstash-signature": makeSignature(boundedBody, currentKey) },
+      body: "different body",
+    });
+
+    await expect(verifyUpstashRequest(signedRequest, { body: boundedBody })).resolves.toBe(true);
+  });
+
   it("rejects a signed request whose URL or raw body was changed", async () => {
     process.env.QSTASH_CURRENT_SIGNING_KEY = currentKey;
     process.env.QSTASH_NEXT_SIGNING_KEY = nextKey;

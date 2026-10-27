@@ -8,7 +8,6 @@ import { getAppUrl } from "@/lib/app-url";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { sendEmail } from "@/lib/email";
 import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
-import { createNotification } from "@/lib/notifications";
 import { PLANS } from "@/config/plans";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedText } from "@/lib/bounded-json";
@@ -261,25 +260,17 @@ async function handleSubscriptionPayment(
     });
     if (result.count === 0) return false;
     await tx.user.update({ where: { id: subscription.userId }, data: { plan: "PRO" } });
+    // Written in the same transaction, so the notice exists if and only if the plan was activated.
+    await tx.notification.create({
+      data: {
+        userId: subscription.userId,
+        type: "HOSTEL_APPROVED",
+        title: "Welcome to HostelLo Pro 🎉",
+        message: "Your Pro subscription is now active. Unlimited listings and featured placement are enabled.",
+      },
+    });
     return true;
   });
-
-  if (activated) {
-    createNotification({
-      userId: subscription.userId,
-      type: "HOSTEL_APPROVED",
-      title: "Welcome to HostelLo Pro 🎉",
-      message: "Your Pro subscription is now active. Unlimited listings and featured placement are enabled.",
-      logContext,
-    }).catch((err) => {
-      const summary = getSafeErrorSummary(err);
-      logOperationalEvent("error", "notification.dispatch_failed", {
-        notification_type: "HOSTEL_APPROVED",
-        error_name: summary.name,
-        ...(summary.code ? { error_code: summary.code } : {}),
-      }, logContext);
-    });
-  }
 
   if (activated) {
     logOperationalEvent("info", "subscription.payment_activated", {
@@ -427,21 +418,50 @@ async function processSafepayWebhook(event: SafepayEvent) {
 
     const wasCancelled = booking.status === "CANCELLED";
     const responseDueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const result = await db.booking.updateMany({
-      where: {
-        id: orderId,
-        paymentMethod: booking.paymentMethod,
-        paymentStatus: "PENDING",
-        status: booking.status,
-        transactionId: booking.transactionId,
-      },
-      data: {
-        paymentStatus: "PAID",
-        transactionId: tracker,
-        ...(!wasCancelled
-          ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
-          : {}),
-      },
+    // The in-app notifications are written in the same transaction as the PAID
+    // transition, so they exist if and only if the transition was applied. If
+    // the transaction fails, the booking stays unpaid and QStash retries the
+    // event. A cancelled booking gets no notifications (it needs a refund).
+    const notificationRows = wasCancelled
+      ? []
+      : [
+          {
+            userId: booking.hostel.owner.id,
+            type: "BOOKING_REQUEST" as const,
+            title: "New paid booking request",
+            message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
+            bookingId: booking.id,
+          },
+          {
+            userId: booking.userId,
+            type: "BOOKING_REQUEST" as const,
+            title: "Payment received — awaiting owner",
+            message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
+            bookingId: booking.id,
+            hostelId: booking.hostelId,
+          },
+        ];
+    const result = await db.$transaction(async (tx) => {
+      const updated = await tx.booking.updateMany({
+        where: {
+          id: orderId,
+          paymentMethod: booking.paymentMethod,
+          paymentStatus: "PENDING",
+          status: booking.status,
+          transactionId: booking.transactionId,
+        },
+        data: {
+          paymentStatus: "PAID",
+          transactionId: tracker,
+          ...(!wasCancelled
+            ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
+            : {}),
+        },
+      });
+      if (updated.count > 0 && notificationRows.length > 0) {
+        await tx.notification.createMany({ data: notificationRows });
+      }
+      return updated;
     });
 
     if (result.count === 0) {
@@ -504,22 +524,6 @@ async function processSafepayWebhook(event: SafepayEvent) {
       }, logContext);
     });
 
-    void createNotification({
-      userId: booking.hostel.owner.id,
-      type: "BOOKING_REQUEST",
-      title: "New paid booking request",
-      message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
-      bookingId: booking.id,
-    });
-    void createNotification({
-      userId: booking.userId,
-      type: "BOOKING_REQUEST",
-      title: "Payment received — awaiting owner",
-      message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
-      bookingId: booking.id,
-      hostelId: booking.hostelId,
-    });
-
     return NextResponse.json({ received: true });
   } catch (err) {
     const summary = getSafeErrorSummary(err);
@@ -533,15 +537,20 @@ async function processSafepayWebhook(event: SafepayEvent) {
 }
 
 async function processQueuedSafepayEvent(req: NextRequest) {
-  try {
-    await verifyUpstashRequest(req, { acceptBearerToken: false });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const boundedBody = await readBoundedText(req, 4 * 1024);
+  const boundedBody = req.body
+    ? await readBoundedText(req, 4 * 1024)
+    : { ok: true as const, text: "" };
   if (!boundedBody.ok) {
     return NextResponse.json({ error: boundedBody.error }, { status: boundedBody.status });
+  }
+
+  try {
+    await verifyUpstashRequest(req, {
+      acceptBearerToken: false,
+      body: boundedBody.text,
+    });
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let eventId: string;

@@ -13,6 +13,8 @@
  *   - Development: warns on missing optional variables
  */
 
+import { isProductionDeployment } from "@/lib/deployment-env";
+
 type EnvValidationRule = {
   /** Environment variable name */
   name: string;
@@ -26,7 +28,7 @@ type EnvValidationRule = {
  * Rules for environment variable validation.
  * Add entries here to enforce validation across the app.
  */
-const ENV_VALIDATION_RULES: EnvValidationRule[] = [
+export const ENV_VALIDATION_RULES: EnvValidationRule[] = [
   // -- Database & Auth ----------------------------------------------------
   {
     name: "DATABASE_URL",
@@ -189,6 +191,21 @@ const ENV_VALIDATION_RULES: EnvValidationRule[] = [
 ];
 
 /**
+ * Variables whose feature fails closed when missing (payouts return 503, SMS
+ * verification returns an error). They are reported as warnings in production
+ * rather than errors, so one missing key cannot take every endpoint down.
+ */
+const PRODUCTION_RECOMMENDED_ENV = [
+  {
+    name: "PAYOUT_DESTINATION_ENCRYPTION_KEY",
+    description: "Encryption key for payout bank-destination snapshots (payout creation fails without it)",
+  },
+  { name: "TWILIO_ACCOUNT_SID", description: "Twilio account SID (phone verification fails without it)" },
+  { name: "TWILIO_AUTH_TOKEN", description: "Twilio auth token (phone verification fails without it)" },
+  { name: "TWILIO_PHONE_NUMBER", description: "Twilio sender number (phone verification fails without it)" },
+] as const;
+
+/**
  * Validate environment variables at startup.
  * Throws an error if critical variables are missing in production.
  * Logs warnings in Preview and development when variables are missing.
@@ -199,13 +216,11 @@ export function validateEnvironment(): void {
   // Vercel Preview runs with NODE_ENV=production, but it must not require
   // production-only provider credentials to serve the rest of the app.
   // Keep local production-mode checks strict when VERCEL_ENV is unavailable.
-  const vercelEnvironment = process.env.VERCEL_ENV;
-  const isPreview = vercelEnvironment === "preview";
-  const isProduction =
-    vercelEnvironment === "production" ||
-    (vercelEnvironment === undefined && process.env.NODE_ENV === "production");
+  const isPreview = process.env.VERCEL_ENV === "preview";
+  const isProduction = isProductionDeployment();
   const errors: string[] = [];
   const warnings: string[] = [];
+  const productionWarnings: string[] = [];
 
   for (const rule of ENV_VALIDATION_RULES) {
     const isSet = process.env[rule.name] !== undefined && process.env[rule.name] !== "";
@@ -221,12 +236,45 @@ export function validateEnvironment(): void {
     }
   }
 
+  if (isProduction) {
+    // Safepay: an unset value would silently use the sandbox, so require an
+    // explicit choice. "sandbox" is allowed (pre-launch) but is called out.
+    const safepayEnvironment = process.env.NEXT_PUBLIC_SAFEPAY_ENV;
+    if (safepayEnvironment !== "production" && safepayEnvironment !== "sandbox") {
+      errors.push(
+        'NEXT_PUBLIC_SAFEPAY_ENV: must be "production" or "sandbox". ' +
+          "When unset the app silently uses the Safepay sandbox.",
+      );
+    } else if (safepayEnvironment === "sandbox") {
+      productionWarnings.push("NEXT_PUBLIC_SAFEPAY_ENV is \"sandbox\": payments will not move real money.");
+    }
+
+    // Resend: a placeholder or malformed key must not pass as configured.
+    const resendKey = process.env.RESEND_API_KEY?.trim();
+    if (resendKey && (resendKey === "re_placeholder" || !resendKey.startsWith("re_"))) {
+      errors.push("RESEND_API_KEY: must be a real Resend key (starts with re_), not a placeholder.");
+    }
+
+    // Features that fail closed at use time. A missing value should be visible
+    // at startup, but must not take the whole API down.
+    for (const rule of PRODUCTION_RECOMMENDED_ENV) {
+      if (!process.env[rule.name]) productionWarnings.push(`${rule.name}: ${rule.description}`);
+    }
+  }
+
   if (errors.length > 0) {
     const message =
       "❌ CRITICAL: Missing required environment variables in production:\n" +
       errors.map((e) => `  - ${e}`).join("\n") +
       "\n\nPlease set these variables before deploying to production.";
     throw new Error(message);
+  }
+
+  if (productionWarnings.length > 0) {
+    console.warn(
+      "⚠️  WARNING: Production configuration needs attention:\n" +
+        productionWarnings.map((w) => `  - ${w}`).join("\n"),
+    );
   }
 
   if (warnings.length > 0 && !isProduction) {

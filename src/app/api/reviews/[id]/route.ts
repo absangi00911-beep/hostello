@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
+import { runAfterResponse } from "@/lib/background";
 import { db } from "@/lib/db";
 import { indexSingleHostel } from "@/lib/typesense-sync";
 import { getSafeErrorSummary } from "@/lib/safe-error";
@@ -74,9 +75,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Review not found." }, { status: 404 });
     }
 
-    void indexSingleHostel(deleted.hostelId).catch((err) => {
-      console.warn("[DELETE /api/reviews/[id]] Typesense sync failed:", getSafeErrorSummary(err));
-    });
+    void runAfterResponse("search.index_hostel", () => indexSingleHostel(deleted.hostelId));
 
     return NextResponse.json({ message: "Review deleted." });
   } catch (err) {

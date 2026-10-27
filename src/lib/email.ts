@@ -2,6 +2,7 @@
 
 import { Resend } from "resend";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { isProductionDeployment } from "@/lib/deployment-env";
 export { escapeHtml } from "@hostello/shared";
 
 const FROM = process.env.EMAIL_FROM ?? "HostelLo <noreply@hostello.pk>";
@@ -28,10 +29,16 @@ interface SendEmailOptions {
  * Errors are caught and logged — a failed email never crashes the API route.
  */
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
-  // In development without a real API key, just log instead of sending.
-  // Set RESEND_API_KEY in .env.local to send real emails.
+  // Without a real API key, nothing can be sent. In development that is fine
+  // (set RESEND_API_KEY in .env.local to send real emails). In production it is
+  // a misconfiguration, and reporting success would hide that every password
+  // reset and booking email is being dropped.
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key || key === "re_placeholder" || !key.startsWith("re_")) {
+    if (isProductionDeployment()) {
+      console.error("[email] Resend is not configured in production; the message was not sent.");
+      return { success: false, error: "Email delivery is unavailable." };
+    }
     return { success: true, dev: true };
   }
 

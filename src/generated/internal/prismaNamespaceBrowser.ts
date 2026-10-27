@@ -71,6 +71,7 @@ export const ModelName = {
   PasswordResetToken: 'PasswordResetToken',
   Favorite: 'Favorite',
   Conversation: 'Conversation',
+  HostResponseSummary: 'HostResponseSummary',
   ConversationParticipant: 'ConversationParticipant',
   Message: 'Message',
   PriceAlert: 'PriceAlert',
@@ -451,6 +452,17 @@ export const ConversationScalarFieldEnum = {
 } as const
 
 export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const HostResponseSummaryScalarFieldEnum = {
+  hostId: 'hostId',
+  guestStartedThreadCount: 'guestStartedThreadCount',
+  repliedThreadCount: 'repliedThreadCount',
+  medianResponseSeconds: 'medianResponseSeconds',
+  calculatedAt: 'calculatedAt'
+} as const
+
+export type HostResponseSummaryScalarFieldEnum = (typeof HostResponseSummaryScalarFieldEnum)[keyof typeof HostResponseSummaryScalarFieldEnum]
 
 
 export const ConversationParticipantScalarFieldEnum = {

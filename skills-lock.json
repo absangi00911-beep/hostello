@@ -7,6 +7,12 @@
       "skillPath": "skills/api-and-interface-design/SKILL.md",
       "computedHash": "8bdbf1fca81bef9258d7e0d9726f933f25677ec8537792e084a3fb7c54acf2ba"
     },
+    "apple-design": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "skillPath": "skills/apple-design/SKILL.md",
+      "computedHash": "f3f1d2cbc8f3e79ccddff05f4e42d34d995f057fb30ff670e4edf8c87d568b69"
+    },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
@@ -125,7 +131,7 @@
       "source": "addyosmani/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/idea-refine/SKILL.md",
-      "computedHash": "9fc0ae5d8a074872a636d22f9c6fe71e041b86cddc9fe5af90ef654f5032ec5d"
+      "computedHash": "77739c4f6a29c0fad465a30bab9e862445a3f1b0f92808ffcd541fa02ed0637b"
     },
     "image-to-code": {
       "source": "Leonxlnx/taste-skill",
@@ -185,7 +191,7 @@
       "source": "addyosmani/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/performance-optimization/SKILL.md",
-      "computedHash": "c88cbe0824ce94b4bc2d2d43519dc717afc529db1672388c2a5c7d695faccb8c"
+      "computedHash": "a2cdba94ff8f898183b3d5af736272dc439826083723b17a88782e75d2351530"
     },
     "planning-and-task-breakdown": {
       "source": "addyosmani/agent-skills",
@@ -204,6 +210,12 @@
       "sourceType": "github",
       "skillPath": "skills/security-and-hardening/SKILL.md",
       "computedHash": "32a1243d6eb45fd342c1f4e9f9ee5f1651a1e9fdccb86dcbbbee5d6f455ed362"
+    },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "e6b2e317de75da97e9de18d842982994803f3a67a4a6d8154a82323dc3de8528"
     },
     "shipping-and-launch": {
       "source": "addyosmani/agent-skills",
@@ -233,7 +245,7 @@
       "source": "addyosmani/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/test-driven-development/SKILL.md",
-      "computedHash": "efb654aa37612ab1e7470e547b06a322c5e1837b6879525e32aa432d1281692b"
+      "computedHash": "e4725d435cbd6e94c1da1a39eff634f6592c7ac303a06c61532d5c399b1f75c3"
     },
     "using-agent-skills": {
       "source": "addyosmani/agent-skills",

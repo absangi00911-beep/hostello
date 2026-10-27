@@ -83,4 +83,37 @@ describe("POST /api/auth/signup", () => {
     });
     expect(mocks.verificationTokenCreate.mock.calls[0][0].data.token).not.toBe(rawToken);
   });
+
+  it("has stored the verification token by the time it responds", async () => {
+    let tokenStored = false;
+    mocks.verificationTokenCreate.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      tokenStored = true;
+      return {};
+    });
+
+    const response = await POST(new NextRequest("https://hostello.test/api/auth/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: USER.name, email: USER.email, password: "A-secure-password-123", role: USER.role }),
+    }));
+
+    expect(response.status).toBe(201);
+    expect(tokenStored).toBe(true);
+  });
+
+  it("still creates the account, and skips only the verification email, when the token cannot be stored", async () => {
+    mocks.verificationTokenCreate.mockRejectedValue(new Error("database unavailable"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await POST(new NextRequest("https://hostello.test/api/auth/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: USER.name, email: USER.email, password: "A-secure-password-123", role: USER.role }),
+    }));
+
+    expect(response.status).toBe(201);
+    expect(mocks.verificationEmail).not.toHaveBeenCalled();
+    expect(mocks.welcomeEmail).toHaveBeenCalled();
+  });
 });

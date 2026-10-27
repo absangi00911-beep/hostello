@@ -7,6 +7,8 @@ import { type NextRequest } from "next/server";
 interface VerifyOptions {
   /** Accept the shared CRON_SECRET Bearer credential as a fallback. */
   acceptBearerToken?: boolean;
+  /** Raw body text already read under a caller-specific byte limit. */
+  body?: string;
 }
 
 function hasValidBearerToken(request: NextRequest): boolean {
@@ -41,9 +43,10 @@ export async function verifyUpstashRequest(
         nextSigningKey,
         devMode: false,
       });
+      const body = options.body ?? await request.clone().text();
       const isValid = await receiver.verify({
         signature,
-        body: await request.clone().text(),
+        body,
         url: request.url,
         upstashRegion: request.headers.get("upstash-region") ?? undefined,
       });

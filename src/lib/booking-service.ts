@@ -2,7 +2,6 @@
 
 import { db } from "@/lib/db";
 import { calculateMonths } from "@/lib/utils";
-import { createNotification } from "@/lib/notifications";
 import type { BookingInput } from "@hostello/shared";
 
 export class BookingServiceError extends Error {
@@ -129,17 +128,10 @@ export async function createBooking(userId: string, input: BookingInput) {
       }
     });
 
-    // 4. Notify the owner
-    // Fire-and-forget: failure to notify shouldn't roll back the booking.
-    void createNotification({
-      userId: hostel.ownerId,
-      type: "BOOKING_REQUEST",
-      title: "New Booking Request",
-      message: `${booking.user.name} has requested a booking for ${hostel.name}.`,
-      bookingId: booking.id,
-      hostelId: hostel.id,
-    });
-
+    // The owner is deliberately not notified here. An unpaid booking is not
+    // visible to the owner and cannot be acted on; the payment webhook notifies
+    // the owner once payment is confirmed, which is also when the response
+    // window starts.
     return booking;
   });
 }
