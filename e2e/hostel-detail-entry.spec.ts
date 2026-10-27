@@ -224,6 +224,16 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   for (const width of [320, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(search).toBeVisible();
+    if (width === 768) {
+      const tabletGalleryBounds = await gallery.boundingBox();
+      expect(tabletGalleryBounds).not.toBeNull();
+      if (!tabletGalleryBounds) {
+        throw new Error("The narrow-tablet gallery must be measurable.");
+      }
+      expect(tabletGalleryBounds.height).toBeLessThanOrEqual(
+        tabletGalleryBounds.width * 0.42,
+      );
+    }
     const [viewportWidth, documentWidth] = await page.evaluate(() => [
       document.documentElement.clientWidth,
       document.documentElement.scrollWidth,
@@ -239,6 +249,12 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
     .locator(".hostel-detail-area span")
     .evaluate((element) => {
       element.textContent = "LongLocation".repeat(20);
+    });
+  await page
+    .locator(".hostel-room-info h3")
+    .first()
+    .evaluate((element) => {
+      element.textContent = "LongRoomName".repeat(20);
     });
   const documentWidth = await page.evaluate(
     () => ({
