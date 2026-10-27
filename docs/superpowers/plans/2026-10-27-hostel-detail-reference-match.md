@@ -57,6 +57,7 @@
 
 **Files:**
 - Modify: `src/app/globals.css` (hostel detail header, title/actions, gallery, overview, and reservation-card rules and breakpoints)
+- Modify: `src/app/hostels/[param]/page.tsx` (separate the summary/sidebar row from lower listing sections)
 - Modify: `e2e/hostel-detail-entry.spec.ts`
 
 **Interfaces:**

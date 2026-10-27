@@ -1564,20 +1564,20 @@ textarea {
 
 .hostel-detail-header-inner {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 360px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px) minmax(0, 1fr);
   gap: 24px;
-  min-height: 84px;
+  min-height: 72px;
   align-items: center;
 }
 
 .hostel-detail-destination-search {
   display: flex;
-  width: min(100%, 360px);
+  width: min(100%, 320px);
   min-width: 0;
   align-items: center;
   justify-self: center;
   gap: 8px;
-  padding: 5px 6px 5px 16px;
+  padding: 4px 5px 4px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: #fff;
@@ -1605,9 +1605,9 @@ textarea {
 
 .hostel-detail-destination-search button {
   display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
   place-items: center;
   border: 0;
   border-radius: 50%;
@@ -1624,8 +1624,13 @@ textarea {
   justify-self: end;
 }
 
+.hostel-detail-header-inner .browse-sign-in {
+  width: 34px;
+  height: 34px;
+}
+
 .hostel-detail-main {
-  padding: 26px 0 80px;
+  padding: 22px 0 72px;
   background: #fff;
 }
 
@@ -1634,7 +1639,7 @@ textarea {
 }
 
 .hostel-detail-intro {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .hostel-detail-title-row {
@@ -1648,7 +1653,7 @@ textarea {
   max-width: 100%;
   min-width: 0;
   margin: 0;
-  font-size: 1.375rem;
+  font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.18;
@@ -1660,12 +1665,12 @@ textarea {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
 .hostel-detail-actions button {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 36px;
   align-items: center;
   gap: 8px;
   padding: 6px 2px;
@@ -1673,7 +1678,7 @@ textarea {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -1691,13 +1696,13 @@ textarea {
 .hostel-detail-gallery {
   position: relative;
   display: grid;
-  height: clamp(300px, 35vw, 440px);
+  height: clamp(350px, 30vw, 440px);
   grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 20px;
+  gap: 5px;
+  margin-top: 14px;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-muted);
 }
 
@@ -1775,18 +1780,18 @@ textarea {
 
 .hostel-detail-show-photos {
   position: absolute;
-  right: 18px;
-  bottom: 18px;
+  right: 14px;
+  bottom: 14px;
   z-index: 1;
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 12px;
   border: 1px solid var(--ink);
-  border-radius: 8px;
+  border-radius: 6px;
   background: #fff;
   color: var(--ink);
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 650;
+  font-size: 0.76rem;
+  font-weight: 600;
 }
 
 .hostel-detail-show-photos:hover {
@@ -1810,10 +1815,22 @@ textarea {
 
 .hostel-detail-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(310px, 0.7fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.9fr);
+  grid-template-rows: auto 1fr;
   align-items: start;
-  gap: clamp(36px, 7vw, 100px);
-  margin-top: 30px;
+  column-gap: clamp(24px, 4vw, 48px);
+  row-gap: 22px;
+  margin-top: 22px;
+}
+
+.hostel-detail-overview-column {
+  min-width: 0;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.hostel-detail-overview-column .hostel-detail-summary {
+  gap: 14px;
 }
 
 .hostel-detail-summary {
@@ -1826,7 +1843,9 @@ textarea {
   display: grid;
   min-width: 0;
   align-content: start;
-  gap: 32px;
+  grid-column: 1;
+  grid-row: 2;
+  gap: 24px;
 }
 
 .hostel-detail-overview-section {
@@ -1836,13 +1855,13 @@ textarea {
 
 .hostel-detail-listing-summary {
   min-width: 0;
-  padding-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 
 .hostel-detail-listing-summary h2 {
-  margin: 0 0 8px;
-  font-size: 1.25rem;
+  margin: 0 0 6px;
+  font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.3;
@@ -1856,7 +1875,7 @@ textarea {
   gap: 8px;
   margin: 0;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .hostel-detail-area {
@@ -1865,7 +1884,7 @@ textarea {
   gap: 7px;
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
 }
 
 .hostel-detail-area svg {
@@ -1907,7 +1926,7 @@ textarea {
   align-items: center;
   gap: 8px;
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: 0.8rem;
 }
 
 .hostel-detail-rating svg {
@@ -1915,7 +1934,7 @@ textarea {
 }
 
 .hostel-detail-rating strong {
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -2754,22 +2773,24 @@ textarea {
 .hostel-booking-card {
   position: sticky;
   top: 24px;
-  padding: 22px;
+  grid-column: 2;
+  grid-row: 1;
+  padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
-  box-shadow: 0 3px 12px rgb(29 42 34 / 9%);
+  box-shadow: 0 2px 8px rgb(29 42 34 / 8%);
 }
 
 .hostel-booking-price {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
 }
 
 .hostel-booking-price strong {
   color: var(--ink);
-  font-size: 1.375rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.18;
@@ -2778,18 +2799,18 @@ textarea {
 
 .hostel-booking-form {
   display: grid;
-  gap: 12px;
+  gap: 9px;
 }
 
 .hostel-booking-form label {
   display: grid;
   min-width: 0;
-  gap: 5px;
+  gap: 4px;
 }
 
 .hostel-booking-form label > span {
   color: var(--ink);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 650;
 }
 
@@ -2797,13 +2818,13 @@ textarea {
 .hostel-booking-form input {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
-  padding: 8px 10px;
+  min-height: 40px;
+  padding: 7px 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
 }
 
 .hostel-booking-form select:focus-visible,
@@ -2837,13 +2858,13 @@ textarea {
 }
 
 .hostel-booking-submit {
-  min-height: 48px;
+  min-height: 44px;
   border: 0;
   border-radius: 8px;
   background: var(--brand);
   color: #fff;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 650;
 }
 
@@ -2861,7 +2882,7 @@ textarea {
 .hostel-booking-message {
   margin: 0;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   line-height: 1.5;
 }
 
@@ -2930,11 +2951,24 @@ textarea {
 @media (max-width: 900px) {
   .hostel-detail-layout {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
     gap: 28px;
+  }
+
+  .hostel-detail-overview-column {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .hostel-booking-card {
     position: static;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .hostel-detail-primary-column {
+    grid-column: 1;
+    grid-row: 3;
   }
 
   .hostel-host-layout {
@@ -3026,7 +3060,7 @@ textarea {
   }
 
   .hostel-detail-gallery {
-    height: 250px;
+    height: clamp(220px, 70vw, 280px);
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     margin-top: 14px;

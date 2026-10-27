@@ -163,6 +163,34 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   }
   expect(photoBounds.x).toBeCloseTo(galleryBounds.x, 0);
   expect(photoBounds.width).toBeGreaterThan(galleryBounds.width * 0.45);
+  expect(galleryBounds.height).toBeLessThanOrEqual(
+    galleryBounds.width * 0.42,
+  );
+  const titleRowBounds = await page
+    .locator(".hostel-detail-title-row")
+    .boundingBox();
+  expect(titleRowBounds).not.toBeNull();
+  if (!titleRowBounds) {
+    throw new Error("The listing title row must have measurable dimensions.");
+  }
+  expect(titleRowBounds.y + titleRowBounds.height).toBeLessThanOrEqual(
+    galleryBounds.y,
+  );
+
+  const overview = page.locator(".hostel-detail-summary");
+  const bookingCard = page.locator(".hostel-booking-card");
+  const roomSection = page.locator(".hostel-room-section");
+  const [overviewBounds, bookingBounds] = await Promise.all([
+    overview.boundingBox(),
+    bookingCard.boundingBox(),
+  ]);
+  expect(overviewBounds).not.toBeNull();
+  expect(bookingBounds).not.toBeNull();
+  if (!overviewBounds || !bookingBounds) {
+    throw new Error("Overview and booking card must have measurable dimensions.");
+  }
+  expect(Math.abs(overviewBounds.y - bookingBounds.y)).toBeLessThanOrEqual(16);
+  expect(bookingBounds.x).toBeGreaterThan(overviewBounds.x);
 
   const photoDialog = page.getByRole("dialog", {
     name: "Photos of Baloch Scholars Hostel",
@@ -177,6 +205,33 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   await expect(
     page.getByRole("searchbox", { name: "Search by city" }),
   ).toBeVisible();
+  const [mobileOverview, mobileBooking, mobileRoom] = await Promise.all([
+    overview.boundingBox(),
+    bookingCard.boundingBox(),
+    roomSection.boundingBox(),
+  ]);
+  expect(mobileOverview).not.toBeNull();
+  expect(mobileBooking).not.toBeNull();
+  expect(mobileRoom).not.toBeNull();
+  if (!mobileOverview || !mobileBooking || !mobileRoom) {
+    throw new Error("Overview, booking card, and rooms must be measurable on mobile.");
+  }
+  expect(mobileBooking.y).toBeGreaterThanOrEqual(
+    mobileOverview.y + mobileOverview.height,
+  );
+  expect(mobileBooking.y + mobileBooking.height).toBeLessThan(mobileRoom.y);
+
+  for (const width of [320, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(search).toBeVisible();
+    const [viewportWidth, documentWidth] = await page.evaluate(() => [
+      document.documentElement.clientWidth,
+      document.documentElement.scrollWidth,
+    ]);
+    expect(documentWidth).toBeLessThanOrEqual(viewportWidth);
+  }
+
+  await page.setViewportSize({ width: 375, height: 812 });
   await page.locator(".hostel-detail-title-row h1").evaluate((element) => {
     element.textContent = "LongHostelName".repeat(20);
   });

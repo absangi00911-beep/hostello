@@ -108,7 +108,7 @@ export default async function HostelDetailPage({
 
           <HostelDateSelectionProvider>
             <div className="hostel-detail-layout">
-              <div className="hostel-detail-primary-column">
+              <div className="hostel-detail-overview-column">
                 <HostelDetailOverview
                   area={hostel.area}
                   capacity={hostel.capacity}
@@ -120,6 +120,17 @@ export default async function HostelDetailPage({
                   rooms={hostel.rooms}
                   verified={hostel.verified}
                 />
+              </div>
+
+              <HostelBookingCard
+                hasCancellationPolicy={hostel.cancellationPolicy !== null}
+                hostelId={hostel.id}
+                maxStay={hostel.maxStay}
+                minStay={hostel.minStay}
+                rooms={hostel.rooms_rel}
+              />
+
+              <div className="hostel-detail-primary-column">
                 <HostelRoomSection rooms={hostel.rooms_rel} />
                 <HostelAmenitiesSection amenities={hostel.amenities} />
                 {hostel.rooms_rel.length > 0 && (
@@ -135,14 +146,6 @@ export default async function HostelDetailPage({
                   reviewCategoryRatings={hostel.reviewCategoryRatings}
                 />
               </div>
-
-              <HostelBookingCard
-                hasCancellationPolicy={hostel.cancellationPolicy !== null}
-                hostelId={hostel.id}
-                maxStay={hostel.maxStay}
-                minStay={hostel.minStay}
-                rooms={hostel.rooms_rel}
-              />
             </div>
           </HostelDateSelectionProvider>
           <HostelLocationSection
