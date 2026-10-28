@@ -33,11 +33,11 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 <!-- docs-check:begin -->
 | Fact | Value |
 |---|---:|
-| Page files (`src/app/**/page.tsx`) | 0 |
-| API route handler files | 71 |
-| Prisma models | 28 |
-| Prisma migrations | 30 |
-| Vitest test files | 100 |
+| Page files (`src/app/**/page.tsx`) | 5 |
+| API route handler files | 73 |
+| Prisma models | 29 |
+| Prisma migrations | 31 |
+| Vitest test files | 117 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
 <!-- docs-check:end -->
@@ -432,7 +432,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 
 | Area | Endpoints | Access |
 |---|---|---|
-| Sign-up and sign-in | `/api/auth/signup`, `/api/auth/[...nextauth]` (Auth.js: credentials, Google, session, sign-out) | Public |
+| Sign-up and sign-in | `/api/auth/signup`, `/api/auth/[...nextauth]` (Auth.js: credentials, Google, session, sign-out), `/api/auth/email-otp` (request a sign-in code), `/api/auth/email-otp/verify` (verify the code) | Public |
 | Email verification and password reset | `/api/auth/verify-email` (GET renders a confirmation form, POST consumes the token), `/api/auth/forgot-password`, `/api/auth/reset-password` | Public |
 | | `/api/auth/resend-verification` | Signed in |
 | Phone verification | `/api/auth/phone/request-otp`, `/api/auth/phone/verify-otp` | Signed in |
