@@ -43,9 +43,9 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Apply migrations to the verified Preview database
-        run: vercel env run --token="$VERCEL_TOKEN" -e preview -- npm run db:migrate:preview
+        run: npm run db:migrate:preview
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DATABASE_URL: ${{ secrets.HOSTELLO_PREVIEW_DATABASE_URL }}
           HOSTELLO_MIGRATION_TARGET: preview
           HOSTELLO_PREVIEW_DATABASE_HOST: ${{ vars.HOSTELLO_PREVIEW_DATABASE_HOST }}
           HOSTELLO_PREVIEW_DATABASE_NAME: ${{ vars.HOSTELLO_PREVIEW_DATABASE_NAME }}

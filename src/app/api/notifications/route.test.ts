@@ -21,11 +21,11 @@ vi.mock("@/lib/notifications", () => ({
 
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
-import { GET, PUT } from "@/app/api/notifications/route";
-import { auth } from "@/lib/auth/config";
-import { db } from "@/lib/db";
-import { getUnreadCount, markAllNotificationsAsRead } from "@/lib/notifications";
-import { rateLimit } from "@/lib/rate-limit";
+import { GET, PUT } from "../../../app/api/notifications/route";
+import { auth } from "../../../lib/auth/config";
+import { db } from "../../../lib/db";
+import { getUnreadCount, markAllNotificationsAsRead } from "../../../lib/notifications";
+import { rateLimit } from "../../../lib/rate-limit";
 
 describe("/api/notifications collection route", () => {
   beforeEach(() => {
