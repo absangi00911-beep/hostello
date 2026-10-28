@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html className={inter.variable} lang="en">
-      <body>
+      <body className="min-h-screen bg-canvas text-ink">
         <LoginDialogProvider
           googleEnabled={Boolean(
             process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,

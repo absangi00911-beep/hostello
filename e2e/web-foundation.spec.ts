@@ -229,3 +229,42 @@ test("home_explains_when_no_active_hostels_are_listed", async ({ page }) => {
     page.getByRole("status").getByText("No active hostel listings yet."),
   ).toBeVisible();
 });
+
+test("tailwind_foundation_preserves_global_body_styles", async ({ page }) => {
+  await page.goto("/");
+
+  const body = page.locator("body");
+  for (const [width, height] of [
+    [1440, 900],
+    [390, 844],
+  ]) {
+    await page.setViewportSize({ width, height });
+
+    await expect(body).toHaveClass(/min-h-screen/);
+    await expect(body).toHaveClass(/bg-canvas/);
+    await expect(body).toHaveClass(/text-ink/);
+    await expect(body).toHaveCSS("min-height", `${height}px`);
+
+    const bodyColors = await body.evaluate((element) => {
+      const probe = document.createElement("div");
+      probe.style.backgroundColor = "var(--canvas)";
+      probe.style.color = "var(--ink)";
+      document.body.append(probe);
+
+      const actual = getComputedStyle(element);
+      const expected = getComputedStyle(probe);
+      const colors = {
+        background: actual.backgroundColor,
+        expectedBackground: expected.backgroundColor,
+        color: actual.color,
+        expectedColor: expected.color,
+      };
+
+      probe.remove();
+      return colors;
+    });
+
+    expect(bodyColors.background).toBe(bodyColors.expectedBackground);
+    expect(bodyColors.color).toBe(bodyColors.expectedColor);
+  }
+});
