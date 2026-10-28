@@ -5,25 +5,9 @@ import {
   BrowseAccountActions,
 } from "@/components/auth/BrowseAccountActions";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
-import {
-  Banknote,
-  Compass,
-  Star,
-  UsersRound,
-} from "lucide-react";
+import { BrowseCategoryNav, type Category } from "./BrowseCategoryNav";
 
-export type Category = "all" | "women" | "top-rated" | "budget";
-
-const categories = [
-  { id: "all", label: "All stays", icon: Compass },
-  { id: "women", label: "Women-only", icon: UsersRound },
-  { id: "top-rated", label: "Top rated", icon: Star },
-  { id: "budget", label: "Under PKR 20k", icon: Banknote },
-] satisfies {
-  id: Category;
-  label: string;
-  icon: typeof Compass;
-}[];
+export type { Category } from "./BrowseCategoryNav";
 
 export function BrowseHeader({
   accountUser,
@@ -41,20 +25,10 @@ export function BrowseHeader({
           <span>hostello</span>
         </Link>
 
-        <nav className="browse-category-nav" aria-label="Browse categories">
-          {categories.map(({ id, label, icon: Icon }) => (
-            <button
-              aria-pressed={category === id}
-              className="browse-category"
-              key={id}
-              onClick={() => onSelectCategory(id)}
-              type="button"
-            >
-              <Icon aria-hidden="true" size={20} strokeWidth={1.7} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
+        <BrowseCategoryNav
+          category={category}
+          onSelectCategory={onSelectCategory}
+        />
 
         <BrowseAccountActions user={accountUser} />
       </div>

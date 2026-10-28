@@ -143,13 +143,14 @@ function HostelCard({
   return (
     <Link
       aria-label={`View details for ${hostel.name}`}
-      className="search-result-card"
+      className="search-result-card hostel-card-link"
       href={`/hostels/${hostel.id}`}
     >
       <div className="search-result-image">
         {image ? (
           <Image
             alt={hostel.name}
+            className="hostel-card-photo"
             fill
             loading={priority ? "eager" : "lazy"}
             sizes="(max-width: 720px) 90vw, (max-width: 1100px) 35vw, 25vw"

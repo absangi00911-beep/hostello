@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { MessagesInbox } from "@/components/messages/MessagesInbox";
+import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { auth } from "@/lib/auth/config";
 import { getSafeLoginCallbackUrl } from "@/lib/auth/safe-login-callback";
 
@@ -29,5 +30,12 @@ export default async function MessagesPage({
     notFound();
   }
 
-  return <MessagesInbox currentUserId={session.user.id} />;
+  return (
+    <>
+      <MessagesInbox currentUserId={session.user.id} />
+      {session.user.role === "STUDENT" && (
+        <MobileTabNavigation activeTab="messages" />
+      )}
+    </>
+  );
 }

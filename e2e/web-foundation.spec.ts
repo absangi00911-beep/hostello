@@ -59,12 +59,15 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   await expect(
     page.getByRole("searchbox", { name: "Destination" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Move-in date")).toBeVisible();
-  await expect(page.getByLabel("Guests")).toBeVisible();
+  const desktopSearch = page.locator(".browse-search-section > .browse-search");
+  await expect(desktopSearch.getByLabel("Move-in date")).toBeVisible();
+  await expect(desktopSearch.getByLabel("Guests")).toBeVisible();
   await expect(
-    page.getByText(
-      "Move-in date and guests aren't used to filter availability yet.",
-    ),
+    page
+      .locator(".browse-search-section > .browse-search-note")
+      .getByText(
+        "Move-in date and guests aren't used to filter availability yet.",
+      ),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Stays in Lahore" }),
@@ -115,8 +118,9 @@ test("destination_search_filters_hostels_without_claiming_date_or_guest_filters"
 }) => {
   await page.goto("/");
   await page.getByRole("searchbox", { name: "Destination" }).fill("Murree");
-  await page.getByLabel("Move-in date").fill("2026-11-01");
-  await page.getByLabel("Guests").selectOption("2");
+  const desktopSearch = page.locator(".browse-search-section > .browse-search");
+  await desktopSearch.getByLabel("Move-in date").fill("2026-11-01");
+  await desktopSearch.getByLabel("Guests").selectOption("2");
 
   const searchRequest = page.waitForRequest((request) =>
     request.url().includes("/api/hostels?"),
@@ -129,7 +133,7 @@ test("destination_search_filters_hostels_without_claiming_date_or_guest_filters"
   expect(searchParams.has("moveInDate")).toBe(false);
   expect(searchParams.has("guests")).toBe(false);
   await expect(
-    page.getByRole("heading", { name: "Stays in Murree" }),
+    page.getByRole("heading", { name: "Hostels in Murree" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Stays in Lahore" }),
@@ -151,11 +155,11 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
     .toBeGreaterThan(scrollBefore);
 
   for (const [width, expectedVisible] of [
-    [1440, 8.5],
-    [1024, 4.5],
-    [800, 4.5],
-    [390, 2.5],
-    [320, 2.5],
+    [1440, 7.2],
+    [1024, 4.2],
+    [800, 4.2],
+    [390, 2.2],
+    [320, 2.2],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     const visibleCount = await carousel.evaluate((element) => {
@@ -185,15 +189,17 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
   ).toBe(true);
 });
 
-test("hovering_a_hostel_card_does_not_animate_its_image", async ({ page }) => {
+test("hovering_a_hostel_card_brightens_its_image_without_zooming", async ({
+  page,
+}) => {
   await page.goto("/");
 
   const card = page.locator(".hostel-card").first();
   const image = card.locator(".hostel-card-photo");
   await card.hover();
 
+  await expect(image).toHaveCSS("filter", "brightness(0.9)");
   await expect(image).toHaveCSS("transform", "none");
-  await expect(image).toHaveCSS("transition-duration", "0s");
 });
 
 test("home_exposes_api_errors_instead_of_empty_success_content", async ({
@@ -228,4 +234,43 @@ test("home_explains_when_no_active_hostels_are_listed", async ({ page }) => {
   await expect(
     page.getByRole("status").getByText("No active hostel listings yet."),
   ).toBeVisible();
+});
+
+test("tailwind_foundation_preserves_global_body_styles", async ({ page }) => {
+  await page.goto("/");
+
+  const body = page.locator("body");
+  for (const [width, height] of [
+    [1440, 900],
+    [390, 844],
+  ]) {
+    await page.setViewportSize({ width, height });
+
+    await expect(body).toHaveClass(/min-h-screen/);
+    await expect(body).toHaveClass(/bg-canvas/);
+    await expect(body).toHaveClass(/text-ink/);
+    await expect(body).toHaveCSS("min-height", `${height}px`);
+
+    const bodyColors = await body.evaluate((element) => {
+      const probe = document.createElement("div");
+      probe.style.backgroundColor = "var(--canvas)";
+      probe.style.color = "var(--ink)";
+      document.body.append(probe);
+
+      const actual = getComputedStyle(element);
+      const expected = getComputedStyle(probe);
+      const colors = {
+        background: actual.backgroundColor,
+        expectedBackground: expected.backgroundColor,
+        color: actual.color,
+        expectedColor: expected.color,
+      };
+
+      probe.remove();
+      return colors;
+    });
+
+    expect(bodyColors.background).toBe(bodyColors.expectedBackground);
+    expect(bodyColors.color).toBe(bodyColors.expectedColor);
+  }
 });
