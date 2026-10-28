@@ -140,7 +140,13 @@ for (const f of mdFiles) {
   for (const m of t.matchAll(/\]\(([^)\s]+)\)/g)) {
     const target = m[1];
     if (/^(https?:|mailto:|#)/.test(target)) continue;
-    const path = resolve(dirname(join(ROOT, f)), target.split("#")[0]);
+    let decodedTarget;
+    try {
+      decodedTarget = decodeURIComponent(target.split("#")[0]);
+    } catch {
+      decodedTarget = target.split("#")[0];
+    }
+    const path = resolve(dirname(join(ROOT, f)), decodedTarget);
     if (!existsSync(path)) problems.push(`Broken link in ${f}: ${target}`);
   }
 }
