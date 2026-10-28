@@ -4,13 +4,20 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { BrowseHeader, type Category } from "./BrowseHeader";
+import { BrowseCategoryNav } from "./BrowseCategoryNav";
 import { HostelSearchBar } from "./HostelSearchBar";
 import { HostelRow, type HostelListing } from "./HostelRow";
+import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 
 interface HostelSearchResponse {
   data: HostelListing[];
   total: number;
   error?: string;
+}
+
+interface FavoritePage {
+  data: { slug: string }[];
+  hasMore: boolean;
 }
 
 function readErrorMessage(value: unknown): string | undefined {
@@ -30,6 +37,8 @@ function isHostelListing(value: unknown): value is HostelListing {
     value !== null &&
     "id" in value &&
     typeof value.id === "string" &&
+    "slug" in value &&
+    typeof value.slug === "string" &&
     "name" in value &&
     typeof value.name === "string" &&
     "city" in value &&
@@ -47,6 +56,24 @@ function isHostelListing(value: unknown): value is HostelListing {
     typeof value.rating === "number" &&
     "reviewCount" in value &&
     typeof value.reviewCount === "number"
+  );
+}
+
+function isFavoritePage(value: unknown): value is FavoritePage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "data" in value &&
+    Array.isArray(value.data) &&
+    value.data.every(
+      (favorite: unknown) =>
+        typeof favorite === "object" &&
+        favorite !== null &&
+        "slug" in favorite &&
+        typeof favorite.slug === "string",
+    ) &&
+    "hasMore" in value &&
+    typeof value.hasMore === "boolean"
   );
 }
 
@@ -69,16 +96,58 @@ function isHostelSearchResponse(value: unknown): value is HostelSearchResponse {
   );
 }
 
+export async function fetchSavedHostelSlugs(
+  signal: AbortSignal,
+): Promise<Set<string>> {
+  const slugs = new Set<string>();
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `/api/favorites?page=${page}&limit=50`,
+      { signal },
+    );
+    const result: unknown = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        readErrorMessage(result) ?? "Could not load your saved hostels.",
+      );
+    }
+    if (!isFavoritePage(result) || (result.hasMore && result.data.length === 0)) {
+      throw new Error("Could not load your saved hostels.");
+    }
+
+    for (const favorite of result.data) {
+      slugs.add(favorite.slug);
+    }
+    hasMore = result.hasMore;
+    page += 1;
+  }
+
+  return slugs;
+}
+
 export default function ProductHome({
   accountUser,
 }: {
   accountUser: BrowseAccountUser | null;
 }) {
   const router = useRouter();
+  const showsStudentNavigation =
+    !accountUser ||
+    accountUser.role === "STUDENT";
   const [category, setCategory] = useState<Category>("all");
   const [hostels, setHostels] = useState<HostelListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [savedSlugs, setSavedSlugs] = useState<Set<string>>(new Set());
+  const [favoriteStateReady, setFavoriteStateReady] = useState(
+    accountUser?.role !== "STUDENT",
+  );
+  const [favoriteError, setFavoriteError] = useState<string | null>(null);
+  const [favoriteReload, setFavoriteReload] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -128,11 +197,60 @@ export default function ProductHome({
     return () => controller.abort();
   }, [category]);
 
+  useEffect(() => {
+    if (accountUser?.role !== "STUDENT") {
+      setFavoriteStateReady(true);
+      setFavoriteError(null);
+      setSavedSlugs(new Set());
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadFavorites() {
+      setFavoriteStateReady(false);
+      setFavoriteError(null);
+
+      try {
+        const slugs = await fetchSavedHostelSlugs(controller.signal);
+        if (!controller.signal.aborted) {
+          setSavedSlugs(slugs);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setFavoriteError(
+          error instanceof Error
+            ? error.message
+            : "Could not load your saved hostels.",
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setFavoriteStateReady(true);
+        }
+      }
+    }
+
+    void loadFavorites();
+    return () => controller.abort();
+  }, [accountUser?.role, favoriteReload]);
+
   function openSearch(destination: string) {
     const query = destination
       ? `?${new URLSearchParams({ city: destination })}`
       : "";
     router.push(`/search${query}`);
+  }
+
+  function updateFavorite(slug: string, saved: boolean) {
+    setSavedSlugs((current) => {
+      const next = new Set(current);
+      if (saved) {
+        next.add(slug);
+      } else {
+        next.delete(slug);
+      }
+      return next;
+    });
   }
 
   const hostelsByCity = new Map<string, HostelListing[]>();
@@ -143,7 +261,10 @@ export default function ProductHome({
   }
 
   return (
-    <div className="browse-home">
+    <div
+      className="browse-home"
+      data-account-role={accountUser?.role ?? "GUEST"}
+    >
       <BrowseHeader
         accountUser={accountUser}
         category={category}
@@ -157,6 +278,13 @@ export default function ProductHome({
           </h1>
 
           <HostelSearchBar onSearch={openSearch} />
+          {showsStudentNavigation && (
+            <BrowseCategoryNav
+              category={category}
+              className="browse-mobile-category-nav"
+              onSelectCategory={setCategory}
+            />
+          )}
 
           <section className="browse-listings" aria-label="Hostel listings">
             {isLoading && (
@@ -169,6 +297,17 @@ export default function ProductHome({
                 {searchError}
               </p>
             )}
+            {favoriteError && accountUser?.role === "STUDENT" && (
+              <p className="browse-favorite-load-error" role="alert">
+                {favoriteError}{" "}
+                <button
+                  onClick={() => setFavoriteReload((current) => current + 1)}
+                  type="button"
+                >
+                  Try again
+                </button>
+              </p>
+            )}
             {!isLoading && !searchError && hostelsByCity.size === 0 && (
               <p className="browse-state" role="status">
                 No active hostel listings yet.
@@ -178,15 +317,23 @@ export default function ProductHome({
               !searchError &&
               Array.from(hostelsByCity, ([city, cityHostels], index) => (
                 <HostelRow
+                  accountRole={accountUser?.role ?? null}
                   city={city}
+                  favoriteError={favoriteError}
+                  favoriteStateReady={favoriteStateReady}
                   hostels={cityHostels}
                   isAboveFold={index < 2}
                   key={city}
+                  onFavoriteChange={updateFavorite}
+                  savedSlugs={savedSlugs}
                 />
               ))}
           </section>
         </div>
       </main>
+      {showsStudentNavigation && (
+        <MobileTabNavigation activeTab="explore" />
+      )}
     </div>
   );
 }
