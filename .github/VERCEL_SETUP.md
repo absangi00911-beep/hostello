@@ -25,9 +25,11 @@ General → Team ID**, or run `vercel whoami --scope` from the project.
 The Hostello Vercel project ID. Find it in **Project → Settings → General →
 Project ID**, or run `vercel project ls`.
 
-The production workflow reads `DATABASE_URL` from the Vercel Production
-environment. Do not add the production database URL as a GitHub Actions
-secret.
+Add `HOSTELLO_PRODUCTION_DATABASE_URL` as a secret on the GitHub Actions
+`production` environment. The production workflow uses it only for the
+migration step, after the environment's required reviewers approve the job.
+Keep the database URL sensitive; Vercel CLI cannot expose Sensitive
+environment values to `vercel env run`.
 
 ## Deployment flow
 
@@ -40,7 +42,8 @@ Pull request to main
 Push to main
   ├─ CI runs Web and Shared package checks
   └─ Production workflow runs its Web quality gate
-       └─ Pull Production environment → apply database migrations
+       └─ Approve production environment → pull Vercel Production environment
+            → apply database migrations from the GitHub environment secret
             → build for production → deploy to Vercel
 ```
 
@@ -49,8 +52,10 @@ Push to main
   workflow posts a deployment URL as a pull-request comment.
 - Production deployment is defined in
   [workflows/production.yml](./workflows/production.yml). It reruns the Web
-  type-check, tests, and lint before migrating and deploying. The production
-  migration happens before the build and deployment.
+  type-check, tests, and lint before migrating and deploying. After the
+  production environment approval, the migration uses
+  `HOSTELLO_PRODUCTION_DATABASE_URL` from that GitHub environment. It runs
+  before the build and deployment.
 - Vercel uses `node scripts/vercel-build.mjs` as its build command. It runs
   `npm run build` (Prisma client generation and `next build`) and does not
   apply database migrations.
