@@ -61,16 +61,20 @@ export default async function HostelDetailPage({
   );
 
   return (
-    <div className="browse-home hostel-detail-page">
-      <header className="browse-header hostel-detail-header">
-        <div className="browse-shell hostel-detail-header-inner">
-          <Link className="browse-brand" href="/" aria-label="hostello home">
+    <div className="hostel-detail-page min-h-dvh bg-white text-ink">
+      <header className="browse-header hostel-detail-header border-b border-line bg-white">
+        <div className="hostel-detail-header-inner mx-auto grid min-h-20 w-[min(1920px,calc(100%-64px))] grid-cols-[minmax(0,1fr)_minmax(220px,320px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:960px)]:min-h-0 [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:960px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:960px)]:gap-y-[10px] [@media(max-width:960px)]:py-3 [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)] [&>.browse-account-actions]:justify-self-end [&_.browse-account-trigger]:px-2 [&_.browse-account-trigger]:py-1 [&_.browse-account-trigger]:pl-1 [&_.browse-sign-in]:size-[34px]">
+          <Link
+            className="browse-brand inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:960px)]:col-start-1 [@media(max-width:960px)]:row-start-1"
+            href="/"
+            aria-label="hostello home"
+          >
             <span>hostello</span>
           </Link>
           <form
             action="/search"
             aria-label="Search for hostels by destination"
-            className="hostel-detail-destination-search"
+            className="hostel-detail-destination-search flex min-w-0 w-[min(100%,320px)] items-center justify-self-center gap-2 rounded-full border border-line bg-white py-1 pr-[5px] pl-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:outline-offset-2 [@media(max-width:960px)]:col-span-full [@media(max-width:960px)]:row-start-2 [@media(max-width:960px)]:w-[min(100%,480px)]"
             method="get"
             role="search"
           >
@@ -80,9 +84,14 @@ export default async function HostelDetailPage({
               name="city"
               placeholder="Search destinations"
               required
+              className="min-w-0 flex-1 border-0 bg-transparent py-2 text-inherit focus:outline-none"
               type="search"
             />
-            <button aria-label="Search hostels" type="submit">
+            <button
+              aria-label="Search hostels"
+              className="grid size-[34px] shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-brand text-white hover:bg-brand-dark"
+              type="submit"
+            >
               <Search aria-hidden="true" size={18} />
             </button>
           </form>
@@ -100,8 +109,8 @@ export default async function HostelDetailPage({
         </div>
       </header>
 
-      <main className="hostel-detail-main">
-        <div className="browse-shell hostel-detail-shell">
+      <main className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-[18px]">
+        <div className="hostel-detail-shell mx-auto w-[min(1120px,calc(100%-64px))] [@media(max-width:960px)]:w-[min(100%-32px,1120px)] [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)]">
           <HostelDetailGallery
             initiallySaved={isSaved}
             name={hostel.name}
@@ -110,8 +119,8 @@ export default async function HostelDetailPage({
           />
 
           <HostelDateSelectionProvider>
-            <div className="hostel-detail-layout">
-              <div className="hostel-detail-overview-column">
+            <div className="hostel-detail-layout mt-[22px] grid min-w-0 grid-cols-[minmax(0,1.8fr)_minmax(320px,0.9fr)] grid-rows-[auto_1fr] items-start gap-y-[22px] [column-gap:clamp(24px,4vw,48px)] [@media(max-width:900px)]:grid-cols-1 [@media(max-width:900px)]:grid-rows-[auto_auto_1fr] [@media(max-width:900px)]:gap-7 [@media(max-width:720px)]:mt-6">
+              <div className="hostel-detail-overview-column col-start-1 row-start-1 min-w-0">
                 <HostelDetailOverview
                   area={hostel.area}
                   capacity={hostel.capacity}
@@ -133,7 +142,7 @@ export default async function HostelDetailPage({
                 rooms={hostel.rooms_rel}
               />
 
-              <div className="hostel-detail-primary-column">
+              <div className="hostel-detail-primary-column col-start-1 row-start-2 grid min-w-0 content-start gap-6 [@media(max-width:900px)]:row-start-3">
                 <HostelRoomSection rooms={hostel.rooms_rel} />
                 <HostelAmenitiesSection amenities={hostel.amenities} />
                 {hostel.rooms_rel.length > 0 && (

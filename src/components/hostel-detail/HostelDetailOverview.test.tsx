@@ -21,6 +21,9 @@ describe("HostelDetailOverview", () => {
       <HostelDetailOverview {...baseProps} />,
     );
 
+    expect(markup).toContain("grid min-w-0 gap-[14px]");
+    expect(markup).toContain("border-t border-line pt-[14px]");
+    expect(markup).toContain("flex flex-wrap items-center gap-[18px]");
     expect(markup).toContain("Men’s hostel in Quetta");
     expect(markup).toContain("Sariab Road");
     expect(markup).toContain("Up to 60 residents");
@@ -44,6 +47,8 @@ describe("HostelDetailOverview", () => {
       />,
     );
 
+    expect(markup).toContain("About this hostel");
+    expect(markup).toContain("max-w-[68ch]");
     expect(markup).toContain("New listing");
     expect(markup).not.toContain("4.8");
     expect(markup).not.toContain("Verified hostel");
