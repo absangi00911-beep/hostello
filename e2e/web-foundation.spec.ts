@@ -53,6 +53,8 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   await page.goto("/");
 
   await expect(page.getByRole("link", { name: "HostelLo home" })).toBeVisible();
+  await expect(page.locator("header")).toHaveClass(/border-b/);
+  await expect(page.locator("header > div")).toHaveClass(/min-h-20/);
   await expect(
     page.getByRole("navigation", { name: "Browse categories" }),
   ).toBeVisible();

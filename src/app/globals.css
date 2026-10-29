@@ -961,13 +961,6 @@ textarea {
   background: #fff;
 }
 
-.browse-header-inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  min-height: 80px;
-}
-
 .browse-brand {
   display: inline-flex;
   width: fit-content;
@@ -1022,152 +1015,11 @@ textarea {
   animation: browse-category-indicator 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.browse-account-actions {
-  display: flex;
-  align-items: center;
-  justify-self: end;
-  gap: 16px;
-}
-
-.browse-host-link {
-  font-size: 0.82rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.browse-host-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.browse-sign-in {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--ink);
-  transition:
-    box-shadow 160ms ease,
-    background-color 160ms ease;
-}
-
-.browse-sign-in:hover {
-  background: var(--surface-muted);
-  box-shadow: 0 2px 5px rgb(29 42 34 / 12%);
-}
-
-.browse-account-trigger {
-  display: inline-flex;
-  max-width: 220px;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px 5px 6px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  cursor: pointer;
-  transition:
-    box-shadow 160ms ease,
-    background-color 160ms ease;
-}
-
-.browse-account-trigger:hover,
-.browse-account-trigger[data-state="open"] {
-  background: var(--surface-muted);
-  box-shadow: 0 2px 5px rgb(29 42 34 / 12%);
-}
-
-.browse-account-avatar {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--brand);
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.browse-account-avatar img,
 .messages-avatar img {
   width: 100%;
   height: 100%;
   border-radius: inherit;
   object-fit: cover;
-}
-
-.browse-account-name {
-  overflow: hidden;
-  max-width: 120px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.browse-account-menu {
-  z-index: 1100;
-  min-width: 220px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgb(29 42 34 / 14%);
-  color: var(--ink);
-}
-
-.browse-account-menu-name,
-.browse-account-menu-email {
-  overflow: hidden;
-  padding: 7px 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.browse-account-menu-name {
-  font-size: 0.9rem;
-  font-weight: 650;
-}
-
-.browse-account-menu-email {
-  padding-top: 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.browse-account-menu-separator {
-  height: 1px;
-  margin: 5px 0;
-  background: var(--line);
-}
-
-.browse-account-menu-item {
-  padding: 9px;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 0.86rem;
-  outline: none;
-}
-
-.browse-account-menu-item:hover,
-.browse-account-menu-item:focus-visible {
-  background: var(--surface-muted);
-}
-
-.browse-account-menu-item[data-disabled] {
-  cursor: wait;
-  opacity: 0.6;
-}
-
-.browse-account-menu-error {
-  margin: 5px 9px;
-  color: #a12622;
-  font-size: 0.78rem;
 }
 
 .browse-main {
@@ -1849,10 +1701,6 @@ textarea {
 }
 
 @media (max-width: 960px) {
-  .browse-header-inner {
-    grid-template-columns: minmax(120px, 1fr) auto minmax(140px, 1fr);
-  }
-
   .browse-category-nav {
     height: 80px;
     justify-content: center;
@@ -1977,17 +1825,8 @@ textarea {
     padding: 20px;
   }
 
-  .browse-home[data-account-role="GUEST"] .browse-header,
-  .browse-home[data-account-role="STUDENT"] .browse-header {
-    display: none;
-  }
-
   .browse-shell {
     width: min(100% - 40px, 600px);
-  }
-
-  .browse-header-inner {
-    padding-top: 8px;
   }
 
   .browse-category-nav {
@@ -1998,10 +1837,6 @@ textarea {
   }
 
   .browse-category-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .browse-account-name {
     display: none;
   }
 
@@ -2195,10 +2030,6 @@ textarea {
     width: calc(100% - 40px);
   }
 
-  .browse-header-inner {
-    min-height: 68px;
-  }
-
   .browse-category-nav {
     height: 80px;
     gap: 17px;
@@ -2209,18 +2040,6 @@ textarea {
     font-size: 0.7rem;
   }
 
-  .browse-host-link {
-    font-size: 0.75rem;
-  }
-
-  .browse-account-actions {
-    gap: 9px;
-  }
-
-  .browse-sign-in {
-    width: 36px;
-    height: 36px;
-  }
 }
 
 .login-dialog-overlay {
