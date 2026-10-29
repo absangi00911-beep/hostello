@@ -276,3 +276,33 @@ test("tailwind_foundation_preserves_global_body_styles", async ({ page }) => {
     expect(bodyColors.color).toBe(bodyColors.expectedColor);
   }
 });
+
+test("login_dialog_uses_tailwind_styles_and_fits_desktop_and_mobile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/login?error=expired-token");
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveClass(/fixed/);
+  await expect(dialog).toHaveCSS("position", "fixed");
+  await expect(dialog).toHaveCSS("border-radius", "20px");
+  const emailInput = page.getByLabel("Email");
+  await expect(emailInput).toBeFocused();
+  await expect(page.getByRole("alert")).toHaveClass(/bg-surface-muted/);
+  await expect(dialog.locator('button[type="submit"]')).toHaveCSS(
+    "min-height",
+    "50px",
+  );
+  await emailInput.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Continue" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(emailInput).toBeFocused();
+  await expect(emailInput).toHaveCSS("border-color", "rgb(37, 99, 235)");
+  await expect(emailInput).toHaveCSS("outline-color", "rgb(37, 99, 235)");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(dialog).toHaveCSS("width", "358px");
+  await expect(dialog).toHaveCSS("padding", "30px 22px 24px");
+});
