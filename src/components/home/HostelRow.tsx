@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Heart, Star } from "lucide-react";
 import { useRef, useState } from "react";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
+import { hostelCardImageClassName } from "@/components/hostel-card-styles";
 
 export interface HostelListing {
   id: string;
@@ -19,6 +20,9 @@ export interface HostelListing {
   rating: number;
   reviewCount: number;
 }
+
+const favoriteButtonClassName =
+  "hostel-favorite-button absolute top-[7px] right-[7px] z-[2] grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent brightness-[0.95] no-underline transition-[transform,color,background-color] duration-[160ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] active:scale-[0.92] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! motion-reduce:hover:transform-none! motion-reduce:active:transform-none!";
 
 function readErrorMessage(value: unknown): string | undefined {
   if (
@@ -66,7 +70,7 @@ function HostelFavoriteControl({
     return (
       <LoginDialogTrigger
         ariaLabel={`Sign in to save ${hostel.name} to Wishlists`}
-        className="hostel-favorite-button"
+        className={favoriteButtonClassName}
       >
         <Heart aria-hidden="true" fill="currentColor" size={21} />
       </LoginDialogTrigger>
@@ -123,7 +127,7 @@ function HostelFavoriteControl({
             : `Save ${hostel.name} to Wishlists`
         }
         aria-pressed={isSaved}
-        className="hostel-favorite-button"
+        className={favoriteButtonClassName}
         disabled={isSaving || !favoriteStateReady || Boolean(favoriteError)}
         onClick={() => void toggleFavorite()}
         type="button"
@@ -136,14 +140,18 @@ function HostelFavoriteControl({
       </button>
       {message && (
         <p
-          className="hostel-favorite-feedback"
+          className={`hostel-favorite-feedback mt-2 mb-0 text-[0.78rem] leading-[1.4] ${
+            isError ? "text-[#a12622]" : "text-muted"
+          }`}
           role={isError ? "alert" : "status"}
         >
           {message}
           {requiresSignIn && (
             <>
               {" "}
-              <LoginDialogTrigger>Sign in</LoginDialogTrigger>
+              <LoginDialogTrigger className="focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]!">
+                Sign in
+              </LoginDialogTrigger>
             </>
           )}
         </p>
@@ -211,7 +219,7 @@ export function HostelRow({
       </div>
 
       <div
-        className="hostel-carousel"
+        className="hostel-carousel grid grid-flow-col auto-cols-[calc(13.986%_-_13.71px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.096%_-_11.57px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(46.512%_-_11.16px)] [@media(max-width:720px)]:gap-3"
         ref={carouselRef}
         role="region"
         aria-label={`Stays in ${city}`}
@@ -221,17 +229,20 @@ export function HostelRow({
           const image = hostel.coverImage || hostel.images[0];
 
           return (
-            <article className="hostel-card" key={hostel.id}>
+            <article
+              className="hostel-card relative min-w-0 snap-start overflow-visible border-0 rounded-none bg-transparent"
+              key={hostel.id}
+            >
               <Link
                 aria-label={`View details for ${hostel.name}`}
-                className="hostel-card-link"
+                className="hostel-card-link group block min-w-0 rounded-[14px] text-inherit transition-transform duration-[160ms] active:scale-[0.99] motion-reduce:active:transform-none!"
                 href={`/hostels/${hostel.id}`}
               >
-                <div className="hostel-card-image">
+                <div className="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[14px] bg-brand-soft">
                   {image ? (
                     <Image
                       alt={hostel.name}
-                      className="hostel-card-photo"
+                      className={hostelCardImageClassName}
                       fill
                       loading={isAboveFold && index < 10 ? "eager" : "lazy"}
                       sizes="(max-width: 720px) 40vw, (max-width: 1100px) 23vw, 12vw"
@@ -239,20 +250,27 @@ export function HostelRow({
                     />
                   ) : (
                     <div
-                      className="hostel-image-fallback"
+                      className="hostel-image-fallback h-full w-full bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73/16%)),var(--brand-soft)]"
                       role="img"
                       aria-label={`No photo available for ${hostel.name}`}
                     />
                   )}
                 </div>
-                <div className="hostel-card-details">
-                  <h3 title={hostel.name}>{hostel.name}</h3>
-                  <p className="hostel-card-price">
+                <div className="hostel-card-details px-[2px] pt-2 pb-1 [@media(max-width:720px)]:px-0">
+                  <h3
+                    className="m-0 mb-[3px] overflow-hidden text-[0.875rem] font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.82rem]"
+                    title={hostel.name}
+                  >
+                    {hostel.name}
+                  </h3>
+                  <p className="hostel-card-price m-0 mb-[5px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.73rem] [font-family:var(--font-inter),_sans-serif]">
                     PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
-                    <span> / month</span>
+                    <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                      {" / month"}
+                    </span>
                   </p>
-                  <div className="hostel-card-meta">
-                    <span className="hostel-card-area">
+                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                    <span className="hostel-card-area inline-flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {hostel.area || hostel.city}
                     </span>
                     <span
@@ -261,13 +279,14 @@ export function HostelRow({
                           ? `Rated ${hostel.rating.toFixed(1)} out of 5`
                           : "No ratings yet"
                       }
-                      className="hostel-card-rating"
+                      className="hostel-card-rating inline-flex min-w-0 flex-[0_0_auto] items-center gap-1 font-semibold text-ink"
                       role="img"
                     >
                       {hostel.reviewCount > 0 ? (
                         <>
                           <Star
                             aria-hidden="true"
+                            className="text-[#a66a18]"
                             size={14}
                             fill="currentColor"
                           />

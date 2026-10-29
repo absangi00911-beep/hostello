@@ -51,7 +51,6 @@ h3,
 h4,
 h5,
 h6,
-.hostel-card-price,
 .hostel-booking-price strong,
 .hostel-booking-total strong {
   font-family: var(--font-inter), sans-serif;
@@ -618,118 +617,6 @@ textarea {
   color: var(--muted);
 }
 
-.hostel-carousel {
-  --hostel-card-gap: 12px;
-  display: grid;
-  grid-auto-columns: calc(11.7647% - 10.59px);
-  grid-auto-flow: column;
-  gap: var(--hostel-card-gap);
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  padding: 2px 1px 15px;
-  scroll-padding-inline: 1px;
-  scroll-snap-type: inline mandatory;
-  scrollbar-color: var(--line) transparent;
-  scrollbar-width: thin;
-}
-
-.hostel-card {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  scroll-snap-align: start;
-}
-
-.hostel-card-image {
-  position: relative;
-  aspect-ratio: 1.18;
-  overflow: hidden;
-  background: var(--brand-soft);
-}
-
-.hostel-card-photo {
-  object-fit: cover;
-  transition: filter 220ms ease;
-}
-
-.hostel-image-fallback {
-  width: 100%;
-  height: 100%;
-  background:
-    linear-gradient(135deg, transparent 40%, rgb(47 101 73 / 16%)),
-    var(--brand-soft);
-}
-
-.hostel-card-details {
-  padding: 11px 10px 12px;
-}
-
-.hostel-card-details h3 {
-  overflow: hidden;
-  margin: 0 0 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.hostel-card-price {
-  overflow: hidden;
-  margin: 0 0 9px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.43;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.hostel-card-price span {
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 450;
-}
-
-.hostel-card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 0.72rem;
-}
-
-.hostel-card-rating,
-.hostel-card-area {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 4px;
-}
-
-.hostel-card-rating {
-  flex: 0 0 auto;
-  color: var(--ink);
-  font-weight: 650;
-}
-
-.hostel-card-rating svg {
-  color: #a66a18;
-}
-
-.hostel-card-area {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.hostel-card-area svg {
-  flex: 0 0 auto;
-}
-
 @media (max-width: 960px) {
   .search-shell {
     width: min(100% - 32px, 760px);
@@ -757,28 +644,6 @@ textarea {
   .hostel-row {
     margin-top: 56px;
     padding-top: 24px;
-  }
-
-  .hostel-carousel {
-    grid-auto-columns: calc(40% - 7.2px);
-    gap: 12px;
-  }
-
-  .hostel-card-details {
-    padding: 10px 9px 11px;
-  }
-
-  .hostel-card-details h3 {
-    font-size: 0.82rem;
-  }
-
-  .hostel-card-price {
-    font-size: 0.73rem;
-  }
-
-  .hostel-card-price span,
-  .hostel-card-meta {
-    font-size: 0.68rem;
   }
 
   .site-header-inner {
@@ -850,13 +715,6 @@ textarea {
     gap: 24px;
     margin-bottom: 30px;
     border-radius: 22px;
-  }
-}
-
-@media (min-width: 721px) and (max-width: 1100px) {
-  .hostel-carousel {
-    grid-auto-columns: calc(22.2222% - 9.33px);
-    gap: 12px;
   }
 }
 
@@ -935,11 +793,6 @@ textarea {
     animation: none !important;
   }
 
-  .browse-home .hostel-card-link:active,
-  .hostel-favorite-button:hover,
-  .hostel-favorite-button:active {
-    transform: none !important;
-  }
 }
 
 .browse-home {
@@ -1048,52 +901,6 @@ textarea {
   background: var(--surface-muted);
 }
 
-.browse-home .hostel-carousel {
-  grid-auto-columns: calc(13.986% - 13.71px);
-  gap: 14px;
-  padding: 0 1px 10px;
-  scrollbar-width: none;
-}
-
-.browse-home .hostel-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.browse-home .hostel-card {
-  position: relative;
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.browse-home .hostel-card-image {
-  aspect-ratio: 1.05;
-  border-radius: 14px;
-}
-
-.browse-home .hostel-card-link {
-  border-radius: 14px;
-  transition: transform 160ms ease;
-}
-
-.browse-home .hostel-card-link:active {
-  transform: scale(0.99);
-}
-
-.browse-home .hostel-card-photo {
-  transition:
-    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 220ms ease;
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .hostel-card-link:hover .hostel-card-photo,
-  .hostel-card-link:focus-visible .hostel-card-photo {
-    filter: brightness(0.90);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .browse-listings > .browse-row:first-of-type .hostel-card:nth-child(-n + 5) {
     animation: browse-result-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -1138,51 +945,6 @@ textarea {
   }
 }
 
-.hostel-favorite-button {
-  position: absolute;
-  z-index: 2;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 160ms ease,
-    background-color 160ms ease;
-}
-
-.hostel-favorite-button:hover {
-  transform: scale(1.04);
-}
-
-.hostel-favorite-button:active {
-  transform: scale(0.92);
-}
-
-.hostel-favorite-button[aria-pressed="true"] {
-  color: var(--brand-dark);
-}
-
-.hostel-favorite-button:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
-.hostel-favorite-button:focus-visible,
-.hostel-favorite-feedback a:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 3px;
-}
-
-.hostel-favorite-feedback,
 .browse-favorite-load-error {
   margin: 8px 0 0;
   color: var(--muted);
@@ -1190,7 +952,6 @@ textarea {
   line-height: 1.4;
 }
 
-.hostel-favorite-feedback[role="alert"],
 .browse-favorite-load-error {
   color: #a12622;
 }
@@ -1205,24 +966,6 @@ textarea {
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-
-.browse-home .hostel-card-details {
-  padding: 8px 2px 4px;
-}
-
-.browse-home .hostel-card-details h3 {
-  margin-bottom: 3px;
-  font-weight: 600;
-}
-
-.browse-home .hostel-card-price {
-  margin-bottom: 5px;
-  font-weight: 600;
-}
-
-.browse-home .hostel-card-meta {
-  font-size: 0.72rem;
 }
 
 .browse-mobile-category-nav {
@@ -1260,23 +1003,6 @@ textarea {
 .student-page-header p {
   margin: 8px 0 0;
   color: var(--muted);
-}
-
-.student-listing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  gap: 24px 16px;
-}
-
-.student-page .hostel-card-details h2 {
-  overflow: hidden;
-  margin: 0 0 6px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .student-page-state > p {
@@ -1550,39 +1276,8 @@ textarea {
 }
 
 @media (max-width: 960px) {
-  .browse-category-nav {
-    height: 80px;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .browse-category {
-    min-width: 58px;
-    font-size: 0.68rem;
-  }
-
-  .browse-search-section {
-    padding: 14px 0 12px;
-  }
-
   .browse-shell {
     width: min(100% - 32px, 1344px);
-  }
-
-  .browse-search {
-    width: min(640px, 100%);
-  }
-
-  .browse-home .hostel-carousel {
-    grid-auto-columns: calc(25% - 12px);
-    gap: 14px;
-  }
-}
-
-@media (min-width: 721px) and (max-width: 1100px) {
-  .browse-home .hostel-carousel {
-    grid-auto-columns: calc(24.096% - 11.57px);
-    gap: 12px;
   }
 }
 
@@ -1597,11 +1292,6 @@ textarea {
 
   .student-page-header {
     margin-bottom: 22px;
-  }
-
-  .student-listing-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
   }
 
   .student-page-empty,
@@ -1686,15 +1376,6 @@ textarea {
     margin-bottom: 26px;
   }
 
-  .browse-home .hostel-carousel {
-    grid-auto-columns: calc(46.512% - 11.16px);
-    gap: 12px;
-  }
-
-  .browse-home .hostel-card-details {
-    padding: 8px 0 4px;
-  }
-
   .browse-row-controls {
     display: none;
   }
@@ -1705,12 +1386,6 @@ textarea {
     width: calc(100% - 40px);
   }
 
-}
-
-.hostel-card-link {
-  display: block;
-  min-width: 0;
-  color: inherit;
 }
 
 .hostel-detail-page {
@@ -3308,7 +2983,6 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hostel-card-link,
   .hostel-detail-actions button,
   .hostel-detail-show-photos,
   .hostel-booking-submit {
@@ -4104,11 +3778,6 @@ textarea {
   background: var(--surface-muted);
 }
 
-.search-result-image img {
-  object-fit: cover;
-  transition: filter 220ms ease;
-}
-
 .search-result-image-fallback {
   width: 100%;
   height: 100%;
@@ -4484,7 +4153,6 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .search-result-image img,
   .search-pagination button {
     scroll-behavior: auto;
     transition: none;

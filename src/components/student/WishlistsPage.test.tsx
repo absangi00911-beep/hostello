@@ -82,4 +82,37 @@ describe("WishlistsPage", () => {
     expect(markup).toContain("PKR 18,000");
     expect(markup).toContain("Show more");
   });
+
+  it("uses Tailwind utilities for saved hostel card layout and image hover", () => {
+    const markup = renderToStaticMarkup(
+      <WishlistsPageContent
+        error={null}
+        hasMore={false}
+        hostels={[
+          {
+            id: "hostel-1",
+            slug: "gulberg-student-stay",
+            name: "Gulberg Student Stay",
+            city: "Lahore",
+            area: "Gulberg",
+            pricePerMonth: 18_000,
+            coverImage: "https://images.example.com/hostel.jpg",
+            images: [],
+            rating: 4.5,
+            reviewCount: 12,
+          },
+        ]}
+        isLoading={false}
+        isLoadingMore={false}
+        onLoadMore={() => {}}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).toContain(
+      "grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))]",
+    );
+    expect(markup).toContain("group-hover:brightness-[0.9]");
+    expect(markup).toContain("object-cover");
+  });
 });

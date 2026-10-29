@@ -55,6 +55,13 @@ test("search_results_use_a_two_column_listing_and_map_layout", async ({
   await expect(page.getByRole("navigation", { name: "Listing pages" })).toBeVisible();
   await expect(page.getByText("Filters", { exact: true })).toBeVisible();
   await expect(page.getByText("Prices include monthly rent")).toBeVisible();
+
+  const firstResult = page.locator(".search-result-card").first();
+  const firstImage = firstResult.locator(".hostel-card-photo");
+  await expect(firstImage).toHaveClass(/group-hover:brightness-\[0\.9\]/);
+  await firstResult.hover();
+  await expect(firstImage).toHaveCSS("filter", "brightness(0.9)");
+  await expect(firstImage).toHaveCSS("transform", "none");
 });
 
 test("search_results_are_available_without_a_city_filter", async ({ page }) => {

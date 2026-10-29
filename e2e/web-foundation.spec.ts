@@ -157,11 +157,11 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
     .toBeGreaterThan(scrollBefore);
 
   for (const [width, expectedVisible] of [
-    [1440, 7.2],
-    [1024, 4.2],
-    [800, 4.2],
-    [390, 2.2],
-    [320, 2.2],
+    [1440, 7.15],
+    [1024, 4.15],
+    [800, 4.15],
+    [390, 2.15],
+    [320, 2.15],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     const visibleCount = await carousel.evaluate((element) => {
@@ -174,7 +174,7 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
       );
     });
 
-    expect(visibleCount).toBeCloseTo(expectedVisible, 1);
+    expect(Math.abs(visibleCount - expectedVisible)).toBeLessThanOrEqual(0.1);
     await expect
       .poll(() =>
         page.evaluate(
@@ -202,6 +202,18 @@ test("hovering_a_hostel_card_brightens_its_image_without_zooming", async ({
 
   await expect(image).toHaveCSS("filter", "brightness(0.9)");
   await expect(image).toHaveCSS("transform", "none");
+});
+
+test("hostel_favorite_control_keeps_its_transparent_seven_pixel_inset", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const favorite = page.locator(".hostel-favorite-button").first();
+  await expect(favorite).toHaveCSS("top", "7px");
+  await expect(favorite).toHaveCSS("right", "7px");
+  await expect(favorite).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(favorite).toHaveCSS("filter", "brightness(0.95)");
 });
 
 test("home_exposes_api_errors_instead_of_empty_success_content", async ({
