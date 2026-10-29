@@ -262,7 +262,7 @@ export default function ProductHome({
 
   return (
     <div
-      className="browse-home"
+      className="browse-home min-h-dvh bg-white text-ink"
       data-account-role={accountUser?.role ?? "GUEST"}
     >
       <BrowseHeader
@@ -272,7 +272,7 @@ export default function ProductHome({
       />
 
       <main className="browse-main">
-        <div className="browse-shell">
+        <div className="browse-shell mx-auto w-[min(1920px,calc(100%-64px))] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)]">
           <h1 className="browse-visually-hidden">
             Hostels and student stays across Pakistan
           </h1>
@@ -283,10 +283,18 @@ export default function ProductHome({
               category={category}
               className="browse-mobile-category-nav"
               onSelectCategory={setCategory}
+              variant="mobile"
             />
           )}
 
-          <section className="browse-listings" aria-label="Hostel listings">
+          <section
+            className={`browse-listings pt-[39px] pb-[72px] [@media(max-width:720px)]:pt-[18px] ${
+              showsStudentNavigation
+                ? "[@media(max-width:720px)]:pb-[calc(92px+env(safe-area-inset-bottom))]"
+                : ""
+            }`}
+            aria-label="Hostel listings"
+          >
             {isLoading && (
               <p className="browse-state" role="status">
                 Finding stays…

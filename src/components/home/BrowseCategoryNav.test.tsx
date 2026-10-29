@@ -17,6 +17,30 @@ describe("BrowseCategoryNav", () => {
     expect(markup).toContain("Under PKR 20k");
   });
 
+  it("uses Tailwind utilities for desktop category layout and selected state", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseCategoryNav category="women" onSelectCategory={() => {}} />,
+    );
+
+    expect(markup).toContain("h-20");
+    expect(markup).toContain("min-w-[70px]");
+    expect(markup).toContain("aria-pressed:text-ink");
+  });
+
+  it("uses responsive Tailwind utilities for the mobile category strip", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseCategoryNav
+        category="women"
+        onSelectCategory={() => {}}
+        variant="mobile"
+      />,
+    );
+
+    expect(markup).toContain("hidden");
+    expect(markup).toContain("min-h-[50px]");
+    expect(markup).toContain("min-h-[44px]");
+  });
+
   it("calls the existing category handler with the selected category", () => {
     const onSelectCategory = vi.fn();
     const navigation = BrowseCategoryNav({

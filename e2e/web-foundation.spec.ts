@@ -306,3 +306,80 @@ test("login_dialog_uses_tailwind_styles_and_fits_desktop_and_mobile", async ({
   await expect(dialog).toHaveCSS("width", "358px");
   await expect(dialog).toHaveCSS("padding", "30px 22px 24px");
 });
+
+test("browse_shell_preserves_consistent_gutters_at_all_breakpoints", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const home = page.locator(".browse-home");
+  const shell = page.locator(".browse-shell");
+  const search = page.locator(".browse-search-section > .browse-search");
+  const desktopCategories = page.locator("header .browse-category-nav");
+  await expect(home).toHaveClass(/min-h-dvh/);
+  await expect(shell).toHaveClass(/mx-auto/);
+
+  for (const [width, height, expectedGutter, expectedSearchWidth] of [
+    [1440, 900, 32, "800px"],
+    [800, 900, 16, "640px"],
+    [390, 844, 20, null],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect
+      .poll(() => shell.evaluate((element) => element.getBoundingClientRect().x))
+      .toBe(expectedGutter);
+    if (expectedSearchWidth) {
+      await expect(search).toHaveCSS("width", expectedSearchWidth);
+      await expect(desktopCategories).toHaveCSS("height", "80px");
+    } else {
+      await expect(search).toBeHidden();
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+  }
+});
+
+test("mobile_search_dialog_keeps_responsive_layout_and_keyboard_focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const trigger = page.getByRole("button", { name: "Start your search" });
+  await expect(trigger).toBeVisible();
+  await expect(
+    page.locator(".browse-search-section > .browse-search"),
+  ).toBeHidden();
+
+  await page.keyboard.press("Tab");
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveCSS("outline-width", "2px");
+  await expect(trigger).toHaveCSS("outline-offset", "3px");
+  await page.keyboard.press("Enter");
+
+  const dialog = page.getByRole("dialog", { name: "Search stays" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveClass(/h-dvh/);
+  await expect(dialog).toHaveCSS("position", "fixed");
+  await expect(dialog).toHaveCSS("height", "844px");
+  await expect(dialog.getByRole("searchbox", { name: "Destination" })).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Close search" }).click();
+  await expect(dialog).toBeHidden();
+});
+
+test("browse_search_controls_respect_reduced_motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const submit = page.locator(
+    ".browse-search-section > .browse-search .browse-search-submit",
+  );
+  await submit.hover();
+  await expect(submit).toHaveCSS("transform", "none");
+});
