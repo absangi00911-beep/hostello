@@ -106,7 +106,7 @@ test("hostel detail destination search loads results for the requested city", as
   await page.getByRole("button", { name: "Search hostels" }).click();
   await expect(page).toHaveURL(/\/search\?city=Rawalpindi$/);
   await expect(
-    page.getByRole("heading", { name: `Best hostel in ${city}` }),
+    page.getByRole("heading", { name: `Hostels in ${city}` }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Garden View Hostel/ }),
@@ -133,7 +133,7 @@ test("hostel detail destination search encodes and restores punctuation", async 
   await page.getByRole("button", { name: "Search hostels" }).click();
   await expect(page).toHaveURL((url) => url.searchParams.get("city") === city);
   await expect(
-    page.getByRole("heading", { name: `Best hostel in ${city}` }),
+    page.getByRole("heading", { name: `Hostels in ${city}` }),
   ).toBeVisible();
   await apiRequest;
 });
@@ -801,7 +801,7 @@ test("uses Inter and the Airbnb-inspired type scale without changing body typogr
 
   await page.getByRole("button", { name: "Lahore" }).click();
   const sectionHeading = page.getByRole("heading", {
-    name: "Best hostel in Lahore",
+    name: "Hostels in Lahore",
   });
   await expect(sectionHeading).toBeVisible();
   await expect(sectionHeading).toHaveCSS("font-size", "21px");
