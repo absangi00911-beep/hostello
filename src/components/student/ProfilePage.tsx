@@ -111,7 +111,7 @@ export function ProfilePageContent({
 }) {
   return (
     <main className="min-h-screen bg-canvas py-12 md:py-16">
-      <div className="mx-auto w-[min(100%-40px,600px)] md:w-[min(1920px,calc(100%-64px))]">
+      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),600px)] md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">
         <header className="mb-7 md:mb-8">
           <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
             Profile

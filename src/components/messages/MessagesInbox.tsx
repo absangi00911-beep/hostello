@@ -36,7 +36,7 @@ export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
         </div>
       </header>
 
-      <div className="mx-auto w-[min(1920px,calc(100%-64px))] py-[34px] pb-12">
+      <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] py-[34px] pb-12">
         <div className="mb-6 flex items-end justify-between gap-5">
           <div>
             <p className="mb-1 text-[0.75rem] font-bold uppercase tracking-[0.09em] text-muted">

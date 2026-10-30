@@ -316,7 +316,7 @@ export default function SearchPageClient({
   return (
     <div className="search-results-page min-h-dvh bg-white text-ink">
       <header className="search-results-header sticky top-0 z-20 border-b border-line bg-white/[0.96] backdrop-blur-[12px]">
-        <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-64px))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[calc(100%-40px)]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
+        <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-var(--page-gutter-total)))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
           <Link
             className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
             href="/"
@@ -374,7 +374,7 @@ export default function SearchPageClient({
       </header>
 
       <div className="search-filter-bar sticky top-[82px] z-[15] border-b border-line bg-white/[0.97] [@media(max-width:780px)]:top-[133px]">
-        <div className="search-filter-inner mx-auto w-[min(1920px,calc(100%-64px))] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[calc(100%-40px)]!">
+        <div className="search-filter-inner mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]!">
           <div
             aria-label="Hostel filters"
             className="search-filter-list flex min-h-[66px] items-center gap-[10px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(max-width:780px)]:min-h-[58px]"
@@ -395,7 +395,7 @@ export default function SearchPageClient({
         </div>
       </div>
 
-      <main className="search-results-main mx-auto w-[min(1920px,calc(100%-64px))] pt-[30px] pb-16 [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[calc(100%-40px)]! [@media(max-width:780px)]:pt-6">
+      <main className="search-results-main mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] pt-[30px] pb-16 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:pt-6">
         <div className="search-results-layout grid grid-cols-[minmax(0,1.3fr)_minmax(340px,0.9fr)] items-start gap-[clamp(24px,3vw,42px)] [@media(max-width:1020px)]:grid-cols-[minmax(0,1.25fr)_minmax(290px,0.85fr)] [@media(max-width:1020px)]:gap-[22px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)]">
           <section
             aria-label="Hostel listings"
