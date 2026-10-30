@@ -37,7 +37,13 @@ describe("BrowseAccountMenu", () => {
     );
 
     expect(markup).toContain('aria-label="Account menu for Alex Student"');
-    expect(markup).toContain("browse-account-avatar");
+    const avatarClass = markup
+      .match(/<span aria-hidden="true" class="([^"]+)">/)?.[1]
+      ?.split(" ");
+    expect(avatarClass).toEqual(
+      expect.arrayContaining(["h-8", "w-8", "rounded-full", "bg-brand"]),
+    );
+    expect(markup).not.toContain("browse-account-avatar");
     expect(markup).toContain(">A</span>");
     expect(markup).toContain("Alex Student");
   });

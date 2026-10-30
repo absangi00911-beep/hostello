@@ -262,7 +262,7 @@ export default function ProductHome({
 
   return (
     <div
-      className="browse-home"
+      className="min-h-dvh bg-white text-ink"
       data-account-role={accountUser?.role ?? "GUEST"}
     >
       <BrowseHeader
@@ -271,9 +271,9 @@ export default function ProductHome({
         onSelectCategory={setCategory}
       />
 
-      <main className="browse-main">
-        <div className="browse-shell">
-          <h1 className="browse-visually-hidden">
+      <main>
+        <div className="mx-auto w-[min(1920px,calc(100%-64px))] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)]">
+          <h1 className="sr-only">
             Hostels and student stays across Pakistan
           </h1>
 
@@ -281,26 +281,38 @@ export default function ProductHome({
           {showsStudentNavigation && (
             <BrowseCategoryNav
               category={category}
-              className="browse-mobile-category-nav"
+              className="hidden [@media(max-width:720px)]:flex"
               onSelectCategory={setCategory}
+              variant="mobile"
             />
           )}
 
-          <section className="browse-listings" aria-label="Hostel listings">
+          <section
+            className={`pt-[39px] pb-[72px] [@media(max-width:720px)]:pt-[18px] ${
+              showsStudentNavigation
+                ? "[@media(max-width:720px)]:pb-[calc(92px+env(safe-area-inset-bottom))]"
+                : ""
+            }`}
+            aria-label="Hostel listings"
+          >
             {isLoading && (
-              <p className="browse-state" role="status">
-                Finding stays…
-              </p>
+              <div className="flex items-center justify-center py-12" role="status">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                  <p className="m-0 text-[0.92rem] text-muted">Finding stays…</p>
+                </div>
+              </div>
             )}
             {searchError && (
-              <p className="browse-state" role="alert">
+              <p className="m-0 py-8 text-[0.92rem] text-muted" role="alert">
                 {searchError}
               </p>
             )}
             {favoriteError && accountUser?.role === "STUDENT" && (
-              <p className="browse-favorite-load-error" role="alert">
+              <p className="mt-2 mb-0 text-[0.78rem] leading-[1.4] text-[#a12622]" role="alert">
                 {favoriteError}{" "}
                 <button
+                  className="cursor-pointer border-0 bg-transparent p-0 font-bold underline underline-offset-[2px]"
                   onClick={() => setFavoriteReload((current) => current + 1)}
                   type="button"
                 >
@@ -309,7 +321,7 @@ export default function ProductHome({
               </p>
             )}
             {!isLoading && !searchError && hostelsByCity.size === 0 && (
-              <p className="browse-state" role="status">
+              <p className="m-0 py-8 text-[0.92rem] text-muted" role="status">
                 No active hostel listings yet.
               </p>
             )}

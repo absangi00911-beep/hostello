@@ -45,17 +45,30 @@ export function HostelAmenitiesSection({
   return (
     <section
       aria-labelledby="hostel-amenities-title"
-      className="hostel-amenities-section"
+      className="hostel-amenities-section border-t border-line pt-5"
       role="region"
     >
-      <h2 id="hostel-amenities-title">What this place offers</h2>
-      <ul className="hostel-amenities-list">
+      <h2
+        className="m-0 mb-3 text-xl leading-[1.35] font-semibold tracking-[-0.02em]"
+        id="hostel-amenities-title"
+      >
+        What this place offers
+      </h2>
+      <ul className="hostel-amenities-list grid grid-cols-2 gap-x-6 m-0 list-none p-0 [@media(max-width:720px)]:grid-cols-1">
         {amenityLabels.map((amenity) => {
           const Icon = getAmenityIcon(amenity);
 
           return (
-            <li key={amenity}>
-              <Icon aria-hidden="true" size={20} strokeWidth={1.75} />
+            <li
+              className="flex min-w-0 items-center gap-3 border-b border-line py-2.5 text-[0.94rem] text-ink [&:nth-last-child(-n+2)]:border-b-0"
+              key={amenity}
+            >
+              <Icon
+                aria-hidden="true"
+                className="shrink-0 text-brand-dark"
+                size={20}
+                strokeWidth={1.75}
+              />
               <span>{amenity}</span>
             </li>
           );

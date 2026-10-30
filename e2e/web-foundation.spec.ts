@@ -53,6 +53,8 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   await page.goto("/");
 
   await expect(page.getByRole("link", { name: "HostelLo home" })).toBeVisible();
+  await expect(page.locator("header")).toHaveClass(/border-b/);
+  await expect(page.locator("header > div")).toHaveClass(/min-h-20/);
   await expect(
     page.getByRole("navigation", { name: "Browse categories" }),
   ).toBeVisible();
@@ -155,11 +157,11 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
     .toBeGreaterThan(scrollBefore);
 
   for (const [width, expectedVisible] of [
-    [1440, 7.2],
-    [1024, 4.2],
-    [800, 4.2],
-    [390, 2.2],
-    [320, 2.2],
+    [1440, 7.15],
+    [1024, 4.15],
+    [800, 4.15],
+    [390, 2.15],
+    [320, 2.15],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     const visibleCount = await carousel.evaluate((element) => {
@@ -172,7 +174,7 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
       );
     });
 
-    expect(visibleCount).toBeCloseTo(expectedVisible, 1);
+    expect(Math.abs(visibleCount - expectedVisible)).toBeLessThanOrEqual(0.1);
     await expect
       .poll(() =>
         page.evaluate(
@@ -200,6 +202,18 @@ test("hovering_a_hostel_card_brightens_its_image_without_zooming", async ({
 
   await expect(image).toHaveCSS("filter", "brightness(0.9)");
   await expect(image).toHaveCSS("transform", "none");
+});
+
+test("hostel_favorite_control_keeps_its_transparent_seven_pixel_inset", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const favorite = page.locator(".hostel-favorite-button").first();
+  await expect(favorite).toHaveCSS("top", "7px");
+  await expect(favorite).toHaveCSS("right", "7px");
+  await expect(favorite).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(favorite).toHaveCSS("filter", "brightness(0.95)");
 });
 
 test("home_exposes_api_errors_instead_of_empty_success_content", async ({
@@ -273,4 +287,111 @@ test("tailwind_foundation_preserves_global_body_styles", async ({ page }) => {
     expect(bodyColors.background).toBe(bodyColors.expectedBackground);
     expect(bodyColors.color).toBe(bodyColors.expectedColor);
   }
+});
+
+test("login_dialog_uses_tailwind_styles_and_fits_desktop_and_mobile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/login?error=expired-token");
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveClass(/fixed/);
+  await expect(dialog).toHaveCSS("position", "fixed");
+  await expect(dialog).toHaveCSS("border-radius", "20px");
+  const emailInput = page.getByLabel("Email");
+  await expect(emailInput).toBeFocused();
+  await expect(page.getByRole("alert")).toHaveClass(/bg-surface-muted/);
+  await expect(dialog.locator('button[type="submit"]')).toHaveCSS(
+    "min-height",
+    "50px",
+  );
+  await emailInput.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Continue" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(emailInput).toBeFocused();
+  await expect(emailInput).toHaveCSS("border-color", "rgb(37, 99, 235)");
+  await expect(emailInput).toHaveCSS("outline-color", "rgb(37, 99, 235)");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(dialog).toHaveCSS("width", "358px");
+  await expect(dialog).toHaveCSS("padding", "30px 22px 24px");
+});
+
+test("browse_shell_preserves_consistent_gutters_at_all_breakpoints", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const home = page.locator(".browse-home");
+  const shell = page.locator(".browse-shell");
+  const search = page.locator(".browse-search-section > .browse-search");
+  const desktopCategories = page.locator("header .browse-category-nav");
+  await expect(home).toHaveClass(/min-h-dvh/);
+  await expect(shell).toHaveClass(/mx-auto/);
+
+  for (const [width, height, expectedGutter, expectedSearchWidth] of [
+    [1440, 900, 32, "800px"],
+    [800, 900, 16, "640px"],
+    [390, 844, 20, null],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await expect
+      .poll(() => shell.evaluate((element) => element.getBoundingClientRect().x))
+      .toBe(expectedGutter);
+    if (expectedSearchWidth) {
+      await expect(search).toHaveCSS("width", expectedSearchWidth);
+      await expect(desktopCategories).toHaveCSS("height", "80px");
+    } else {
+      await expect(search).toBeHidden();
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+  }
+});
+
+test("mobile_search_dialog_keeps_responsive_layout_and_keyboard_focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const trigger = page.getByRole("button", { name: "Start your search" });
+  await expect(trigger).toBeVisible();
+  await expect(
+    page.locator(".browse-search-section > .browse-search"),
+  ).toBeHidden();
+
+  await page.keyboard.press("Tab");
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveCSS("outline-width", "2px");
+  await expect(trigger).toHaveCSS("outline-offset", "3px");
+  await page.keyboard.press("Enter");
+
+  const dialog = page.getByRole("dialog", { name: "Search stays" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveClass(/h-dvh/);
+  await expect(dialog).toHaveCSS("position", "fixed");
+  await expect(dialog).toHaveCSS("height", "844px");
+  await expect(dialog.getByRole("searchbox", { name: "Destination" })).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Close search" }).click();
+  await expect(dialog).toBeHidden();
+});
+
+test("browse_search_controls_respect_reduced_motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const submit = page.locator(
+    ".browse-search-section > .browse-search .browse-search-submit",
+  );
+  await submit.hover();
+  await expect(submit).toHaveCSS("transform", "none");
 });

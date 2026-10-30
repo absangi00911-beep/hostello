@@ -18,18 +18,29 @@ const categories = [
 export function BrowseCategoryNav({
   category,
   onSelectCategory,
-  className = "browse-category-nav",
+  className = "",
+  variant = "header",
 }: {
   category: Category;
   onSelectCategory: (category: Category) => void;
   className?: string;
+  variant?: "header" | "mobile";
 }) {
+  const navClassName =
+    variant === "mobile"
+      ? `${className} hidden min-h-[50px] items-center gap-2 overflow-x-auto py-[3px] pr-px pb-[9px] pl-px [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(max-width:720px)]:flex`
+      : `${className} flex h-20 items-stretch gap-[clamp(16px,2.5vw,32px)] [@media(max-width:960px)]:justify-center [@media(max-width:960px)]:gap-[10px] [@media(max-width:720px)]:justify-start [@media(max-width:720px)]:gap-[22px] [@media(max-width:720px)]:overflow-x-auto [@media(max-width:720px)]:[scrollbar-width:none] [@media(max-width:720px)]:[&::-webkit-scrollbar]:hidden [@media(max-width:420px)]:gap-[17px]`;
+
   return (
-    <nav aria-label="Browse categories" className={className}>
+    <nav aria-label="Browse categories" className={navClassName}>
       {categories.map(({ id, label, icon: Icon }) => (
         <button
           aria-pressed={category === id}
-          className="browse-category"
+          className={
+            variant === "mobile"
+              ? "relative flex min-h-[44px] min-w-max cursor-pointer flex-row items-center justify-center gap-[7px] rounded-full border border-line bg-white px-3 py-[7px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:border-ink aria-pressed:bg-surface-muted aria-pressed:text-ink [@media(max-width:720px)]:after:hidden"
+              : "relative flex min-w-[70px] cursor-pointer flex-col items-center justify-center gap-[5px] border-0 bg-transparent px-[2px] pt-2 pb-[10px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:text-ink [@media(max-width:960px)]:min-w-[58px] [@media(max-width:960px)]:text-[0.68rem] [@media(max-width:420px)]:min-w-16 [@media(max-width:420px)]:text-[0.7rem]"
+          }
           data-category={id}
           key={id}
           onClick={() => onSelectCategory(id)}

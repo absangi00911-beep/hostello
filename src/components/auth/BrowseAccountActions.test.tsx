@@ -8,6 +8,15 @@ vi.mock("./BrowseAccountMenu", () => ({
 import { BrowseAccountActions } from "./BrowseAccountActions";
 
 describe("BrowseAccountActions", () => {
+  it("uses Tailwind for the account actions layout", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseAccountActions user={null} />,
+    );
+
+    expect(markup).toContain("flex items-center justify-self-end gap-4");
+    expect(markup).toContain("text-[0.82rem] font-semibold");
+  });
+
   it("does not offer host sign-up to a student", () => {
     const markup = renderToStaticMarkup(
       <BrowseAccountActions user={{ role: "STUDENT" }} />,

@@ -10,7 +10,7 @@ describe("HostelSearchBar", () => {
 
     expect(markup).toContain('aria-label="Start your search"');
     expect(markup).toContain('aria-label="Search stays"');
-    expect(markup).toContain('class="browse-search-dialog"');
+    expect(markup).toContain('class="fixed inset-0 m-0 h-dvh');
   });
 
   it("keeps the existing search fields in the desktop and mobile surfaces", () => {
@@ -25,5 +25,16 @@ describe("HostelSearchBar", () => {
     expect(markup).toContain(
       "Move-in date and guests aren&#x27;t used to filter availability yet.",
     );
+  });
+
+  it("uses Tailwind utilities for responsive layout, focus, and motion states", () => {
+    const markup = renderToStaticMarkup(
+      <HostelSearchBar onSearch={vi.fn()} />,
+    );
+
+    expect(markup).toContain("grid-cols-[1.3fr_1fr_0.85fr_48px]");
+    expect(markup).toContain("motion-reduce:hover:transform-none!");
+    expect(markup).toContain("focus-visible:outline-2!");
+    expect(markup).toContain("h-dvh");
   });
 });

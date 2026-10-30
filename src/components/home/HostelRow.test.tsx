@@ -40,11 +40,40 @@ describe("HostelRow favorite action", () => {
   it("renders the favorite action as a sibling of the hostel detail link", () => {
     const markup = renderRow();
     const detailLinkEnd = markup.indexOf("</a>");
-    const favoriteButton = markup.indexOf('class="hostel-favorite-button"');
+    const favoriteButton = markup.indexOf('class="hostel-favorite-button');
 
     expect(detailLinkEnd).toBeGreaterThan(-1);
     expect(favoriteButton).toBeGreaterThan(detailLinkEnd);
     expect(markup).toContain('href="/hostels/hostel-1"');
+  });
+
+  it("uses Tailwind utilities for the responsive carousel and brightness-only image hover", () => {
+    const markup = renderRow();
+
+    expect(markup).toContain(
+      "auto-cols-[calc(13.986%_-_13.71px)]",
+    );
+    expect(markup).toContain(
+      "auto-cols-[calc(24.096%_-_11.57px)]",
+    );
+    expect(markup).toContain(
+      "auto-cols-[calc(46.512%_-_11.16px)]",
+    );
+    expect(markup).toContain("group-hover:brightness-[0.9]");
+    expect(markup).toContain("group-focus-visible:brightness-[0.9]");
+    expect(markup).not.toContain("group-hover:scale-");
+    expect(markup).toContain("aria-pressed:text-brand-dark");
+    expect(markup).toContain("disabled:opacity-60");
+    expect(markup).toContain("focus-visible:outline-2!");
+  });
+
+  it("keeps the favorite control transparent and inset by seven pixels", () => {
+    const markup = renderRow();
+
+    expect(markup).toContain("top-[7px]");
+    expect(markup).toContain("right-[7px]");
+    expect(markup).toContain("bg-transparent");
+    expect(markup).toContain("brightness-[0.95]");
   });
 
   it("reflects the server-confirmed saved state", () => {

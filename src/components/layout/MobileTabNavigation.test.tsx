@@ -11,6 +11,18 @@ const tabs = [
 ] as const;
 
 describe("MobileTabNavigation", () => {
+  it("uses Tailwind for mobile visibility and safe-area layout", () => {
+    const markup = renderToStaticMarkup(
+      <MobileTabNavigation activeTab="explore" />,
+    );
+
+    expect(markup).toContain("fixed");
+    expect(markup).toContain("grid-cols-5");
+    expect(markup).toContain("pb-[calc(6px+env(safe-area-inset-bottom))]");
+    expect(markup).toContain("[@media(max-width:720px)]:grid");
+    expect(markup).not.toContain("mobile-tab-navigation");
+  });
+
   it("renders all five tab links with their labels and destinations", () => {
     const markup = renderToStaticMarkup(
       <MobileTabNavigation activeTab="explore" />,

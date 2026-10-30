@@ -64,11 +64,14 @@ export function HostelInquiryForm({
   return (
     <form
       aria-label={`Message the host of ${hostelName}`}
-      className="hostel-inquiry-form"
+      className="hostel-inquiry-form grid w-full max-w-[560px] min-w-0 gap-2.5 pt-3.5"
       onSubmit={(event) => void handleSubmit(event)}
     >
-      <label htmlFor="hostel-inquiry-message">Your message</label>
+      <label className="text-[0.84rem] font-semibold text-ink" htmlFor="hostel-inquiry-message">
+        Your message
+      </label>
       <textarea
+        className="min-h-[112px] w-full min-w-0 resize-y rounded-lg border border-line bg-white px-3 py-2.5 text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         id="hostel-inquiry-message"
         maxLength={2_000}
         name="message"
@@ -78,11 +81,15 @@ export function HostelInquiryForm({
         value={message}
       />
       {error && (
-        <p className="hostel-inquiry-error" role="alert">
+        <p className="hostel-inquiry-error m-0 text-[0.82rem] text-[#8b2525]" role="alert">
           {error}
         </p>
       )}
-      <button className="hostel-inquiry-submit" disabled={isSubmitting} type="submit">
+      <button
+        className="hostel-inquiry-submit min-h-[46px] self-start rounded-lg border-0 bg-brand px-[18px] text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+        disabled={isSubmitting}
+        type="submit"
+      >
         {isSubmitting ? "Sending…" : "Message the host"}
       </button>
     </form>

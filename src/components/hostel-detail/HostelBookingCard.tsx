@@ -200,22 +200,33 @@ export function HostelBookingCard({
   }
 
   return (
-    <aside className="hostel-booking-card" aria-label="Reserve this hostel">
-      <div className="hostel-booking-price">
+    <aside
+      aria-label="Reserve this hostel"
+      className="sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(max-width:900px)]:row-[2]"
+    >
+      <div className="mb-3 text-[0.78rem] text-muted">
         {room ? (
           <>
-            <strong>PKR {formatPrice(room.pricePerMonth)}</strong>
+            <strong className="text-[1.2rem] leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+              PKR {formatPrice(room.pricePerMonth)}
+            </strong>
             <span> / month</span>
           </>
         ) : (
-          <strong>Monthly rate</strong>
+          <strong className="text-[1.2rem] leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+            Monthly rate
+          </strong>
         )}
       </div>
       {rooms.length > 0 ? (
-        <form className="hostel-booking-form" onSubmit={submitBooking}>
-          <label>
-            <span>Room</span>
+        <form
+          className="grid gap-[9px]"
+          onSubmit={submitBooking}
+        >
+          <label className="grid min-w-0 gap-1">
+            <span className="text-[0.68rem] font-[650] text-ink">Room</span>
             <select
+              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
               onChange={(event) => {
                 const nextRoom = rooms.find((candidate) => candidate.id === event.target.value);
                 setRoomId(event.target.value);
@@ -230,10 +241,13 @@ export function HostelBookingCard({
               ))}
             </select>
           </label>
-          <div className="hostel-booking-dates">
-            <label>
-              <span>Move in</span>
+          <div className="grid grid-cols-2 gap-[10px]">
+            <label className="grid min-w-0 gap-1">
+              <span className="text-[0.68rem] font-[650] text-ink">
+                Move in
+              </span>
               <input
+                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
                 min={todayDateInputValue()}
                 onChange={(event) => setMoveIn(event.target.value)}
                 required
@@ -241,9 +255,12 @@ export function HostelBookingCard({
                 value={checkIn}
               />
             </label>
-            <label>
-              <span>Move out</span>
+            <label className="grid min-w-0 gap-1">
+              <span className="text-[0.68rem] font-[650] text-ink">
+                Move out
+              </span>
               <input
+                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
                 min={checkIn || todayDateInputValue()}
                 onChange={(event) => setMoveOut(event.target.value)}
                 required
@@ -252,9 +269,10 @@ export function HostelBookingCard({
               />
             </label>
           </div>
-          <label>
-            <span>Guests</span>
+          <label className="grid min-w-0 gap-1">
+            <span className="text-[0.68rem] font-[650] text-ink">Guests</span>
             <select
+              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
               onChange={(event) => setGuests(Number(event.target.value))}
               value={guests}
             >
@@ -268,18 +286,24 @@ export function HostelBookingCard({
             </select>
           </label>
           {checkIn && checkOut && !stayIsValid && (
-            <p className="hostel-booking-hint" role="status">
+            <p
+              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              role="status"
+            >
               Stay must be {minStay}
               {maxStay === null ? " or more" : `–${maxStay}`} months.
             </p>
           )}
           {estimatedTotal !== null && (
-            <p className="hostel-booking-total">
-              Estimated total <strong>PKR {formatPrice(estimatedTotal)}</strong>
+            <p className="mx-0 my-1 flex justify-between gap-3 border-t border-line pt-3 text-[0.82rem] text-muted">
+              Estimated total{" "}
+              <strong className="text-[0.875rem] leading-[1.43] font-semibold text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+                PKR {formatPrice(estimatedTotal)}
+              </strong>
             </p>
           )}
           <button
-            className="hostel-booking-submit"
+            className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-[0.84rem] font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
             disabled={!canBook || isSubmitting}
             type="submit"
           >
@@ -289,28 +313,40 @@ export function HostelBookingCard({
                 ? "Retry payment"
                 : "Reserve"}
           </button>
-          <p className="hostel-booking-payment-note">
+          <p className="m-0 text-[0.7rem] leading-[1.5] text-muted">
             Secure card checkout starts before the host reviews your booking.
           </p>
           {!hasCancellationPolicy && (
-            <p className="hostel-booking-hint" role="status">
+            <p
+              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              role="status"
+            >
               Booking is temporarily unavailable while cancellation terms are updated.
             </p>
           )}
           {message && (
-            <p aria-live="polite" className="hostel-booking-message" role="alert">
+            <p
+              aria-live="polite"
+              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              role="alert"
+            >
               {message}
               {needsSignIn && (
                 <>
                   {" "}
-                  <LoginDialogTrigger>Sign in</LoginDialogTrigger>
+                  <LoginDialogTrigger className="font-[650] text-brand-dark underline underline-offset-[3px]">
+                    Sign in
+                  </LoginDialogTrigger>
                 </>
               )}
             </p>
           )}
         </form>
       ) : (
-        <p className="hostel-booking-hint" role="status">
+        <p
+          className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+          role="status"
+        >
           No rooms are currently available to book.
         </p>
       )}

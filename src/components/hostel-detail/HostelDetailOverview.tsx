@@ -26,15 +26,18 @@ export function HostelDetailOverview({
     description.trim() || "The host has not added a description yet.";
 
   return (
-    <section className="hostel-detail-summary" aria-label="Hostel overview">
+    <section
+      aria-label="Hostel overview"
+      className="hostel-detail-summary grid min-w-0 gap-[14px]"
+    >
       <section
         aria-labelledby="hostel-listing-type-title"
-        className="hostel-detail-listing-summary"
+        className="hostel-detail-listing-summary min-w-0 border-t border-line pt-[14px]"
       >
-        <h2 id="hostel-listing-type-title">
+        <h2 className="m-0 mb-1.5 text-lg leading-[1.3] font-semibold tracking-[-0.02em] [overflow-wrap:anywhere]" id="hostel-listing-type-title">
           {genderLabel} in {city}
         </h2>
-        <p className="hostel-detail-facts-line">
+        <p className="m-0 flex flex-wrap items-center gap-2 text-[0.8rem] text-muted">
           <span>
             Up to {capacity} {capacity === 1 ? "resident" : "residents"}
           </span>
@@ -44,32 +47,32 @@ export function HostelDetailOverview({
           </span>
         </p>
         {area && (
-          <p className="hostel-detail-area">
-            <MapPin aria-hidden="true" size={16} />
-            <span>{area}</span>
+          <p className="hostel-detail-area mt-2 mb-0 flex items-center gap-[7px] text-[0.78rem] text-muted">
+            <MapPin aria-hidden="true" className="shrink-0" size={16} />
+            <span className="min-w-0 [overflow-wrap:anywhere]">{area}</span>
           </p>
         )}
       </section>
 
       <div
         aria-label="Listing rating and verification"
-        className="hostel-detail-trust"
+        className="hostel-detail-trust flex flex-wrap items-center gap-[18px]"
         role="group"
       >
         {reviewCount > 0 ? (
-          <div className="hostel-detail-rating">
-            <Star aria-hidden="true" fill="currentColor" size={18} />
-            <strong>{rating.toFixed(1)}</strong>
-            <span>
+          <div className="flex items-center gap-2 text-[0.8rem] text-ink">
+            <Star aria-hidden="true" className="text-brand" fill="currentColor" size={18} />
+            <strong className="text-[0.88rem] font-bold tabular-nums">{rating.toFixed(1)}</strong>
+            <span className="text-muted">
               {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
             </span>
           </div>
         ) : (
-          <p className="hostel-detail-new-listing">New listing</p>
+          <p className="m-0 text-[0.9rem] font-semibold">New listing</p>
         )}
         {verified && (
-          <div className="hostel-detail-verified-summary">
-            <ShieldCheck aria-hidden="true" size={19} />
+          <div className="flex items-center gap-2 text-[0.8rem] text-muted">
+            <ShieldCheck aria-hidden="true" className="shrink-0 text-brand-dark" size={19} />
             <span>Verified hostel</span>
           </div>
         )}
@@ -77,10 +80,14 @@ export function HostelDetailOverview({
 
       <section
         aria-labelledby="hostel-about-title"
-        className="hostel-detail-overview-section"
+        className="border-t border-line pt-5"
       >
-        <h2 id="hostel-about-title">About this hostel</h2>
-        <p>{descriptionText}</p>
+        <h2 className="m-0 mb-[14px] text-[1.3125rem] leading-[1.43] font-bold" id="hostel-about-title">
+          About this hostel
+        </h2>
+        <p className="m-0 max-w-[68ch] text-[0.92rem] leading-[1.7] whitespace-pre-line text-muted">
+          {descriptionText}
+        </p>
       </section>
     </section>
   );

@@ -13,4 +13,4 @@ The migration replaces app-owned component styling with Tailwind utilities while
 
 Build order: `tailwind-foundation` → `shared-ui` → `discovery`, `hostel-detail`, `student-pages`, and `account-messaging`.
 
-Each module is specified, planned, implemented, and verified before moving on. The four page-group modules may be scheduled independently after their shared prerequisites are complete.
+Each module is specified, planned, implemented, and verified before moving on. The four page-group modules are independent after their shared prerequisites, but execute them sequentially in a shared checkout because they all remove rules from `src/app/globals.css`.

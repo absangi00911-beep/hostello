@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { hostelCardImageClassName } from "@/components/hostel-card-styles";
 
 const bookingStatuses = {
   PENDING: "Pending",
@@ -117,6 +118,13 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "UTC",
 });
 
+const bookingStatusClassNames: Record<BookingStatus, string> = {
+  PENDING: "bg-surface-muted text-ink",
+  CONFIRMED: "bg-brand-soft text-brand-dark",
+  CANCELLED: "bg-[#f5e6e3] text-[#8c2822]",
+  COMPLETED: "bg-brand-soft text-brand-dark",
+};
+
 export function TripsPageContent({
   bookings,
   error,
@@ -135,36 +143,67 @@ export function TripsPageContent({
   onRetry: () => void;
 }) {
   return (
-    <main className="student-page">
-      <div className="student-page-shell">
-        <header className="student-page-header">
-          <h1>Trips</h1>
-          <p>Your hostel bookings and stay dates.</p>
+    <main className="min-h-screen bg-canvas py-12 md:py-16">
+      <div className="mx-auto w-[min(100%-40px,600px)] md:w-[min(1920px,calc(100%-64px))]">
+        <header className="mb-7 md:mb-8">
+          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
+            Trips
+          </h1>
+          <p className="mt-2 m-0 text-[0.95rem] text-muted">
+            Your hostel bookings and stay dates.
+          </p>
         </header>
 
         {isLoading ? (
-          <section aria-busy="true" className="student-page-state" role="status">
-            <p>Loading trips...</p>
+          <section
+            aria-busy="true"
+            className="py-8 text-sm text-muted"
+            role="status"
+          >
+            <p className="m-0">Loading trips...</p>
           </section>
         ) : error && bookings.length === 0 ? (
-          <section className="student-page-error" role="alert">
-            <p>{error}</p>
-            <button onClick={onRetry} type="button">
+          <section
+            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            role="alert"
+          >
+            <p className="m-0 text-[0.95rem]">{error}</p>
+            <button
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current"
+              onClick={onRetry}
+              type="button"
+            >
               Try again
             </button>
           </section>
         ) : bookings.length === 0 ? (
-          <section className="student-page-empty" role="status">
-            <h2>No trips yet</h2>
-            <p>Your hostel bookings will appear here.</p>
-            <Link href="/">Explore hostels</Link>
+          <section
+            className="rounded-[14px] border border-line bg-surface p-7"
+            role="status"
+          >
+            <h2 className="m-0 text-[1.2rem] font-semibold text-ink">
+              No trips yet
+            </h2>
+            <p className="mt-2 mb-4 text-[0.95rem] text-muted">
+              Your hostel bookings will appear here.
+            </p>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+              href="/"
+            >
+              Explore hostels
+            </Link>
           </section>
         ) : (
           <>
             {error && (
-              <p className="student-page-error" role="alert">
+              <p
+                className="mb-5 rounded-[14px] border border-[#e7c9c4] bg-surface p-3 text-[0.9rem] text-[#8c2822]"
+                role="alert"
+              >
                 {error}{" "}
                 <button
+                  className="ml-1 font-semibold text-current underline-offset-2 disabled:opacity-60"
                   disabled={isLoadingMore}
                   onClick={onLoadMore}
                   type="button"
@@ -173,33 +212,39 @@ export function TripsPageContent({
                 </button>
               </p>
             )}
-            <div className="student-booking-list">
+            <div className="grid gap-4">
               {bookings.map((booking) => (
-                <article className="student-booking-card" key={booking.id}>
+                <article
+                  className="grid gap-5 overflow-hidden rounded-[14px] border border-line bg-surface p-3 md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
+                  key={booking.id}
+                >
                   <Link
                     aria-label={`View details for ${booking.hostel.name}`}
-                    className="student-booking-image"
+                    className="group relative block min-h-[150px] overflow-hidden rounded-[10px] bg-brand-soft"
                     href={`/hostels/${booking.hostel.slug}`}
                   >
                     {booking.hostel.coverImage ? (
                       <Image
                         alt={booking.hostel.name}
+                        className={hostelCardImageClassName}
                         fill
                         sizes="(max-width: 720px) 36vw, 220px"
                         src={booking.hostel.coverImage}
                       />
                     ) : (
-                      <span aria-hidden="true" className="hostel-image-fallback" />
+                      <span className="flex h-full w-full bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73/16%)),var(--brand-soft)]" />
                     )}
                   </Link>
-                  <div className="student-booking-details">
-                    <p className="student-booking-city">{booking.hostel.city}</p>
-                    <h2>
-                      <Link href={`/hostels/${booking.hostel.slug}`}>
+                  <div className="min-w-0 self-center py-1 md:px-1">
+                    <p className="m-0 mb-2 text-[0.9rem] text-muted">
+                      {booking.hostel.city}
+                    </p>
+                    <h2 className="m-0 mb-2 text-[1.15rem] font-semibold leading-[1.3] text-ink">
+                      <Link className="text-inherit no-underline" href={`/hostels/${booking.hostel.slug}`}>
                         {booking.hostel.name}
                       </Link>
                     </h2>
-                    <p className="student-booking-dates">
+                    <p className="m-0 mb-3 text-[0.9rem] text-muted">
                       <time dateTime={booking.checkIn}>
                         {dateFormatter.format(new Date(booking.checkIn))}
                       </time>
@@ -209,7 +254,7 @@ export function TripsPageContent({
                       </time>
                     </p>
                     <span
-                      className="student-booking-status"
+                      className={`inline-flex min-h-[28px] items-center rounded-full px-2.5 text-[0.78rem] font-semibold ${bookingStatusClassNames[booking.status]}`}
                       data-status={booking.status.toLowerCase()}
                     >
                       {bookingStatuses[booking.status]}
@@ -220,7 +265,7 @@ export function TripsPageContent({
             </div>
             {hasMore && (
               <button
-                className="student-page-load-more"
+                className="mt-7 mx-auto flex min-w-[140px] items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white disabled:cursor-wait disabled:opacity-60"
                 disabled={isLoadingMore}
                 onClick={onLoadMore}
                 type="button"
