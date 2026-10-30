@@ -25,6 +25,9 @@
   --brand-dark: #1d4ed8;
   --brand-soft: #e0e7ff;
   --warm: #f59e0b;
+  --page-gutter-total: 128px;
+  --page-gutter-tablet: 64px;
+  --page-gutter-mobile: 80px;
 }
 
 

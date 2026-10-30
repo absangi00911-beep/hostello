@@ -27,7 +27,7 @@ export function BrowseHeader({
         hideOnMobile ? "[@media(max-width:720px)]:hidden" : ""
       }`}
     >
-      <div className="mx-auto grid min-h-20 w-[min(1920px,calc(100%-64px))] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:960px)]:grid-cols-[minmax(120px,1fr)_auto_minmax(140px,1fr)] [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:720px)]:pt-2 [@media(max-width:420px)]:w-[calc(100%-40px)] [@media(max-width:420px)]:min-h-[68px]">
+      <div className="mx-auto grid min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:960px)]:grid-cols-[minmax(120px,1fr)_auto_minmax(140px,1fr)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:720px)]:pt-2 [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))] [@media(max-width:420px)]:min-h-[68px]">
         <Link
           className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
           href="/"

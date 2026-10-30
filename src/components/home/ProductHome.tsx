@@ -272,7 +272,7 @@ export default function ProductHome({
       />
 
       <main>
-        <div className="mx-auto w-[min(1920px,calc(100%-64px))] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)]">
+        <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
           <h1 className="sr-only">
             Hostels and student stays across Pakistan
           </h1>

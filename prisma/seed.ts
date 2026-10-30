@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Gender, HostelStatus } from "../src/generated/enums";
 import { hash } from "bcryptjs";
 import { db } from "../src/lib/db";
+import { addMissingCityHostels, type SeedHostel } from "./seed-hostels";
 
 async function main() {
   // ─── Validate environment variables ────────────────────────────────────────
@@ -136,7 +137,7 @@ async function main() {
   // review is submitted. Hard-coding non-zero values here would create
   // phantom ratings with no real reviews backing them.
 
-  const hostelData = [
+  const hostelData: SeedHostel[] = [
     // ── LAHORE ──────────────────────────────────────────────────────────────
     {
       name: "Green Valley Boys Hostel",
@@ -626,6 +627,19 @@ async function main() {
       status: HostelStatus.ACTIVE,
     },
   ];
+
+  hostelData.push(
+    ...addMissingCityHostels(hostelData, {
+      Lahore: owner1.id,
+      Islamabad: owner2.id,
+      Karachi: owner3.id,
+      Faisalabad: owner4.id,
+      Multan: owner4.id,
+      Peshawar: owner2.id,
+      Quetta: owner4.id,
+      Rawalpindi: owner2.id,
+    }),
+  );
 
   for (const data of hostelData) {
     await db.hostel.upsert({
