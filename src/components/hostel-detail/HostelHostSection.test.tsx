@@ -48,7 +48,7 @@ describe("HostelHostSection", () => {
     expect(markup).toContain("Host details");
     expect(markup).toContain("Message host");
     expect(markup).toContain("For your safety, keep conversations with hosts on HostelLo.");
-    expect(markup).toContain('class="hostel-host-layout"');
+    expect(markup).toContain("hostel-host-layout");
     expect(markup).toContain("<details");
     expect(markup).not.toContain("Born in");
     expect(markup).not.toContain("school");

@@ -24,11 +24,11 @@ export function HostelSearchBar({
   function renderSearchForm(inDialog: boolean) {
     return (
       <form
-        className={`browse-search grid min-h-16 w-[min(800px,100%)] grid-cols-[1.3fr_1fr_0.85fr_48px] items-center gap-0 mx-auto rounded-full border border-line bg-white p-[7px] shadow-[0_5px_20px_rgb(29_42_34/9%)] transition-[border-color,box-shadow] duration-[180ms] focus-within:border-[color-mix(in_srgb,var(--brand)_42%,var(--line))] focus-within:shadow-[0_7px_24px_rgb(29_42_34/13%)] [@media(max-width:960px)]:w-[min(640px,100%)] [@media(max-width:720px)]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_44px] [@media(max-width:720px)]:rounded-[23px]${inDialog ? " browse-search-dialog-form [@media(max-width:720px)]:mx-0" : " [@media(max-width:720px)]:hidden"}`}
+        className={`mx-auto grid min-h-16 w-[min(800px,100%)] grid-cols-[1.3fr_1fr_0.85fr_48px] items-center gap-0 rounded-full border border-line bg-white p-[7px] shadow-[0_5px_20px_rgb(29_42_34/9%)] transition-[border-color,box-shadow] duration-[180ms] focus-within:border-[color-mix(in_srgb,var(--brand)_42%,var(--line))] focus-within:shadow-[0_7px_24px_rgb(29_42_34/13%)] [@media(max-width:960px)]:w-[min(640px,100%)] [@media(max-width:720px)]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_44px] [@media(max-width:720px)]:rounded-[23px]${inDialog ? " [@media(max-width:720px)]:mx-0" : " [@media(max-width:720px)]:hidden"}`}
         onSubmit={search}
         role="search"
       >
-        <label className="browse-search-field browse-destination-field flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:col-span-full [@media(max-width:720px)]:border-r-0 [@media(max-width:720px)]:border-b [@media(max-width:720px)]:pb-[7px]">
+        <label className="flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:col-span-full [@media(max-width:720px)]:border-r-0 [@media(max-width:720px)]:border-b [@media(max-width:720px)]:pb-[7px]">
           <span className="text-[0.69rem] leading-[1.3] font-bold text-ink">Where</span>
           <input
             aria-label="Destination"
@@ -40,7 +40,7 @@ export function HostelSearchBar({
             value={destination}
           />
         </label>
-        <label className="browse-search-field flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:pl-3">
+        <label className="flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:pl-3">
           <span className="text-[0.69rem] leading-[1.3] font-bold text-ink">Move-in</span>
           <input
             aria-label="Move-in date"
@@ -50,7 +50,7 @@ export function HostelSearchBar({
             value={moveInDate}
           />
         </label>
-        <label className="browse-search-field flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:border-r-0 [@media(max-width:720px)]:pr-[6px] [@media(max-width:720px)]:pl-3">
+        <label className="flex min-h-[42px] min-w-0 cursor-text flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:720px)]:border-r-0 [@media(max-width:720px)]:pr-[6px] [@media(max-width:720px)]:pl-3">
           <span className="text-[0.69rem] leading-[1.3] font-bold text-ink">Guests</span>
           <select
             aria-label="Guests"
@@ -67,7 +67,7 @@ export function HostelSearchBar({
         </label>
         <button
           aria-label="Search hostels"
-          className="browse-search-submit col-start-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-[background-color,transform] duration-[160ms] hover:scale-[1.04] hover:bg-brand-dark active:scale-[0.94] [@media(max-width:720px)]:col-start-3 [@media(max-width:720px)]:row-start-2 [@media(max-width:720px)]:h-10 [@media(max-width:720px)]:w-10 [@media(max-width:720px)]:justify-self-center motion-reduce:hover:transform-none! motion-reduce:active:transform-none!"
+          className="col-start-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-[background-color,transform] duration-[160ms] hover:scale-[1.04] hover:bg-brand-dark active:scale-[0.94] [@media(max-width:720px)]:col-start-3 [@media(max-width:720px)]:row-start-2 [@media(max-width:720px)]:h-10 [@media(max-width:720px)]:w-10 [@media(max-width:720px)]:justify-self-center motion-reduce:hover:transform-none! motion-reduce:active:transform-none!"
           type="submit"
         >
           <Search aria-hidden="true" size={18} />
@@ -78,12 +78,12 @@ export function HostelSearchBar({
 
   return (
     <section
-      className="browse-search-section border-b border-line bg-[#fcfcfb] py-[14px] [@media(max-width:720px)]:py-3 [@media(max-width:720px)]:pb-[10px]"
+      className="border-b border-line bg-[#fcfcfb] py-[14px] [@media(max-width:720px)]:py-3 [@media(max-width:720px)]:pb-[10px]"
       aria-label="Search stays"
     >
       <button
         aria-label="Start your search"
-        className="browse-mobile-search-trigger hidden min-h-14 w-full cursor-pointer items-center justify-center gap-[11px] rounded-full border border-line bg-white px-[18px] py-3 text-[0.94rem] font-semibold text-ink shadow-[0_4px_14px_rgb(29_42_34/8%)] transition-[box-shadow,transform] duration-[180ms] active:scale-[0.99] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! [@media(max-width:720px)]:flex motion-reduce:active:transform-none!"
+        className="hidden min-h-14 w-full cursor-pointer items-center justify-center gap-[11px] rounded-full border border-line bg-white px-[18px] py-3 text-[0.94rem] font-semibold text-ink shadow-[0_4px_14px_rgb(29_42_34/8%)] transition-[box-shadow,transform] duration-[180ms] active:scale-[0.99] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! [@media(max-width:720px)]:flex motion-reduce:active:transform-none!"
         onClick={() => searchDialogRef.current?.showModal()}
         type="button"
       >
@@ -92,7 +92,7 @@ export function HostelSearchBar({
       </button>
       <dialog
         aria-label="Search stays"
-        className="browse-search-dialog fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-white px-4 pt-5 pb-[calc(24px+env(safe-area-inset-bottom))] text-ink [@media(min-width:721px)]:h-auto [&::backdrop]:bg-[rgb(20_30_24/42%)]"
+        className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-white px-4 pt-5 pb-[calc(24px+env(safe-area-inset-bottom))] text-ink [@media(min-width:721px)]:h-auto [&::backdrop]:bg-[rgb(20_30_24/42%)]"
         onClick={(event: MouseEvent<HTMLDialogElement>) => {
           if (event.target === event.currentTarget) {
             searchDialogRef.current?.close();
@@ -100,12 +100,12 @@ export function HostelSearchBar({
         }}
         ref={searchDialogRef}
       >
-        <div className="browse-search-dialog-content mx-auto w-[min(100%,560px)]">
-          <div className="browse-search-dialog-header mb-5 flex min-h-11 items-center justify-between">
+        <div className="mx-auto w-[min(100%,560px)]">
+          <div className="mb-5 flex min-h-11 items-center justify-between">
             <h2 className="m-0 text-[1.15rem] font-bold">Search stays</h2>
             <button
               aria-label="Close search"
-              className="browse-search-dialog-close grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
+              className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
               onClick={() => searchDialogRef.current?.close()}
               type="button"
             >
@@ -113,13 +113,13 @@ export function HostelSearchBar({
             </button>
           </div>
           {renderSearchForm(true)}
-          <p className="browse-search-note mt-2 text-center text-[0.7rem] text-muted">
+          <p className="mt-2 text-center text-[0.7rem] text-muted">
             Move-in date and guests aren&apos;t used to filter availability yet.
           </p>
         </div>
       </dialog>
       {renderSearchForm(false)}
-      <p className="browse-search-note mt-2 text-center text-[0.7rem] text-muted [@media(max-width:720px)]:hidden">
+      <p className="mt-2 text-center text-[0.7rem] text-muted [@media(max-width:720px)]:hidden">
         Move-in date and guests aren&apos;t used to filter availability yet.
       </p>
     </section>

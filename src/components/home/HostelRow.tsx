@@ -195,13 +195,15 @@ export function HostelRow({
   }
 
   return (
-    <section className="browse-row" aria-labelledby={`stays-${city}`}>
-      <div className="browse-row-heading">
-        <h2 id={`stays-${city}`}>Stays in {city}</h2>
-        <div className="browse-row-controls">
+    <section className="mb-7" aria-labelledby={`stays-${city}`}>
+      <div className="mb-3 flex items-center justify-between gap-[18px]">
+        <h2 className="m-0 text-[1.3125rem] font-bold leading-[1.43] tracking-0" id={`stays-${city}`}>
+          Stays in {city}
+        </h2>
+        <div className="flex flex-[0_0_auto] gap-2">
           <button
             aria-label={`Scroll ${city} listings left`}
-            className="browse-scroll-button"
+            className="grid h-8 w-8 place-items-center rounded-full border border-line bg-white text-ink transition-colors duration-[160ms] hover:border-ink hover:bg-surface-muted"
             onClick={() => scrollCarousel(-1)}
             type="button"
           >
@@ -209,7 +211,7 @@ export function HostelRow({
           </button>
           <button
             aria-label={`Scroll ${city} listings right`}
-            className="browse-scroll-button"
+            className="grid h-8 w-8 place-items-center rounded-full border border-line bg-white text-ink transition-colors duration-[160ms] hover:border-ink hover:bg-surface-muted"
             onClick={() => scrollCarousel(1)}
             type="button"
           >

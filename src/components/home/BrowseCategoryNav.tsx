@@ -18,7 +18,7 @@ const categories = [
 export function BrowseCategoryNav({
   category,
   onSelectCategory,
-  className = "browse-category-nav",
+  className = "",
   variant = "header",
 }: {
   category: Category;
@@ -38,8 +38,8 @@ export function BrowseCategoryNav({
           aria-pressed={category === id}
           className={
             variant === "mobile"
-              ? "browse-category relative flex min-h-[44px] min-w-max cursor-pointer flex-row items-center justify-center gap-[7px] rounded-full border border-line bg-white px-3 py-[7px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:border-ink aria-pressed:bg-surface-muted aria-pressed:text-ink [@media(max-width:720px)]:after:hidden"
-              : "browse-category relative flex min-w-[70px] cursor-pointer flex-col items-center justify-center gap-[5px] border-0 bg-transparent px-[2px] pt-2 pb-[10px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:text-ink [@media(max-width:960px)]:min-w-[58px] [@media(max-width:960px)]:text-[0.68rem] [@media(max-width:420px)]:min-w-16 [@media(max-width:420px)]:text-[0.7rem]"
+              ? "relative flex min-h-[44px] min-w-max cursor-pointer flex-row items-center justify-center gap-[7px] rounded-full border border-line bg-white px-3 py-[7px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:border-ink aria-pressed:bg-surface-muted aria-pressed:text-ink [@media(max-width:720px)]:after:hidden"
+              : "relative flex min-w-[70px] cursor-pointer flex-col items-center justify-center gap-[5px] border-0 bg-transparent px-[2px] pt-2 pb-[10px] text-[0.76rem] font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:text-ink [@media(max-width:960px)]:min-w-[58px] [@media(max-width:960px)]:text-[0.68rem] [@media(max-width:420px)]:min-w-16 [@media(max-width:420px)]:text-[0.7rem]"
           }
           data-category={id}
           key={id}

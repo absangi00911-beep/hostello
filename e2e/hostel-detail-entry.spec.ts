@@ -379,9 +379,18 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
   await page.goto(`/hostels/${hostelId}`);
 
   const calendar = page.getByRole("region", { name: "Choose your dates" });
+  const bookingCard = page.locator(".hostel-booking-card");
   const amenities = page.getByRole("region", {
     name: "What this place offers",
   });
+  await expect(bookingCard).toHaveClass(/sticky/);
+  await expect(calendar).toHaveClass(/border-t/);
+  await expect(calendar.locator(".hostel-date-calendar-months")).toHaveClass(
+    /grid-cols-2/,
+  );
+  await expect(
+    calendar.getByRole("button", { name: "Next month" }),
+  ).toHaveClass(/focus-visible:outline-2!/);
   await expect(calendar.locator(".hostel-date-calendar-month")).toHaveCount(2);
   const [amenitiesTop, calendarTop] = await Promise.all([
     amenities.evaluate((element) => element.getBoundingClientRect().top),
@@ -418,6 +427,9 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
       name: `Select move-in date ${formatAccessibleDate(today)}`,
     })
     .click();
+  await expect(
+    calendar.locator('.hostel-date-calendar-day[aria-pressed="true"]'),
+  ).toHaveCSS("background-color", "rgb(29, 78, 216)");
   await calendar.getByRole("button", { name: "Next month" }).click();
   await calendar
     .getByRole("button", {
@@ -628,6 +640,21 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
     expect(await getColumnCount(".hostel-review-category-list")).toBe(2);
     expect(await getColumnCount(".hostel-review-list")).toBe(2);
   }
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.locator(".hostel-booking-card")).toHaveCSS(
+    "position",
+    "sticky",
+  );
+  await page.setViewportSize({ width: 900, height: 900 });
+  await expect(page.locator(".hostel-booking-card")).toHaveCSS(
+    "position",
+    "static",
+  );
+  await page.setViewportSize({ width: 721, height: 900 });
+  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(2);
+  await page.setViewportSize({ width: 720, height: 900 });
+  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
 
   await page.setViewportSize({ width: 375, height: 812 });
   expect(await getColumnCount(".hostel-room-grid")).toBe(1);

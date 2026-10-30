@@ -110,78 +110,131 @@ export function ProfilePageContent({
   profile: StudentProfile | null;
 }) {
   return (
-    <main className="student-page">
-      <div className="student-page-shell">
-        <header className="student-page-header">
-          <h1>Profile</h1>
-          <p>Your Hostello account at a glance.</p>
+    <main className="min-h-screen bg-canvas py-12 md:py-16">
+      <div className="mx-auto w-[min(100%-40px,600px)] md:w-[min(1920px,calc(100%-64px))]">
+        <header className="mb-7 md:mb-8">
+          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
+            Profile
+          </h1>
+          <p className="mt-2 m-0 text-[0.95rem] text-muted">
+            Your Hostello account at a glance.
+          </p>
         </header>
 
         {isLoading ? (
-          <section aria-busy="true" className="student-page-state" role="status">
-            <p>Loading profile...</p>
+          <section
+            aria-busy="true"
+            className="py-8 text-sm text-muted"
+            role="status"
+          >
+            <p className="m-0">Loading profile...</p>
           </section>
         ) : error ? (
-          <section className="student-page-error" role="alert">
-            <p>{error}</p>
-            <button onClick={onRetry} type="button">
+          <section
+            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            role="alert"
+          >
+            <p className="m-0 text-[0.95rem]">{error}</p>
+            <button
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current"
+              onClick={onRetry}
+              type="button"
+            >
               Try again
             </button>
           </section>
         ) : profile ? (
           <>
-            <section aria-label="Profile summary" className="student-profile-summary">
+            <section
+              aria-label="Profile summary"
+              className="flex items-center gap-5 rounded-2xl border border-line bg-surface p-6 md:gap-6 md:p-7"
+            >
               {profile.avatar ? (
                 <Image
                   alt=""
-                  className="student-profile-avatar"
+                  className="h-[88px] w-[88px] flex-none overflow-hidden rounded-full object-cover"
                   height={88}
                   src={profile.avatar}
                   unoptimized
                   width={88}
                 />
               ) : (
-                <span aria-hidden="true" className="student-profile-avatar-fallback">
+                <span
+                  aria-hidden="true"
+                  className="grid h-[88px] w-[88px] flex-none place-items-center overflow-hidden rounded-full bg-brand-soft text-[1.5rem] font-bold text-brand-dark"
+                >
                   {initials(profile.name)}
                 </span>
               )}
-              <div className="student-profile-identity">
-                <h2>{profile.name}</h2>
-                {profile.city && <p>{profile.city}</p>}
-                <p>
-                  Member since{" "}
-                  {memberSinceFormatter.format(new Date(profile.createdAt))}
+              <div className="min-w-0">
+                <h2 className="m-0 text-[1.3rem] font-semibold leading-[1.3] text-ink">
+                  {profile.name}
+                </h2>
+                {profile.city && (
+                  <p className="mt-1 mb-0 text-[0.95rem] text-muted">
+                    {profile.city}
+                  </p>
+                )}
+                <p className="mt-1 m-0 text-[0.95rem] text-muted">
+                  Member since {memberSinceFormatter.format(new Date(profile.createdAt))}
                 </p>
               </div>
             </section>
 
-            <section aria-label="Your activity" className="student-profile-stats">
-              <article>
-                <strong>{profile.counts.bookings}</strong>
-                <span>Bookings</span>
+            <section
+              aria-label="Your activity"
+              className="mt-5 grid grid-cols-3 gap-3 md:gap-3"
+            >
+              <article className="grid gap-1 rounded-xl border border-line bg-surface p-4 md:p-5">
+                <strong className="font-[var(--font-inter),sans-serif] text-[1.35rem] font-semibold text-ink">
+                  {profile.counts.bookings}
+                </strong>
+                <span className="text-[0.88rem] text-muted">Bookings</span>
               </article>
-              <article>
-                <strong>{profile.counts.favorites}</strong>
-                <span>Saved hostels</span>
+              <article className="grid gap-1 rounded-xl border border-line bg-surface p-4 md:p-5">
+                <strong className="font-[var(--font-inter),sans-serif] text-[1.35rem] font-semibold text-ink">
+                  {profile.counts.favorites}
+                </strong>
+                <span className="text-[0.88rem] text-muted">Saved hostels</span>
               </article>
-              <article>
-                <strong>{profile.counts.reviews}</strong>
-                <span>Reviews</span>
+              <article className="grid gap-1 rounded-xl border border-line bg-surface p-4 md:p-5">
+                <strong className="font-[var(--font-inter),sans-serif] text-[1.35rem] font-semibold text-ink">
+                  {profile.counts.reviews}
+                </strong>
+                <span className="text-[0.88rem] text-muted">Reviews</span>
               </article>
             </section>
 
-            <section className="student-host-entry">
+            <section className="mt-7 flex items-center justify-between gap-6 rounded-[14px] border border-line bg-surface p-6">
               <div>
-                <h2>Have a place to share?</h2>
-                <p>Welcome students by listing your hostel on Hostello.</p>
+                <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
+                  Have a place to share?
+                </h2>
+                <p className="mt-1 m-0 text-[0.95rem] text-muted">
+                  Welcome students by listing your hostel on Hostello.
+                </p>
               </div>
-              <Link href="/signup?role=OWNER">Become a host</Link>
+              <Link
+                className="inline-flex min-h-11 flex-none items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+                href="/signup?role=OWNER"
+              >
+                Become a host
+              </Link>
             </section>
           </>
         ) : (
-          <section className="student-page-error" role="alert">
-            <p>Could not load your profile. Please try again.</p>
-            <button onClick={onRetry} type="button">
+          <section
+            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            role="alert"
+          >
+            <p className="m-0 text-[0.95rem]">
+              Could not load your profile. Please try again.
+            </p>
+            <button
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current"
+              onClick={onRetry}
+              type="button"
+            >
               Try again
             </button>
           </section>

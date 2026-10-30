@@ -10,7 +10,7 @@ describe("HostelSearchBar", () => {
 
     expect(markup).toContain('aria-label="Start your search"');
     expect(markup).toContain('aria-label="Search stays"');
-    expect(markup).toContain('class="browse-search-dialog fixed');
+    expect(markup).toContain('class="fixed inset-0 m-0 h-dvh');
   });
 
   it("keeps the existing search fields in the desktop and mobile surfaces", () => {

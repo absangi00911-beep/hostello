@@ -317,7 +317,11 @@ export default function SearchPageClient({
     <div className="search-results-page min-h-dvh bg-white text-ink">
       <header className="search-results-header sticky top-0 z-20 border-b border-line bg-white/[0.96] backdrop-blur-[12px]">
         <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-64px))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:720px)]:w-[calc(100%-40px)]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
-          <Link className="browse-brand" href="/" aria-label="hostello home">
+          <Link
+            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
+            href="/"
+            aria-label="hostello home"
+          >
             <span>hostello</span>
           </Link>
 

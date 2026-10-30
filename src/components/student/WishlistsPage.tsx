@@ -91,13 +91,13 @@ function LoadingCards() {
   return (
     <div
       aria-hidden="true"
-      className="student-listing-grid grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-x-4 gap-y-6 [@media(max-width:720px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:720px)]:gap-5"
+      className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-x-4 gap-y-6 [@media(max-width:720px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:720px)]:gap-5"
     >
       {Array.from({ length: 3 }, (_, index) => (
-        <div className="student-listing-skeleton" key={index}>
-          <div className="student-listing-skeleton-image" />
-          <div className="student-listing-skeleton-line" />
-          <div className="student-listing-skeleton-line student-listing-skeleton-line-short" />
+        <div className="min-w-0 animate-pulse" key={index}>
+          <div className="mb-3 aspect-[1.18] rounded-[14px] bg-surface-muted" />
+          <div className="mb-2 h-[14px] w-[76%] rounded-lg bg-surface-muted" />
+          <div className="h-[11px] w-[48%] rounded-lg bg-surface-muted" />
         </div>
       ))}
     </div>
@@ -122,46 +122,77 @@ export function WishlistsPageContent({
   onRetry: () => void;
 }) {
   return (
-    <main className="student-page">
-      <div className="student-page-shell">
-        <header className="student-page-header">
-          <h1>Wishlists</h1>
-          <p>Hostels you have saved for later.</p>
+    <main className="min-h-screen bg-canvas py-12 md:py-16">
+      <div className="mx-auto w-[min(100%-40px,600px)] md:w-[min(1920px,calc(100%-64px))]">
+        <header className="mb-7 md:mb-8">
+          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
+            Wishlists
+          </h1>
+          <p className="mt-2 m-0 text-[0.95rem] text-muted">
+            Hostels you have saved for later.
+          </p>
         </header>
 
         {isLoading ? (
-          <section aria-busy="true" className="student-page-state" role="status">
-            <p>Loading saved hostels...</p>
+          <section
+            aria-busy="true"
+            className="py-8 text-sm text-muted"
+            role="status"
+          >
+            <p className="m-0">Loading saved hostels...</p>
             <LoadingCards />
           </section>
         ) : error && hostels.length === 0 ? (
-          <section className="student-page-error" role="alert">
-            <p>{error}</p>
-            <button onClick={onRetry} type="button">
+          <section
+            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            role="alert"
+          >
+            <p className="m-0 text-[0.95rem]">{error}</p>
+            <button
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current"
+              onClick={onRetry}
+              type="button"
+            >
               Try again
             </button>
           </section>
         ) : hostels.length === 0 ? (
-          <section className="student-page-empty" role="status">
-            <h2>No saved hostels yet</h2>
-            <p>Save a hostel while exploring and it will appear here.</p>
-            <Link href="/">Explore hostels</Link>
+          <section
+            className="rounded-[14px] border border-line bg-surface p-7"
+            role="status"
+          >
+            <h2 className="m-0 text-[1.2rem] font-semibold text-ink">
+              No saved hostels yet
+            </h2>
+            <p className="mt-2 mb-4 text-[0.95rem] text-muted">
+              Save a hostel while exploring and it will appear here.
+            </p>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+              href="/"
+            >
+              Explore hostels
+            </Link>
           </section>
         ) : (
           <>
             {error && (
-              <p className="student-page-error" role="alert">
+              <p
+                className="mb-5 rounded-[14px] border border-[#e7c9c4] bg-surface p-3 text-[0.9rem] text-[#8c2822]"
+                role="alert"
+              >
                 {error}{" "}
                 <button
+                  className="ml-1 font-semibold text-current underline-offset-2 disabled:opacity-60"
+                  disabled={isLoadingMore}
                   onClick={onLoadMore}
                   type="button"
-                  disabled={isLoadingMore}
                 >
                   Try again
                 </button>
               </p>
             )}
-            <div className="student-listing-grid grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-x-4 gap-y-6 [@media(max-width:720px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:720px)]:gap-5">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-x-4 gap-y-6 [@media(max-width:720px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:720px)]:gap-5">
               {hostels.map((hostel) => {
                 const image = hostel.coverImage || hostel.images[0];
                 return (
@@ -240,7 +271,7 @@ export function WishlistsPageContent({
             </div>
             {hasMore && (
               <button
-                className="student-page-load-more"
+                className="mt-7 mx-auto flex min-w-[140px] items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white disabled:cursor-wait disabled:opacity-60"
                 disabled={isLoadingMore}
                 onClick={onLoadMore}
                 type="button"

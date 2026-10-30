@@ -62,10 +62,10 @@ export default async function HostelDetailPage({
 
   return (
     <div className="hostel-detail-page min-h-dvh bg-white text-ink">
-      <header className="browse-header hostel-detail-header border-b border-line bg-white">
+      <header className="border-b border-line bg-white">
         <div className="hostel-detail-header-inner mx-auto grid min-h-20 w-[min(1920px,calc(100%-64px))] grid-cols-[minmax(0,1fr)_minmax(220px,320px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:960px)]:min-h-0 [@media(max-width:960px)]:w-[min(100%-32px,1344px)] [@media(max-width:960px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:960px)]:gap-y-[10px] [@media(max-width:960px)]:py-3 [@media(max-width:720px)]:w-[min(100%-40px,600px)] [@media(max-width:420px)]:w-[calc(100%-40px)] [&>.browse-account-actions]:justify-self-end [&_.browse-account-trigger]:px-2 [&_.browse-account-trigger]:py-1 [&_.browse-account-trigger]:pl-1 [&_.browse-sign-in]:size-[34px]">
           <Link
-            className="browse-brand inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:960px)]:col-start-1 [@media(max-width:960px)]:row-start-1"
+            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:960px)]:col-start-1 [@media(max-width:960px)]:row-start-1"
             href="/"
             aria-label="hostello home"
           >
