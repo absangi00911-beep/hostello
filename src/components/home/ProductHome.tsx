@@ -296,9 +296,12 @@ export default function ProductHome({
             aria-label="Hostel listings"
           >
             {isLoading && (
-              <p className="m-0 py-8 text-[0.92rem] text-muted" role="status">
-                Finding stays…
-              </p>
+              <div className="flex items-center justify-center py-12" role="status">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                  <p className="m-0 text-[0.92rem] text-muted">Finding stays…</p>
+                </div>
+              </div>
             )}
             {searchError && (
               <p className="m-0 py-8 text-[0.92rem] text-muted" role="alert">

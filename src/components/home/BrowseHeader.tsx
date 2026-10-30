@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   BrowseAccountActions,
@@ -32,6 +33,13 @@ export function BrowseHeader({
           href="/"
           aria-label="hostello home"
         >
+          <Image
+            src="/logo.png"
+            alt="Hostello logo"
+            width={40}
+            height={40}
+            className="h-10 w-10"
+          />
           <span>hostello</span>
         </Link>
 

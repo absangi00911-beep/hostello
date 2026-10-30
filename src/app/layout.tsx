@@ -12,6 +12,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "HostelLo",
   description: "Student-first hostel discovery, booking, and owner listings.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
