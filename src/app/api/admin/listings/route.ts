@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@/generated/client";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { enforceAdminReadLimit } from "@/lib/admin-read-limit";
@@ -32,11 +33,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "status is required" }, { status: 400 });
   }
 
-  if (!(VALID_STATUSES as readonly string[]).includes(status)) {
+  const validatedStatus = VALID_STATUSES.find(
+    (validStatus) => validStatus === status,
+  );
+  if (!validatedStatus) {
     return NextResponse.json({ error: "Invalid status." }, { status: 400 });
   }
 
-  const where: any = { status };
+  const where: Prisma.HostelWhereInput = { status: validatedStatus };
 
   if (search) {
     where.OR = [

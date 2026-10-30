@@ -138,7 +138,6 @@ function MonthlyChart({
   data: AnalyticsData["byMonth"];
 }) {
   const maxBookings = Math.max(...data.map((d) => d.bookings), 1);
-  const maxRevenue = Math.max(...data.map((d) => d.revenue), 1);
 
   return (
     <section
@@ -151,7 +150,6 @@ function MonthlyChart({
       <div className="mt-6 space-y-4">
         {data.map((month) => {
           const bookingHeight = (month.bookings / maxBookings) * 100;
-          const revenueHeight = (month.revenue / maxRevenue) * 100;
 
           return (
             <div key={month.key} className="space-y-2">
