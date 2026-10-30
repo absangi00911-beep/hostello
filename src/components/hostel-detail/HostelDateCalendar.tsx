@@ -59,18 +59,25 @@ export function HostelDateCalendar({
 
     return (
       <div
-        className="hostel-date-calendar-month"
+        className=""
         key={monthStart.toISOString()}
       >
-        <h3>{format(monthStart, "MMMM yyyy")}</h3>
-        <div aria-hidden="true" className="hostel-date-calendar-weekdays">
+        <h3 className="m-0 mb-4 text-base leading-6 font-[650]">
+          {format(monthStart, "MMMM yyyy")}
+        </h3>
+        <div
+          aria-hidden="true"
+          className="mb-[6px] grid grid-cols-7 justify-items-center text-xs font-semibold text-muted"
+        >
           {weekDays.map((day) => (
-            <span key={day}>{day}</span>
+            <span className="py-[5px]" key={day}>
+              {day}
+            </span>
           ))}
         </div>
         <div
           aria-label={`${format(monthStart, "MMMM yyyy")} dates`}
-          className="hostel-date-calendar-days"
+          className="grid grid-cols-7 justify-items-center gap-y-1"
           role="group"
         >
           {dateCells.map((day, index) => {
@@ -78,7 +85,7 @@ export function HostelDateCalendar({
               return (
                 <span
                   aria-hidden="true"
-                  className="hostel-date-calendar-empty"
+                  className="aspect-square w-[min(100%,40px)]"
                   key={`empty-${index}`}
                 />
               );
@@ -112,11 +119,17 @@ export function HostelDateCalendar({
               Boolean(checkIn && checkOut) &&
               dateValue > checkIn &&
               dateValue < checkOut;
+            const dateStyle =
+              isMoveIn || isMoveOut
+                ? "rounded-full bg-brand-dark text-white"
+                : isInRange
+                  ? "is-in-range rounded-none bg-surface-muted"
+                  : "rounded-full bg-transparent";
             const className = [
-              "hostel-date-calendar-day",
+              "grid aspect-square w-[min(100%,40px)] cursor-pointer place-items-center border-0 text-sm tabular-nums text-ink aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
+              dateStyle,
               isMoveIn ? "is-move-in" : "",
               isMoveOut ? "is-move-out" : "",
-              isInRange ? "is-in-range" : "",
             ]
               .filter(Boolean)
               .join(" ");
@@ -150,21 +163,26 @@ export function HostelDateCalendar({
   return (
     <section
       aria-labelledby="hostel-date-calendar-title"
-      className="hostel-date-calendar"
+      className="border-t border-line pt-5"
       role="region"
     >
-      <div className="hostel-date-calendar-heading">
+      <div className="mb-4 flex items-start justify-between gap-4 [@media(max-width:720px)]:flex-col">
         <div>
-          <h2 id="hostel-date-calendar-title">Choose your dates</h2>
-          <p>
+          <h2
+            className="m-0 text-xl leading-[1.35] font-semibold tracking-[-0.02em]"
+            id="hostel-date-calendar-title"
+          >
+            Choose your dates
+          </h2>
+          <p className="mt-[6px] mb-0 text-sm leading-[1.5] text-muted">
             Select move-in and move-out dates. Minimum stay: {minimumStay}
             {maximumStay ? `; maximum stay: ${maximumStay}` : ""}.
           </p>
         </div>
-        <div className="hostel-date-calendar-controls">
+        <div className="flex flex-[0_0_auto] items-center gap-2 [@media(max-width:720px)]:w-full [@media(max-width:720px)]:justify-end">
           {(checkIn || checkOut) && (
             <button
-              className="hostel-date-calendar-clear"
+              className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2!"
               onClick={() => selectMoveIn("")}
               type="button"
             >
@@ -173,7 +191,7 @@ export function HostelDateCalendar({
           )}
           <button
             aria-label="Previous month"
-            className="hostel-date-calendar-nav"
+            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink hover:enabled:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50"
             disabled={
               firstMonth.getFullYear() === today.getFullYear() &&
               firstMonth.getMonth() <= today.getMonth()
@@ -187,7 +205,7 @@ export function HostelDateCalendar({
           </button>
           <button
             aria-label="Next month"
-            className="hostel-date-calendar-nav"
+            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2!"
             onClick={() =>
               setFirstMonth((month) => startOfMonth(addMonths(month, 1)))
             }
@@ -197,7 +215,7 @@ export function HostelDateCalendar({
           </button>
         </div>
       </div>
-      <div className="hostel-date-calendar-months">
+      <div className="grid grid-cols-2 gap-6 [@media(max-width:720px)]:grid-cols-1">
         {[0, 1].map((offset) =>
           renderMonth(addMonths(firstMonth, offset)),
         )}
