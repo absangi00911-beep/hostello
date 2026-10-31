@@ -75,7 +75,7 @@ export function HostelHostSection({
       <h2 id="hostel-host-title" className="mb-4 text-[1.25rem] font-semibold tracking-[-0.02em] text-ink">
         Meet your host
       </h2>
-      <div className="hostel-host-layout grid gap-[clamp(24px,3vw,40px)] [grid-template-columns:minmax(0,0.9fr)_minmax(0,1.1fr)] md:[grid-template-columns:minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <div className="hostel-host-layout grid gap-[clamp(24px,3vw,40px)] [grid-template-columns:minmax(0,0.9fr)_minmax(0,1.1fr)] [@media(max-width:720px)]:grid-cols-1 md:[grid-template-columns:minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="hostel-host-primary grid min-w-0 gap-5">
           <div
             aria-label="Host profile"
