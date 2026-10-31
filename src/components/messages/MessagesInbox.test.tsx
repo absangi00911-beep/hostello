@@ -21,6 +21,36 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+vi.mock("@/components/messages/useMessagesInbox", () => ({
+  useMessagesInbox: () => ({
+    cancelPendingInquiry: vi.fn(),
+    conversations: [],
+    conversationPage: { data: [], total: 0, page: 1, limit: 20, hasMore: false },
+    hasPendingInquiry: false,
+    listError: "",
+    listLoading: true,
+    listPaging: false,
+    loadConversationList: vi.fn(),
+    loadMoreConversations: vi.fn(),
+    loadOlderMessages: vi.fn(),
+    message: "",
+    pendingError: "",
+    retryPendingInquiry: vi.fn(),
+    selectedConversationId: null,
+    selectedThread: null,
+    selectConversation: vi.fn(),
+    sendError: "",
+    sendMessage: vi.fn(),
+    sending: false,
+    setMessage: vi.fn(),
+    threadError: "",
+    threadLoading: false,
+    threadRefreshing: false,
+    visibleMessages: [],
+    refreshThread: vi.fn(),
+  }),
+}));
+
 const conversation = {
   id: "conversation-1",
   hostelName: "Canal View Hostel",
@@ -75,6 +105,17 @@ function thread(
     messageHasMore: messagePage > 1,
   };
 }
+
+describe("MessagesInbox header", () => {
+  it("shows the Hostello logo with its wordmark", () => {
+    const markup = renderToStaticMarkup(
+      <MessagesInbox currentUserId="student-1" />,
+    );
+
+    expect(markup).toContain('alt="Hostello logo"');
+    expect(markup).toContain("<span>hostello</span>");
+  });
+});
 
 describe("MessagesInbox API behavior", () => {
   it("renders a conversation participant's photo avatar", () => {

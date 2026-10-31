@@ -5,6 +5,11 @@ import type { Prisma } from "@/generated/client";
 import { searchHostels, type TypesenseSearchHit, type TypesenseSearchResult, type HostelDocument } from "@/lib/typesense";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
+import {
+  distanceBetweenCoordinatesKm,
+  NEARBY_SEARCH_RADIUS_KM,
+  type NearbyCoordinates,
+} from "@/lib/nearby-search";
 
 export interface SearchParams {
   q?: string;
@@ -14,6 +19,9 @@ export interface SearchParams {
   maxPrice?: number;
   amenities?: string[];
   verified?: boolean;
+  moveInDate?: Date;
+  guests?: number;
+  nearby?: NearbyCoordinates;
   sort?: "price_asc" | "price_desc" | "rating" | "newest";
   page: number;
   limit: number;
@@ -23,6 +31,130 @@ export interface SearchResult {
   hostelIds: string[];
   total: number;
   isSearchDegraded: boolean;
+}
+
+function buildWhereClause(params: SearchParams): Prisma.HostelWhereInput {
+  const where: Prisma.HostelWhereInput = { status: "ACTIVE" };
+  if (params.q) {
+    where.OR = [
+      { name: { contains: params.q, mode: "insensitive" } },
+      { description: { contains: params.q, mode: "insensitive" } },
+      { city: { contains: params.q, mode: "insensitive" } },
+      { area: { contains: params.q, mode: "insensitive" } },
+      { address: { contains: params.q, mode: "insensitive" } },
+    ];
+  }
+  if (params.city) where.city = params.city;
+  if (params.gender) where.gender = params.gender;
+  if (params.verified) where.verified = true;
+  if (params.minPrice !== undefined || params.maxPrice !== undefined) {
+    where.pricePerMonth = {};
+    if (params.minPrice !== undefined) where.pricePerMonth.gte = params.minPrice;
+    if (params.maxPrice !== undefined) where.pricePerMonth.lte = params.maxPrice;
+  }
+  if (params.amenities && params.amenities.length > 0) {
+    where.amenities = { hasEvery: params.amenities };
+  }
+  return where;
+}
+
+function buildOrderByClause(
+  sort: SearchParams["sort"],
+): Prisma.HostelOrderByWithRelationInput {
+  if (sort === "price_asc") return { pricePerMonth: "asc" };
+  if (sort === "price_desc") return { pricePerMonth: "desc" };
+  if (sort === "rating") return { rating: "desc" };
+  return { createdAt: "desc" };
+}
+
+function buildNearbyWhereClause(params: SearchParams): Prisma.HostelWhereInput {
+  const where = buildWhereClause(params);
+  const location = params.nearby;
+  if (!location) return where;
+
+  const angularRadius = NEARBY_SEARCH_RADIUS_KM / 6_371;
+  const latitudeDelta = angularRadius * (180 / Math.PI);
+  const minLatitude = Math.max(-90, location.latitude - latitudeDelta);
+  const maxLatitude = Math.min(90, location.latitude + latitudeDelta);
+  const longitudeRatio =
+    Math.sin(angularRadius) / Math.cos(location.latitude * (Math.PI / 180));
+  const longitudeDelta =
+    Math.abs(longitudeRatio) >= 1
+      ? 180
+      : Math.asin(Math.abs(longitudeRatio)) * (180 / Math.PI);
+
+  where.latitude = { gte: minLatitude, lte: maxLatitude };
+  if (longitudeDelta < 180) {
+    const minLongitude = location.longitude - longitudeDelta;
+    const maxLongitude = location.longitude + longitudeDelta;
+    let longitudeWhere: Prisma.HostelWhereInput;
+
+    if (minLongitude < -180) {
+      longitudeWhere = {
+        OR: [
+          { longitude: { gte: minLongitude + 360 } },
+          { longitude: { lte: maxLongitude } },
+        ],
+      };
+    } else if (maxLongitude > 180) {
+      longitudeWhere = {
+        OR: [
+          { longitude: { gte: minLongitude } },
+          { longitude: { lte: maxLongitude - 360 } },
+        ],
+      };
+    } else {
+      longitudeWhere = {
+        longitude: { gte: minLongitude, lte: maxLongitude },
+      };
+    }
+
+    where.AND = [longitudeWhere];
+  }
+  return where;
+}
+
+function isWithinNearbyRadius(
+  hostel: { latitude: number | null; longitude: number | null },
+  location: NearbyCoordinates,
+): boolean {
+  return (
+    hostel.latitude !== null &&
+    hostel.longitude !== null &&
+    distanceBetweenCoordinatesKm(location, {
+      latitude: hostel.latitude,
+      longitude: hostel.longitude,
+    }) <= NEARBY_SEARCH_RADIUS_KM
+  );
+}
+
+function paginateHostels(
+  hostels: { id: string }[],
+  page: number,
+  limit: number,
+): SearchResult {
+  const start = (page - 1) * limit;
+  return {
+    hostelIds: hostels.slice(start, start + limit).map((hostel) => hostel.id),
+    total: hostels.length,
+    isSearchDegraded: false,
+  };
+}
+
+function isAvailableOnMoveInDate(
+  hostel: {
+    capacity: number;
+    bookings: { guests: number }[];
+    blockedDates: { id: string }[];
+  },
+  guests: number,
+): boolean {
+  return (
+    hostel.blockedDates.length === 0 &&
+    hostel.capacity -
+      hostel.bookings.reduce((occupied, booking) => occupied + booking.guests, 0) >=
+      guests
+  );
 }
 
 /**
@@ -37,6 +169,88 @@ export async function searchHostelsWithFallback(
   logContext?: OperationalLogContext,
 ): Promise<SearchResult> {
   const { q, city, gender, minPrice, maxPrice, amenities, verified, sort, page, limit } = params;
+
+  if (params.nearby) {
+    const where = buildNearbyWhereClause(params);
+
+    if (params.moveInDate) {
+      const hostels = await db.hostel.findMany({
+        where,
+        select: {
+          id: true,
+          latitude: true,
+          longitude: true,
+          capacity: true,
+          bookings: {
+            where: {
+              status: { in: ["PENDING", "CONFIRMED"] },
+              checkIn: { lte: params.moveInDate },
+              checkOut: { gt: params.moveInDate },
+            },
+            select: { guests: true },
+          },
+          blockedDates: {
+            where: {
+              startDate: { lte: params.moveInDate },
+              endDate: { gte: params.moveInDate },
+            },
+            select: { id: true },
+          },
+        },
+        orderBy: buildOrderByClause(sort),
+      });
+      const nearbyAvailableHostels = hostels.filter(
+        (hostel) =>
+          isWithinNearbyRadius(hostel, params.nearby!) &&
+          isAvailableOnMoveInDate(hostel, params.guests ?? 1),
+      );
+      return paginateHostels(nearbyAvailableHostels, page, limit);
+    }
+
+    const hostels = await db.hostel.findMany({
+      where,
+      select: { id: true, latitude: true, longitude: true },
+      orderBy: buildOrderByClause(sort),
+    });
+    return paginateHostels(
+      hostels.filter((hostel) => isWithinNearbyRadius(hostel, params.nearby!)),
+      page,
+      limit,
+    );
+  }
+
+  if (params.moveInDate) {
+    const hostels = await db.hostel.findMany({
+      where: buildWhereClause(params),
+      select: {
+        id: true,
+        capacity: true,
+        bookings: {
+          where: {
+            status: { in: ["PENDING", "CONFIRMED"] },
+            checkIn: { lte: params.moveInDate },
+            checkOut: { gt: params.moveInDate },
+          },
+          select: { guests: true },
+        },
+        blockedDates: {
+          where: {
+            startDate: { lte: params.moveInDate },
+            endDate: { gte: params.moveInDate },
+          },
+          select: { id: true },
+        },
+      },
+      orderBy: buildOrderByClause(sort),
+    });
+    return paginateHostels(
+      hostels.filter((hostel) =>
+        isAvailableOnMoveInDate(hostel, params.guests ?? 1),
+      ),
+      page,
+      limit,
+    );
+  }
 
   let hostelIds: string[];
   let total: number;
@@ -78,39 +292,12 @@ export async function searchHostelsWithFallback(
   }
 
   // Full Prisma fallback with complete filter support.
-  const whereClause: Prisma.HostelWhereInput = { status: "ACTIVE" };
-  if (q) {
-    whereClause.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-      { city: { contains: q, mode: "insensitive" } },
-      { area: { contains: q, mode: "insensitive" } },
-      { address: { contains: q, mode: "insensitive" } },
-    ];
-  }
-  if (city) whereClause.city = city;
-  if (gender) whereClause.gender = gender;
-  if (verified) whereClause.verified = true;
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    whereClause.pricePerMonth = {};
-    if (minPrice !== undefined) whereClause.pricePerMonth.gte = minPrice;
-    if (maxPrice !== undefined) whereClause.pricePerMonth.lte = maxPrice;
-  }
-  if (amenities && amenities.length > 0) {
-    // Match hostels that have ALL specified amenities (consistent with Typesense)
-    whereClause.amenities = { hasEvery: amenities };
-  }
-
-  const orderByClause: Prisma.HostelOrderByWithRelationInput = {};
-  if (sort === "price_asc") orderByClause.pricePerMonth = "asc";
-  else if (sort === "price_desc") orderByClause.pricePerMonth = "desc";
-  else if (sort === "rating") orderByClause.rating = "desc";
-  else orderByClause.createdAt = "desc";
+  const whereClause = buildWhereClause(params);
 
   const fallbackHostels = await db.hostel.findMany({
     where: whereClause,
     select: { id: true },
-    orderBy: Object.keys(orderByClause).length > 0 ? orderByClause : { createdAt: "desc" },
+    orderBy: buildOrderByClause(sort),
     skip: (page - 1) * limit,
     take: limit,
   });

@@ -10,11 +10,18 @@ import {
   Star,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   BrowseAccountActions,
 } from "@/components/auth/BrowseAccountActions";
+import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import {
+  isNearbyCoordinates,
+  NEARBY_COORDINATES_SESSION_KEY,
+  type NearbyCoordinates,
+} from "@/lib/nearby-search";
 
 interface HostelSearchResult {
   id: string;
@@ -48,6 +55,18 @@ const mapPinPositions = [
   { top: "57%", left: "45%" },
   { top: "72%", left: "79%" },
 ];
+
+function readNearbyCoordinates(): NearbyCoordinates | null {
+  const raw = window.sessionStorage.getItem(NEARBY_COORDINATES_SESSION_KEY);
+  if (!raw) return null;
+
+  try {
+    const coordinates: unknown = JSON.parse(raw);
+    return isNearbyCoordinates(coordinates) ? coordinates : null;
+  } catch {
+    return null;
+  }
+}
 
 function isHostelSearchResult(value: unknown): value is HostelSearchResult {
   if (typeof value !== "object" || value === null) return false;
@@ -230,12 +249,27 @@ function HostelCard({
 export default function SearchPageClient({
   accountUser,
   initialCity,
+  initialNearby,
+  initialMoveInDate,
+  initialGuests,
 }: {
   accountUser: BrowseAccountUser | null;
   initialCity: string;
+  initialNearby: boolean;
+  initialMoveInDate: string;
+  initialGuests: number;
 }) {
-  const [destination, setDestination] = useState(initialCity);
+  const router = useRouter();
+  const [destination, setDestination] = useState(
+    initialNearby ? "Nearby" : initialCity,
+  );
+  const [isNearby, setIsNearby] = useState(initialNearby);
   const [appliedCity, setAppliedCity] = useState(initialCity);
+  const [appliedNearby, setAppliedNearby] = useState(initialNearby);
+  const [moveInDate, setMoveInDate] = useState(initialMoveInDate);
+  const [appliedMoveInDate, setAppliedMoveInDate] = useState(initialMoveInDate);
+  const [guests, setGuests] = useState(String(initialGuests));
+  const [appliedGuests, setAppliedGuests] = useState(String(initialGuests));
   const [hostels, setHostels] = useState<HostelSearchResult[]>([]);
   const [totalHostels, setTotalHostels] = useState(0);
   const [page, setPage] = useState(1);
@@ -254,12 +288,48 @@ export default function SearchPageClient({
         page: String(page),
         limit: String(PAGE_SIZE),
       });
-      if (appliedCity) query.set("city", appliedCity);
 
       try {
-        const response = await fetch(`/api/hostels?${query}`, {
-          signal: controller.signal,
-        });
+        let response: Response;
+        if (appliedNearby) {
+          const coordinates = readNearbyCoordinates();
+          if (!coordinates) {
+            setHostels([]);
+            setTotalHostels(0);
+            setSearchError(
+              "Your nearby location is no longer available in this tab. Start a new search and choose Nearby again.",
+            );
+            return;
+          }
+          const body: {
+            latitude: number;
+            longitude: number;
+            moveInDate?: string;
+            guests?: number;
+          } = {
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+          };
+          if (appliedMoveInDate) {
+            body.moveInDate = appliedMoveInDate;
+            body.guests = Number(appliedGuests);
+          }
+          response = await fetch(`/api/hostels/nearby?${query}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+        } else {
+          if (appliedCity) query.set("city", appliedCity);
+          if (appliedMoveInDate) {
+            query.set("moveInDate", appliedMoveInDate);
+            query.set("guests", appliedGuests);
+          }
+          response = await fetch(`/api/hostels?${query}`, {
+            signal: controller.signal,
+          });
+        }
         const result: unknown = await response.json();
 
         if (!response.ok) {
@@ -296,12 +366,37 @@ export default function SearchPageClient({
 
     void loadHostels();
     return () => controller.abort();
-  }, [appliedCity, page]);
+  }, [appliedCity, appliedGuests, appliedMoveInDate, appliedNearby, page]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const trimmedDestination = destination.trim();
+    const useNearby =
+      isNearby && trimmedDestination.toLocaleLowerCase() === "nearby";
     setPage(1);
-    setAppliedCity(destination.trim());
+    setAppliedCity(useNearby ? "" : trimmedDestination);
+    setAppliedNearby(useNearby);
+    setAppliedMoveInDate(moveInDate);
+    setAppliedGuests(guests);
+    setIsNearby(useNearby);
+
+    const params = new URLSearchParams();
+    if (useNearby) params.set("nearby", "true");
+    else if (trimmedDestination) params.set("city", trimmedDestination);
+    if (moveInDate) {
+      params.set("moveInDate", moveInDate);
+      params.set("guests", guests);
+    }
+    const query = params.toString();
+    router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
+
+    if (!useNearby) {
+      try {
+        window.sessionStorage.removeItem(NEARBY_COORDINATES_SESSION_KEY);
+      } catch {
+        console.warn("Could not clear nearby search coordinates from this tab.");
+      }
+    }
   }
 
   function selectPage(nextPage: number) {
@@ -309,7 +404,9 @@ export default function SearchPageClient({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const pageTitle = appliedCity
+  const pageTitle = appliedNearby
+    ? "Hostels near you"
+    : appliedCity
     ? `Hostels in ${appliedCity}`
     : "Hostels across Pakistan";
 
@@ -317,13 +414,9 @@ export default function SearchPageClient({
     <div className="search-results-page min-h-dvh bg-white text-ink">
       <header className="search-results-header sticky top-0 z-20 border-b border-line bg-white/[0.96] backdrop-blur-[12px]">
         <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-var(--page-gutter-total)))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
-          <Link
+          <HostelloBrand
             className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
-            href="/"
-            aria-label="hostello home"
-          >
-            <span>hostello</span>
-          </Link>
+          />
 
           <form
             className="search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 [@media(max-width:520px)]:min-h-[50px] [@media(max-width:520px)]:grid-cols-[minmax(100px,1.2fr)_minmax(80px,0.8fr)_38px]"
@@ -338,28 +431,44 @@ export default function SearchPageClient({
                 aria-label="Search destination"
                 autoComplete="off"
                 className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.75rem] leading-[1.4] text-muted outline-none placeholder:text-muted placeholder:opacity-100"
-                onChange={(event) => setDestination(event.target.value)}
+                onChange={(event) => {
+                  setDestination(event.target.value);
+                  setIsNearby(false);
+                }}
                 placeholder="Search any city"
                 type="search"
                 value={destination}
               />
             </label>
-            <div className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
               <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
                 Move-in
               </span>
-              <span className="overflow-hidden text-[0.74rem] text-muted text-ellipsis whitespace-nowrap">
-                Add dates
-              </span>
-            </div>
-            <div className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:hidden [@media(max-width:520px)]:px-[10px]">
+              <input
+                aria-label="Move-in date"
+                className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                onChange={(event) => setMoveInDate(event.target.value)}
+                type="date"
+                value={moveInDate}
+              />
+            </label>
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:hidden [@media(max-width:520px)]:px-[10px]">
               <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
-                Residents
+                Guests
               </span>
-              <span className="overflow-hidden text-[0.74rem] text-muted text-ellipsis whitespace-nowrap">
-                Add residents
-              </span>
-            </div>
+              <select
+                aria-label="Guests"
+                className="w-full min-w-0 cursor-pointer border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                onChange={(event) => setGuests(event.target.value)}
+                value={guests}
+              >
+                {Array.from({ length: 8 }, (_, index) => index + 1).map((count) => (
+                  <option key={count} value={String(count)}>
+                    {count} {count === 1 ? "guest" : "guests"}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               aria-label="Search hostels"
               className="search-compact-submit grid size-[38px] cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-colors duration-[160ms] hover:bg-brand-dark [@media(max-width:520px)]:size-9"
@@ -438,9 +547,13 @@ export default function SearchPageClient({
                 className="search-results-message m-0 py-[30px] text-[0.9rem] text-muted"
                 role="status"
               >
-                {appliedCity
-                  ? `No hostels found in ${appliedCity} yet.`
-                  : "No active hostel listings yet."}
+                {appliedMoveInDate
+                  ? `No hostels have space for ${appliedGuests} ${
+                      appliedGuests === "1" ? "guest" : "guests"
+                    } on ${appliedMoveInDate}.`
+                  : appliedCity
+                    ? `No hostels found in ${appliedCity} yet.`
+                    : "No active hostel listings yet."}
               </p>
             )}
             {!isLoading && !searchError && hostels.length > 0 && (

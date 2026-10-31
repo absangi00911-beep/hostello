@@ -8,6 +8,24 @@ test("guest_can_still_start_the_host_sign_up_flow", async ({ page }) => {
   await expect(becomeHost).toHaveAttribute("href", "/signup?role=OWNER");
 });
 
+test("login_dialog_shows_a_centered_logo_and_login_or_signup_title", async ({ page }) => {
+  await page.goto("/login");
+
+  const loginDialog = page.getByRole("dialog");
+  await expect(loginDialog).toBeVisible();
+  await expect(
+    loginDialog.getByRole("heading", { name: "Login or Signup" }),
+  ).toBeVisible();
+  await expect(
+    loginDialog.getByRole("link", { name: "hostello home" }).getByRole("img", {
+      name: "Hostello logo",
+    }),
+  ).toBeVisible();
+  await expect(
+    loginDialog.getByText("hostello", { exact: true }),
+  ).toHaveCount(0);
+});
+
 test("login_opens_as_a_shareable_dialog_over_hostel_discovery", async ({
   page,
 }) => {
@@ -24,7 +42,7 @@ test("login_opens_as_a_shareable_dialog_over_hostel_discovery", async ({
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Log in to HostelLo" }),
+    page.getByRole("heading", { name: "Login or Signup" }),
   ).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Email")).toHaveValue("");

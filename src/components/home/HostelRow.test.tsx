@@ -51,13 +51,13 @@ describe("HostelRow favorite action", () => {
     const markup = renderRow();
 
     expect(markup).toContain(
-      "auto-cols-[calc(13.986%_-_13.71px)]",
+      "auto-cols-[calc(14.085%_-_13.8px)]",
     );
     expect(markup).toContain(
-      "auto-cols-[calc(24.096%_-_11.57px)]",
+      "auto-cols-[calc(24.39%_-_11.71px)]",
     );
     expect(markup).toContain(
-      "auto-cols-[calc(46.512%_-_11.16px)]",
+      "auto-cols-[calc(47.619%_-_11.43px)]",
     );
     expect(markup).toContain("group-hover:brightness-[0.9]");
     expect(markup).toContain("group-focus-visible:brightness-[0.9]");
@@ -67,13 +67,37 @@ describe("HostelRow favorite action", () => {
     expect(markup).toContain("focus-visible:outline-2!");
   });
 
-  it("keeps the favorite control transparent and inset by seven pixels", () => {
+  it("uses a 16px radius on the hostel card and its image", () => {
     const markup = renderRow();
 
-    expect(markup).toContain("top-[7px]");
-    expect(markup).toContain("right-[7px]");
-    expect(markup).toContain("bg-transparent");
-    expect(markup).toContain("brightness-[0.95]");
+    expect(markup).toContain(
+      'class="hostel-card-link group block min-w-0 rounded-[16px]',
+    );
+    expect(markup).toContain(
+      'class="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[16px]',
+    );
+  });
+
+  it("renders a white outlined heart directly over the image corner", () => {
+    const markup = renderRow();
+    const favoriteButtonClass = markup.match(
+      /class="([^"]*hostel-favorite-button[^"]*)"/,
+    )?.[1];
+
+    expect(markup).toContain("@container/hostel-card");
+    expect(favoriteButtonClass).toContain("top-0");
+    expect(favoriteButtonClass).toContain("right-0");
+    expect(favoriteButtonClass).toContain(
+      "size-[clamp(2.75rem,26cqw,3.25rem)]",
+    );
+    expect(favoriteButtonClass).toContain("bg-transparent");
+    expect(favoriteButtonClass).toContain("text-white");
+    expect(favoriteButtonClass).not.toContain("bg-white");
+    expect(markup).toContain("drop-shadow-[0_1px_2px_rgb(0_0_0/85%)]");
+    expect(markup).toContain("size-[clamp(1.25rem,12cqw,1.5rem)]");
+    expect(markup).toContain('fill="black"');
+    expect(markup).toContain('fill-opacity="0.1"');
+    expect(markup).toContain('stroke="white"');
   });
 
   it("reflects the server-confirmed saved state", () => {
@@ -81,6 +105,9 @@ describe("HostelRow favorite action", () => {
 
     expect(markup).toContain('aria-pressed="true"');
     expect(markup).toContain('aria-label="Remove Hostel One from Wishlists"');
+    expect(markup).toContain('fill="currentColor"');
+    expect(markup).toContain('fill-opacity="1"');
+    expect(markup).toContain('stroke="currentColor"');
   });
 
   it("hides favorite actions for owner accounts", () => {

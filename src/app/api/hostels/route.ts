@@ -5,6 +5,7 @@ import { hostelCreateSchema } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { searchHostelsWithFallback } from "@/lib/hostel-search";
+import { fetchHostelSearchResults } from "@/lib/hostel-search-response";
 import { parsePagination } from "@/lib/pagination";
 import { createHostelRecord, notifyAdminOfNewListing } from "@/lib/hostel-service";
 import { PLANS } from "@/config/plans";
@@ -27,6 +28,7 @@ const MAX_AMENITY_FILTERS = 30;
 const MAX_AMENITY_LENGTH = 100;
 const MAX_QUERY_LENGTH = 4_096;
 const MAX_SEARCH_REQUESTS_PER_MINUTE = 120;
+const MAX_SEARCH_GUESTS = 8;
 const MAX_LISTING_TRANSACTION_ATTEMPTS = 3;
 
 function isSerializableTransactionConflict(error: unknown) {
@@ -172,6 +174,8 @@ export async function GET(req: NextRequest) {
     const minPrice = params.has("minPrice") ? Number(params.get("minPrice")) : undefined;
     const maxPrice = params.has("maxPrice") ? Number(params.get("maxPrice")) : undefined;
     const amenities = params.getAll("amenities");
+    const moveInDateValues = params.getAll("moveInDate");
+    const guestsValues = params.getAll("guests");
     const sortParam = params.get("sort");
     const sort = sortParam === "price_asc" || sortParam === "price_desc" || sortParam === "rating" || sortParam === "newest"
       ? sortParam
@@ -185,6 +189,31 @@ export async function GET(req: NextRequest) {
       amenities.some((amenity) => amenity.length > MAX_AMENITY_LENGTH)
     ) {
       return NextResponse.json({ error: "One or more search filters are too long." }, { status: 400 });
+    }
+    const moveInDateValue = moveInDateValues[0];
+    const guestsValue = guestsValues[0];
+    const moveInDate = moveInDateValue
+      ? new Date(`${moveInDateValue}T00:00:00.000Z`)
+      : undefined;
+    const guests = guestsValue ? Number(guestsValue) : undefined;
+    if (
+      moveInDateValues.length > 1 ||
+      guestsValues.length > 1 ||
+      (moveInDateValue !== undefined &&
+        (!/^\d{4}-\d{2}-\d{2}$/.test(moveInDateValue) ||
+          Number.isNaN(moveInDate?.getTime()) ||
+          moveInDate?.toISOString().slice(0, 10) !== moveInDateValue)) ||
+      (guestsValue !== undefined &&
+        (!moveInDate ||
+          guests === undefined ||
+          !Number.isInteger(guests) ||
+          guests < 1 ||
+          guests > MAX_SEARCH_GUESTS))
+    ) {
+      return NextResponse.json(
+        { error: "Move-in date or guest count is invalid." },
+        { status: 400 },
+      );
     }
     if (
       (minPrice !== undefined && (!Number.isFinite(minPrice) || minPrice < 0)) ||
@@ -200,50 +229,14 @@ export async function GET(req: NextRequest) {
       minPrice,
       maxPrice,
       amenities: amenities.length ? amenities : undefined,
+      moveInDate,
+      guests: moveInDate ? guests ?? 1 : undefined,
       sort,
       page,
       limit,
     }, createOperationalLogContext(req));
 
-    // Fetch full records for the matched IDs. findMany with `id: { in }`
-    // does NOT preserve input order, so the search's relevance/sort order
-    // has to be re-applied after the fetch.
-    const hostels = hostelIds.length
-      ? await db.hostel.findMany({
-          // Typesense can briefly retain a result while an async status-change
-          // removal is pending. Recheck publishability at the data boundary.
-          where: { id: { in: hostelIds }, status: "ACTIVE" },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            city: true,
-            area: true,
-            pricePerMonth: true,
-            gender: true,
-            amenities: true,
-            coverImage: true,
-            images: true,
-            verified: true,
-            featured: true,
-            rating: true,
-            reviewCount: true,
-            safetyScore: true,
-            capacity: true,
-            rooms: true,
-            latitude: true,
-            longitude: true,
-            owner: {
-              select: { id: true, name: true, avatar: true },
-            },
-          },
-        })
-      : [];
-
-    const byId = new Map(hostels.map((h) => [h.id, h]));
-    const orderedHostels = hostelIds
-      .map((id) => byId.get(id))
-      .filter((h): h is NonNullable<typeof h> => h !== undefined);
+    const orderedHostels = await fetchHostelSearchResults(hostelIds);
 
     return NextResponse.json({
       data: orderedHostels,

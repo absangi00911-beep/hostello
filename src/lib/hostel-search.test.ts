@@ -153,6 +153,194 @@ describe("Typesense success path", () => {
   });
 });
 
+describe("move-in date availability", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("keeps listings with enough spaces on the selected date and paginates after filtering", async () => {
+    const moveInDate = new Date("2030-06-15T00:00:00.000Z");
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      {
+        id: "available",
+        capacity: 5,
+        bookings: [{ guests: 3 }],
+        blockedDates: [],
+      },
+      {
+        id: "full",
+        capacity: 3,
+        bookings: [{ guests: 3 }],
+        blockedDates: [],
+      },
+      {
+        id: "blocked",
+        capacity: 8,
+        bookings: [],
+        blockedDates: [{ id: "blocked-date" }],
+      },
+      {
+        id: "second-available",
+        capacity: 4,
+        bookings: [{ guests: 1 }],
+        blockedDates: [],
+      },
+    ] as never);
+
+    const result = await searchHostelsWithFallback(
+      baseParams({ moveInDate, guests: 2, page: 2, limit: 1 }),
+    );
+
+    expect(result).toEqual({
+      hostelIds: ["second-available"],
+      total: 2,
+      isSearchDegraded: false,
+    });
+    expect(db.hostel.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { status: "ACTIVE" },
+        select: expect.objectContaining({
+          capacity: true,
+          bookings: {
+            where: {
+              status: { in: ["PENDING", "CONFIRMED"] },
+              checkIn: { lte: moveInDate },
+              checkOut: { gt: moveInDate },
+            },
+            select: { guests: true },
+          },
+          blockedDates: {
+            where: {
+              startDate: { lte: moveInDate },
+              endDate: { gte: moveInDate },
+            },
+            select: { id: true },
+          },
+        }),
+      }),
+    );
+    expect(searchHostels).not.toHaveBeenCalled();
+  });
+
+  it("does not apply availability when the move-in date is omitted", async () => {
+    vi.mocked(searchHostels).mockResolvedValue(typesenseResult(IDS) as any);
+
+    const result = await searchHostelsWithFallback(baseParams({ guests: 4 }));
+
+    expect(result.hostelIds).toEqual(IDS);
+    expect(searchHostels).toHaveBeenCalledOnce();
+    expect(db.hostel.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("nearby search", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("filters by the 25 km radius before paginating and excludes unlocated hostels", async () => {
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      { id: "nearby", latitude: 33.77, longitude: 73.0479 },
+      { id: "outside-radius", latitude: 33.96, longitude: 73.0479 },
+      { id: "missing-coordinates", latitude: null, longitude: null },
+    ] as never);
+
+    const result = await searchHostelsWithFallback(
+      baseParams({
+        nearby: { latitude: 33.6844, longitude: 73.0479 },
+        page: 1,
+        limit: 1,
+      }),
+    );
+
+    expect(result).toEqual({
+      hostelIds: ["nearby"],
+      total: 1,
+      isSearchDegraded: false,
+    });
+    expect(searchHostels).not.toHaveBeenCalled();
+    expect(db.hostel.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: "ACTIVE",
+          latitude: expect.objectContaining({ gte: expect.any(Number), lte: expect.any(Number) }),
+        }),
+        select: expect.objectContaining({
+          id: true,
+          latitude: true,
+          longitude: true,
+        }),
+      }),
+    );
+  });
+
+  it("applies selected-day availability inside the nearby radius before pagination", async () => {
+    const moveInDate = new Date("2030-06-15T00:00:00.000Z");
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      {
+        id: "available",
+        latitude: 33.77,
+        longitude: 73.0479,
+        capacity: 4,
+        bookings: [{ guests: 1 }],
+        blockedDates: [],
+      },
+      {
+        id: "full",
+        latitude: 33.76,
+        longitude: 73.0479,
+        capacity: 2,
+        bookings: [{ guests: 2 }],
+        blockedDates: [],
+      },
+      {
+        id: "blocked",
+        latitude: 33.75,
+        longitude: 73.0479,
+        capacity: 8,
+        bookings: [],
+        blockedDates: [{ id: "blocked-date" }],
+      },
+      {
+        id: "outside-radius",
+        latitude: 33.96,
+        longitude: 73.0479,
+        capacity: 8,
+        bookings: [],
+        blockedDates: [],
+      },
+    ] as never);
+
+    const result = await searchHostelsWithFallback(
+      baseParams({
+        nearby: { latitude: 33.6844, longitude: 73.0479 },
+        moveInDate,
+        guests: 2,
+      }),
+    );
+
+    expect(result).toEqual({
+      hostelIds: ["available"],
+      total: 1,
+      isSearchDegraded: false,
+    });
+    expect(db.hostel.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          bookings: {
+            where: {
+              status: { in: ["PENDING", "CONFIRMED"] },
+              checkIn: { lte: moveInDate },
+              checkOut: { gt: moveInDate },
+            },
+            select: { guests: true },
+          },
+        }),
+      }),
+    );
+  });
+});
+
 // ═════════════════════════════════════════════════════════════════════════════
 // TYPESENSE FAILURE → PRISMA FALLBACK
 // ═════════════════════════════════════════════════════════════════════════════

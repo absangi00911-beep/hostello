@@ -6,8 +6,10 @@ import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { BrowseHeader, type Category } from "./BrowseHeader";
 import { BrowseCategoryNav } from "./BrowseCategoryNav";
 import { HostelSearchBar } from "./HostelSearchBar";
+import type { HostelSearchFilters } from "./HostelSearchBar";
 import { HostelRow, type HostelListing } from "./HostelRow";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
+import { NEARBY_COORDINATES_SESSION_KEY } from "@/lib/nearby-search";
 
 interface HostelSearchResponse {
   data: HostelListing[];
@@ -234,11 +236,38 @@ export default function ProductHome({
     return () => controller.abort();
   }, [accountUser?.role, favoriteReload]);
 
-  function openSearch(destination: string) {
-    const query = destination
-      ? `?${new URLSearchParams({ city: destination })}`
-      : "";
-    router.push(`/search${query}`);
+  function openSearch({
+    destination,
+    moveInDate,
+    guests,
+    nearby,
+  }: HostelSearchFilters): boolean {
+    const params = new URLSearchParams();
+    if (nearby) {
+      try {
+        window.sessionStorage.setItem(
+          NEARBY_COORDINATES_SESSION_KEY,
+          JSON.stringify(nearby),
+        );
+      } catch {
+        return false;
+      }
+      params.set("nearby", "true");
+    } else {
+      try {
+        window.sessionStorage.removeItem(NEARBY_COORDINATES_SESSION_KEY);
+      } catch {
+        // A stale nearby coordinate is ignored unless the URL requests nearby search.
+      }
+      if (destination) params.set("city", destination);
+    }
+    if (moveInDate) {
+      params.set("moveInDate", moveInDate);
+      params.set("guests", String(guests));
+    }
+    const query = params.toString();
+    router.push(`/search${query ? `?${query}` : ""}`);
+    return true;
   }
 
   function updateFavorite(slug: string, saved: boolean) {
@@ -272,12 +301,15 @@ export default function ProductHome({
       />
 
       <main>
-        <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
-          <h1 className="sr-only">
-            Hostels and student stays across Pakistan
-          </h1>
+        <h1 className="sr-only">
+          Hostels and student stays across Pakistan
+        </h1>
 
-          <HostelSearchBar onSearch={openSearch} />
+        <HostelSearchBar
+          destinationSuggestions={[...hostelsByCity.keys()]}
+          onSearch={openSearch}
+        />
+        <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
           {showsStudentNavigation && (
             <BrowseCategoryNav
               category={category}
