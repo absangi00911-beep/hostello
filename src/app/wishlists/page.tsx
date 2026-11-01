@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { WishlistsPage } from "@/components/student/WishlistsPage";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { auth } from "@/lib/auth/config";
@@ -18,8 +19,16 @@ export default async function WishlistsRoute() {
 
   return (
     <>
+      <DesktopAccountHeader
+        user={{
+          name: session.user.name,
+          email: session.user.email,
+          avatar: session.user.image,
+          role: session.user.role,
+        }}
+      />
       <WishlistsPage />
-      <MobileTabNavigation activeTab="wishlists" />
+      <MobileTabNavigation activeTab="wishlists" role="STUDENT" />
     </>
   );
 }

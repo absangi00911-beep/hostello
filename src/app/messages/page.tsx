@@ -32,9 +32,17 @@ export default async function MessagesPage({
 
   return (
     <>
-      <MessagesInbox currentUserId={session.user.id} />
+      <MessagesInbox
+        currentUserId={session.user.id}
+        currentUser={{
+          name: session.user.name,
+          email: session.user.email,
+          avatar: session.user.image,
+          role: session.user.role,
+        }}
+      />
       {session.user.role === "STUDENT" && (
-        <MobileTabNavigation activeTab="messages" />
+        <MobileTabNavigation activeTab="messages" role="STUDENT" />
       )}
     </>
   );

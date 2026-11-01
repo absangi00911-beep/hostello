@@ -1,83 +1,85 @@
 "use client";
 
-import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ConversationThread } from "@/components/messages/ConversationThread";
 import { useMessagesInbox } from "@/components/messages/useMessagesInbox";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
+import {
+  BrowseAccountMenu,
+  type BrowseAccountUser,
+} from "@/components/auth/BrowseAccountMenu";
+import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
 
 interface MessagesInboxProps {
   currentUserId: string;
+  currentUser: BrowseAccountUser;
 }
 
-export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
+export function MessagesInbox({
+  currentUserId,
+  currentUser,
+}: MessagesInboxProps) {
   const inbox = useMessagesInbox();
+  const [mobileThreadVisible, setMobileThreadVisible] = useState(
+    Boolean(inbox.selectedConversationId),
+  );
+
+  useEffect(() => {
+    setMobileThreadVisible(Boolean(inbox.selectedConversationId));
+  }, [inbox.selectedConversationId]);
 
   return (
-    <main className="min-h-screen bg-canvas">
-      <header className="flex min-h-[76px] items-center justify-between gap-5 border-b border-line bg-surface px-[max(24px,calc((100vw-1240px)/2))] py-3">
+    <main className="flex min-h-screen flex-col bg-canvas [@media(max-width:720px)]:pb-[calc(64px+env(safe-area-inset-bottom))]">
+      <ScrollAwareSurface
+        as="header"
+        className="sticky top-0 z-30 flex min-h-[72px] items-center justify-between gap-5 bg-surface px-5 py-3 md:px-8"
+        scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
+      >
         <HostelloBrand
-          className="inline-flex items-center font-black tracking-[-0.04em] text-ink no-underline"
+          className="inline-flex items-center font-black tracking-[-0.04em] text-ink no-underline [@media(max-width:720px)]:hidden"
         />
-        <div className="inline-flex items-center gap-[22px] text-[0.9rem] font-semibold text-muted">
-          <Link className="hover:text-brand-dark" href="/">
-            Explore hostels
-          </Link>
-          <button
-            className="cursor-pointer rounded-lg border border-line bg-surface px-[13px] py-[9px] text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
-            onClick={() => void inbox.loadConversationList(1)}
-            type="button"
-          >
-            Refresh inbox
-          </button>
+        <div className="inline-flex items-center gap-4">
+          <BrowseAccountMenu user={currentUser} />
         </div>
-      </header>
+      </ScrollAwareSurface>
 
-      <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] py-[34px] pb-12">
-        <div className="mb-6 flex items-end justify-between gap-5">
-          <div>
-            <p className="mb-1 text-[0.75rem] font-bold uppercase tracking-[0.09em] text-muted">
-              Your conversations
-            </p>
-            <h1>Messages</h1>
-          </div>
-          <p className="m-0 mb-1 text-[0.92rem] text-muted">
-            Keep hostel conversations in one place.
-          </p>
-        </div>
+      {inbox.hasPendingInquiry && (
+        <section
+          className="mx-5 mt-4 rounded-lg border border-[#d8bd84] bg-[#fbf4e6] p-4 text-[#583c13] md:mx-8"
+          aria-live="polite"
+        >
+          {!inbox.pendingError ? (
+            <p role="status">Sending your saved inquiry…</p>
+          ) : (
+            <>
+              <p role="alert">{inbox.pendingError}</p>
+              <div className="mt-3 flex flex-wrap gap-2.5">
+                <button
+                  className="rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+                  onClick={inbox.retryPendingInquiry}
+                  type="button"
+                >
+                  Retry delivery
+                </button>
+                <button
+                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+                  onClick={inbox.cancelPendingInquiry}
+                  type="button"
+                >
+                  Discard saved inquiry
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
-        {inbox.hasPendingInquiry && (
-          <section
-            className="mb-[18px] rounded-lg border border-[#d8bd84] bg-[#fbf4e6] p-4 text-[#583c13]"
-            aria-live="polite"
-          >
-            {!inbox.pendingError ? (
-              <p role="status">Sending your saved inquiry…</p>
-            ) : (
-              <>
-                <p role="alert">{inbox.pendingError}</p>
-                <div className="mt-3 flex flex-wrap gap-2.5">
-                  <button
-                    className="rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
-                    onClick={inbox.retryPendingInquiry}
-                    type="button"
-                  >
-                    Retry delivery
-                  </button>
-                  <button
-                    className="rounded-lg border border-line bg-transparent px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
-                    onClick={inbox.cancelPendingInquiry}
-                    type="button"
-                  >
-                    Discard saved inquiry
-                  </button>
-                </div>
-              </>
-            )}
-          </section>
-        )}
-
-        <div className="grid min-h-[min(680px,calc(100vh-230px))] grid-cols-[minmax(265px,0.82fr)_minmax(0,1.7fr)] overflow-hidden rounded-[10px] border border-line bg-surface">
+      <div className="grid min-h-[calc(100dvh-72px)] flex-1 grid-cols-[minmax(320px,390px)_minmax(0,1fr)] overflow-hidden border-b border-line bg-surface [@media(max-width:720px)]:min-h-[calc(100dvh-136px)] [@media(max-width:720px)]:grid-cols-1">
+        <div
+          className={`min-w-0 ${mobileThreadVisible ? "[@media(max-width:720px)]:hidden" : ""}`}
+        >
           <ConversationList
             conversations={inbox.conversations}
             currentUserId={currentUserId}
@@ -85,11 +87,32 @@ export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
             loading={inbox.listLoading}
             onLoadMore={inbox.loadMoreConversations}
             onRetry={() => void inbox.loadConversationList(1)}
-            onSelect={inbox.selectConversation}
+            onSelect={(conversationId) => {
+              inbox.selectConversation(conversationId);
+              setMobileThreadVisible(true);
+            }}
             page={inbox.conversationPage}
             paging={inbox.listPaging}
+            searchQuery={inbox.searchQuery}
+            onSearchChange={inbox.setSearchQuery}
+            onUnreadOnlyChange={inbox.setUnreadOnly}
+            onRefresh={() => void inbox.loadConversationList(1)}
             selectedConversationId={inbox.selectedConversationId}
+            unreadOnly={inbox.unreadOnly}
           />
+        </div>
+        <div
+          className={`min-w-0 ${mobileThreadVisible ? "" : "[@media(max-width:720px)]:hidden"}`}
+        >
+          <button
+            aria-label="Back to inbox"
+            className="hidden min-h-11 items-center gap-2 border-b border-line px-5 text-[0.88rem] font-semibold text-ink [@media(max-width:720px)]:flex"
+            onClick={() => setMobileThreadVisible(false)}
+            type="button"
+          >
+            <ArrowLeft aria-hidden="true" size={18} />
+            Back to inbox
+          </button>
           <ConversationThread
             conversationId={inbox.selectedConversationId}
             currentUserId={currentUserId}

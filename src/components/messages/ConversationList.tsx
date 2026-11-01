@@ -1,8 +1,11 @@
+import Link from "next/link";
 import {
   displayMessageDate,
   participantName,
 } from "@/lib/messages-inbox";
 import Image from "next/image";
+import { Search, Settings } from "lucide-react";
+import { useState } from "react";
 import type {
   ConversationListPage,
   ConversationPreview,
@@ -16,9 +19,193 @@ interface ConversationListProps {
   error: string;
   loading: boolean;
   paging: boolean;
+  searchQuery: string;
+  unreadOnly: boolean;
   onSelect: (conversationId: string) => void;
   onRetry: () => void;
   onLoadMore: () => void;
+  onSearchChange: (search: string) => void;
+  onUnreadOnlyChange: (unreadOnly: boolean) => void;
+  onRefresh: () => void;
+}
+
+interface ConversationListHeaderProps {
+  total: number;
+  loading: boolean;
+  searchQuery: string;
+  unreadOnly: boolean;
+  onSearchChange: (search: string) => void;
+  onUnreadOnlyChange: (unreadOnly: boolean) => void;
+  onRefresh: () => void;
+}
+
+function ConversationListHeader({
+  total,
+  loading,
+  searchQuery,
+  unreadOnly,
+  onSearchChange,
+  onUnreadOnlyChange,
+  onRefresh,
+}: ConversationListHeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3 border-b border-line px-5 pb-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <h1 className="m-0 text-[1.35rem] font-semibold tracking-[-0.045em] text-ink">
+            Messages
+          </h1>
+          <span
+            aria-label={`Total ${total} conversations`}
+            className="grid h-6 min-w-6 place-items-center rounded-full bg-surface-muted px-1.5 text-[0.78rem] font-bold text-muted"
+            role="status"
+          >
+            {total}
+          </span>
+        </div>
+        <div className="flex flex-none items-center gap-2">
+          <button
+            aria-controls="conversation-search"
+            aria-expanded={searchOpen}
+            aria-label="Search conversations"
+            className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            onClick={() => {
+              if (searchOpen) onSearchChange("");
+              setSearchOpen((open) => !open);
+            }}
+            type="button"
+          >
+            <Search aria-hidden="true" size={19} strokeWidth={1.8} />
+          </button>
+          <div className="relative">
+            <button
+              aria-controls="inbox-settings"
+              aria-expanded={settingsOpen}
+              aria-label="Inbox settings"
+              className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              onClick={() => setSettingsOpen((open) => !open)}
+              type="button"
+            >
+              <Settings aria-hidden="true" size={19} strokeWidth={1.8} />
+            </button>
+            <div
+              className={`absolute right-0 top-[calc(100%+8px)] z-20 min-w-[220px] gap-3 rounded-lg border border-line bg-surface p-4 shadow-sm ${settingsOpen ? "grid" : "hidden"}`}
+              id="inbox-settings"
+              role="group"
+              aria-label="Inbox settings"
+            >
+              <label className="flex cursor-pointer items-center gap-2.5 text-[0.88rem] text-ink">
+                <input
+                  checked={unreadOnly}
+                  className="h-4 w-4 accent-brand"
+                  onChange={(event) =>
+                    onUnreadOnlyChange(event.currentTarget.checked)
+                  }
+                  type="checkbox"
+                />
+                Unread messages only
+              </label>
+              <button
+                className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 text-left text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
+                disabled={loading}
+                onClick={onRefresh}
+                type="button"
+              >
+                Refresh inbox
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        className={`border-b border-line px-5 py-3 ${searchOpen ? "block" : "hidden"}`}
+      >
+        <label className="sr-only" htmlFor="conversation-search">
+          Search conversations
+        </label>
+        <input
+          autoComplete="off"
+          className="h-11 w-full rounded-full border border-line bg-surface px-4 text-[0.9rem] text-ink placeholder:text-muted focus:border-brand focus:outline-2 focus:outline-brand"
+          id="conversation-search"
+          onChange={(event) => onSearchChange(event.currentTarget.value)}
+          placeholder="Search hostels or people"
+          type="search"
+          value={searchQuery}
+        />
+      </div>
+    </>
+  );
+}
+
+function ConversationListEmptyState({
+  searchQuery,
+  unreadOnly,
+  onSearchChange,
+  onUnreadOnlyChange,
+}: Pick<
+  ConversationListProps,
+  "searchQuery" | "unreadOnly" | "onSearchChange" | "onUnreadOnlyChange"
+>) {
+  const hasActiveFilters = Boolean(searchQuery.trim()) || unreadOnly;
+
+  if (!hasActiveFilters) {
+    return (
+      <section
+        className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
+        role="status"
+      >
+        <h2 className="m-0 text-[1.15rem] font-semibold tracking-[-0.035em] text-ink">
+          Nothing to see here
+        </h2>
+        <p className="mt-2 mb-0 max-w-[260px] text-[0.88rem] leading-6 text-muted">
+          When you contact a hostel, your conversations will appear here.
+        </p>
+        <Link
+          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          href="/search"
+        >
+          Get started
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
+      role="status"
+    >
+      <h2 className="m-0 text-[1.05rem] font-semibold tracking-[-0.025em] text-ink">
+        No conversations found
+      </h2>
+      <p className="mt-2 mb-0 max-w-[260px] text-[0.88rem] leading-6 text-muted">
+        Try a different search or update your inbox filters.
+      </p>
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {searchQuery.trim() && (
+          <button
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink transition-colors hover:border-brand"
+            onClick={() => onSearchChange("")}
+            type="button"
+          >
+            Clear search
+          </button>
+        )}
+        {unreadOnly && (
+          <button
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink transition-colors hover:border-brand"
+            onClick={() => onUnreadOnlyChange(false)}
+            type="button"
+          >
+            Show all conversations
+          </button>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export function ConversationList({
@@ -29,20 +216,29 @@ export function ConversationList({
   error,
   loading,
   paging,
+  searchQuery,
+  unreadOnly,
   onSelect,
   onRetry,
   onLoadMore,
+  onSearchChange,
+  onUnreadOnlyChange,
+  onRefresh,
 }: ConversationListProps) {
   return (
-    <aside className="min-w-0 border-r border-line py-[18px]" aria-label="Conversation list">
-      <div className="flex items-center justify-between border-b border-line px-[18px] pb-[14px]">
-        <h2 className="m-0 text-[1.05rem] tracking-[-0.02em] text-ink">
-          Inbox
-        </h2>
-        <span className="grid h-6 min-w-[26px] place-items-center rounded-full bg-surface-muted text-[0.78rem] font-bold text-muted">
-          {page?.total ?? 0}
-        </span>
-      </div>
+    <aside
+      className="flex min-h-0 min-w-0 flex-col border-r border-line py-5 [@media(max-width:720px)]:border-r-0"
+      aria-label="Conversation list"
+    >
+      <ConversationListHeader
+        loading={loading}
+        onRefresh={onRefresh}
+        onSearchChange={onSearchChange}
+        onUnreadOnlyChange={onUnreadOnlyChange}
+        searchQuery={searchQuery}
+        total={page?.total ?? 0}
+        unreadOnly={unreadOnly}
+      />
       {error && (
         <div
           className="m-3 rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-[0.88rem] text-[#772e1b]"
@@ -59,15 +255,18 @@ export function ConversationList({
         </div>
       )}
       {loading && conversations.length === 0 ? (
-        <p className="m-0 px-[18px] py-[22px] text-[0.9rem] text-muted" role="status">
+        <p className="m-0 px-5 py-6 text-[0.9rem] text-muted" role="status">
           Loading conversations…
         </p>
       ) : conversations.length === 0 && !error ? (
-        <p className="m-0 px-[18px] py-[22px] text-[0.9rem] text-muted">
-          Your hostel conversations will appear here.
-        </p>
+        <ConversationListEmptyState
+          onSearchChange={onSearchChange}
+          onUnreadOnlyChange={onUnreadOnlyChange}
+          searchQuery={searchQuery}
+          unreadOnly={unreadOnly}
+        />
       ) : (
-        <ul className="m-0 max-h-[540px] list-none overflow-y-auto p-0">
+        <ul className="m-0 min-h-0 flex-1 list-none overflow-y-auto p-0">
           {conversations.map((conversation) => {
             const latestMessage = conversation.messages[0];
             const selected = conversation.id === selectedConversationId;

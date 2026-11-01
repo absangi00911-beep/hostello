@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({ auth: vi.fn() }));
 
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
@@ -41,5 +42,6 @@ describe("ProfileRoute", () => {
 
     expect(markup).toContain("Loading profile...");
     expect(markup).toContain('aria-label="Student navigation"');
+    expect(markup).toContain('aria-label="Account menu for Account"');
   });
 });
