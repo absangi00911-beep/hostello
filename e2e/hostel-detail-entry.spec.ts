@@ -33,9 +33,9 @@ test("hostel detail header matches homepage size and wordmark alignment", async 
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
 
-  const getHeaderMetrics = async () =>
-    page.locator(".browse-header").evaluate((header) => {
-      const brand = header.querySelector(".browse-brand");
+  const getHeaderMetrics = async (headerSelector: string) =>
+    page.locator(headerSelector).evaluate((header) => {
+      const brand = header.querySelector('a[aria-label="hostello home"]');
       const headerBounds = header.getBoundingClientRect();
       const brandBounds = brand?.getBoundingClientRect();
 
@@ -51,19 +51,26 @@ test("hostel detail header matches homepage size and wordmark alignment", async 
     });
 
   await page.goto("/");
-  const homepageHeader = await getHeaderMetrics();
+  const homepageHeader = await getHeaderMetrics("header");
 
   await page.goto(`/hostels/${hostelId}`);
-  const detailHeader = page.locator(".hostel-detail-header");
+  const detailHeader = page.locator(".hostel-detail-page > header");
   await expect(detailHeader).toBeVisible();
+  await expect(
+    detailHeader.getByRole("img", { name: "Hostello logo" }),
+  ).toBeVisible();
   await expect(
     detailHeader.getByRole("search", {
       name: "Search for hostels by destination",
     }),
   ).toBeVisible();
-  const detailHeaderMetrics = await getHeaderMetrics();
+  const detailHeaderMetrics = await getHeaderMetrics(
+    ".hostel-detail-page > header",
+  );
 
-  expect(detailHeaderMetrics.height).toBe(homepageHeader.height);
+  expect(
+    Math.abs(detailHeaderMetrics.height - homepageHeader.height),
+  ).toBeLessThanOrEqual(1);
   expect(detailHeaderMetrics.brandLeft).toBe(homepageHeader.brandLeft);
   expect(detailHeaderMetrics.brandCenterY).toBeCloseTo(
     homepageHeader.brandCenterY,

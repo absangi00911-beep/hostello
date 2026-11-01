@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ConversationThread } from "@/components/messages/ConversationThread";
 import { useMessagesInbox } from "@/components/messages/useMessagesInbox";
+import { HostelloBrand } from "@/components/brand/HostelloBrand";
 
 interface MessagesInboxProps {
   currentUserId: string;
@@ -15,13 +16,9 @@ export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
   return (
     <main className="min-h-screen bg-canvas">
       <header className="flex min-h-[76px] items-center justify-between gap-5 border-b border-line bg-surface px-[max(24px,calc((100vw-1240px)/2))] py-3">
-        <Link
+        <HostelloBrand
           className="inline-flex items-center font-black tracking-[-0.04em] text-ink no-underline"
-          href="/"
-          aria-label="hostello home"
-        >
-          <span>hostello</span>
-        </Link>
+        />
         <div className="inline-flex items-center gap-[22px] text-[0.9rem] font-semibold text-muted">
           <Link className="hover:text-brand-dark" href="/">
             Explore hostels

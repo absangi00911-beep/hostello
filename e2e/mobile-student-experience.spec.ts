@@ -70,12 +70,16 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("mobile_explore_opens_search_and_submits_only_the_supported_destination", async ({
+test("mobile_explore_submits_destination_move_in_date_and_guests", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
 
+  await expect(page.getByRole("link", { name: "hostello home" })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Hostello logo" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Start your search" }),
   ).toBeVisible();
@@ -91,27 +95,44 @@ test("mobile_explore_opens_search_and_submits_only_the_supported_destination", a
   await page.getByRole("button", { name: "Start your search" }).click();
   const searchDialog = page.getByRole("dialog", { name: "Search stays" });
   await expect(searchDialog).toBeVisible();
-  await searchDialog.getByLabel("Destination").fill("Murree");
-  await searchDialog.getByLabel("Move-in date").fill("2026-11-01");
-  await searchDialog.getByLabel("Guests").selectOption("2");
+  await searchDialog.getByRole("searchbox", { name: "Destination" }).fill("Murree");
+  await searchDialog.getByRole("button", { name: /^Murree, Pakistan/ }).click();
+  const dateButton = searchDialog
+    .locator('button[aria-pressed]:not(:disabled)')
+    .first();
+  const dateLabel = await dateButton.getAttribute("aria-label");
+  const selectedDate = new Date(dateLabel ?? "");
+  const moveInDate = [
+    selectedDate.getFullYear(),
+    String(selectedDate.getMonth() + 1).padStart(2, "0"),
+    String(selectedDate.getDate()).padStart(2, "0"),
+  ].join("-");
+  await dateButton.click();
+  await searchDialog.getByRole("button", { name: "Guests" }).click();
+  await searchDialog.getByRole("button", { name: "Increase students" }).click();
   await searchDialog.getByRole("button", { name: "Close search" }).click();
   await expect(searchDialog).toBeHidden();
 
   await page.getByRole("button", { name: "Start your search" }).click();
-  await expect(searchDialog.getByLabel("Destination")).toHaveValue("Murree");
+  await expect(
+    searchDialog.getByRole("searchbox", { name: "Destination" }),
+  ).toHaveValue("Murree");
   const hostelRequest = page.waitForRequest(
     (request) =>
       request.url().includes("/api/hostels?") &&
-      new URL(request.url()).searchParams.get("city") === "Murree",
+      new URL(request.url()).searchParams.get("city") === "Murree" &&
+      new URL(request.url()).searchParams.has("moveInDate"),
   );
   await searchDialog.getByRole("button", { name: "Search hostels" }).click();
   const request = await hostelRequest;
   const params = new URL(request.url()).searchParams;
 
   expect(params.get("city")).toBe("Murree");
-  expect(params.has("moveInDate")).toBe(false);
-  expect(params.has("guests")).toBe(false);
-  await expect(page).toHaveURL(/\/search\?city=Murree$/);
+  expect(params.get("moveInDate")).toBe(moveInDate);
+  expect(params.get("guests")).toBe("2");
+  await expect(page).toHaveURL(
+    new RegExp(`/search\\?city=Murree&moveInDate=${moveInDate}&guests=2$`),
+  );
   await expect(
     page.getByRole("heading", { name: "Hostels in Murree" }),
   ).toBeVisible();
@@ -142,7 +163,7 @@ test("mobile_categories_filter_listings_and_signed_out_save_opens_login", async 
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Log in to HostelLo" }),
+    page.getByRole("heading", { name: "Login or Signup" }),
   ).toBeVisible();
 });
 

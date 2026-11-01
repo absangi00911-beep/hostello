@@ -22,7 +22,7 @@ export interface HostelListing {
 }
 
 const favoriteButtonClassName =
-  "hostel-favorite-button absolute top-[7px] right-[7px] z-[2] grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent brightness-[0.95] no-underline transition-[transform,color,background-color] duration-[160ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] active:scale-[0.92] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! motion-reduce:hover:transform-none! motion-reduce:active:transform-none!";
+  "hostel-favorite-button absolute top-0 right-0 z-[2] grid size-[clamp(2.75rem,26cqw,3.25rem)] cursor-pointer place-items-center rounded-full border-0 bg-transparent text-white no-underline transition-transform duration-[160ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] active:scale-[0.92] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! motion-reduce:hover:transform-none! motion-reduce:active:transform-none!";
 
 function readErrorMessage(value: unknown): string | undefined {
   if (
@@ -72,7 +72,14 @@ function HostelFavoriteControl({
         ariaLabel={`Sign in to save ${hostel.name} to Wishlists`}
         className={favoriteButtonClassName}
       >
-        <Heart aria-hidden="true" fill="currentColor" size={21} />
+        <Heart
+          aria-hidden="true"
+          className="size-[clamp(1.25rem,12cqw,1.5rem)] drop-shadow-[0_1px_2px_rgb(0_0_0/85%)]"
+          fill="black"
+          fillOpacity={0.5}
+          stroke="white"
+          strokeWidth={1.5}
+        />
       </LoginDialogTrigger>
     );
   }
@@ -134,8 +141,11 @@ function HostelFavoriteControl({
       >
         <Heart
           aria-hidden="true"
-          fill="currentColor"
-          size={21}
+          className="size-[clamp(1.25rem,12cqw,1.5rem)] drop-shadow-[0_1px_2px_rgb(0_0_0/85%)]"
+          fill={isSaved ? "currentColor" : "black"}
+          fillOpacity={isSaved ? 1 : 0.1}
+          stroke={isSaved ? "currentColor" : "white"}
+          strokeWidth={2.2}
         />
       </button>
       {message && (
@@ -221,7 +231,7 @@ export function HostelRow({
       </div>
 
       <div
-        className="hostel-carousel grid grid-flow-col auto-cols-[calc(13.986%_-_13.71px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.096%_-_11.57px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(46.512%_-_11.16px)] [@media(max-width:720px)]:gap-3"
+        className="hostel-carousel grid grid-flow-col auto-cols-[calc(14.085%_-_13.8px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.39%_-_11.71px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(47.619%_-_11.43px)] [@media(max-width:720px)]:gap-3"
         ref={carouselRef}
         role="region"
         aria-label={`Stays in ${city}`}
@@ -232,15 +242,15 @@ export function HostelRow({
 
           return (
             <article
-              className="hostel-card relative min-w-0 snap-start overflow-visible border-0 rounded-none bg-transparent"
+              className="hostel-card @container/hostel-card relative min-w-0 snap-start overflow-visible border-0 rounded-none bg-transparent"
               key={hostel.id}
             >
               <Link
                 aria-label={`View details for ${hostel.name}`}
-                className="hostel-card-link group block min-w-0 rounded-[14px] text-inherit transition-transform duration-[160ms] active:scale-[0.99] motion-reduce:active:transform-none!"
+                className="hostel-card-link group block min-w-0 rounded-[16px] text-inherit transition-transform duration-[160ms] active:scale-[0.99] motion-reduce:active:transform-none!"
                 href={`/hostels/${hostel.id}`}
               >
-                <div className="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[14px] bg-brand-soft">
+                <div className="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[16px] bg-brand-soft">
                   {image ? (
                     <Image
                       alt={hostel.name}

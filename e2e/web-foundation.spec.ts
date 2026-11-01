@@ -21,7 +21,24 @@ const hostelResults = Array.from({ length: 25 }, (_, index) => {
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/hostels**", async (route) => {
-    const params = new URL(route.request().url()).searchParams;
+    const requestUrl = new URL(route.request().url());
+    if (requestUrl.pathname.endsWith("/nearby")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          data: hostelResults,
+          total: hostelResults.length,
+          page: 1,
+          limit: 20,
+          hasMore: true,
+          isSearchDegraded: false,
+        }),
+      });
+      return;
+    }
+
+    const params = requestUrl.searchParams;
     const city = params.get("city");
     const gender = params.get("gender");
     const maxPrice = Number(params.get("maxPrice"));
@@ -50,10 +67,13 @@ test.beforeEach(async ({ page }) => {
 test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   page,
 }) => {
-  await page.goto("/");
+  const response = await page.goto("/");
+  expect(response?.headers()["permissions-policy"]).toContain(
+    "geolocation=(self)",
+  );
 
-  await expect(page.getByRole("link", { name: "HostelLo home" })).toBeVisible();
-  await expect(page.locator("header")).toHaveClass(/border-b/);
+  await expect(page.getByRole("link", { name: "hostello home" })).toBeVisible();
+  await expect(page.locator("header")).not.toHaveClass(/border-b/);
   await expect(page.locator("header > div")).toHaveClass(/min-h-20/);
   await expect(
     page.getByRole("navigation", { name: "Browse categories" }),
@@ -61,15 +81,19 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   await expect(
     page.getByRole("searchbox", { name: "Destination" }),
   ).toBeVisible();
-  const desktopSearch = page.locator(".browse-search-section > .browse-search");
-  await expect(desktopSearch.getByLabel("Move-in date")).toBeVisible();
-  await expect(desktopSearch.getByLabel("Guests")).toBeVisible();
+  const desktopSearch = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  await expect(
+    desktopSearch.getByRole("button", { name: "Move-in date" }),
+  ).toBeVisible();
+  await expect(
+    desktopSearch.getByRole("button", { name: "Guests" }),
+  ).toBeVisible();
   await expect(
     page
-      .locator(".browse-search-section > .browse-search-note")
-      .getByText(
-        "Move-in date and guests aren't used to filter availability yet.",
-      ),
+      .locator('section[aria-label="Search stays"] > div > p')
+      .getByText("Availability is checked only on the selected move-in date."),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Stays in Lahore" }),
@@ -115,31 +139,178 @@ test("category_tabs_filter_by_supported_hostel_attributes", async ({
   ).toHaveCount(0);
 });
 
-test("destination_search_filters_hostels_without_claiming_date_or_guest_filters", async ({
+test("destination_and_move_in_date_filters_apply_to_search_results", async ({
   page,
 }) => {
   await page.goto("/");
   await page.getByRole("searchbox", { name: "Destination" }).fill("Murree");
-  const desktopSearch = page.locator(".browse-search-section > .browse-search");
-  await desktopSearch.getByLabel("Move-in date").fill("2026-11-01");
-  await desktopSearch.getByLabel("Guests").selectOption("2");
+  const desktopSearch = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  await desktopSearch.getByRole("button", { name: /^Murree, Pakistan/ }).click();
+  const dateButton = desktopSearch
+    .locator('button[aria-pressed]:not(:disabled)')
+    .first();
+  const dateLabel = await dateButton.getAttribute("aria-label");
+  const selectedDate = new Date(dateLabel ?? "");
+  const moveInDate = [
+    selectedDate.getFullYear(),
+    String(selectedDate.getMonth() + 1).padStart(2, "0"),
+    String(selectedDate.getDate()).padStart(2, "0"),
+  ].join("-");
+  await dateButton.click();
+  await desktopSearch.getByRole("button", { name: "Guests" }).click();
+  await desktopSearch.getByRole("button", { name: "Increase students" }).click();
 
   const searchRequest = page.waitForRequest((request) =>
-    request.url().includes("/api/hostels?"),
+    request.url().includes("/api/hostels?") &&
+    new URL(request.url()).searchParams.has("moveInDate"),
   );
   await page.getByRole("button", { name: "Search hostels" }).click();
   const request = await searchRequest;
   const searchParams = new URL(request.url()).searchParams;
 
   expect(searchParams.get("city")).toBe("Murree");
-  expect(searchParams.has("moveInDate")).toBe(false);
-  expect(searchParams.has("guests")).toBe(false);
+  expect(searchParams.get("moveInDate")).toBe(moveInDate);
+  expect(searchParams.get("guests")).toBe("2");
   await expect(
     page.getByRole("heading", { name: "Hostels in Murree" }),
   ).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(
+    `/search\\?city=Murree&moveInDate=${moveInDate}&guests=2$`,
+  ));
   await expect(
     page.getByRole("heading", { name: "Stays in Lahore" }),
   ).toHaveCount(0);
+});
+
+test("destination_suggestions_filter_and_clear", async ({ page }) => {
+  await page.goto("/");
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  const destination = page.getByRole("searchbox", { name: "Destination" });
+
+  await destination.fill("murr");
+  await expect(search.getByRole("button", { name: /^Murree, Pakistan/ }))
+    .toBeVisible();
+  await expect(search.getByRole("button", { name: /^Lahore, Pakistan/ }))
+    .toHaveCount(0);
+
+  await search.getByRole("button", { name: "Clear destination" }).click();
+  await expect(destination).toHaveValue("");
+  await expect(search.getByRole("button", { name: /^Lahore, Pakistan/ }))
+    .toBeVisible();
+});
+
+test("student_count_picker_is_clamped_from_one_to_eight", async ({ page }) => {
+  await page.goto("/");
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  await search.getByRole("button", { name: "Guests" }).click();
+
+  const picker = search.getByRole("dialog", { name: "Choose students" });
+  const decrease = picker.getByRole("button", { name: "Decrease students" });
+  const increase = picker.getByRole("button", { name: "Increase students" });
+  await expect(picker.getByText("Looking for a monthly stay")).toBeVisible();
+  await expect(decrease).toBeDisabled();
+  for (let count = 1; count < 8; count += 1) {
+    await increase.click();
+  }
+  await expect(picker.getByText("8", { exact: true })).toBeVisible();
+  await expect(increase).toBeDisabled();
+  await decrease.click();
+  await expect(picker.getByText("7", { exact: true })).toBeVisible();
+});
+
+test("flexible_dates_pick_a_month_then_one_exact_move_in_day", async ({ page }) => {
+  await page.goto("/");
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+
+  await search.getByRole("button", { name: "Move-in date" }).click();
+  await search.getByRole("tab", { name: "Flexible" }).click();
+  await search.getByRole("button", { name: /\w+ \d{4}/ }).nth(1).click();
+
+  await expect(
+    search.getByText(/Choose a move-in day in/),
+  ).toBeVisible();
+  const day = search
+    .locator('button[aria-pressed]:not(:disabled)')
+    .first();
+  await expect(day).toBeVisible();
+  await day.click();
+  await expect(search.getByRole("button", { name: "Move-in date" })).not.toHaveText(
+    "Add a date",
+  );
+});
+
+test("nearby_requests_location_on_selection_and_keeps_coordinates_out_of_the_url", async ({
+  page,
+}) => {
+  await page.context().grantPermissions(["geolocation"]);
+  await page.context().setGeolocation({
+    latitude: 33.6844,
+    longitude: 73.0479,
+  });
+  await page.goto("/");
+
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  await page.getByRole("searchbox", { name: "Destination" }).click();
+  await search.getByRole("button", { name: "Nearby", exact: true }).click();
+  await expect(search.getByText(/your location within 25 km/i)).toBeVisible();
+  await expect(search.getByRole("tab", { name: "Dates" })).toBeVisible();
+
+  const nearbyRequest = page.waitForRequest((request) =>
+    request.url().includes("/api/hostels/nearby"),
+  );
+  await page.getByRole("button", { name: "Search hostels" }).click();
+  const request = await nearbyRequest;
+  const body = request.postDataJSON() as {
+    latitude: number;
+    longitude: number;
+  };
+
+  expect(request.method()).toBe("POST");
+  expect(body).toMatchObject({ latitude: 33.6844, longitude: 73.0479 });
+  await expect(page).toHaveURL(/\/search\?nearby=true$/);
+  await expect(
+    page.getByRole("heading", { name: "Hostels near you" }),
+  ).toBeVisible();
+  expect(page.url()).not.toContain("33.6844");
+  expect(page.url()).not.toContain("73.0479");
+});
+
+test("nearby_permission_denial_explains_the_city_fallback", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "geolocation", {
+      configurable: true,
+      value: {
+        getCurrentPosition: (
+          _success: unknown,
+          error: (reason: { code: number; message: string }) => void,
+        ) => error({ code: 1, message: "Permission denied" }),
+      },
+    });
+  });
+  await page.goto("/");
+
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]:visible',
+  );
+  await page.getByRole("searchbox", { name: "Destination" }).click();
+  await search.getByRole("button", { name: "Nearby", exact: true }).click();
+  await expect(search.getByRole("alert")).toHaveText(
+    "Location access was denied. Choose a city to search instead.",
+  );
+
+  await search.getByRole("button", { name: "Choose a city" }).click();
+  await expect(search.getByRole("button", { name: "Lahore", exact: true }))
+    .toBeVisible();
 });
 
 test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async ({
@@ -326,7 +497,9 @@ test("browse_shell_preserves_consistent_gutters_at_all_breakpoints", async ({
 
   const home = page.locator(".browse-home");
   const shell = page.locator(".browse-shell");
-  const search = page.locator(".browse-search-section > .browse-search");
+  const search = page.locator(
+    'section[aria-label="Search stays"] form[role="search"]',
+  );
   const desktopCategories = page.locator("header .browse-category-nav");
   await expect(home).toHaveClass(/min-h-dvh/);
   await expect(shell).toHaveClass(/mx-auto/);
@@ -365,7 +538,7 @@ test("mobile_search_dialog_keeps_responsive_layout_and_keyboard_focus", async ({
   const trigger = page.getByRole("button", { name: "Start your search" });
   await expect(trigger).toBeVisible();
   await expect(
-    page.locator(".browse-search-section > .browse-search"),
+    page.locator('section[aria-label="Search stays"] form[role="search"]'),
   ).toBeHidden();
 
   await page.keyboard.press("Tab");
@@ -390,7 +563,7 @@ test("browse_search_controls_respect_reduced_motion", async ({ page }) => {
   await page.goto("/");
 
   const submit = page.locator(
-    ".browse-search-section > .browse-search .browse-search-submit",
+    'section[aria-label="Search stays"] form[role="search"] button[type="submit"]',
   );
   await submit.hover();
   await expect(submit).toHaveCSS("transform", "none");

@@ -190,6 +190,7 @@ test("students_can_open_threads_and_send_messages", async ({
   await login(page, email!, password!);
   const wordmark = page.getByRole("link", { name: "hostello home" });
   await expect(wordmark).toHaveText("hostello");
+  await expect(wordmark.getByRole("img", { name: "Hostello logo" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Messages" })).toBeVisible();
   await expect(page.getByText("1", { exact: true }).last()).toBeVisible();
   await page.getByRole("button", { name: /Hamza Malik.*Green Valley/ }).click();

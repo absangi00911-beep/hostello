@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 function getResponseMessage(value: unknown): string | null {
   if (
@@ -270,15 +272,22 @@ export default function LoginDialog({
             </button>
           </Dialog.Close>
 
-          <div
-            className="mx-auto mb-[13px] grid size-[38px] place-items-center rounded-full border-[1.5px] border-brand text-base font-bold tracking-[-0.04em] text-brand"
-            aria-hidden="true"
+          <Link
+            aria-label="hostello home"
+            className="mx-auto mb-[13px] flex w-fit justify-center"
+            href="/"
           >
-            H
-          </div>
+            <Image
+              src="/logo.png"
+              alt="Hostello logo"
+              width={48}
+              height={48}
+              className="size-12"
+            />
+          </Link>
           <Dialog.Title className="m-0 text-center text-xl leading-[1.2] font-semibold tracking-[-0.009em]">
             {step === "email"
-              ? "Log in to HostelLo"
+              ? "Login or Signup"
               : step === "otp"
                 ? "Verify your email"
                 : "Create your account"}

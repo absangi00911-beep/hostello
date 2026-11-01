@@ -39,7 +39,7 @@ test("search_results_use_a_two_column_listing_and_map_layout", async ({
   const wordmark = page.getByRole("link", { name: "hostello home" });
   await expect(wordmark).toHaveText("hostello");
   await expect(wordmark).toHaveCSS("font-family", /Arial Rounded MT Bold/);
-  await expect(wordmark.locator(".browse-brand-mark")).toHaveCount(0);
+  await expect(wordmark.getByRole("img", { name: "Hostello logo" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Hostels in Lahore" }),
   ).toBeVisible();

@@ -34,10 +34,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 9 |
-| API route handler files | 73 |
+| API route handler files | 74 |
 | Prisma models | 29 |
 | Prisma migrations | 31 |
-| Vitest test files | 129 |
+| Vitest test files | 131 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
 <!-- docs-check:end -->
@@ -438,7 +438,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Phone verification | `/api/auth/phone/request-otp`, `/api/auth/phone/verify-otp` | Signed in |
 | Account | `/api/auth/delete-account` (not for admins), `/api/profile`, `/api/profile/change-password` | Signed in |
 | Student verification | `/api/user/verify-student`, `/api/user/verify-student/upload` | Student |
-| Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/mine` | Public / Owner |
+| Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/nearby` (POST nearby search; 25 km radius), `/api/hostels/mine` | Public / Owner |
 | | `/api/hostels/[param]` (GET returns owner contact details, Admin; PATCH edits the listing, Owner) | Admin / Owner |
 | | `/api/hostels/[param]/availability`, `/api/hostels/[param]/view` (view counter) | Public |
 | | `/api/hostels/[param]/favorite`, `/api/hostels/[param]/roommates` | Student |
@@ -574,11 +574,12 @@ Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`
 `GET /api/hostels` searches Typesense when it is configured and healthy, and falls back to Prisma otherwise.
 
 - **Filters:** text query, city, gender, price range, amenities, verified flag. **Sort:** newest, price ascending or descending, rating. Page size defaults to 12, maximum 50.
+- **Nearby search:** `POST /api/hostels/nearby` accepts coordinates and optionally a move-in date and guest count; it returns hostels within 25 km and can filter by availability for the selected date.
 - **Index sync:** a listing is indexed when it becomes `ACTIVE`, re-indexed on change, and removed while it is pending review. Suspended listings are excluded by the database re-check below. `POST /api/admin/search/sync` runs a full reindex in 100-row keyset pages, limited to two per hour.
 - **Safety net:** Typesense results are re-read from Postgres and kept only if the hostel is still `ACTIVE`, so a stale index cannot expose an unpublished listing.
 - **Degraded mode:** the response says when the database fallback served it. An empty Typesense result also triggers the fallback so newly approved or seeded rows stay discoverable.
 
-Known problems (R-13): `city` and amenity values are interpolated into Typesense `filter_by` without quoting or escaping; every zero-hit query runs `ILIKE` scans over five columns with no trigram index; and there is no university or distance search although hostels have coordinates and the shared package carries a university list. For a student marketplace, "near my campus" is the primary query, so treat this as a product gap and not only a technical one.
+Known problems (R-13): `city` and amenity values are interpolated into Typesense `filter_by` without quoting or escaping; every zero-hit query runs `ILIKE` scans over five columns with no trigram index; and there is no university search despite hostels having coordinates and the shared package carrying a university list. Nearby search is available, but students still cannot search by campus. For a student marketplace, "near my campus" is the primary query, so treat this as a product gap and not only a technical one.
 
 `GET /api/hostels/[param]/availability` returns a 12-month calendar. It is hostel-wide and date-based, computed from raw bookings and blocked dates on every request without caching, and disagrees with the room-level counter that gates booking (R-01).
 
