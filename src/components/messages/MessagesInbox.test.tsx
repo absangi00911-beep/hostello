@@ -296,6 +296,40 @@ describe("MessagesInbox API behavior", () => {
     expect(markup).toContain("Load more conversations");
   });
 
+  it("includes_search_and_unread_filters_in_conversation_requests", async () => {
+    const request = vi.fn().mockResolvedValue(
+      response({ data: [], total: 0, page: 2, limit: 20, hasMore: false }),
+    );
+
+    await fetchConversationList(2, request, {
+      search: "Canal View & Suites",
+      unreadOnly: true,
+    });
+
+    const requestUrl = request.mock.calls[0][0] as string;
+    expect(requestUrl).toContain("page=2");
+    expect(requestUrl).toContain("limit=20");
+    expect(requestUrl).toContain("search=Canal+View+%26+Suites");
+    expect(requestUrl).toContain("unread=true");
+  });
+
+  it("omits_empty_search_and_disabled_unread_filters", async () => {
+    const request = vi.fn().mockResolvedValue(
+      response({ data: [], total: 0, page: 2, limit: 20, hasMore: false }),
+    );
+
+    await fetchConversationList(2, request, {
+      search: "   ",
+      unreadOnly: false,
+    });
+
+    const requestUrl = request.mock.calls[0][0] as string;
+    expect(requestUrl).toContain("page=2");
+    expect(requestUrl).toContain("limit=20");
+    expect(requestUrl).not.toContain("search=");
+    expect(requestUrl).not.toContain("unread=");
+  });
+
   it("loads_selected_thread_and_marks_incoming_messages_read", async () => {
     const thread = {
       ...conversation,

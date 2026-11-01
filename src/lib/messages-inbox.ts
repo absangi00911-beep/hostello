@@ -38,6 +38,11 @@ export interface ConversationListPage {
   hasMore: boolean;
 }
 
+export interface ConversationListFilters {
+  search?: string;
+  unreadOnly?: boolean;
+}
+
 export interface ConversationMessage {
   id: string;
   content: string;
@@ -98,8 +103,18 @@ function readData<T>(payload: unknown): T | null {
 export async function fetchConversationList(
   page: number,
   request: Request = fetch,
+  filters?: ConversationListFilters,
 ): Promise<ConversationListPage> {
-  const response = await request(`/api/conversations?page=${page}&limit=20`);
+  const searchParams = new URLSearchParams({ page: String(page), limit: "20" });
+  const search = filters?.search?.trim();
+  if (search) {
+    searchParams.set("search", search);
+  }
+  if (filters?.unreadOnly) {
+    searchParams.set("unread", "true");
+  }
+
+  const response = await request(`/api/conversations?${searchParams}`);
   const payload = await readJson(response);
   const data =
     typeof payload === "object" && payload !== null
