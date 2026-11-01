@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { TripsPage } from "@/components/student/TripsPage";
 import { auth } from "@/lib/auth/config";
@@ -16,8 +17,16 @@ export default async function TripsRoute() {
 
   return (
     <>
+      <DesktopAccountHeader
+        user={{
+          name: session.user.name,
+          email: session.user.email,
+          avatar: session.user.image,
+          role: session.user.role,
+        }}
+      />
       <TripsPage />
-      <MobileTabNavigation activeTab="trips" />
+      <MobileTabNavigation activeTab="trips" role="STUDENT" />
     </>
   );
 }

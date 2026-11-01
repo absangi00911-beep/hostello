@@ -14,6 +14,7 @@ describe("HostelSearchBar", () => {
     expect(markup).toContain('aria-label="Start your search"');
     expect(markup).toContain('aria-label="Search stays"');
     expect(markup).toContain('class="fixed inset-0 m-0 h-dvh');
+    expect(markup).not.toContain("<span>hostello</span>");
   });
 
   it("uses a full-width background while keeping search content aligned", () => {

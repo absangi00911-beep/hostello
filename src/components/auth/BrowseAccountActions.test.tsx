@@ -25,6 +25,14 @@ describe("BrowseAccountActions", () => {
     expect(markup).not.toContain("Become a host");
   });
 
+  it("does not render a standalone Messages link", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseAccountActions user={{ role: "STUDENT" }} />,
+    );
+
+    expect(markup).not.toContain(">Messages</a>");
+  });
+
   it.each([
     ["a guest", null],
     ["an owner", { role: "OWNER" as const }],

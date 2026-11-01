@@ -8,7 +8,6 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
-import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import type { NearbyCoordinates } from "@/lib/nearby-search";
 import { SearchPillForm, type SearchPillPanel } from "./SearchPillForm";
 import { SearchPillPanels } from "./SearchPillPanels";
@@ -159,9 +158,6 @@ export function HostelSearchBar({
       aria-label="Search stays"
     >
       <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
-        <div className="mb-3 hidden [@media(max-width:720px)]:block">
-          <HostelloBrand className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]" />
-        </div>
         <button
           aria-label="Start your search"
           className="hidden min-h-14 w-full cursor-pointer items-center justify-center gap-[11px] rounded-full border border-line bg-white px-[18px] py-3 text-[0.94rem] font-semibold text-ink shadow-[0_4px_14px_rgb(29_42_34/8%)] transition-[box-shadow,transform] duration-[180ms] active:scale-[0.99] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! [@media(max-width:720px)]:flex motion-reduce:active:transform-none!"

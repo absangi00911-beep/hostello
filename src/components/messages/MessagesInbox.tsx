@@ -1,18 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ConversationThread } from "@/components/messages/ConversationThread";
 import { useMessagesInbox } from "@/components/messages/useMessagesInbox";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
+import {
+  BrowseAccountMenu,
+  type BrowseAccountUser,
+} from "@/components/auth/BrowseAccountMenu";
+import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
 
 interface MessagesInboxProps {
   currentUserId: string;
+  currentUser: BrowseAccountUser;
 }
 
-export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
+export function MessagesInbox({
+  currentUserId,
+  currentUser,
+}: MessagesInboxProps) {
   const inbox = useMessagesInbox();
   const [mobileThreadVisible, setMobileThreadVisible] = useState(
     Boolean(inbox.selectedConversationId),
@@ -24,16 +32,18 @@ export function MessagesInbox({ currentUserId }: MessagesInboxProps) {
 
   return (
     <main className="flex min-h-screen flex-col bg-canvas [@media(max-width:720px)]:pb-[calc(64px+env(safe-area-inset-bottom))]">
-      <header className="flex min-h-[72px] items-center justify-between gap-5 border-b border-line bg-surface px-5 py-3 md:px-8">
+      <ScrollAwareSurface
+        as="header"
+        className="sticky top-0 z-30 flex min-h-[72px] items-center justify-between gap-5 bg-surface px-5 py-3 md:px-8"
+        scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
+      >
         <HostelloBrand
-          className="inline-flex items-center font-black tracking-[-0.04em] text-ink no-underline"
+          className="inline-flex items-center font-black tracking-[-0.04em] text-ink no-underline [@media(max-width:720px)]:hidden"
         />
-        <div className="inline-flex items-center gap-[22px] text-[0.9rem] font-semibold text-muted">
-          <Link className="hover:text-brand-dark" href="/">
-            Explore hostels
-          </Link>
+        <div className="inline-flex items-center gap-4">
+          <BrowseAccountMenu user={currentUser} />
         </div>
-      </header>
+      </ScrollAwareSurface>
 
       {inbox.hasPendingInquiry && (
         <section

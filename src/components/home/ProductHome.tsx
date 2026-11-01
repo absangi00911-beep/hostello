@@ -376,7 +376,10 @@ export default function ProductHome({
         </div>
       </main>
       {showsStudentNavigation && (
-        <MobileTabNavigation activeTab="explore" />
+        <MobileTabNavigation
+          activeTab="explore"
+          role={accountUser?.role ?? null}
+        />
       )}
     </div>
   );

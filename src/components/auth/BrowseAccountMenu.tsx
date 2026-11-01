@@ -2,10 +2,12 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, UserRound } from "lucide-react";
 import { useState } from "react";
+import { getProductNavigationTabs } from "@/lib/product-navigation";
 import { LoginDialogTrigger } from "./LoginDialogTrigger";
 
 export interface BrowseAccountUser {
@@ -94,6 +96,17 @@ export function BrowseAccountMenu({
               {user.email}
             </div>
           )}
+          <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
+          {getProductNavigationTabs(user.role).map(({ id, label, href }) => (
+            <DropdownMenu.Item asChild key={id}>
+              <Link
+                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
+                href={href}
+              >
+                {label}
+              </Link>
+            </DropdownMenu.Item>
+          ))}
           <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
           {errorMessage && (
             <p

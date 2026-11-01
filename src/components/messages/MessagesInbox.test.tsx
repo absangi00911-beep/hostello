@@ -131,17 +131,34 @@ function thread(
 describe("MessagesInbox header", () => {
   it("shows the Hostello logo with its wordmark", () => {
     const markup = renderToStaticMarkup(
-      <MessagesInbox currentUserId="student-1" />,
+      <MessagesInbox
+        currentUser={{ role: "STUDENT" }}
+        currentUserId="student-1"
+      />,
     );
 
     expect(markup).toContain('alt="Hostello logo"');
     expect(markup).toContain("<span>hostello</span>");
+    const header = markup.match(/<header\b[^>]*>/)?.[0];
+    expect(header).toContain('data-scrolled="false"');
+    expect(header).toContain("sticky top-0 z-30");
+    expect(header).not.toContain("border-b");
+    const brandLink = markup.match(
+      /<a class="([^"]*)" aria-label="hostello home"/,
+    )?.[1];
+    expect(brandLink?.split(" ")).toContain(
+      "[@media(max-width:720px)]:hidden",
+    );
+    expect(markup).toContain('aria-label="Account menu for Account"');
   });
 
   it("shows the empty inbox guidance and named search and settings controls", () => {
     inboxMock.listLoading = false;
     const markup = renderToStaticMarkup(
-      <MessagesInbox currentUserId="student-1" />,
+      <MessagesInbox
+        currentUser={{ role: "STUDENT" }}
+        currentUserId="student-1"
+      />,
     );
 
     expect(markup).toContain("Nothing to see here");
@@ -321,7 +338,10 @@ describe("MessagesInbox API behavior", () => {
 
   it("renders_an_accessible_inbox_shell_without_a_selected_thread", () => {
     const markup = renderToStaticMarkup(
-      <MessagesInbox currentUserId="student-1" />,
+      <MessagesInbox
+        currentUser={{ role: "STUDENT" }}
+        currentUserId="student-1"
+      />,
     );
 
     expect(markup).toContain(">Messages</h1>");
