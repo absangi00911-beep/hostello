@@ -45,7 +45,7 @@ export function HostelAmenitiesSection({
   return (
     <section
       aria-labelledby="hostel-amenities-title"
-      className="hostel-amenities-section border-t border-line pt-5"
+      className="hostel-amenities-section border-t border-line pt-5 [@media(max-width:720px)]:order-1"
       role="region"
     >
       <h2

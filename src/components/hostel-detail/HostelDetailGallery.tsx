@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
-import { Heart, Share2, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { ArrowLeft, Heart, Share2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, type UIEvent } from "react";
 import type { HostelDetailPhoto } from "@/lib/hostel-gallery";
 
 interface HostelDetailGalleryProps {
@@ -61,10 +62,13 @@ export function HostelDetailGallery({
   photos,
   initiallySaved,
 }: HostelDetailGalleryProps) {
+  const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const mobileGalleryRef = useRef<HTMLDivElement>(null);
   const [isSaved, setIsSaved] = useState(initiallySaved);
   const [isSaving, setIsSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const mosaicPhotos = photos.slice(0, 5);
   const photoCount = Math.max(1, mosaicPhotos.length);
 
@@ -123,20 +127,41 @@ export function HostelDetailGallery({
     }
   }
 
+  function handleMobileGalleryScroll(event: UIEvent<HTMLDivElement>) {
+    const gallery = event.currentTarget;
+    if (gallery.clientWidth === 0 || photos.length < 2) return;
+
+    setActivePhotoIndex(
+      Math.min(
+        photos.length - 1,
+        Math.round(gallery.scrollLeft / gallery.clientWidth),
+      ),
+    );
+  }
+
+  function goBack() {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/");
+  }
+
   return (
     <>
       <section
         aria-labelledby="hostel-detail-title"
-        className="hostel-detail-intro mb-5"
+        className="hostel-detail-intro relative mb-5 [@media(max-width:720px)]:mb-0"
       >
-        <div className="hostel-detail-title-row flex items-center justify-between gap-5 [@media(max-width:720px)]:items-start [@media(max-width:720px)]:flex-col [@media(max-width:720px)]:gap-2">
+        <div className="hostel-detail-title-row flex items-center justify-between gap-5 [@media(max-width:720px)]:absolute [@media(max-width:720px)]:inset-x-0 [@media(max-width:720px)]:bottom-0 [@media(max-width:720px)]:z-10 [@media(max-width:720px)]:rounded-t-[24px] [@media(max-width:720px)]:bg-white [@media(max-width:720px)]:px-5 [@media(max-width:720px)]:pt-5 [@media(max-width:720px)]:pb-3">
           <h1
-            className="m-0 min-w-0 max-w-full text-xl leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance]"
+            className="m-0 min-w-0 max-w-full text-xl leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-[1.65rem] [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
             id="hostel-detail-title"
           >
             {name}
           </h1>
-          <div className="hostel-detail-actions flex shrink-0 items-center gap-4">
+          <div className="hostel-detail-actions flex shrink-0 items-center gap-4 [@media(max-width:720px)]:hidden">
             <button
               className="inline-flex min-h-9 cursor-pointer items-center gap-2 border-0 bg-transparent px-[2px] py-1.5 text-[0.82rem] font-semibold text-ink underline underline-offset-[3px]"
               onClick={() => void shareListing()}
@@ -162,7 +187,7 @@ export function HostelDetailGallery({
           </div>
         </div>
         <div
-          className="hostel-detail-gallery relative mt-[14px] grid h-[min(38vw,432px)] grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))] grid-rows-[repeat(2,minmax(0,1fr))] gap-[5px] overflow-hidden rounded-xl bg-surface-muted [@media(max-width:720px)]:h-[clamp(220px,70vw,280px)] [@media(max-width:720px)]:grid-cols-1 [@media(max-width:720px)]:grid-rows-1 [@media(max-width:720px)]:rounded-[10px]"
+          className="hostel-detail-gallery relative mt-[14px] grid h-[min(38vw,432px)] grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))] grid-rows-[repeat(2,minmax(0,1fr))] gap-[5px] overflow-hidden rounded-xl bg-surface-muted [@media(max-width:720px)]:hidden"
           data-photo-count={photoCount}
         >
           {mosaicPhotos.length > 0 ? (
@@ -207,6 +232,86 @@ export function HostelDetailGallery({
             </button>
           )}
         </div>
+        <div
+          aria-label="Mobile hostel photo gallery"
+          className="hostel-detail-mobile-gallery relative hidden h-[45svh] snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-surface-muted [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(max-width:720px)]:flex"
+          onScroll={handleMobileGalleryScroll}
+          ref={mobileGalleryRef}
+          role="region"
+          tabIndex={0}
+        >
+          {photos.length > 0 ? (
+            photos.map((photo, index) => (
+              <div
+                aria-label={`Photo ${index + 1} of ${photos.length}`}
+                className="relative h-full w-full shrink-0 snap-center bg-surface-muted"
+                key={`${photo.src}-mobile-${index}`}
+                role="group"
+              >
+                <Image
+                  alt={photo.alt}
+                  className="object-cover"
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  src={photo.src}
+                />
+              </div>
+            ))
+          ) : (
+            <div
+              aria-label="Photos are not available for this hostel yet."
+              className="grid h-full w-full shrink-0 place-items-center p-6 text-center text-[0.92rem] text-muted"
+              role="img"
+            >
+              Photos are not available for this hostel yet.
+            </div>
+          )}
+        </div>
+        <div className="hostel-detail-mobile-actions absolute inset-x-4 top-[max(16px,env(safe-area-inset-top))] z-20 hidden items-center justify-between [@media(max-width:720px)]:flex">
+          <button
+            aria-label="Go back"
+            className="grid size-10 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md"
+            onClick={goBack}
+            type="button"
+          >
+            <ArrowLeft aria-hidden="true" size={20} />
+          </button>
+          <div className="flex items-center gap-3">
+            <button
+              aria-label={`Share ${name}`}
+              className="grid size-10 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md"
+              onClick={() => void shareListing()}
+              type="button"
+            >
+              <Share2 aria-hidden="true" size={18} />
+            </button>
+            <button
+              aria-label={isSaved ? `Remove ${name} from saved hostels` : `Save ${name}`}
+              aria-pressed={isSaved}
+              className="grid size-10 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md disabled:cursor-wait disabled:opacity-[0.65]"
+              disabled={isSaving}
+              onClick={() => void toggleSaved()}
+              type="button"
+            >
+              <Heart
+                aria-hidden="true"
+                fill={isSaved ? "currentColor" : "none"}
+                size={19}
+              />
+            </button>
+          </div>
+        </div>
+        {photos.length > 0 && (
+          <button
+            aria-label={`Show all ${photos.length} photos, photo ${activePhotoIndex + 1} of ${photos.length}`}
+            className="hostel-detail-mobile-photo-count absolute right-4 bottom-[76px] z-[2] hidden min-h-8 cursor-pointer items-center rounded-md border border-white/30 bg-black/45 px-2.5 text-[0.78rem] font-semibold text-white backdrop-blur-md [@media(max-width:720px)]:inline-flex"
+            onClick={() => dialogRef.current?.showModal()}
+            type="button"
+          >
+            {activePhotoIndex + 1} / {photos.length}
+          </button>
+        )}
         {actionMessage && (
           <p
             aria-live="polite"

@@ -1,7 +1,7 @@
 "use client";
 
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { calculateMonths } from "@/lib/utils";
 import { isStayWithinBounds } from "@/lib/hostel-date-selection";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
@@ -73,6 +73,8 @@ export function HostelBookingCard({
   hasCancellationPolicy,
   rooms,
 }: HostelBookingCardProps) {
+  const bookingCardRef = useRef<HTMLElement>(null);
+  const moveInInputRef = useRef<HTMLInputElement>(null);
   const [roomId, setRoomId] = useState(rooms[0]?.id ?? "");
   const { checkIn, checkOut, setMoveIn, setMoveOut } =
     useHostelDateSelection();
@@ -105,6 +107,25 @@ export function HostelBookingCard({
     checkOut.length > 0 &&
     stayIsValid &&
     guests <= maxGuestsFor(room);
+  const quickReserveLabel = !room || !hasCancellationPolicy
+    ? "Unavailable"
+    : canBook
+      ? retryBookingId
+        ? "Retry payment"
+        : "Reserve"
+      : checkIn && checkOut
+        ? "Update dates"
+        : "Choose dates";
+
+  function handleQuickReserve() {
+    if (canBook) return;
+
+    bookingCardRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    moveInInputRef.current?.focus({ preventScroll: true });
+  }
 
   async function startPayment(bookingId: string): Promise<boolean> {
     const response = await fetch("/api/payment/initiate", {
@@ -202,7 +223,9 @@ export function HostelBookingCard({
   return (
     <aside
       aria-label="Reserve this hostel"
-      className="sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(max-width:900px)]:row-[2]"
+      className="hostel-booking-card sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(max-width:900px)]:row-[4] [@media(max-width:720px)]:rounded-none [@media(max-width:720px)]:border-0 [@media(max-width:720px)]:bg-transparent [@media(max-width:720px)]:p-5 [@media(max-width:720px)]:shadow-none"
+      id="hostel-booking"
+      ref={bookingCardRef}
     >
       <div className="mb-3 text-[0.78rem] text-muted">
         {room ? (
@@ -248,6 +271,7 @@ export function HostelBookingCard({
               </span>
               <input
                 className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                ref={moveInInputRef}
                 min={todayDateInputValue()}
                 onChange={(event) => setMoveIn(event.target.value)}
                 required
@@ -303,7 +327,7 @@ export function HostelBookingCard({
             </p>
           )}
           <button
-            className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-[0.84rem] font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-[0.84rem] font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 [@media(max-width:720px)]:hidden"
             disabled={!canBook || isSubmitting}
             type="submit"
           >
@@ -341,6 +365,41 @@ export function HostelBookingCard({
               )}
             </p>
           )}
+          <div
+            aria-label="Quick reserve"
+            className="hostel-booking-mobile-bar fixed inset-x-0 bottom-0 z-[90] hidden items-center justify-between gap-4 border-t border-line bg-white px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] [@media(max-width:720px)]:flex"
+            role="region"
+          >
+            <div className="min-w-0">
+              <p className="m-0 flex items-baseline gap-1 text-[0.78rem] text-muted">
+                {room ? (
+                  <>
+                    <strong className="text-[1rem] font-bold text-ink tabular-nums">
+                      PKR {formatPrice(room.pricePerMonth)}
+                    </strong>
+                    <span>/ month</span>
+                  </>
+                ) : (
+                  <strong className="text-[0.9rem] font-semibold text-ink">
+                    Rates unavailable
+                  </strong>
+                )}
+              </p>
+              <p className="m-0 mt-0.5 truncate text-[0.72rem] text-muted">
+                {estimatedTotal !== null
+                  ? `Estimated total PKR ${formatPrice(estimatedTotal)}`
+                  : "Choose dates to see your stay total"}
+              </p>
+            </div>
+            <button
+              className="min-h-12 min-w-[132px] shrink-0 cursor-pointer rounded-lg border-0 bg-brand px-5 text-[0.9rem] font-semibold text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!room || !hasCancellationPolicy || isSubmitting}
+              onClick={handleQuickReserve}
+              type={canBook ? "submit" : "button"}
+            >
+              {isSubmitting ? "Please wait…" : quickReserveLabel}
+            </button>
+          </div>
         </form>
       ) : (
         <p

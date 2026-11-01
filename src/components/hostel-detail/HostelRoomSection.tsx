@@ -20,7 +20,7 @@ export function HostelRoomSection({ rooms }: { rooms: HostelRoom[] }) {
   return (
     <section
       aria-labelledby="hostel-rooms-title"
-      className="hostel-room-section hostel-detail-overview-section"
+      className="hostel-room-section hostel-detail-overview-section [@media(max-width:720px)]:order-2"
     >
       <h2 id="hostel-rooms-title" className="mb-3 text-[1.25rem] font-semibold tracking-[-0.02em] text-ink">
         Where you’ll sleep

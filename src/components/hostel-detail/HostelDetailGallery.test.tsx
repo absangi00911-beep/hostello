@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { HostelDetailGallery } from "./HostelDetailGallery";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ back: vi.fn(), push: vi.fn() }),
+}));
 
 const baseProps = {
   initiallySaved: false,
@@ -53,6 +57,29 @@ describe("HostelDetailGallery", () => {
     );
 
     expect(markup).toContain("col-span-full row-span-full");
+  });
+
+  it("renders a swipeable mobile gallery with photo count and listing actions", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDetailGallery
+        {...baseProps}
+        photos={[
+          { src: "/hostel-photo-1.jpg", alt: "Sample Hostel bedroom" },
+          { src: "/hostel-photo-2.jpg", alt: "Sample Hostel lounge" },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Mobile hostel photo gallery"');
+    expect(markup).toContain("snap-x");
+    expect(markup).toContain("h-[45svh]");
+    expect(markup).toContain("Photo 1 of 2");
+    expect(markup).toContain("1 / 2");
+    expect(markup).toContain('aria-label="Go back"');
+    expect(markup).toContain('aria-label="Share Sample Hostel"');
+    expect(markup).toContain('aria-label="Save Sample Hostel"');
+    expect(markup).toContain("backdrop-blur-md");
+    expect(markup).toContain("bg-white/55");
   });
 
   it.each([

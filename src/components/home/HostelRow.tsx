@@ -231,7 +231,7 @@ export function HostelRow({
       </div>
 
       <div
-        className="hostel-carousel grid grid-flow-col auto-cols-[calc(14.085%_-_13.8px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.39%_-_11.71px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(47.619%_-_11.43px)] [@media(max-width:720px)]:gap-3 [@media(max-width:720px)]:ml-[-20px] [@media(max-width:720px)]:mr-[-20px] [@media(max-width:720px)]:px-0 [@media(max-width:720px)]:pl-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:[scroll-padding-inline:calc(4.545%_+_10.36px)]"
+        className="hostel-carousel grid grid-flow-col auto-cols-[calc(14.085%_-_13.8px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.39%_-_11.71px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(50%_-_5px)] [@media(max-width:720px)]:gap-3 [@media(max-width:720px)]:ml-[-20px] [@media(max-width:720px)]:mr-[-20px] [@media(max-width:720px)]:px-0 [@media(max-width:720px)]:pl-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:pr-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:[scroll-padding-inline:calc(4.545%_+_10.36px)]"
         ref={carouselRef}
         role="region"
         aria-label={`Stays in ${city}`}

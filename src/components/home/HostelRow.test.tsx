@@ -56,7 +56,7 @@ describe("HostelRow favorite action", () => {
     expect(markup).toContain(
       "auto-cols-[calc(24.39%_-_11.71px)]",
     );
-    expect(markup).toContain("auto-cols-[calc(47.619%_-_11.43px)]");
+    expect(markup).toContain("auto-cols-[calc(50%_-_5px)]");
     expect(markup).toContain("[@media(max-width:720px)]:ml-[-20px]");
     expect(markup).toContain("[@media(max-width:720px)]:mr-[-20px]");
     expect(markup).toContain(
@@ -65,6 +65,9 @@ describe("HostelRow favorite action", () => {
     expect(markup).toContain("[@media(max-width:720px)]:px-0");
     expect(markup).toContain(
       "pl-[calc(4.545%_+_12.18px)]",
+    );
+    expect(markup).toContain(
+      "pr-[calc(4.545%_+_12.18px)]",
     );
     expect(markup).toContain("group-hover:brightness-[0.9]");
     expect(markup).toContain("group-focus-visible:brightness-[0.9]");

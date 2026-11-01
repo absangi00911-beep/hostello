@@ -65,7 +65,7 @@ export default async function HostelDetailPage({
     <div className="hostel-detail-page min-h-dvh bg-white text-ink">
       <ScrollAwareSurface
         as="header"
-        className="sticky top-0 z-30 bg-white"
+        className="sticky top-0 z-30 bg-white [@media(max-width:720px)]:hidden"
         scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
       >
         <div className="hostel-detail-header-inner mx-auto grid min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] grid-cols-[minmax(0,1fr)_minmax(220px,320px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:960px)]:min-h-0 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:960px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:960px)]:gap-y-[10px] [@media(max-width:960px)]:py-3 [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))] [&>.browse-account-actions]:justify-self-end [&_.browse-account-trigger]:px-2 [&_.browse-account-trigger]:py-1 [&_.browse-account-trigger]:pl-1 [&_.browse-sign-in]:size-[34px]">
@@ -110,8 +110,8 @@ export default async function HostelDetailPage({
         </div>
       </ScrollAwareSurface>
 
-      <main className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-[18px]">
-        <div className="hostel-detail-shell mx-auto w-[min(1120px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1120px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
+      <main className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-0 [@media(max-width:720px)]:pb-[calc(96px+env(safe-area-inset-bottom))]">
+        <div className="hostel-detail-shell mx-auto w-[min(1120px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1120px)] [@media(max-width:720px)]:w-full!">
           <HostelDetailGallery
             initiallySaved={isSaved}
             name={hostel.name}
@@ -120,8 +120,8 @@ export default async function HostelDetailPage({
           />
 
           <HostelDateSelectionProvider>
-            <div className="hostel-detail-layout mt-[22px] grid min-w-0 grid-cols-[minmax(0,1.8fr)_minmax(320px,0.9fr)] grid-rows-[auto_1fr] items-start gap-y-[22px] [column-gap:clamp(24px,4vw,48px)] [@media(max-width:900px)]:grid-cols-1 [@media(max-width:900px)]:grid-rows-[auto_auto_1fr] [@media(max-width:900px)]:gap-7 [@media(max-width:720px)]:mt-6">
-              <div className="hostel-detail-overview-column col-start-1 row-start-1 min-w-0">
+            <div className="hostel-detail-layout mt-[22px] grid min-w-0 grid-cols-[minmax(0,1.8fr)_minmax(320px,0.9fr)] grid-rows-[auto_1fr] items-start gap-y-[22px] [column-gap:clamp(24px,4vw,48px)] [@media(max-width:900px)]:grid-cols-1 [@media(max-width:900px)]:grid-rows-[auto_auto_1fr] [@media(max-width:900px)]:gap-7 [@media(max-width:720px)]:mt-0 [@media(max-width:720px)]:grid-rows-none [@media(max-width:720px)]:gap-0">
+              <div className="hostel-detail-overview-column col-start-1 row-start-1 min-w-0 [@media(max-width:720px)]:[grid-column:auto] [@media(max-width:720px)]:[grid-row:auto] [@media(max-width:720px)]:px-5 [@media(max-width:720px)]:py-5">
                 <HostelDetailOverview
                   area={hostel.area}
                   capacity={hostel.capacity}
@@ -143,7 +143,26 @@ export default async function HostelDetailPage({
                 rooms={hostel.rooms_rel}
               />
 
-              <div className="hostel-detail-primary-column col-start-1 row-start-2 grid min-w-0 content-start gap-6 [@media(max-width:900px)]:row-start-3">
+              <div className="hostel-detail-host-column col-span-full row-start-1 min-w-0 [@media(min-width:901px)]:row-start-4 [@media(max-width:900px)]:row-start-2 [@media(max-width:720px)]:px-5">
+                <HostelHostSection
+                  host={{
+                    name: hostel.owner.name,
+                    avatar: hostel.owner.avatar,
+                    bio: hostel.owner.bio,
+                    city: hostel.owner.city,
+                    createdAt: hostel.owner.createdAt,
+                    responseSummary: hostel.owner.hostResponseSummary,
+                  }}
+                  hostelId={hostel.id}
+                  hostelName={hostel.name}
+                  rating={hostel.rating}
+                  reviewCount={hostel.reviewCount}
+                  isOwner={session?.user.id === hostel.owner.id}
+                  viewerRole={session?.user.role ?? null}
+                />
+              </div>
+
+              <div className="hostel-detail-primary-column col-start-1 row-start-2 grid min-w-0 content-start gap-6 [@media(max-width:900px)]:row-start-3 [@media(max-width:720px)]:px-5">
                 <HostelRoomSection rooms={hostel.rooms_rel} />
                 <HostelAmenitiesSection amenities={hostel.amenities} />
                 {hostel.rooms_rel.length > 0 && (
@@ -159,30 +178,17 @@ export default async function HostelDetailPage({
                   reviewCategoryRatings={hostel.reviewCategoryRatings}
                 />
               </div>
+
+              <div className="hostel-detail-location-column col-span-full row-start-1 [@media(min-width:901px)]:row-start-3 [@media(max-width:900px)]:row-start-5 [@media(max-width:720px)]:px-5">
+                <HostelLocationSection
+                  area={hostel.area}
+                  city={hostel.city}
+                  latitude={hostel.latitude}
+                  longitude={hostel.longitude}
+                />
+              </div>
             </div>
           </HostelDateSelectionProvider>
-          <HostelLocationSection
-            area={hostel.area}
-            city={hostel.city}
-            latitude={hostel.latitude}
-            longitude={hostel.longitude}
-          />
-          <HostelHostSection
-            host={{
-              name: hostel.owner.name,
-              avatar: hostel.owner.avatar,
-              bio: hostel.owner.bio,
-              city: hostel.owner.city,
-              createdAt: hostel.owner.createdAt,
-              responseSummary: hostel.owner.hostResponseSummary,
-            }}
-            hostelId={hostel.id}
-            hostelName={hostel.name}
-            rating={hostel.rating}
-            reviewCount={hostel.reviewCount}
-            isOwner={session?.user.id === hostel.owner.id}
-            viewerRole={session?.user.role ?? null}
-          />
         </div>
       </main>
     </div>
