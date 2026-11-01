@@ -18,6 +18,7 @@ import {
   sendMessageAndRefresh,
 } from "@/lib/messages-inbox";
 import type {
+  ConversationListFilters,
   ConversationListPage,
   ConversationPreview,
   ConversationThread,
@@ -40,6 +41,9 @@ export function useMessagesInbox() {
   const [listError, setListError] = useState("");
   const [listLoading, setListLoading] = useState(true);
   const [listPaging, setListPaging] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [unreadOnly, setUnreadOnlyState] = useState(false);
   const [threadPages, setThreadPages] = useState<Record<number, ConversationThread>>({});
   const [threadError, setThreadError] = useState("");
   const [threadLoading, setThreadLoading] = useState(false);
@@ -50,6 +54,7 @@ export function useMessagesInbox() {
   const [pendingError, setPendingError] = useState("");
   const [pendingAttempt, setPendingAttempt] = useState(0);
   const pendingDeliveryInProgress = useRef(false);
+  const listRequestSequence = useRef(0);
   const selectedThreadRequest = useRef(0);
   const selectedConversationIdRef = useRef(selectedConversationId);
   useLayoutEffect(() => {
@@ -66,24 +71,59 @@ export function useMessagesInbox() {
     [],
   );
 
+  const listFilters = useMemo<ConversationListFilters>(
+    () => ({ search: debouncedSearchQuery, unreadOnly }),
+    [debouncedSearchQuery, unreadOnly],
+  );
+  const setUnreadOnly = useCallback(
+    (value: boolean) => {
+      setUnreadOnlyState(value);
+      setDebouncedSearchQuery(searchQuery);
+    },
+    [searchQuery],
+  );
+  const listFiltersRef = useRef(listFilters);
+
+  useEffect(() => {
+    listFiltersRef.current = listFilters;
+  }, [listFilters]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
   const loadConversationList = useCallback(
     async (page: number, append = false) => {
+      const requestSequence = append
+        ? listRequestSequence.current
+        : ++listRequestSequence.current;
       if (append) setListPaging(true);
       else setListLoading(true);
       setListError("");
       try {
-        const result = await fetchConversationList(page);
+        const result = await fetchConversationList(
+          page,
+          undefined,
+          listFiltersRef.current,
+        );
+        if (requestSequence !== listRequestSequence.current) return;
         setConversations((current) =>
           append ? [...current, ...result.data] : result.data,
         );
         setConversationPage(result);
       } catch (error) {
+        if (requestSequence !== listRequestSequence.current) return;
         setListError(
           error instanceof Error ? error.message : "Couldn't load your conversations.",
         );
       } finally {
-        setListLoading(false);
-        setListPaging(false);
+        if (requestSequence === listRequestSequence.current) {
+          setListLoading(false);
+          setListPaging(false);
+        }
       }
     },
     [],
@@ -131,7 +171,7 @@ export function useMessagesInbox() {
 
   useEffect(() => {
     void loadConversationList(1);
-  }, [loadConversationList]);
+  }, [listFilters, loadConversationList]);
 
   useEffect(() => {
     if (!hasPendingInquiry || pendingDeliveryInProgress.current) return;
@@ -353,6 +393,7 @@ export function useMessagesInbox() {
     message,
     pendingError,
     retryPendingInquiry,
+    searchQuery,
     selectedConversationId,
     selectedThread,
     selectConversation,
@@ -360,10 +401,13 @@ export function useMessagesInbox() {
     sendMessage,
     sending,
     setMessage,
+    setSearchQuery,
+    setUnreadOnly,
     threadError,
     threadLoading,
     threadRefreshing,
     visibleMessages,
     refreshThread,
+    unreadOnly,
   };
 }

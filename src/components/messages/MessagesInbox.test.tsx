@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ConversationList } from "./ConversationList";
 import { ConversationThread } from "./ConversationThread";
 import { MessagesInbox } from "./MessagesInbox";
@@ -21,35 +21,57 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/components/messages/useMessagesInbox", () => ({
-  useMessagesInbox: () => ({
-    cancelPendingInquiry: vi.fn(),
-    conversations: [],
-    conversationPage: { data: [], total: 0, page: 1, limit: 20, hasMore: false },
-    hasPendingInquiry: false,
-    listError: "",
-    listLoading: true,
-    listPaging: false,
-    loadConversationList: vi.fn(),
-    loadMoreConversations: vi.fn(),
-    loadOlderMessages: vi.fn(),
-    message: "",
-    pendingError: "",
-    retryPendingInquiry: vi.fn(),
-    selectedConversationId: null,
-    selectedThread: null,
-    selectConversation: vi.fn(),
-    sendError: "",
-    sendMessage: vi.fn(),
-    sending: false,
-    setMessage: vi.fn(),
-    threadError: "",
-    threadLoading: false,
-    threadRefreshing: false,
-    visibleMessages: [],
-    refreshThread: vi.fn(),
-  }),
+const inboxMock = vi.hoisted(() => ({
+  cancelPendingInquiry: vi.fn(),
+  conversations: [] as unknown[],
+  conversationPage: { data: [], total: 0, page: 1, limit: 20, hasMore: false },
+  hasPendingInquiry: false,
+  listError: "",
+  listLoading: true,
+  listPaging: false,
+  loadConversationList: vi.fn(),
+  loadMoreConversations: vi.fn(),
+  loadOlderMessages: vi.fn(),
+  message: "",
+  pendingError: "",
+  retryPendingInquiry: vi.fn(),
+  searchQuery: "",
+  selectedConversationId: null,
+  selectedThread: null,
+  selectConversation: vi.fn(),
+  sendError: "",
+  sendMessage: vi.fn(),
+  sending: false,
+  setMessage: vi.fn(),
+  setSearchQuery: vi.fn(),
+  setUnreadOnly: vi.fn(),
+  threadError: "",
+  threadLoading: false,
+  threadRefreshing: false,
+  unreadOnly: false,
+  visibleMessages: [],
+  refreshThread: vi.fn(),
 }));
+
+vi.mock("@/components/messages/useMessagesInbox", () => ({
+  useMessagesInbox: () => inboxMock,
+}));
+
+beforeEach(() => {
+  inboxMock.conversations = [];
+  inboxMock.conversationPage = {
+    data: [],
+    total: 0,
+    page: 1,
+    limit: 20,
+    hasMore: false,
+  };
+  inboxMock.listError = "";
+  inboxMock.listLoading = true;
+  inboxMock.listPaging = false;
+  inboxMock.searchQuery = "";
+  inboxMock.unreadOnly = false;
+});
 
 const conversation = {
   id: "conversation-1",
@@ -115,6 +137,21 @@ describe("MessagesInbox header", () => {
     expect(markup).toContain('alt="Hostello logo"');
     expect(markup).toContain("<span>hostello</span>");
   });
+
+  it("shows the empty inbox guidance and named search and settings controls", () => {
+    inboxMock.listLoading = false;
+    const markup = renderToStaticMarkup(
+      <MessagesInbox currentUserId="student-1" />,
+    );
+
+    expect(markup).toContain("Nothing to see here");
+    expect(markup).toContain(
+      "When you contact a hostel, your conversations will appear here.",
+    );
+    expect(markup).toContain('href="/search">Get started</a>');
+    expect(markup).toContain('aria-label="Search conversations"');
+    expect(markup).toContain('aria-label="Inbox settings"');
+  });
 });
 
 describe("MessagesInbox API behavior", () => {
@@ -142,16 +179,48 @@ describe("MessagesInbox API behavior", () => {
         error=""
         loading={false}
         onLoadMore={vi.fn()}
+        onRefresh={vi.fn()}
         onRetry={vi.fn()}
+        onSearchChange={vi.fn()}
         onSelect={vi.fn()}
+        onUnreadOnlyChange={vi.fn()}
         page={{ data: [], total: 1, page: 1, limit: 20, hasMore: false }}
         paging={false}
+        searchQuery=""
         selectedConversationId={null}
+        unreadOnly={false}
       />,
     );
 
     expect(markup).toContain('src="https://images.unsplash.com/ali.jpg"');
     expect(markup).toContain('alt=""');
+  });
+
+  it("shows a clear-search action instead of the empty-inbox guidance for no matches", () => {
+    const markup = renderToStaticMarkup(
+      <ConversationList
+        conversations={[]}
+        currentUserId="student-1"
+        error=""
+        loading={false}
+        onLoadMore={vi.fn()}
+        onRefresh={vi.fn()}
+        onRetry={vi.fn()}
+        onSearchChange={vi.fn()}
+        onSelect={vi.fn()}
+        onUnreadOnlyChange={vi.fn()}
+        page={{ data: [], total: 0, page: 1, limit: 20, hasMore: false }}
+        paging={false}
+        searchQuery="No matching hostel"
+        selectedConversationId={null}
+        unreadOnly={false}
+      />,
+    );
+
+    expect(markup).toContain("No conversations found");
+    expect(markup).toContain(">Clear search</button>");
+    expect(markup).not.toContain("Nothing to see here");
+    expect(markup).not.toContain('href="/search"');
   });
 
   it.each([
@@ -255,7 +324,7 @@ describe("MessagesInbox API behavior", () => {
       <MessagesInbox currentUserId="student-1" />,
     );
 
-    expect(markup).toContain("<h1>Messages</h1>");
+    expect(markup).toContain(">Messages</h1>");
     expect(markup).toContain('aria-label="Conversation list"');
     expect(markup).toContain("Select a conversation");
     expect(markup).toContain("Loading conversations");
@@ -285,11 +354,16 @@ describe("MessagesInbox API behavior", () => {
         error=""
         loading={false}
         onLoadMore={vi.fn()}
+        onRefresh={vi.fn()}
         onRetry={vi.fn()}
+        onSearchChange={vi.fn()}
         onSelect={vi.fn()}
+        onUnreadOnlyChange={vi.fn()}
         page={page}
         paging={false}
+        searchQuery=""
         selectedConversationId={null}
+        unreadOnly={false}
       />,
     );
     expect(markup).toContain('aria-label="2 unread messages"');
