@@ -186,4 +186,14 @@ describe("BrowseAccountMenu", () => {
 
     expect(markup.includes('href="/owner">Host dashboard</a>')).toBe(shown);
   });
+
+  it.each([
+    ["ADMIN", true],
+    ["OWNER", false],
+    ["STUDENT", false],
+  ] as const)("shows the admin console link only to admins (%s)", (role, shown) => {
+    const markup = renderToStaticMarkup(<BrowseAccountMenu user={{ role }} />);
+
+    expect(markup.includes('href="/admin">Admin console</a>')).toBe(shown);
+  });
 });
