@@ -107,7 +107,7 @@ function formatWhen(iso: string): string {
 }
 
 const actionClassName =
-  "cursor-pointer rounded-[8px] border border-line bg-white px-3 py-[6px] text-[0.8rem] font-semibold text-ink hover:bg-surface-muted disabled:cursor-wait disabled:opacity-60";
+  "cursor-pointer rounded-[8px] border border-line bg-white px-3 py-[6px] text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60";
 
 export function NotificationsPage({ role }: { role: Role }) {
   const [items, setItems] = useState<NotificationItem[]>([]);

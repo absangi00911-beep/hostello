@@ -91,7 +91,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 const inputClassName =
   "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!";
 const buttonClassName =
-  "inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.875rem] font-semibold text-ink enabled:hover:bg-surface-muted disabled:cursor-wait disabled:opacity-70";
+  "inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.875rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-[#cbd5e1] enabled:hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70";
 const primaryButtonClassName =
   "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 
