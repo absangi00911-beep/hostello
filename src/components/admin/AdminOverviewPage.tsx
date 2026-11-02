@@ -100,6 +100,29 @@ export function AdminOverviewContent({
               Verify new listings, suspend problem ones and reactivate them.
             </span>
           </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/verifications"
+          >
+            <span className="text-[1rem] font-semibold text-ink">
+              Student verification
+            </span>
+            <span className="text-[0.88rem] text-muted">
+              Check student documents and approve or reject them.
+            </span>
+          </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/roommate-reports"
+          >
+            <span className="text-[1rem] font-semibold text-ink">
+              Roommate reports
+            </span>
+            <span className="text-[0.88rem] text-muted">
+              Review reported roommate posts and delete the ones that break the
+              rules.
+            </span>
+          </Link>
         </nav>
       </div>
     </main>
