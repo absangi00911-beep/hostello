@@ -44,6 +44,7 @@ export async function GET(_req: NextRequest) {
         role:          true,
         bio:           true,
         city:          true,
+        verificationStatus: true, // NONE | PENDING | APPROVED | REJECTED (own status only)
         createdAt:     true,
         _count: {
           select: {

@@ -208,6 +208,23 @@ export function ProfilePageContent({
             <section className="mt-7 flex items-center justify-between gap-6 rounded-[14px] border border-line bg-surface p-6">
               <div>
                 <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
+                  Student verification
+                </h2>
+                <p className="mt-1 m-0 text-[0.95rem] text-muted">
+                  Verify your student status to earn a verified badge.
+                </p>
+              </div>
+              <Link
+                className="inline-flex min-h-11 flex-none items-center justify-center rounded-full border border-line bg-white px-4 py-2.5 font-semibold text-ink"
+                href="/profile/verification"
+              >
+                Verify
+              </Link>
+            </section>
+
+            <section className="mt-5 flex items-center justify-between gap-6 rounded-[14px] border border-line bg-surface p-6">
+              <div>
+                <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
                   Have a place to share?
                 </h2>
                 <p className="mt-1 m-0 text-[0.95rem] text-muted">
