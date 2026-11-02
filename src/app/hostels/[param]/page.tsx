@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Search } from "lucide-react";
 import { notFound } from "next/navigation";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
@@ -177,6 +178,14 @@ export default async function HostelDetailPage({
                   reviews={hostel.reviews}
                   reviewCategoryRatings={hostel.reviewCategoryRatings}
                 />
+                {session?.user.role === "STUDENT" ? (
+                  <Link
+                    className="inline-flex min-h-11 items-center justify-self-start rounded-full border border-line bg-white px-4 text-[0.95rem] font-semibold text-ink no-underline hover:bg-surface-muted"
+                    href={`/hostels/${encodeURIComponent(hostel.slug)}/roommates`}
+                  >
+                    Find a roommate for this hostel
+                  </Link>
+                ) : null}
               </div>
 
               <div className="hostel-detail-location-column col-span-full row-start-1 [@media(min-width:901px)]:row-start-3 [@media(max-width:900px)]:row-start-5 [@media(max-width:720px)]:px-5">

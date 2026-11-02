@@ -21,7 +21,7 @@ owner, admin.
 - [x] `/booking/[id]/payment` provider return, redirects to the booking detail with the payment state
 - [x] "View booking" link on each trip
 - [x] Review form on completed bookings (`POST /api/reviews`; resubmitting updates). Note: no student-readable "my reviews" API exists, so no list page
-- [ ] Roommate finder (`/api/hostels/[param]/roommates`, `/api/roommates/[id]`)
+- [x] `/hostels/[param]/roommates`: list, publish/edit/delete own post, report others; linked from the hostel page for students. No student-to-student messaging API exists, so posts cannot be contacted yet
 - [x] `/profile/verification` (upload then submit; status from `/api/profile`, which now also returns `verificationStatus`)
 
 ## 4. owner-workspace
