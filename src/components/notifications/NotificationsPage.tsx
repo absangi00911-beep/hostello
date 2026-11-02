@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { announceUnreadCount } from "./useUnreadNotificationCount";
 
 export interface NotificationItem {
   id: string;
@@ -153,6 +154,11 @@ export function NotificationsPage({ role }: { role: Role }) {
       });
     return () => controller.abort();
   }, [load]);
+
+  // Keep the shared header badge in step with what this page shows.
+  useEffect(() => {
+    if (!isLoading && !loadError) announceUnreadCount(unreadCount);
+  }, [isLoading, loadError, unreadCount]);
 
   async function loadMore() {
     setIsLoadingMore(true);

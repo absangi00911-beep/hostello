@@ -9,11 +9,11 @@ owner, admin.
 - [x] `/forgot-password`
 - [x] `/reset-password?token=` (token never sent in Referer)
 - [x] `/terms` and `/privacy` placeholder shells (no invented legal text)
-- [ ] `/contact` (posts to `/api/contact`)
+- [x] `/contact` (posts to `/api/contact`; prefills name and email for signed-in users; linked from the terms and privacy shells)
 
 ## 2. notification-center
 - [x] `/notifications` (list, unread count, mark read, mark all, delete, pagination)
-- [ ] Unread badge in the account header and menu
+- [x] Unread badge in the account menu, plus a Notifications menu link for every role. The count loads once and follows the notification center via a window event
 
 ## 3. student-marketplace
 - [x] Booking creation and checkout start already live in the hostel detail booking card
