@@ -41,7 +41,12 @@ describe("OwnerDashboardContent", () => {
   it("links only to pages that exist today", () => {
     const markup = render({});
 
-    for (const href of ["/owner/analytics", "/messages", "/notifications"]) {
+    for (const href of [
+      "/owner/bookings",
+      "/owner/analytics",
+      "/messages",
+      "/notifications",
+    ]) {
       expect(markup).toContain(`href="${href}"`);
     }
     expect(markup).toContain('href="/owner/listings/new"');

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BarChart3, Bell, MessageCircle } from "lucide-react";
+import { BarChart3, Bell, CalendarCheck, MessageCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   STATUS_FILTERS,
@@ -34,6 +34,7 @@ const statusBadgeClassName: Record<ListingStatus, string> = {
 };
 
 const quickLinks = [
+  { href: "/owner/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/owner/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/messages", label: "Messages", icon: MessageCircle },
   { href: "/notifications", label: "Notifications", icon: Bell },
