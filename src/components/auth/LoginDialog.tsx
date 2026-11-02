@@ -69,6 +69,8 @@ export default function LoginDialog({
   const [name, setName] = useState("");
   const [grant, setGrant] = useState("");
   const [step, setStep] = useState<"email" | "otp" | "name">("email");
+  const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(
     getAuthErrorMessage(error),
   );
@@ -94,6 +96,46 @@ export default function LoginDialog({
     } catch {
       setErrorMessage("Google sign-in is temporarily unavailable. Please try again.");
       setIsGoogleRedirecting(false);
+    }
+  }
+
+  async function handlePasswordSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextEmail = email.trim();
+
+    if (!nextEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+      setErrorMessage("Enter a valid email address to continue.");
+      return;
+    }
+    if (!password) {
+      setErrorMessage("Enter your password to continue.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setStatusMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await signIn("credentials", {
+        email: nextEmail,
+        password,
+        redirect: false,
+        redirectTo: callbackUrl,
+      });
+
+      if (result?.error || !result?.ok) {
+        setErrorMessage("Email or password is incorrect.");
+        return;
+      }
+
+      onClose?.();
+      router.replace(callbackUrl);
+      router.refresh();
+    } catch {
+      setErrorMessage("We couldn't log you in just now. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -298,7 +340,9 @@ export default function LoginDialog({
             id="login-dialog-description"
           >
             {step === "email"
-              ? "Enter your email to receive a one-time login code."
+              ? loginMethod === "otp"
+                ? "Enter your email to receive a one-time login code."
+                : "Log in using the password for your account."
               : step === "otp"
                 ? `Enter the 6-digit code sent to ${email || "your email"}.`
                 : "Choose the name people will see on your HostelLo profile."}
@@ -329,7 +373,7 @@ export default function LoginDialog({
             </p>
           )}
 
-          {step === "email" ? (
+          {step === "email" && loginMethod === "otp" ? (
             <form className="grid gap-[14px]" noValidate onSubmit={requestOtp}>
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>Email</span>
@@ -351,6 +395,73 @@ export default function LoginDialog({
                 type="submit"
               >
                 {isSubmitting ? "Sending code…" : "Continue"}
+              </button>
+              <button
+                className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.85rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
+                disabled={isSubmitting || isGoogleRedirecting}
+                onClick={() => {
+                  setLoginMethod("password");
+                  setPassword("");
+                  setErrorMessage(null);
+                  setStatusMessage(null);
+                }}
+                type="button"
+              >
+                Use password
+              </button>
+            </form>
+          ) : step === "email" ? (
+            <form className="grid gap-[14px]" noValidate onSubmit={handlePasswordSignIn}>
+              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+                <span>Email</span>
+                <input
+                  autoComplete="email"
+                  autoFocus
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  name="email"
+                  onChange={(event) => setEmail(event.currentTarget.value)}
+                  required
+                  type="email"
+                  value={email}
+                />
+              </label>
+              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+                <span>Password</span>
+                <input
+                  autoComplete="current-password"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  name="password"
+                  onChange={(event) => setPassword(event.currentTarget.value)}
+                  required
+                  type="password"
+                  value={password}
+                />
+              </label>
+              <Link
+                className="justify-self-end text-[0.85rem] font-semibold text-brand hover:underline"
+                href="/forgot-password"
+              >
+                Forgot password?
+              </Link>
+              <button
+                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-base font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+                disabled={isSubmitting || isGoogleRedirecting}
+                type="submit"
+              >
+                {isSubmitting ? "Logging in…" : "Log in"}
+              </button>
+              <button
+                className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.85rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
+                disabled={isSubmitting || isGoogleRedirecting}
+                onClick={() => {
+                  setLoginMethod("otp");
+                  setPassword("");
+                  setErrorMessage(null);
+                  setStatusMessage(null);
+                }}
+                type="button"
+              >
+                Use one-time code
               </button>
             </form>
           ) : step === "otp" ? (

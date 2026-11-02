@@ -26,6 +26,73 @@ test("login_dialog_shows_a_centered_logo_and_login_or_signup_title", async ({ pa
   ).toHaveCount(0);
 });
 
+test("login_can_switch_between_one_time_code_and_password", async ({ page }) => {
+  await page.goto("/login");
+
+  await expect(page.getByText("Enter your email to receive a one-time login code.")).toBeVisible();
+  await page.getByRole("button", { name: "Use password" }).click();
+
+  await expect(page.getByLabel("Password")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+    "href",
+    "/forgot-password",
+  );
+  await page.getByRole("button", { name: "Use one-time code" }).click();
+
+  await expect(page.getByLabel("Password")).toHaveCount(0);
+  await expect(page.getByText("Enter your email to receive a one-time login code.")).toBeVisible();
+});
+
+test("password_login_uses_credentials_and_closes_the_dialog_on_success", async ({
+  page,
+}) => {
+  let submittedCredentials: URLSearchParams | null = null;
+  await page.route("**/api/auth/callback/credentials**", async (route) => {
+    submittedCredentials = new URLSearchParams(route.request().postData() ?? "");
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ url: new URL("/", page.url()).toString() }),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Use password" }).click();
+  await page.getByLabel("Email").fill("student@example.com");
+  await page.getByLabel("Password").fill("correct-horse");
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page).toHaveURL("/");
+  expect(submittedCredentials?.get("email")).toBe("student@example.com");
+  expect(submittedCredentials?.get("password")).toBe("correct-horse");
+});
+
+test("password_login_shows_a_generic_error_when_credentials_are_rejected", async ({
+  page,
+}) => {
+  await page.route("**/api/auth/callback/credentials**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ url: `${page.url()}?error=CredentialsSignin` }),
+    }),
+  );
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Use password" }).click();
+  await page.getByLabel("Email").fill("student@example.com");
+  await page.getByLabel("Password").fill("wrong-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(page.getByRole("dialog").getByRole("alert")).toHaveText(
+    "Email or password is incorrect.",
+  );
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
 test("login_opens_as_a_shareable_dialog_over_hostel_discovery", async ({
   page,
 }) => {
