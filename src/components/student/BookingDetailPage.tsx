@@ -143,6 +143,15 @@ export function getPaymentNotice(code: string | null): string | null {
   return paymentNotices[code];
 }
 
+// Safepay marks a booking paid via an asynchronous webhook, so the booking can
+// still read "payment pending" for a few seconds after the customer returns.
+const CONFIRMATION_POLL_MS = 3_000;
+const CONFIRMATION_MAX_CHECKS = 20;
+
+export function isReturnFromCheckout(code: string | null): boolean {
+  return code === "return" || code === "pending";
+}
+
 const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   day: "numeric",
   month: "short",
@@ -168,6 +177,8 @@ export function BookingDetailPage({
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [pollTimedOut, setPollTimedOut] = useState(false);
+  const [pollRound, setPollRound] = useState(0);
 
   const loadBooking = useCallback(
     async (signal?: AbortSignal) => {
@@ -203,6 +214,35 @@ export function BookingDetailPage({
       });
     return () => controller.abort();
   }, [loadBooking]);
+
+  // The customer has come back from checkout but the webhook has not settled
+  // the payment yet. Don't offer a second payment or a cancel in this window.
+  const awaitingConfirmation =
+    isReturnFromCheckout(paymentCode) &&
+    booking?.status === "PENDING" &&
+    booking.paymentStatus === "PENDING";
+
+  useEffect(() => {
+    if (!awaitingConfirmation) return;
+    let checks = 0;
+    let cancelled = false;
+    const timer = window.setInterval(() => {
+      checks += 1;
+      loadBooking()
+        .then((result) => {
+          if (!cancelled) setBooking(result);
+        })
+        .catch(() => undefined);
+      if (checks >= CONFIRMATION_MAX_CHECKS) {
+        window.clearInterval(timer);
+        if (!cancelled) setPollTimedOut(true);
+      }
+    }, CONFIRMATION_POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [awaitingConfirmation, loadBooking, pollRound]);
 
   async function startPayment() {
     setIsBusy(true);
@@ -269,7 +309,10 @@ export function BookingDetailPage({
     }
   }
 
-  const paymentNotice = getPaymentNotice(paymentCode);
+  const paymentNotice =
+    isReturnFromCheckout(paymentCode) && booking?.paymentStatus === "PAID"
+      ? "Payment received. Thank you!"
+      : getPaymentNotice(paymentCode);
 
   if (isLoading) {
     return (
@@ -296,9 +339,12 @@ export function BookingDetailPage({
   }
 
   const canPay =
+    !awaitingConfirmation &&
     booking.status === "PENDING" &&
     (booking.paymentStatus === "PENDING" || booking.paymentStatus === "FAILED");
-  const canCancel = booking.status === "PENDING" || booking.status === "CONFIRMED";
+  const canCancel =
+    !awaitingConfirmation &&
+    (booking.status === "PENDING" || booking.status === "CONFIRMED");
   const policy = booking.cancellationPolicy
     ? CANCELLATION_POLICY_DETAILS[booking.cancellationPolicy]
     : null;
@@ -434,6 +480,36 @@ export function BookingDetailPage({
           hostelId={booking.hostel.id}
           hostelName={booking.hostel.name}
         />
+      ) : null}
+
+      {awaitingConfirmation ? (
+        <div className="mt-6 rounded-[14px] border border-line bg-surface-muted p-4" role="status">
+          {pollTimedOut ? (
+            <>
+              <p className="m-0 font-semibold text-ink">
+                Your payment is still being confirmed.
+              </p>
+              <p className="m-0 mt-1 text-[0.9rem] text-muted">
+                This is taking longer than usual. Please don&apos;t pay again. If you
+                were charged, the booking will update shortly.
+              </p>
+              <button
+                className={`${secondaryButtonClassName} mt-3`}
+                onClick={() => {
+                  setPollTimedOut(false);
+                  setPollRound((round) => round + 1);
+                }}
+                type="button"
+              >
+                Check again
+              </button>
+            </>
+          ) : (
+            <p className="m-0 font-semibold text-ink">
+              Confirming your payment… this page will update automatically.
+            </p>
+          )}
+        </div>
       ) : null}
 
       {canPay || canCancel ? (
