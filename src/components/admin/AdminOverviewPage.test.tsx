@@ -37,6 +37,7 @@ describe("AdminOverviewContent", () => {
     expect(markup).toContain('href="/admin/listings"');
     expect(markup).toContain('href="/admin/verifications"');
     expect(markup).toContain('href="/admin/roommate-reports"');
+    expect(markup).toContain('href="/admin/payouts"');
   });
 
   it("shows loading and error states", () => {

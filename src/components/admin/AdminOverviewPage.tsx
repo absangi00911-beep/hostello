@@ -123,6 +123,18 @@ export function AdminOverviewContent({
               rules.
             </span>
           </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/payouts"
+          >
+            <span className="text-[1rem] font-semibold text-ink">
+              Owner payouts
+            </span>
+            <span className="text-[0.88rem] text-muted">
+              Generate payout batches, then record the transfer or void the
+              batch.
+            </span>
+          </Link>
         </nav>
       </div>
     </main>
