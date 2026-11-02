@@ -106,8 +106,17 @@ describe("HostelRow favorite action", () => {
     expect(markup).toContain("drop-shadow-[0_1px_2px_rgb(0_0_0/85%)]");
     expect(markup).toContain("size-[clamp(1.25rem,12cqw,1.5rem)]");
     expect(markup).toContain('fill="black"');
-    expect(markup).toContain('fill-opacity="0.1"');
+    expect(markup).toContain('fill-opacity="0.5"');
     expect(markup).toContain('stroke="white"');
+  });
+
+  it("uses the guest heart treatment for authenticated unsaved hostels", () => {
+    const markup = renderRow({ accountRole: "STUDENT" });
+
+    expect(markup).toContain('fill="black"');
+    expect(markup).toContain('fill-opacity="0.5"');
+    expect(markup).toContain('stroke="white"');
+    expect(markup).toContain('stroke-width="1.5"');
   });
 
   it("reflects the server-confirmed saved state", () => {

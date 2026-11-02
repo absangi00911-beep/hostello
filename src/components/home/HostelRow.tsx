@@ -143,9 +143,9 @@ function HostelFavoriteControl({
           aria-hidden="true"
           className="size-[clamp(1.25rem,12cqw,1.5rem)] drop-shadow-[0_1px_2px_rgb(0_0_0/85%)]"
           fill={isSaved ? "currentColor" : "black"}
-          fillOpacity={isSaved ? 1 : 0.1}
+          fillOpacity={isSaved ? 1 : 0.5}
           stroke={isSaved ? "currentColor" : "white"}
-          strokeWidth={2.2}
+          strokeWidth={1.5}
         />
       </button>
       {message && (
