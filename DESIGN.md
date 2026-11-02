@@ -457,7 +457,9 @@ There are no progressive elevation tiers — the system either has the one shado
 
 **`button-primary`** — Rausch fill, white text, 8px radius, 14×24px padding, 48px height, weight 500. The most common CTA across the system: "Reserve", "Continue", "Search", account-flow primaries.
 
-**`button-primary-active`** — The press state. Background flips to `{colors.primary-active}`. No transform, no shadow change.
+Primary actions also use a subtle top-to-bottom sheen, a thin inset top highlight, a darker inset bottom edge, a tight shadow below, and a soft glow in the brand color. On press, the bright highlight flips to a dark overlay, the shadow moves inside, and the button shifts down slightly. Reduced-motion preferences disable the transition.
+
+**`button-primary-active`** — The pressed state uses the active brand fill with the inset shadow and lowered position described above.
 
 **`button-primary-disabled`** — Pale Rausch tint at #ffd1da with white text. Cursor not-allowed.
 
