@@ -16,8 +16,10 @@ owner, admin.
 - [ ] Unread badge in the account header and menu
 
 ## 3. student-marketplace
-- [ ] Booking review and payment (`/api/bookings`, `/api/payment/initiate`)
-- [ ] Booking detail and cancellation
+- [x] Booking creation and checkout start already live in the hostel detail booking card
+- [x] `/bookings/[id]` booking detail: status, payment retry, cancellation terms and cancel (target of booking emails)
+- [x] `/booking/[id]/payment` provider return, redirects to the booking detail with the payment state
+- [x] "View booking" link on each trip
 - [ ] Reviews (`/api/reviews`, `/api/reviews/mine`)
 - [ ] Roommate finder (`/api/hostels/[param]/roommates`, `/api/roommates/[id]`)
 - [ ] Student verification (`/api/user/verify-student`)

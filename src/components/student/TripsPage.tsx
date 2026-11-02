@@ -259,6 +259,12 @@ export function TripsPageContent({
                     >
                       {bookingStatuses[booking.status]}
                     </span>
+                    <Link
+                      className="ml-3 text-[0.9rem] font-semibold text-brand no-underline hover:underline"
+                      href={`/bookings/${encodeURIComponent(booking.id)}`}
+                    >
+                      View booking
+                    </Link>
                   </div>
                 </article>
               ))}
