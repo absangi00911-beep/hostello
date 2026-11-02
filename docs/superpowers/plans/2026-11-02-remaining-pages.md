@@ -26,7 +26,8 @@ owner, admin.
 
 ## 4. owner-workspace
 - [x] Dashboard and listing list (`/owner`, `/api/hostels/mine`): status filters, review-state notes, pagination, public link for live listings only, owner-only. Create/edit links are deliberately absent until those routes exist
-- [ ] Listing create/edit with room editor
+- [x] Listing create with room editor (`/owner/listings/new`, `POST /api/hostels`). The API requires at least one room type, so the room editor ships with create. Hostel price, room count and bed count are derived from the room entries. Amenities are saved as ids (`wifi`, `cctv`) like the seed data. Room photos, map coordinates and per-room images are not in the form yet
+- [ ] Listing edit (`/owner/listings/[id]/edit`, `PATCH /api/hostels/[param]`): there is no owner-readable listing API (`GET /api/hostels/[param]` is admin-only), so load the listing server-side scoped by `ownerId`; keep room ids; map the 409 room-conflict error; unpublish/submit status actions; link "Edit" from the dashboard list
 - [ ] Booking queue with confirm/decline
 - [ ] Blocked dates, earnings, subscription, review replies
 

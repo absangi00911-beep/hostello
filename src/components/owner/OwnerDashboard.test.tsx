@@ -44,7 +44,9 @@ describe("OwnerDashboardContent", () => {
     for (const href of ["/owner/analytics", "/messages", "/notifications"]) {
       expect(markup).toContain(`href="${href}"`);
     }
-    expect(markup).not.toContain("/owner/hostels");
+    expect(markup).toContain('href="/owner/listings/new"');
+    // Edit routes don't exist yet, so listing rows must not link to them.
+    expect(markup).not.toContain("/edit");
   });
 
   it("shows loading, empty and filtered-empty states", () => {

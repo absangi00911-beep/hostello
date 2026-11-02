@@ -160,6 +160,12 @@ export function OwnerDashboardContent({
       </header>
 
       <nav aria-label="Host tools" className="mb-8 flex flex-wrap gap-2">
+        <Link
+          className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-brand px-4 text-[0.85rem] font-semibold text-white no-underline hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+          href="/owner/listings/new"
+        >
+          Add listing
+        </Link>
         {quickLinks.map(({ href, label, icon: Icon }) => (
           <Link className={`${secondaryButtonClassName} gap-2`} href={href} key={href}>
             <Icon aria-hidden="true" size={16} />
@@ -223,7 +229,7 @@ export function OwnerDashboardContent({
         ) : items.length === 0 ? (
           <p className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted">
             {filter === "ALL"
-              ? "You don't have any listings yet."
+              ? "You don't have any listings yet. Use “Add listing” to create your first one."
               : `No ${getFilterNoun(filter)} listings.`}
           </p>
         ) : (
