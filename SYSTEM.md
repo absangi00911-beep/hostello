@@ -36,7 +36,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Page files (`src/app/**/page.tsx`) | 36 |
 | API route handler files | 74 |
 | Prisma models | 29 |
-| Prisma migrations | 31 |
+| Prisma migrations | 32 |
 | Vitest test files | 196 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
