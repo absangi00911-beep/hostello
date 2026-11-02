@@ -56,3 +56,25 @@ export async function getOwnerListingForEdit(
   const { rooms_rel, ...rest } = hostel;
   return { ...rest, rooms: rooms_rel };
 }
+
+export interface OwnerListingSummary {
+  id: string;
+  name: string;
+  status: OwnerListingForEdit["status"];
+}
+
+/**
+ * Minimal owner-scoped lookup for pages that only need the listing's identity
+ * (for example the blocked-dates page). Null for unknown ids and for listings
+ * that belong to someone else.
+ */
+export async function getOwnerListingSummary(
+  ownerId: string,
+  hostelId: string,
+): Promise<OwnerListingSummary | null> {
+  if (!hostelId || hostelId.length > 64) return null;
+  return db.hostel.findFirst({
+    where: { id: hostelId, ownerId },
+    select: { id: true, name: true, status: true },
+  });
+}

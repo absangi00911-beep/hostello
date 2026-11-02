@@ -123,6 +123,14 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
               Edit
             </Link>
           ) : null}
+          {listing.status !== "SUSPENDED" ? (
+            <Link
+              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              href={`/owner/listings/${encodeURIComponent(listing.id)}/blocked-dates`}
+            >
+              Blocked dates
+            </Link>
+          ) : null}
           {listing.status === "ACTIVE" ? (
             <Link
               className="text-[0.85rem] font-semibold text-brand hover:underline"
