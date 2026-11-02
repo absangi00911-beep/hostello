@@ -156,6 +156,17 @@ export function AdminOverviewContent({
               them.
             </span>
           </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/search-sync"
+          >
+            <span className="text-[1rem] font-semibold text-ink">
+              Search index
+            </span>
+            <span className="text-[0.88rem] text-muted">
+              Re-sync listings to search or remove one from the index.
+            </span>
+          </Link>
         </nav>
       </div>
     </main>

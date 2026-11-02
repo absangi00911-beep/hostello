@@ -40,6 +40,7 @@ describe("AdminOverviewContent", () => {
     expect(markup).toContain('href="/admin/payouts"');
     expect(markup).toContain('href="/admin/refunds"');
     expect(markup).toContain('href="/admin/payment-events"');
+    expect(markup).toContain('href="/admin/search-sync"');
   });
 
   it("shows loading and error states", () => {
