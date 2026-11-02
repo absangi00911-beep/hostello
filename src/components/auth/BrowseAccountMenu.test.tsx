@@ -157,4 +157,33 @@ describe("BrowseAccountMenu", () => {
       }
     },
   );
+
+  it.each(["STUDENT", "OWNER", "ADMIN"] as const)(
+    "links the notification center from the %s account menu",
+    (role) => {
+      const markup = renderToStaticMarkup(
+        <BrowseAccountMenu user={{ role }} />,
+      );
+
+      expect(markup).toContain('href="/notifications"');
+      expect(markup).toContain("Notifications");
+      expect(markup).not.toContain('data-testid="unread-badge"');
+    },
+  );
+
+  it("keeps the guest control free of the notification link", () => {
+    const markup = renderToStaticMarkup(<BrowseAccountMenu user={null} />);
+
+    expect(markup).not.toContain("/notifications");
+  });
+
+  it.each([
+    ["OWNER", true],
+    ["STUDENT", false],
+    ["ADMIN", false],
+  ] as const)("shows the host dashboard link only to owners (%s)", (role, shown) => {
+    const markup = renderToStaticMarkup(<BrowseAccountMenu user={{ role }} />);
+
+    expect(markup.includes('href="/owner">Host dashboard</a>')).toBe(shown);
+  });
 });

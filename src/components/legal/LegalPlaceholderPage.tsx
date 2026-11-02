@@ -21,8 +21,14 @@ export function LegalPlaceholderPage({ title }: { title: string }) {
           published yet, and nothing here is legal guidance.
         </p>
         <p className="mt-4 text-muted">
-          If you have questions in the meantime, please contact the HostelLo
-          team.
+          If you have questions in the meantime, please{" "}
+          <Link
+            className="font-semibold text-brand hover:underline"
+            href="/contact"
+          >
+            contact the HostelLo team
+          </Link>
+          .
         </p>
         <Link
           className="mt-6 inline-block font-semibold text-brand hover:underline"

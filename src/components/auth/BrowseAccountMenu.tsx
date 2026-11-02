@@ -7,6 +7,10 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, UserRound } from "lucide-react";
 import { useState } from "react";
+import {
+  formatUnreadCount,
+  useUnreadNotificationCount,
+} from "@/components/notifications/useUnreadNotificationCount";
 import { getProductNavigationTabs } from "@/lib/product-navigation";
 import { LoginDialogTrigger } from "./LoginDialogTrigger";
 
@@ -25,6 +29,7 @@ export function BrowseAccountMenu({
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const unreadCount = useUnreadNotificationCount(user !== null);
 
   if (!user) {
     return (
@@ -57,12 +62,18 @@ export function BrowseAccountMenu({
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
-        aria-label={`Account menu for ${displayName}`}
+        aria-label={`Account menu for ${displayName}${
+          unreadCount > 0
+            ? `, ${unreadCount} unread ${
+                unreadCount === 1 ? "notification" : "notifications"
+              }`
+            : ""
+        }`}
         className="browse-account-trigger inline-flex max-w-[220px] cursor-pointer items-center gap-2 rounded-full border border-line bg-white py-[5px] pr-[10px] pl-[6px] text-ink transition-[box-shadow,background-color] duration-[160ms] hover:bg-surface-muted hover:shadow-[0_2px_5px_rgb(29_42_34_/_12%)] data-[state=open]:bg-surface-muted data-[state=open]:shadow-[0_2px_5px_rgb(29_42_34_/_12%)]"
       >
         <span
           aria-hidden="true"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-[0.82rem] font-bold text-white"
+          className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-[0.82rem] font-bold text-white"
         >
           {user.avatar ? (
             <Image
@@ -75,6 +86,14 @@ export function BrowseAccountMenu({
             />
           ) : (
             initial
+          )}
+          {unreadCount > 0 && (
+            <span
+              className="absolute -right-1 -top-1 grid min-w-[18px] place-items-center rounded-full border-2 border-white bg-[#c13515] px-[3px] text-[0.62rem] font-bold leading-[14px] text-white"
+              data-testid="unread-badge"
+            >
+              {formatUnreadCount(unreadCount)}
+            </span>
           )}
         </span>
         <span className="max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap text-[0.82rem] font-semibold [@media(max-width:720px)]:hidden">
@@ -107,6 +126,29 @@ export function BrowseAccountMenu({
               </Link>
             </DropdownMenu.Item>
           ))}
+          {user.role === "OWNER" && (
+            <DropdownMenu.Item asChild>
+              <Link
+                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
+                href="/owner"
+              >
+                Host dashboard
+              </Link>
+            </DropdownMenu.Item>
+          )}
+          <DropdownMenu.Item asChild>
+            <Link
+              className="flex items-center justify-between gap-3 rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
+              href="/notifications"
+            >
+              <span>Notifications</span>
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-[#c13515] px-[7px] text-[0.72rem] font-bold leading-[18px] text-white">
+                  {formatUnreadCount(unreadCount)}
+                </span>
+              )}
+            </Link>
+          </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
           {errorMessage && (
             <p
