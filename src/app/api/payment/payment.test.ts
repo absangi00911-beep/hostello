@@ -206,10 +206,10 @@ describe("JazzCash callback", () => {
     });
   });
 
-  it("records a matching pending booking and redirects to its real confirmation route", async () => {
+  it("records a matching pending booking and redirects to the booking payment return route", async () => {
     const response = await callbackPOST(makeJazzCashRequest());
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toContain(`/booking/${BOOKING_ID}/confirmation`);
+    expect(response.headers.get("location")).toContain(`/booking/${BOOKING_ID}/payment?payment=return`);
     expect(parseJazzCashCallback).toHaveBeenCalledWith(
       expect.objectContaining({ bookingId: BOOKING_ID }),
       BOOKING_ID,

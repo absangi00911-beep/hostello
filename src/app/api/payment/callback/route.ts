@@ -295,7 +295,7 @@ async function handleCallback(req: NextRequest): Promise<NextResponse> {
 
       await confirmBooking(bookingId, result.txnRefNo, result.amount, "jazzcash");
       return NextResponse.redirect(
-        `${appUrl}/booking/${encodeURIComponent(bookingId)}/confirmation?payment=return`,
+        `${appUrl}/booking/${encodeURIComponent(bookingId)}/payment?payment=return`,
         303,
       );
     }
