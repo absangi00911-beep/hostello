@@ -4,6 +4,7 @@ import {
   buildListingPayload,
   emptyListingForm,
   emptyRoom,
+  listingToFormValues,
   readServerFieldErrors,
   roomFieldKey,
   validateListingForm,
@@ -185,5 +186,90 @@ describe("readServerFieldErrors", () => {
     expect(readServerFieldErrors(null)).toEqual([]);
     expect(readServerFieldErrors({ details: "x" })).toEqual([]);
     expect(readServerFieldErrors({ details: { fieldErrors: { a: [1] } } })).toEqual([]);
+  });
+});
+
+describe("editing a stored listing", () => {
+  const stored = {
+    name: "Green Hostel",
+    description:
+      "A quiet, student-friendly hostel close to the university campus with study areas.",
+    gender: "FEMALE",
+    city: "Faisalabad",
+    area: null,
+    address: "Street 4, Satiana Road, Faisalabad",
+    latitude: 31.4181,
+    longitude: 73.0776,
+    amenities: ["wifi", "cctv"],
+    images: ["https://cdn.example/cover.jpg"],
+    minStay: 2,
+    maxStay: null,
+    cancellationPolicy: "STANDARD",
+    rules: ["No smoking", "Quiet after 10pm"],
+    rooms: [
+      {
+        id: "room1",
+        name: "4-seater",
+        description: null,
+        pricePerMonth: 12000,
+        capacity: 4,
+        facilities: ["Fan", "Locker"],
+        images: ["https://cdn.example/room1.jpg"],
+      },
+    ],
+  };
+
+  it("maps a stored listing into form text fields", () => {
+    const values = listingToFormValues(stored);
+
+    expect(values).toMatchObject({
+      area: "",
+      minStay: "2",
+      maxStay: "",
+      cancellationPolicy: "STANDARD",
+      rules: "No smoking\nQuiet after 10pm",
+    });
+    expect(values.rooms[0]).toMatchObject({
+      id: "room1",
+      pricePerMonth: "12000",
+      capacity: "4",
+      facilities: "Fan, Locker",
+    });
+    expect(validateListingForm(values)).toEqual({});
+  });
+
+  it("keeps room ids, room photos and coordinates in the update payload", () => {
+    const payload = buildListingPayload(listingToFormValues(stored));
+
+    expect(payload.roomTypes[0]).toMatchObject({
+      id: "room1",
+      images: ["https://cdn.example/room1.jpg"],
+    });
+    expect(payload.latitude).toBe(31.4181);
+    expect(payload.longitude).toBe(73.0776);
+    expect(hostelCreateSchema.safeParse(payload).success).toBe(true);
+  });
+
+  it("omits coordinates when the listing has none", () => {
+    const payload = buildListingPayload(
+      listingToFormValues({ ...stored, latitude: null, longitude: null }),
+    );
+
+    expect(payload).not.toHaveProperty("latitude");
+    expect(payload).not.toHaveProperty("longitude");
+  });
+
+  it("starts with one empty room when a legacy listing has none, and blanks unknown enums", () => {
+    const values = listingToFormValues({
+      ...stored,
+      rooms: [],
+      gender: "OTHER",
+      cancellationPolicy: null,
+    });
+
+    expect(values.rooms).toHaveLength(1);
+    expect(values.rooms[0].id).toBeUndefined();
+    expect(values.gender).toBe("");
+    expect(values.cancellationPolicy).toBe("");
   });
 });

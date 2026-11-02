@@ -104,16 +104,24 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
             : ""}
         </p>
         <StatusNote status={listing.status} />
-        {listing.status === "ACTIVE" ? (
-          <div className="mt-1">
+        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+          {listing.status !== "SUSPENDED" ? (
+            <Link
+              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              href={`/owner/listings/${encodeURIComponent(listing.id)}/edit`}
+            >
+              Edit
+            </Link>
+          ) : null}
+          {listing.status === "ACTIVE" ? (
             <Link
               className="text-[0.85rem] font-semibold text-brand hover:underline"
               href={`/hostels/${encodeURIComponent(listing.slug)}`}
             >
               View public listing
             </Link>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </li>
   );

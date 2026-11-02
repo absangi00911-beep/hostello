@@ -21,6 +21,11 @@ export interface RoomFormValues {
   capacity: string;
   /** Comma-separated in the UI. */
   facilities: string;
+  /**
+   * Room photos have no editor yet. They are carried through unchanged so an
+   * edit doesn't wipe them (the API replaces a room's images on every save).
+   */
+  images?: string[];
 }
 
 export interface ListingFormValues {
@@ -38,6 +43,12 @@ export interface ListingFormValues {
   cancellationPolicy: CancellationPolicy | "";
   /** One rule per line in the UI. */
   rules: string;
+  /**
+   * Map coordinates have no editor yet. They are carried through unchanged
+   * because the API clears them when they are missing from an edit.
+   */
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export type ListingFormErrors = Record<string, string>;
@@ -231,6 +242,8 @@ export interface ListingPayload {
   rules: string[];
   images: string[];
   coverImage?: string;
+  latitude?: number;
+  longitude?: number;
   roomTypes: Array<{
     id?: string;
     name: string;
@@ -256,7 +269,7 @@ export function buildListingPayload(values: ListingFormValues): ListingPayload {
     pricePerMonth: Number(room.pricePerMonth.trim()),
     capacity: Number(room.capacity.trim()),
     facilities: splitFacilities(room.facilities),
-    images: [] as string[],
+    images: room.images ?? [],
   }));
 
   const maxStay = values.maxStay.trim();
@@ -279,7 +292,76 @@ export function buildListingPayload(values: ListingFormValues): ListingPayload {
     rules: splitRules(values.rules),
     images: values.images,
     ...(values.images[0] ? { coverImage: values.images[0] } : {}),
+    ...(typeof values.latitude === "number" ? { latitude: values.latitude } : {}),
+    ...(typeof values.longitude === "number" ? { longitude: values.longitude } : {}),
     roomTypes,
+  };
+}
+
+/** The listing fields the owner edit page loads from the database. */
+export interface StoredListing {
+  name: string;
+  description: string;
+  gender: string;
+  city: string;
+  area: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  amenities: string[];
+  images: string[];
+  minStay: number;
+  maxStay: number | null;
+  cancellationPolicy: string | null;
+  rules: string[];
+  rooms: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    pricePerMonth: number;
+    capacity: number;
+    facilities: string[];
+    images: string[];
+  }>;
+}
+
+const GENDERS: readonly string[] = ["MALE", "FEMALE", "MIXED"];
+
+/** Turns a stored listing into editable form state (the inverse of `buildListingPayload`). */
+export function listingToFormValues(listing: StoredListing): ListingFormValues {
+  const policy = (CANCELLATION_POLICIES as readonly string[]).includes(
+    listing.cancellationPolicy ?? "",
+  )
+    ? (listing.cancellationPolicy as CancellationPolicy)
+    : "";
+
+  return {
+    name: listing.name,
+    description: listing.description,
+    gender: GENDERS.includes(listing.gender) ? (listing.gender as Gender) : "",
+    city: listing.city,
+    area: listing.area ?? "",
+    address: listing.address,
+    rooms:
+      listing.rooms.length > 0
+        ? listing.rooms.map((room) => ({
+            id: room.id,
+            name: room.name,
+            description: room.description ?? "",
+            pricePerMonth: String(room.pricePerMonth),
+            capacity: String(room.capacity),
+            facilities: room.facilities.join(", "),
+            images: room.images,
+          }))
+        : [emptyRoom()],
+    amenities: listing.amenities,
+    images: listing.images,
+    minStay: String(listing.minStay),
+    maxStay: listing.maxStay === null ? "" : String(listing.maxStay),
+    cancellationPolicy: policy,
+    rules: listing.rules.join("\n"),
+    latitude: listing.latitude,
+    longitude: listing.longitude,
   };
 }
 

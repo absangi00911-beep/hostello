@@ -10,10 +10,12 @@ import {
   LISTING_LIMITS,
   buildListingPayload,
   emptyListingForm,
+  listingToFormValues,
   readServerFieldErrors,
   validateListingForm,
   type ListingFormErrors,
   type ListingFormValues,
+  type StoredListing,
 } from "./listingForm";
 import {
   Field,
@@ -51,37 +53,54 @@ function readErrorMessage(payload: unknown, fallback: string): string {
     : fallback;
 }
 
-export function ListingSubmitted({ onAddAnother }: { onAddAnother: () => void }) {
+export function ListingSubmitted({
+  onAddAnother,
+  updated = false,
+}: {
+  onAddAnother?: () => void;
+  updated?: boolean;
+}) {
   return (
     <div
       className="grid gap-4 rounded-[16px] border border-line bg-surface p-6"
       role="status"
     >
       <h2 className="m-0 text-[1.3rem] font-semibold text-ink">
-        Listing submitted for review
+        {updated ? "Changes saved and submitted for review" : "Listing submitted for review"}
       </h2>
       <p className="m-0 text-[0.95rem] text-muted">
-        Your listing is pending review and isn&apos;t visible to students yet.
-        We&apos;ll notify you once it has been reviewed.
+        {updated
+          ? "Your listing is pending review again and isn't visible to students until it is approved. We'll notify you once it has been reviewed."
+          : "Your listing is pending review and isn't visible to students yet. We'll notify you once it has been reviewed."}
       </p>
       <div className="flex flex-wrap gap-3">
         <Link className={primaryButtonClassName} href="/owner">
           Back to dashboard
         </Link>
-        <button
-          className={secondaryButtonClassName}
-          onClick={onAddAnother}
-          type="button"
-        >
-          Add another listing
-        </button>
+        {onAddAnother ? (
+          <button
+            className={secondaryButtonClassName}
+            onClick={onAddAnother}
+            type="button"
+          >
+            Add another listing
+          </button>
+        ) : null}
       </div>
     </div>
   );
 }
 
-export function ListingForm() {
-  const [values, setValues] = useState<ListingFormValues>(emptyListingForm);
+export interface ListingFormProps {
+  /** Present when editing: the stored listing and its id. Absent when creating. */
+  existing?: { id: string; listing: StoredListing };
+}
+
+export function ListingForm({ existing }: ListingFormProps = {}) {
+  const isEdit = existing !== undefined;
+  const [values, setValues] = useState<ListingFormValues>(() =>
+    existing ? listingToFormValues(existing.listing) : emptyListingForm(),
+  );
   const [errors, setErrors] = useState<ListingFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -121,15 +140,23 @@ export function ListingForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/hostels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildListingPayload(values)),
-      });
+      const response = await fetch(
+        existing ? `/api/hostels/${encodeURIComponent(existing.id)}` : "/api/hostels",
+        {
+          method: existing ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildListingPayload(values)),
+        },
+      );
       const payload: unknown = await response.json().catch(() => null);
       if (!response.ok) {
         setServerError(
-          readErrorMessage(payload, "We couldn't submit your listing. Please try again."),
+          readErrorMessage(
+            payload,
+            isEdit
+              ? "We couldn't save your changes. Please try again."
+              : "We couldn't submit your listing. Please try again.",
+          ),
         );
         setServerDetails(readServerFieldErrors(payload));
         setSummaryVersion((version) => version + 1);
@@ -137,11 +164,19 @@ export function ListingForm() {
       }
       setSubmitted(true);
     } catch {
-      setServerError("We couldn't submit your listing. Please try again.");
+      setServerError(
+        isEdit
+          ? "We couldn't save your changes. Please try again."
+          : "We couldn't submit your listing. Please try again.",
+      );
       setSummaryVersion((version) => version + 1);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (submitted && isEdit) {
+    return <ListingSubmitted updated />;
   }
 
   if (submitted) {
@@ -169,7 +204,10 @@ export function ListingForm() {
           tabIndex={-1}
         >
           <p className="m-0 font-semibold">
-            {serverError ?? "Please fix the following before submitting:"}
+            {serverError ??
+              (isEdit
+                ? "Please fix the following before saving:"
+                : "Please fix the following before submitting:")}
           </p>
           {serverDetails.length > 0 ? (
             <ul className="mb-0 mt-2 pl-5">
@@ -425,14 +463,22 @@ export function ListingForm() {
 
       <div className="flex flex-wrap items-center gap-4">
         <button className={primaryButtonClassName} disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Submitting…" : "Submit for review"}
+          {isSubmitting
+            ? isEdit
+              ? "Saving…"
+              : "Submitting…"
+            : isEdit
+              ? "Save and submit for review"
+              : "Submit for review"}
         </button>
         <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/owner">
           Cancel
         </Link>
       </div>
       <p className="m-0 text-[0.82rem] text-muted">
-        New listings are reviewed before they become visible to students.
+        {isEdit
+          ? "Saving changes sends the listing back to review. It stays hidden from students until it is approved again."
+          : "New listings are reviewed before they become visible to students."}
       </p>
     </form>
   );

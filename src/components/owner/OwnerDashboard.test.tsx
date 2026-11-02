@@ -38,15 +38,27 @@ const render = (props: Partial<OwnerDashboardContentProps>) =>
   renderToStaticMarkup(<OwnerDashboardContent {...base} {...props} />);
 
 describe("OwnerDashboardContent", () => {
-  it("only links to pages that exist today", () => {
+  it("links only to pages that exist today", () => {
     const markup = render({});
 
     for (const href of ["/owner/analytics", "/messages", "/notifications"]) {
       expect(markup).toContain(`href="${href}"`);
     }
     expect(markup).toContain('href="/owner/listings/new"');
-    // Edit routes don't exist yet, so listing rows must not link to them.
     expect(markup).not.toContain("/edit");
+  });
+
+  it("links Edit for every listing except suspended ones", () => {
+    const markup = render({
+      total: 2,
+      items: [
+        listing({ id: "live1", status: "ACTIVE" }),
+        listing({ id: "stopped1", status: "SUSPENDED", slug: "stopped" }),
+      ],
+    });
+
+    expect(markup).toContain('href="/owner/listings/live1/edit"');
+    expect(markup).not.toContain("/owner/listings/stopped1/edit");
   });
 
   it("shows loading, empty and filtered-empty states", () => {

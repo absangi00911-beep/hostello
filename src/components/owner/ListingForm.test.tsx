@@ -114,3 +114,56 @@ describe("validateImageFile", () => {
     expect(validateImageFile({ type: "image/jpeg", size: 4 * 1024 * 1024 + 1 })).toMatch(/4MB/);
   });
 });
+
+describe("ListingForm in edit mode", () => {
+  const existing = {
+    id: "h1",
+    listing: {
+      name: "Green Hostel",
+      description:
+        "A quiet, student-friendly hostel close to the university campus with study areas.",
+      gender: "MIXED",
+      city: "Faisalabad",
+      area: "Satiana Road",
+      address: "Street 4, Satiana Road, Faisalabad",
+      latitude: null,
+      longitude: null,
+      amenities: ["wifi"],
+      images: [],
+      minStay: 1,
+      maxStay: null,
+      cancellationPolicy: "FLEXIBLE",
+      rules: [],
+      rooms: [
+        {
+          id: "r1",
+          name: "Double room",
+          description: null,
+          pricePerMonth: 15000,
+          capacity: 2,
+          facilities: [],
+          images: [],
+        },
+      ],
+    },
+  };
+  const markup = renderToStaticMarkup(<ListingForm existing={existing} />);
+
+  it("prefills the stored values and says saving sends the listing back to review", () => {
+    expect(markup).toContain('value="Green Hostel"');
+    expect(markup).toContain('value="Double room"');
+    expect(markup).toContain("Save and submit for review");
+    expect(markup).toContain("sends the listing back to review");
+    expect(markup).not.toContain("New listings are reviewed");
+  });
+});
+
+describe("ListingSubmitted after an edit", () => {
+  it("explains the listing is back in review and offers no add-another action", () => {
+    const markup = renderToStaticMarkup(<ListingSubmitted updated />);
+
+    expect(markup).toContain("Changes saved and submitted for review");
+    expect(markup).toContain("pending review again");
+    expect(markup).not.toContain("Add another listing");
+  });
+});
