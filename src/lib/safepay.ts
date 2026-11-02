@@ -78,7 +78,7 @@ export async function createCheckoutLink({
   const origin = appUrl.replace(/\/+$/, "");
   const resolveUrl = (path: string) =>
     /^[a-z][a-z\d+.-]*:/i.test(path) ? path : new URL(path, `${origin}/`).toString();
-  const redirectUrl = resolveUrl(redirectPath ?? `/booking/${bookingId}/confirmation?payment=return`);
+  const redirectUrl = resolveUrl(redirectPath ?? `/booking/${bookingId}/payment?payment=return`);
   const cancelUrl = resolveUrl(cancelPath ?? `/booking/${bookingId}/payment?payment=cancelled`);
 
   const authResponse = await safepayFetch(`${baseUrl}/client/passport/v1/token`, {
@@ -124,7 +124,7 @@ export async function createCheckoutSession({
   customerEmail,
   customerName,
   appUrl = getAppUrl(),
-  redirectPath = `/booking/${bookingId}/confirmation?payment=return`,
+  redirectPath = `/booking/${bookingId}/payment?payment=return`,
   cancelPath,
 }: {
   bookingId: string;

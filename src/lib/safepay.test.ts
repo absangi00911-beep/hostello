@@ -67,7 +67,7 @@ describe("Safepay currency boundary", () => {
     expect(checkout.searchParams.get("environment")).toBe("sandbox");
     expect(checkout.searchParams.get("order_id")).toBe("booking-1");
     expect(checkout.searchParams.get("redirect_url")).toBe(
-      "https://hostello.test/booking/booking-1/confirmation?payment=return",
+      "https://hostello.test/booking/booking-1/payment?payment=return",
     );
     expect(result.token).toBe("track_test");
   });
