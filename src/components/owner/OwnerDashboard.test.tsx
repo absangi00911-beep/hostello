@@ -43,6 +43,7 @@ describe("OwnerDashboardContent", () => {
 
     for (const href of [
       "/owner/bookings",
+      "/owner/earnings",
       "/owner/analytics",
       "/messages",
       "/notifications",
