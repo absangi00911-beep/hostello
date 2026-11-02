@@ -176,4 +176,14 @@ describe("BrowseAccountMenu", () => {
 
     expect(markup).not.toContain("/notifications");
   });
+
+  it.each([
+    ["OWNER", true],
+    ["STUDENT", false],
+    ["ADMIN", false],
+  ] as const)("shows the host dashboard link only to owners (%s)", (role, shown) => {
+    const markup = renderToStaticMarkup(<BrowseAccountMenu user={{ role }} />);
+
+    expect(markup.includes('href="/owner">Host dashboard</a>')).toBe(shown);
+  });
 });

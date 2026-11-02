@@ -126,6 +126,16 @@ export function BrowseAccountMenu({
               </Link>
             </DropdownMenu.Item>
           ))}
+          {user.role === "OWNER" && (
+            <DropdownMenu.Item asChild>
+              <Link
+                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
+                href="/owner"
+              >
+                Host dashboard
+              </Link>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item asChild>
             <Link
               className="flex items-center justify-between gap-3 rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"

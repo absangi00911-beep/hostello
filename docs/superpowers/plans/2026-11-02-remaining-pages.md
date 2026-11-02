@@ -25,7 +25,7 @@ owner, admin.
 - [x] `/profile/verification` (upload then submit; status from `/api/profile`, which now also returns `verificationStatus`)
 
 ## 4. owner-workspace
-- [ ] Dashboard and listing list (`/api/hostels/mine`)
+- [x] Dashboard and listing list (`/owner`, `/api/hostels/mine`): status filters, review-state notes, pagination, public link for live listings only, owner-only. Create/edit links are deliberately absent until those routes exist
 - [ ] Listing create/edit with room editor
 - [ ] Booking queue with confirm/decline
 - [ ] Blocked dates, earnings, subscription, review replies
