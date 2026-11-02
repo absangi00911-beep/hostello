@@ -20,9 +20,9 @@ owner, admin.
 - [x] `/bookings/[id]` booking detail: status, payment retry, cancellation terms and cancel (target of booking emails)
 - [x] `/booking/[id]/payment` provider return, redirects to the booking detail with the payment state
 - [x] "View booking" link on each trip
-- [ ] Reviews (`/api/reviews`, `/api/reviews/mine`)
+- [x] Review form on completed bookings (`POST /api/reviews`; resubmitting updates). Note: no student-readable "my reviews" API exists, so no list page
 - [ ] Roommate finder (`/api/hostels/[param]/roommates`, `/api/roommates/[id]`)
-- [ ] Student verification (`/api/user/verify-student`)
+- [x] `/profile/verification` (upload then submit; status from `/api/profile`, which now also returns `verificationStatus`)
 
 ## 4. owner-workspace
 - [ ] Dashboard and listing list (`/api/hostels/mine`)

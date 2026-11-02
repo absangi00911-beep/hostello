@@ -21,6 +21,7 @@ const validBooking = {
   cancellationPolicy: "STANDARD",
   ownerResponseDueAt: null,
   hostel: {
+    id: "h1",
     name: "Gulberg Stay",
     slug: "gulberg-stay",
     coverImage: null,

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatPrice } from "@hostello/shared";
+import { BookingReviewForm } from "./BookingReviewForm";
 import {
   CANCELLATION_POLICY_DETAILS,
   type CancellationPolicy,
@@ -39,6 +40,7 @@ export interface StudentBookingDetail {
   cancellationPolicy: CancellationPolicy | null;
   ownerResponseDueAt: string | null;
   hostel: {
+    id: string;
     name: string;
     slug: string;
     coverImage: string | null;
@@ -75,6 +77,7 @@ export function parseBookingDetail(value: unknown): StudentBookingDetail | null 
     !isOneOf(booking.status, bookingStatuses) ||
     !isOneOf(booking.paymentStatus, paymentStatuses) ||
     !isRecord(hostel) ||
+    typeof hostel.id !== "string" ||
     typeof hostel.name !== "string" ||
     typeof hostel.slug !== "string" ||
     typeof hostel.city !== "string"
@@ -102,6 +105,7 @@ export function parseBookingDetail(value: unknown): StudentBookingDetail | null 
         ? booking.ownerResponseDueAt
         : null,
     hostel: {
+      id: hostel.id,
       name: hostel.name,
       slug: hostel.slug,
       coverImage: typeof hostel.coverImage === "string" ? hostel.coverImage : null,
@@ -423,6 +427,13 @@ export function BookingDetailPage({
             <li>{policy.noRefund}</li>
           </ul>
         </section>
+      ) : null}
+
+      {booking.status === "COMPLETED" ? (
+        <BookingReviewForm
+          hostelId={booking.hostel.id}
+          hostelName={booking.hostel.name}
+        />
       ) : null}
 
       {canPay || canCancel ? (
