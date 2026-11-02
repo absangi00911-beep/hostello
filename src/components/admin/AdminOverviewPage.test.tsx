@@ -32,8 +32,11 @@ describe("AdminOverviewContent", () => {
     expect(markup).toContain("Last 7 days");
   });
 
-  it("links to listing review", () => {
-    expect(render()).toContain('href="/admin/listings"');
+  it("links to every admin section that exists", () => {
+    const markup = render();
+    expect(markup).toContain('href="/admin/listings"');
+    expect(markup).toContain('href="/admin/verifications"');
+    expect(markup).toContain('href="/admin/roommate-reports"');
   });
 
   it("shows loading and error states", () => {
