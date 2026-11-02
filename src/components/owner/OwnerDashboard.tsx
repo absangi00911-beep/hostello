@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   CreditCard,
   MessageCircle,
+  Star,
   Wallet,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -44,6 +45,7 @@ const quickLinks = [
   { href: "/owner/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/owner/earnings", label: "Earnings", icon: Wallet },
   { href: "/owner/subscription", label: "Subscription", icon: CreditCard },
+  { href: "/owner/reviews", label: "Reviews", icon: Star },
   { href: "/owner/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/messages", label: "Messages", icon: MessageCircle },
   { href: "/notifications", label: "Notifications", icon: Bell },
@@ -121,6 +123,14 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
               href={`/owner/listings/${encodeURIComponent(listing.id)}/edit`}
             >
               Edit
+            </Link>
+          ) : null}
+          {listing.status !== "SUSPENDED" ? (
+            <Link
+              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              href={`/owner/listings/${encodeURIComponent(listing.id)}/blocked-dates`}
+            >
+              Blocked dates
             </Link>
           ) : null}
           {listing.status === "ACTIVE" ? (
