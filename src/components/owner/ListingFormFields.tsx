@@ -7,7 +7,7 @@ export const primaryButtonClassName =
   "inline-flex min-h-[48px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-base font-[650] text-white no-underline enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!";
 
 export const secondaryButtonClassName =
-  "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand!";
+  "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand!";
 
 /** aria wiring shared by every control so errors and hints are announced. */
 export function controlProps(id: string, error?: string, hint?: string) {
