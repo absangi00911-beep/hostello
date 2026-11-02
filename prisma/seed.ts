@@ -668,9 +668,16 @@ async function main() {
         ownerId: data.ownerId,
         status: data.status,
       },
-      create: data,
+      create: { ...data, cancellationPolicy: "STANDARD" },
     });
   }
+
+  // Hostels without owner-selected terms cannot be booked. Backfill any that
+  // pre-date the cancellation policy column, without overwriting owner choices.
+  await db.hostel.updateMany({
+    where: { cancellationPolicy: null },
+    data: { cancellationPolicy: "STANDARD" },
+  });
 
   // ─── SECURITY: Reset all hostel stats to prevent phantom ratings ────────
   // Previous seeds may have set non-zero rating/reviewCount. We must reset

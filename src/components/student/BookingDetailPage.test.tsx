@@ -6,6 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 import {
   BookingDetailPage,
   getPaymentNotice,
+  isReturnFromCheckout,
   parseBookingDetail,
 } from "./BookingDetailPage";
 
@@ -68,6 +69,16 @@ describe("getPaymentNotice", () => {
     expect(getPaymentNotice("constructor")).toBeNull();
     expect(getPaymentNotice("<b>")).toBeNull();
     expect(getPaymentNotice(null)).toBeNull();
+  });
+});
+
+describe("isReturnFromCheckout", () => {
+  it("is true only when the customer came back from the provider", () => {
+    expect(isReturnFromCheckout("return")).toBe(true);
+    expect(isReturnFromCheckout("pending")).toBe(true);
+    expect(isReturnFromCheckout("cancelled")).toBe(false);
+    expect(isReturnFromCheckout("failed")).toBe(false);
+    expect(isReturnFromCheckout(null)).toBe(false);
   });
 });
 
