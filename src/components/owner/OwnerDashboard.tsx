@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bell,
   CalendarCheck,
+  CreditCard,
   MessageCircle,
   Wallet,
 } from "lucide-react";
@@ -42,6 +43,7 @@ const statusBadgeClassName: Record<ListingStatus, string> = {
 const quickLinks = [
   { href: "/owner/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/owner/earnings", label: "Earnings", icon: Wallet },
+  { href: "/owner/subscription", label: "Subscription", icon: CreditCard },
   { href: "/owner/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/messages", label: "Messages", icon: MessageCircle },
   { href: "/notifications", label: "Notifications", icon: Bell },
