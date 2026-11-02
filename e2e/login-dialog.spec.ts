@@ -43,6 +43,42 @@ test("login_can_switch_between_one_time_code_and_password", async ({ page }) => 
   await expect(page.getByText("Enter your email to receive a one-time login code.")).toBeVisible();
 });
 
+test("primary_login_button_has_inset_highlights_and_a_pressed_state", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  const button = page.getByRole("button", { name: "Continue", exact: true });
+
+  const restingStyle = await button.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { backgroundImage: style.backgroundImage, boxShadow: style.boxShadow };
+  });
+  expect(restingStyle.backgroundImage).toContain("linear-gradient");
+  expect(restingStyle.boxShadow).toContain("inset");
+  expect(restingStyle.boxShadow).toContain("22px");
+
+  const secondaryStyle = await page
+    .getByRole("button", { name: "Use password" })
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { backgroundImage: style.backgroundImage, boxShadow: style.boxShadow };
+    });
+  expect(secondaryStyle.backgroundImage).toBe("none");
+  expect(secondaryStyle.boxShadow).toBe("none");
+
+  await button.hover();
+  await page.mouse.down();
+  const pressedStyle = await button.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { backgroundImage: style.backgroundImage, boxShadow: style.boxShadow };
+  });
+  await page.mouse.up();
+
+  expect(pressedStyle.backgroundImage).not.toBe(restingStyle.backgroundImage);
+  expect(pressedStyle.boxShadow).not.toBe(restingStyle.boxShadow);
+  expect(pressedStyle.boxShadow).toContain("inset");
+});
+
 test("password_login_uses_credentials_and_closes_the_dialog_on_success", async ({
   page,
 }) => {
