@@ -135,6 +135,15 @@ export function AdminOverviewContent({
               batch.
             </span>
           </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/refunds"
+          >
+            <span className="text-[1rem] font-semibold text-ink">Refunds</span>
+            <span className="text-[0.88rem] text-muted">
+              Refund cancelled, paid bookings and resolve unconfirmed refunds.
+            </span>
+          </Link>
         </nav>
       </div>
     </main>
