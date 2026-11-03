@@ -71,6 +71,14 @@ async function createAutomaticRequest(booking: Awaited<ReturnType<typeof loadRef
         paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
         status: "CANCELLED",
         refundState: { in: ["NONE", "PARTIALLY_REFUNDED"] },
+        // Compare-and-set (B-001): `booking.refundAmount` was derived from a read
+        // made before this claim. Pin every value that amount depends on, so a
+        // request holding a stale read cannot claim after another refund
+        // completed (state PARTIALLY_REFUNDED is otherwise claimable) and send
+        // the same amount to the provider twice.
+        total: booking.total,
+        cancellationRefundAmount: booking.cancellationRefundAmount,
+        refundedAmount: booking.refundedAmount,
       },
       data: { refundState: "PROCESSING" },
     });
