@@ -37,7 +37,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | API route handler files | 74 |
 | Prisma models | 29 |
 | Prisma migrations | 32 |
-| Vitest test files | 196 |
+| Vitest test files | 197 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
 <!-- docs-check:end -->
