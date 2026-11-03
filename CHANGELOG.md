@@ -2,6 +2,14 @@
 
 Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
 
+## Unreleased (November 4, 2026)
+
+B-001: partial-refund double-claim window (R-04 item 5 of the A-001b3 payments audit).
+
+- **Refunds:** the claim in `createAutomaticRequest` (`src/lib/refunds.ts`) now pins `total`, `cancellationRefundAmount` and `refundedAmount` in its `where`. Before, the refund amount came from a read made before the claim and the claim did not check it, so a request holding a stale read could pass after another partial refund completed and send the same amount to Safepay again. A losing request now gets the existing 409 `RefundServiceError` before any provider call. No schema change.
+- **Tests:** 7 new tests in `src/lib/refunds-claim.test.ts` using a stateful fake that evaluates the claim's `where`. Two fail against the old code (stale read sends a second provider refund; stale claim ends at `refundedAmount` 40000 on a 20000 approval). Full suite: 198 files, 1263 tests.
+- **Risk register:** R-04 stays open (sandbox validation, sweeper, late payments, QStash retries). PR: pending (branch `fix/b-001-partial-refund-claim`).
+
 ## Version 4.2 (October 24, 2026)
 
 Phase 1 of the remediation plan: stop silent failures.
