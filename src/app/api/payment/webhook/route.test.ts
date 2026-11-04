@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { timingSafeEqual } from "node:crypto";
+
+vi.mock("node:crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:crypto")>();
+  return { ...actual, timingSafeEqual: vi.fn(actual.timingSafeEqual) };
+});
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -102,6 +108,79 @@ describe("POST /api/payment/webhook", () => {
     expect(response.status).toBe(400);
     expect(verifyWebhookSignature).toHaveBeenCalledWith(rawBody, "valid");
     expect(db.booking.findUnique).not.toHaveBeenCalled();
+  });
+
+  describe("merchant_api_key comparison", () => {
+    // An oversized order ID makes the request fail with 400 right after the
+    // merchant-key check, so a 400 proves the key matched and a 401 proves it did not,
+    // without needing any database mocks.
+    const eventWithKey = (merchantKey: unknown) =>
+      JSON.stringify({
+        type: "payment.failed",
+        merchant_api_key: merchantKey,
+        data: {
+          tracker: "track_4f7d7e2d-ee05-44e3-81b7-6f6f2cca9727",
+          metadata: { order_id: "x".repeat(129) },
+        },
+      });
+
+    const post = (merchantKey: unknown) =>
+      POST(request(eventWithKey(merchantKey), { "x-sfpy-signature": "valid" }));
+
+    beforeEach(() => {
+      vi.stubEnv("SAFEPAY_API_KEY", "sec_test_key_1234");
+      vi.mocked(verifyWebhookSignature).mockResolvedValue(true);
+    });
+
+    it("accepts a matching key and continues to event validation", async () => {
+      const response = await post("sec_test_key_1234");
+
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toBe("Invalid webhook event.");
+    });
+
+    it("rejects a same-length key that differs", async () => {
+      const response = await post("sec_test_key_1235");
+
+      expect(response.status).toBe(401);
+      expect((await response.json()).error).toBe("Merchant key mismatch.");
+      expect(db.booking.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("rejects a shorter key with 401 instead of throwing", async () => {
+      const response = await post("sec_test");
+
+      expect(response.status).toBe(401);
+      expect((await response.json()).error).toBe("Merchant key mismatch.");
+    });
+
+    it("rejects a longer key with 401 instead of throwing", async () => {
+      const response = await post("sec_test_key_1234_and_more");
+
+      expect(response.status).toBe(401);
+      expect((await response.json()).error).toBe("Merchant key mismatch.");
+    });
+
+    it("compares the key with timingSafeEqual on equal-length buffers, even for different-length input", async () => {
+      await post("sec_test");
+
+      expect(timingSafeEqual).toHaveBeenCalledTimes(1);
+      const [a, b] = vi.mocked(timingSafeEqual).mock.calls[0] as [Buffer, Buffer];
+      expect(a.length).toBe(b.length);
+    });
+
+    it("rejects a missing or non-string key", async () => {
+      expect((await post(undefined)).status).toBe(401);
+      expect((await post(null)).status).toBe(401);
+      expect((await post(1234)).status).toBe(401);
+    });
+
+    it("rejects every event when SAFEPAY_API_KEY is not configured", async () => {
+      vi.stubEnv("SAFEPAY_API_KEY", "");
+
+      expect((await post("")).status).toBe(401);
+      expect((await post("sec_test_key_1234")).status).toBe(401);
+    });
   });
 
   it("rejects an oversized provider tracker before querying", async () => {

@@ -19,15 +19,6 @@ export class RefundServiceError extends Error {
   }
 }
 
-/**
- * Processes a refund for a booking. Admin-triggered only (see
- * docs/superpowers/specs/2026-07-01-payout-refund-system.md).
- *
- * A provider timeout is ambiguous. The booking remains PAID and moves to
- * UNCERTAIN; a second automatic request is blocked until an admin reconciles
- * the provider state. Every request and resolution is stored as an
- * append-only audit event.
- */
 async function loadRefundableBooking(bookingId: string) {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
@@ -217,6 +208,19 @@ async function notifyRefunded(booking: Awaited<ReturnType<typeof loadRefundableB
   );
 }
 
+/**
+ * Processes a refund for a cancelled, paid booking. Not admin-only: callers are
+ * the admin refund route (actor is the admin's user ID) and three automatic
+ * paths that pass a `system:` actor and need no admin click:
+ * `system:owner-response-timeout` (cron `expire-unanswered-bookings`),
+ * `system:owner-declined-booking` and the two `system:student-cancelled-*`
+ * actors (`PATCH /api/bookings/[id]`).
+ *
+ * A provider timeout is ambiguous. The booking remains PAID and moves to
+ * UNCERTAIN; a second automatic request is blocked until an admin reconciles
+ * the provider state. Every request and resolution is stored as an
+ * append-only audit event.
+ */
 export async function processRefund(bookingId: string, adminUserId: string) {
   const booking = await loadRefundableBooking(bookingId);
   if (booking.refundState === "PROCESSING" || booking.refundState === "UNCERTAIN") {

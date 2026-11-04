@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { toSafepayMinorUnits, verifyWebhookSignature } from "@/lib/safepay";
 import { getAppUrl } from "@/lib/app-url";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
+import { safeSecretEqual } from "@/lib/secret-compare";
 import { sendEmail } from "@/lib/email";
 import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
 import { PLANS } from "@/config/plans";
@@ -635,7 +636,7 @@ async function receiveSafepayWebhook(req: NextRequest) {
     return NextResponse.json({ error: "Invalid webhook event." }, { status: 400 });
   }
 
-  if (!process.env.SAFEPAY_API_KEY || event.merchant_api_key !== process.env.SAFEPAY_API_KEY) {
+  if (!safeSecretEqual(event.merchant_api_key, process.env.SAFEPAY_API_KEY)) {
     return NextResponse.json({ error: "Merchant key mismatch." }, { status: 401 });
   }
 
