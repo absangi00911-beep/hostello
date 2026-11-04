@@ -35,8 +35,8 @@ and visible as such.
 
 ### Out of scope
 
-- New features, sign-in methods, payment/cancellation/refund/payout rules, or
-  legal/privacy copy.
+- New features, authentication methods beyond those listed in this design,
+  payment/cancellation/refund/payout rules, or legal/privacy copy.
 - Marketing content, nightly prices, invented hostel facts, user-account
   administration, or student-facing price alerts.
 - New delivery channels for notifications, new backend services, or a new
@@ -59,9 +59,10 @@ and visible as such.
 
 ## 2. Shared design system proposal
 
-These are design calls for review, not owner-approved policy or a mandate to
-change the current code. Prefer the installed stack and shared components;
-introduce no design-system or icon dependency.
+These visual and interaction recommendations use the owner-resolved palette
+and authentication choices below. They do not establish payment, cancellation,
+refund, payout, or legal policy. Prefer the installed stack and shared
+components; introduce no design-system or icon dependency.
 
 ### Visual direction
 
@@ -69,11 +70,11 @@ introduce no design-system or icon dependency.
   spacing, clear dividers, readable system typography, and listing photography
   that comes from the listing. Avoid promotional hero art, deep card nesting,
   decorative gradients, or dense dashboard chrome.
-- **Proposed accent:** restrained forest green with calm neutral surfaces, as
-  described in `SPEC-web-foundation.md` and the dated web direction. This is
-  not the current token value: `src/app/globals.css` presently defines a blue
-  brand (`#2563eb`). The owner must resolve this visual-direction mismatch
-  before implementation changes the existing tokens.
+- **Color direction:** retain the restrained blue brand with calm neutral
+  surfaces. Keep `--brand: #2563eb` and `--brand-dark: #1d4ed8` from
+  `src/app/globals.css`; do not change these brand tokens as part of this
+  design. Existing green, amber, and red colors may remain for semantic
+  success, warning, and error states.
 - Use a compact, consistent type hierarchy: one page title, section headings,
   readable body copy, and small but legible metadata. Do not encode meaning in
   font weight or color alone. Use the existing system/Inter font setup.
@@ -83,26 +84,27 @@ introduce no design-system or icon dependency.
 - Use text labels alongside icons for primary navigation and actions. Icons
   may be decorative when adjacent text already names the action.
 
-### Proposed contrast pairs
+### Contrast pairs
 
-The following proposal is measured against WCAG contrast formulae. Normal
-text pairs exceed 4.5:1; large text and non-text controls therefore also
-clear the 3:1 thresholds. These values require owner sign-off and do not claim
-that the current application already uses them.
+The following pairs are checked using WCAG relative-luminance contrast
+formulae. Each listed text pair exceeds the 4.5:1 normal-text threshold.
+Validate rendered focus indicators and non-text component boundaries against
+their actual adjacent surfaces during implementation.
 
-| Proposed foreground / background | Contrast | Use |
+| Foreground / background | Contrast | Use |
 |---|---:|---|
 | `#17231C` / `#F7F9F7` | 15.34:1 | Main text on canvas |
 | `#45564A` / `#FFFFFF` | 7.83:1 | Secondary text on surface |
-| `#14532D` / `#FFFFFF` | 9.11:1 | Text links, primary button label on green |
-| `#14532D` / `#DCFCE7` | 8.30:1 | Success/status text on soft-green surface |
+| `#1D4ED8` / `#FFFFFF` | 6.70:1 | Links and focus indicator on white |
+| `#FFFFFF` / `#2563EB` | 5.17:1 | Primary button label on brand blue |
+| `#1E40AF` / `#DBEAFE` | 7.15:1 | Blue status text on pale-blue surface |
+| `#14532D` / `#DCFCE7` | 8.30:1 | Semantic success text on soft-green surface |
 | `#92400E` / `#FFFBEB` | 6.84:1 | Warning/status text on warm surface |
 | `#991B1B` / `#FEF2F2` | 7.60:1 | Error/status text on pale-red surface |
-| `#64748B` / `#FFFFFF` | 4.76:1 | Proposed neutral divider/control edge where used |
+| `#64748B` / `#FFFFFF` | 4.76:1 | Muted text on white surface |
 
-Verify actual rendered text, hover, disabled, focus, and status combinations
-again in the browser after the owner approves the palette; do not treat these
-sample pairs as a substitute for testing the full design.
+Recheck rendered text, hover, disabled, focus, and status combinations in the
+browser; these sample pairs do not replace testing the full design.
 
 ### Layout, interaction, and accessibility rules
 
@@ -193,10 +195,11 @@ role-specific destination without confusing navigation with authorization.
   controls and listing-first content. Use a concise heading such as “Find a
   hostel that fits your stay.” Search uses existing destination, date, and
   guest inputs. Keep the current categories and their meanings; show the
-  existing “Nearby” option only when location access is available. Do not
-  imply a campus directory or campus-specific ranking. Listing rows/cards
-  show real photo, name, location, monthly PKR price, and available rating
-  data. “Become a host” is a quiet secondary link, not a competing hero.
+  existing “Nearby” option only when location access is available. “Nearby”
+  means the current coordinate-based search, not a campus directory or
+  campus-specific matching. Listing rows/cards show real photo, name,
+  location, monthly PKR price, and available rating data. “Become a host” is
+  a quiet secondary link, not a competing hero.
 - **States:** L for listing data; E: “No hostels to show yet.” with the
   existing search entry still available; X retry; OK shows returned hostels;
   D is not applicable to public browsing. Location denied/unavailable is an
@@ -217,7 +220,8 @@ role-specific destination without confusing navigation with authorization.
   results. Search filters remain those supported by the public search
   contract (including city, gender, price, amenities, rating/category, and
   pagination where applicable); explain filters in plain language. “Nearby”
-  means device-location proximity only, not a campus lookup.
+  uses coordinate-based proximity only; it is not a campus directory or
+  campus-specific search.
 - **States:** L preserves the filter summary; E: “No hostels match these
   filters.” with “Clear filters” and an editable search; X retry while
   retaining query/filters; OK shows results and page; V identifies invalid
@@ -233,17 +237,14 @@ role-specific destination without confusing navigation with authorization.
 
 - **Purpose/goal:** Authenticate and return to the requested safe destination.
 - **Layout/copy:** Email and password fields, “Sign in”, password-recovery
-  link, and account-creation link. Show “Continue with Google” only when both
-  Google credentials are configured. The current source also configures an
-  email-code provider and the sign-in dialog has an email-code flow; this
-  method is **not listed in `PRODUCT.md`** and needs Founder confirmation
-  before its presentation is standardized. Phone OTP is phone verification,
-  not sign-in, and is not offered here.
+  link, and account-creation link. Include email one-time-code sign-in when
+  the existing `email-otp` provider is enabled. Show “Continue with Google”
+  only when both Google credentials are configured. Phone OTP is for phone
+  verification only and is not a sign-in method.
 - **States:** L during submit; V for missing/invalid inputs; X for provider or
   request failure; OK returns to the validated callback destination; D for
   already-authenticated or disallowed destinations uses existing redirects.
-  Invalid/expired email code is shown beside the code entry if that existing
-  flow is approved for the full sign-in page.
+  Invalid/expired email code is shown beside the code entry.
 - **Responsive/accessibility:** One-column form with labels always visible;
   password visibility control has a 44px target and an accessible name;
   keyboard submits only from valid form controls.
@@ -254,8 +255,11 @@ role-specific destination without confusing navigation with authorization.
   registration path.
 - **Layout/copy:** Name, email, password, and the existing student/owner
   choice. Keep the intended role choice visible and explain it neutrally; do
-  not offer admin registration. Show supported auth methods only, subject to
-  the email-code decision above. CTA: “Create account”.
+  not offer admin registration. Use the existing email/password registration;
+  email one-time-code sign-in follows the same provider-enabled availability
+  as `/login`; Google sign-in/sign-up appears only when both Google credentials
+  are configured. Phone OTP remains phone verification, not sign-in. CTA:
+  “Create account”.
 - **States:** L during submission; V on field errors; X on API/provider
   failure; OK: “Check your email to verify your account.” and the existing
   verification continuation; D when an existing signed-in account should
@@ -964,24 +968,19 @@ and manage a date-bound alert without confusing an alert with a booking.
 
 ## 4. Decisions, dependencies, and review checklist
 
-### Founder/human-owner decisions required
+### Resolved design choices and outstanding content
 
-These items remain **open** and must not be silently decided during UI work:
-
-1. **Visual direction:** approve the proposed restrained green palette or
-   retain the current blue source tokens. `SPEC-web-foundation.md` describes
-   green; `src/app/globals.css` currently sets blue.
-2. **Email-code sign-in:** confirm whether the already configured
-   `email-otp` provider and `LoginDialog` flow should be presented as a
-   supported sign-in method. `PRODUCT.md` lists email/password and optional
-   Google, but does not list email code. Phone OTP remains verification, not
-   sign-in.
-3. **Nearby wording:** confirm that the role brief’s “near my campus” request
-   means the existing coordinate-based “Nearby” search. Current source has
-   nearby coordinates and an API, but no campus selection/directory. This
-   design uses “Nearby” and does not imply a campus-aware search.
-4. **Legal agreement content:** Terms and Privacy remain unfinished until
-   the owner supplies approved legal text; this design adds none.
+- **Visual direction:** retain the restrained blue palette and current
+  `#2563eb` brand / `#1d4ed8` dark tokens, with neutral surfaces and existing
+  semantic success, warning, and error colors.
+- **Authentication:** support email/password; include email one-time-code
+  sign-in when the existing provider is enabled; show Google only when both
+  credentials are configured. Phone OTP is for verification only.
+- **Nearby search:** use the existing coordinate-based “Nearby” search. It is
+  not a campus directory or campus-specific search.
+- **Legal content remains unresolved and out of scope:** Terms and Privacy
+  stay unfinished until approved legal copy is supplied. This design adds no
+  legal text.
 
 ### Implementation dependencies and known source gaps
 
@@ -1022,8 +1021,9 @@ These are implementation prerequisites, not new product decisions:
 - [ ] Public, student, owner, and admin data remain separated by server-side
   authorization; sensitive documents and payment details follow existing
   protected routes only.
-- [ ] Auth UI lists only methods explicitly resolved by the owner and
-  supported by configuration. Phone OTP is not presented as sign-in.
+- [ ] Auth UI lists email/password, email one-time-code when the existing
+  provider is enabled, and Google only when both credentials are configured.
+  Phone OTP is not presented as sign-in.
 - [ ] No legal/payment/payout/cancellation rule is introduced by visual copy.
 
 **Handoff gate:** This is the complete design proposal for review, not the
