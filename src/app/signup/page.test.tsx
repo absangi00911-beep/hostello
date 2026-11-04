@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn() }));
 
+vi.mock("@/components/auth/BrowseAccountMenu", () => ({
+  BrowseAccountMenu: () => <div data-testid="account-menu" />,
+}));
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("next/navigation", () => ({
   redirect: (destination: string) => {

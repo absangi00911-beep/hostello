@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { BookingDetailPage } from "@/components/student/BookingDetailPage";
 import { auth } from "@/lib/auth/config";
@@ -29,7 +29,7 @@ export default async function BookingDetailRoute({
 
   return (
     <>
-      <DesktopAccountHeader
+      <SiteHeader
         user={{
           name: session.user.name,
           email: session.user.email,

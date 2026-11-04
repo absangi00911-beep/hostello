@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { LoginDialogProvider } from "@/components/auth/LoginDialogProvider";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({
           )}
         >
           {children}
+          <SiteFooter />
         </LoginDialogProvider>
       </body>
     </html>

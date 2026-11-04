@@ -1,16 +1,17 @@
 import Link from "next/link";
+import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 
-export function LegalPlaceholderPage({ title }: { title: string }) {
+export function LegalPlaceholderPage({
+  title,
+  user = null,
+}: {
+  title: string;
+  user?: BrowseAccountUser | null;
+}) {
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="px-6 py-5">
-        <Link
-          className="text-[1.25rem] font-extrabold tracking-tight text-brand-dark"
-          href="/"
-        >
-          HostelLo
-        </Link>
-      </header>
+      <SiteHeader hideOnMobile={false} user={user} />
       <main className="mx-auto max-w-[720px] px-4 pb-16 pt-6">
         <h1 className="m-0 text-[2rem] font-bold text-ink">{title}</h1>
         <p
