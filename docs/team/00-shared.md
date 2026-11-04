@@ -33,6 +33,21 @@ The docs in this repo are known to be stale and to contradict each other (page c
 
 web-foundation, then room-inventory, then room-availability, then notification-center, then student-marketplace / owner-workspace / admin-console in parallel, then availability-alerts.
 
+## Distributed role handoffs
+
+The seven role briefs represent separate Claude.ai project sections running on separate computers. They cannot push directly to GitHub. The Founder coordinates assignments and reports but cannot operate those projects or computers directly; the human owner relays each assignment and returned handoff.
+
+For every assignment:
+
+1. The Founder prepares a bounded task packet with a unique task ID, role, objective, scope, acceptance criteria, dependencies, guardrails, and required checks. Do not send it until the human owner has approved the scope, unless the owner explicitly directs the assignment.
+2. Before starting, the assigned role clones the repository fresh from GitHub, reads the current shared instructions and role brief, and checks the relevant project instructions, tasks, latest audit report, and feature docs. Record the checked-out base commit in the task report.
+3. The role works only within the assigned scope, does not push, and returns a complete patch file plus a concise report. Include new and deleted files in the patch. The report states the task ID, base commit, files changed, checks run and results, blockers, and any decisions needed.
+4. The Founder reviews the report and patch against the stated base and current repository, reports findings and verification results to the human owner, and does not apply the patch.
+5. The human owner decides whether to approve, request revision, or reject the patch, and applies approved patches to the shared repository.
+6. Record progress in `tasks/team-assignments.md`, including the patch/report reference, the human owner's decision, the applied commit when available, and verification results. Do not mark a task verified until its acceptance criteria have been checked.
+
+Keep tasks small and avoid assigning overlapping files concurrently unless the human owner approves the coordination plan. If the shared repository changes after a role records its base commit, review for conflicts before applying the patch; request a fresh clone and updated patch if needed.
+
 ## Working rules
 
 - Small, reviewable changes on a branch; conventional commit messages.
