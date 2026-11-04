@@ -19,8 +19,8 @@ Statements fall into three kinds, and the document says which:
 |---|---|
 | `SYSTEM.md` (this file) | What the system is, why it is built this way, how its lifecycles work, what is known to be wrong |
 | [`CHANGELOG.md`](CHANGELOG.md) | Revision history and archived verification notes |
-| [`docs/SECURITY-CONTROLS.md`](docs/SECURITY-CONTROLS.md) | Inventory of implemented security controls, rate limits and open verification items |
-| [`docs/ENGINEERING-PRINCIPLES.md`](docs/ENGINEERING-PRINCIPLES.md) | Design guardrails the team follows |
+| [§13 Security](#13-security) and [§16 Risk register](#16-risk-register) | Implemented controls and open security gaps |
+| [`docs/team/00-shared.md`](docs/team/00-shared.md) | Shared team instructions and product guardrails |
 | [`prisma/MIGRATIONS.md`](prisma/MIGRATIONS.md) | Migration ledger |
 | `scripts/check-docs.mjs` | Fails CI when the facts below or the environment-variable list drift from the code |
 
@@ -592,13 +592,13 @@ Known problems (R-13): `city` and amenity values are interpolated into Typesense
 | Public listing bucket | Hostel and room images | Up to 15 images per hostel, 4 MB each, JPEG, PNG or WebP, content signature checked. Submitted image URLs must match the configured public base URL. Objects are served with immutable long-lived cache headers |
 | Private verification bucket | Student ID documents | Student-only upload through the app, 4 MiB cap, metadata and signature checks, copied on submit to immutable review keys. Admins read through an authenticated no-store route. Separate bucket-scoped token. Abandoned temporary uploads removed hourly |
 
-Uploads pass through the API function and so share Vercel's 4.5 MB request-body limit. Images are stored as uploaded, with no resizing, thumbnails or EXIF stripping. See R-11 for upload scope and throttling, and the private-bucket setup note under open items in `docs/SECURITY-CONTROLS.md` (legacy student documents may still sit in the public bucket).
+Uploads pass through the API function and so share Vercel's 4.5 MB request-body limit. Images are stored as uploaded, with no resizing, thumbnails or EXIF stripping. See [R-11 in §16](#16-risk-register) for upload scope and throttling; legacy student documents may still sit in the public bucket.
 
 ---
 
 ## 13. Security
 
-Implemented controls are inventoried in [`docs/SECURITY-CONTROLS.md`](docs/SECURITY-CONTROLS.md). The principles behind them are in [`docs/ENGINEERING-PRINCIPLES.md`](docs/ENGINEERING-PRINCIPLES.md).
+Implemented controls are described in §§3, 6–8, and 12–14; open gaps are tracked in [§16](#16-risk-register). Shared team guardrails are in [`docs/team/00-shared.md`](docs/team/00-shared.md).
 
 ### 13.1 Threat model
 
