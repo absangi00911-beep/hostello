@@ -465,11 +465,12 @@ choice without exposing private owner/admin data.
   to a request.
 - **Layout/copy:** Follow the current detail order and dated layout reference:
   title/location; real listing photos; monthly price and available ratings;
-  description/facilities; date and room selector; review section; public host
-  information only where present and safe; and contact/message entry using
-  existing behavior. Keep the booking summary close to the room choice.
-  Availability-alert controls appear only as defined in Module 8. Do not
-  expose owner email/phone, admin metadata, or unapproved policy copy.
+  description; room and amenity sections; date and room selector; review
+  section; a distinct “Where you’ll be” location section; then “Meet your
+  host” public information only where present and safe. Keep contact/message
+  entry within existing behavior and the booking summary close to the room
+  choice. Availability-alert controls appear only as defined in Module 8. Do
+  not expose owner email/phone, admin metadata, or unapproved policy copy.
 - **States:** L for public-safe detail and availability; E/not-found uses the
   existing not-found state (not an empty listing shell); X offers retry;
   OK shows server-backed content; D is not applicable to public read, while
@@ -538,9 +539,9 @@ choice without exposing private owner/admin data.
   OK shows payment accepted only after confirmation; D for unauthorized
   booking; C when booking/payment eligibility changed; U after callback or
   network uncertainty warns against paying again until status is checked.
-  Late-payment handling displays the actual backend outcome; the approved
-  plan outcome (reinstate only if seats remain available, otherwise full
-  refund) is inherited policy, not a new design decision.
+  Show only the status and outcome reported by the server. Do not imply that a
+  late payment has reinstated a booking or resulted in a refund before the
+  server confirms that outcome.
 - **Responsive/accessibility:** Amount and booking reference remain visible;
   any external handoff has an announced destination and does not erase the
   booking context.
@@ -617,18 +618,28 @@ choice without exposing private owner/admin data.
 - **Layout/copy:** Reconcile the 2026-10-26 profile/messaging contract and
   2026-11-01 inbox redesign: desktop uses a conversation list beside the
   selected thread; mobile shows one pane at a time with an explicit
-  conversation-list/back action. Show listing context only when supplied by
-  the conversation. Use “No conversations yet” and a concise composer
-  placeholder; no real-time delivery promise.
-- **States:** L for list/thread; E in list: “No conversations yet.”; E in a
-  selected thread: “Start the conversation.”; X preserves draft and offers
-  retry; OK confirms the sent message and read state only after API response;
-  D redirects signed-out users and denies nonparticipants; C if the
+  conversation-list/back action. The inbox header has labeled search and
+  settings controls. Search filters by hostel or participant through the
+  existing API search parameter. Settings expose the existing unread-only
+  filter and inbox refresh. Show listing context only when supplied by the
+  conversation. With no conversations, show the exact copy “Nothing to see
+  here” and a “Get started” link to hostel search. Preserve the existing
+  composer, draft, and send-error behavior; do not promise real-time delivery.
+- **States:** L for inbox/thread; E in the empty inbox: “Nothing to see here”
+  with “Get started” linking to hostel search; E in a selected thread with no
+  messages: “Start the conversation.”; X keeps loading/API/send errors visible
+  and recoverable, preserves the draft, and offers the relevant retry; OK
+  confirms the sent message and read state only after API response. Preserve
+  inbox search and unread-only filtering with pagination, inbox refresh,
+  per-thread message refresh, incoming-message read state, and loading older
+  messages. D redirects signed-out users and denies nonparticipants; C if the
   conversation is no longer accessible; U if send outcome is unknown, marks
   the message “Not confirmed” and requires refresh before resending.
 - **Responsive/accessibility:** Thread messages are not announced repeatedly;
-  new messages are announced politely. Composer is labeled; keyboard send
-  behavior is documented and does not make Enter the only send path.
+  new messages are announced politely. Search, settings, refresh, unread
+  filtering, pagination, and thread navigation are labeled and keyboard
+  accessible. Composer is labeled; keyboard send behavior does not make Enter
+  the only send path.
 
 ### Module 6 — `owner-workspace`
 
@@ -982,6 +993,12 @@ These are implementation prerequisites, not new product decisions:
   selection, room booking, owner blocks, and availability alerts depend on
   the planned authoritative date-aware backend work. Never disguise the
   monthly response as exact availability.
+- The human owner approved the late-payment backend rule before approving
+  the plan: reinstate only when the requested seats are available for the full
+  date range; otherwise refund the full successful payment. This is a backend
+  implementation dependency, not a UI assumption. The UI shows only
+  server-reported status/outcome. Task 6 must reconcile the older
+  pending-policy text in `SPEC-late-payment.md` before implementation.
 - The current admin-only hostel detail route cannot supply a public student
   detail page. The planned public-safe projection in
   `SPEC-student-marketplace.md` is required before public detail is wired.
