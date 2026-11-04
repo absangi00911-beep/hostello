@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { safeSecretEqual } from "@/lib/secret-compare";
 
 const REFUND_RECONCILIATION_AGE_MS = 5 * 60 * 1000;
 
 export async function GET(req: Request) {
   const internalSecret = req.headers.get("x-cron-health-secret");
-  const isInternal = Boolean(process.env.CRON_SECRET) && internalSecret === process.env.CRON_SECRET;
+  const isInternal = safeSecretEqual(internalSecret, process.env.CRON_SECRET);
   if (!isInternal) {
     const session = await auth();
     if (!session || session.user.role !== "ADMIN") {

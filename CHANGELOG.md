@@ -4,6 +4,14 @@ Revision history of the HostelLo system design document and repository audits. E
 
 ## Unreleased (November 4, 2026)
 
+B-006: constant-time secret checks and a stale refund comment (R-04, findings 1, E-1 and E-2 of the A-001b3 payments audit).
+
+- **Security:** the webhook `merchant_api_key` check (`src/app/api/payment/webhook/route.ts`) and the `x-cron-health-secret` check (`src/app/api/health/payments/route.ts`) used `!==` and `===`. Both now call `safeSecretEqual` (`src/lib/secret-compare.ts`), which hashes both values to SHA-256 and compares the digests with `timingSafeEqual`, so a different-length input neither throws nor leaks the secret's length. An unset or empty configured secret, or a non-string input, never matches. The webhook still verifies the HMAC signature first. No response codes or bodies changed.
+- **Comment:** `processRefund` was documented as "Admin-triggered only" and the comment sat above `loadRefundableBooking`. It now sits on `processRefund` and lists the real callers: the admin refund route, the `expire-unanswered-bookings` cron (`system:owner-response-timeout`), and `PATCH /api/bookings/[id]` (`system:owner-declined-booking`, `system:student-cancelled-*`). It no longer cites a spec file that does not exist in the repository.
+- **Not changed:** refund amounts, the refund claim, cron schedules, migrations.
+- **Tests:** `src/lib/secret-compare.test.ts` (9), 7 new cases in `payment/webhook/route.test.ts` and 9 in the new `health/payments/route.test.ts`, each covering match, mismatch, shorter and longer input. Two of them assert that `timingSafeEqual` is called on equal-length buffers and fail against the old code.
+- **Risk register:** R-04 stays open (sandbox validation, sweeper, late payments, QStash retries). `health/crons` has the same unguarded `===` and is reported separately, not changed here.
+
 B-001: partial-refund double-claim window (R-04 item 5 of the A-001b3 payments audit).
 
 - **Refunds:** the claim in `createAutomaticRequest` (`src/lib/refunds.ts`) now pins `total`, `cancellationRefundAmount` and `refundedAmount` in its `where`. Before, the refund amount came from a read made before the claim and the claim did not check it, so a request holding a stale read could pass after another partial refund completed and send the same amount to Safepay again. A losing request now gets the existing 409 `RefundServiceError` before any provider call. No schema change.
