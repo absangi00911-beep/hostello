@@ -11,7 +11,7 @@ import {
   formatUnreadCount,
   useUnreadNotificationCount,
 } from "@/components/notifications/useUnreadNotificationCount";
-import { getProductNavigationTabs } from "@/lib/product-navigation";
+import { getAccountNavigationItems } from "@/lib/product-navigation";
 import { LoginDialogTrigger } from "./LoginDialogTrigger";
 
 export interface BrowseAccountUser {
@@ -34,7 +34,7 @@ export function BrowseAccountMenu({
   if (!user) {
     return (
       <LoginDialogTrigger
-        className="browse-sign-in grid size-[42px] place-items-center rounded-full border border-line text-ink transition-[box-shadow,background-color] duration-[160ms] hover:bg-surface-muted hover:shadow-[0_2px_5px_rgb(29_42_34_/_12%)] [@media(max-width:420px)]:size-9"
+        className="browse-sign-in grid size-11 place-items-center rounded-full border border-line text-ink transition-[box-shadow,background-color] duration-[160ms] hover:bg-surface-muted hover:shadow-[0_2px_5px_rgb(29_42_34_/_12%)] focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
         ariaLabel="Sign in"
       >
         <UserRound aria-hidden="true" size={18} />
@@ -69,7 +69,7 @@ export function BrowseAccountMenu({
               }`
             : ""
         }`}
-        className="browse-account-trigger inline-flex max-w-[220px] cursor-pointer items-center gap-2 rounded-full border border-line bg-white py-[5px] pr-[10px] pl-[6px] text-ink transition-[box-shadow,background-color] duration-[160ms] hover:bg-surface-muted hover:shadow-[0_2px_5px_rgb(29_42_34_/_12%)] data-[state=open]:bg-surface-muted data-[state=open]:shadow-[0_2px_5px_rgb(29_42_34_/_12%)]"
+        className="browse-account-trigger inline-flex min-h-11 max-w-[220px] cursor-pointer items-center gap-2 rounded-full border border-line bg-white py-[5px] pr-[10px] pl-[6px] text-ink transition-[box-shadow,background-color] duration-[160ms] hover:bg-surface-muted hover:shadow-[0_2px_5px_rgb(29_42_34_/_12%)] focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 data-[state=open]:bg-surface-muted data-[state=open]:shadow-[0_2px_5px_rgb(29_42_34_/_12%)]"
       >
         <span
           aria-hidden="true"
@@ -104,7 +104,7 @@ export function BrowseAccountMenu({
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"
-          className="z-[1100] min-w-[220px] rounded-xl border border-line bg-white p-2 text-ink shadow-[0_8px_24px_rgb(29_42_34_/_14%)]"
+          className="z-[1100] max-h-[min(80dvh,560px)] min-w-[220px] overflow-y-auto rounded-xl border border-line bg-white p-2 text-ink shadow-[0_8px_24px_rgb(29_42_34_/_14%)]"
           sideOffset={8}
         >
           <DropdownMenu.Label className="overflow-hidden px-[9px] py-[7px] text-ellipsis whitespace-nowrap text-[0.9rem] font-[650]">
@@ -116,49 +116,21 @@ export function BrowseAccountMenu({
             </div>
           )}
           <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
-          {getProductNavigationTabs(user.role).map(({ id, label, href }) => (
-            <DropdownMenu.Item asChild key={id}>
+          {getAccountNavigationItems(user.role).map(({ label, href }) => (
+            <DropdownMenu.Item asChild key={href}>
               <Link
-                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
+                className="flex min-h-11 items-center justify-between gap-3 rounded-[7px] px-[9px] text-[0.86rem] text-ink no-underline hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                 href={href}
               >
-                {label}
+                <span>{label}</span>
+                {href === "/notifications" && unreadCount > 0 && (
+                  <span className="rounded-full bg-[#c13515] px-[7px] text-[0.72rem] font-bold leading-[18px] text-white">
+                    {formatUnreadCount(unreadCount)}
+                  </span>
+                )}
               </Link>
             </DropdownMenu.Item>
           ))}
-          {user.role === "OWNER" && (
-            <DropdownMenu.Item asChild>
-              <Link
-                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
-                href="/owner"
-              >
-                Host dashboard
-              </Link>
-            </DropdownMenu.Item>
-          )}
-          {user.role === "ADMIN" && (
-            <DropdownMenu.Item asChild>
-              <Link
-                className="block rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
-                href="/admin"
-              >
-                Admin console
-              </Link>
-            </DropdownMenu.Item>
-          )}
-          <DropdownMenu.Item asChild>
-            <Link
-              className="flex items-center justify-between gap-3 rounded-[7px] p-[9px] text-[0.86rem] text-ink no-underline outline-none hover:bg-surface-muted focus-visible:bg-surface-muted"
-              href="/notifications"
-            >
-              <span>Notifications</span>
-              {unreadCount > 0 && (
-                <span className="rounded-full bg-[#c13515] px-[7px] text-[0.72rem] font-bold leading-[18px] text-white">
-                  {formatUnreadCount(unreadCount)}
-                </span>
-              )}
-            </Link>
-          </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
           {errorMessage && (
             <p
@@ -169,7 +141,7 @@ export function BrowseAccountMenu({
             </p>
           )}
           <DropdownMenu.Item
-            className="cursor-pointer rounded-[7px] p-[9px] text-[0.86rem] outline-none hover:bg-surface-muted focus-visible:bg-surface-muted data-[disabled]:cursor-wait data-[disabled]:opacity-60"
+            className="flex min-h-11 cursor-pointer items-center rounded-[7px] px-[9px] text-[0.86rem] outline-none hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 data-[disabled]:cursor-wait data-[disabled]:opacity-60"
             disabled={isSigningOut}
             onSelect={(event) => {
               event.preventDefault();

@@ -17,9 +17,11 @@ const LoginDialogContext = createContext<LoginDialogContextValue | null>(null);
 
 export function LoginDialogProvider({
   children,
+  emailCodeEnabled,
   googleEnabled,
 }: {
   children: ReactNode;
+  emailCodeEnabled: boolean;
   googleEnabled: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,6 +38,7 @@ export function LoginDialogProvider({
       {isOpen && (
         <LoginDialog
           callbackUrl={callbackUrl}
+          emailCodeEnabled={emailCodeEnabled}
           googleEnabled={googleEnabled}
           onClose={() => setIsOpen(false)}
           verified={false}
