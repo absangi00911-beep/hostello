@@ -79,7 +79,7 @@ export function ConversationThread({
         </div>
         <button
           aria-label="Refresh conversation"
-          className="cursor-pointer rounded-lg border border-line bg-surface px-[13px] py-[9px] text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-line bg-surface px-[13px] py-[9px] text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
           disabled={refreshing || loading}
           onClick={onRefresh}
           type="button"
@@ -94,7 +94,7 @@ export function ConversationThread({
         >
           <p className="m-0">{error}</p>
           <button
-            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
             onClick={onRetry}
             type="button"
           >
@@ -117,7 +117,7 @@ export function ConversationThread({
           >
             {thread?.messageHasMore && (
               <button
-                className="self-center rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
+                className="self-center rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
                 disabled={refreshing}
                 onClick={onLoadOlder}
                 type="button"

@@ -169,7 +169,7 @@ export function TripsPageContent({
           >
             <p className="m-0 text-[0.95rem]">{error}</p>
             <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
               type="button"
             >

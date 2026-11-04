@@ -82,7 +82,7 @@ export function SearchPillPanels({
                 {locationError}
               </p>
               <button
-                className="mt-2 min-h-9 rounded-full border border-line px-3 text-sm font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand!"
+                className="mt-2 min-h-9 rounded-full border border-line px-3 text-sm font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={onChooseCity}
                 type="button"
               >

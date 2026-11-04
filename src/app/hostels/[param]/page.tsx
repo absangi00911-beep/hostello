@@ -180,7 +180,7 @@ export default async function HostelDetailPage({
                 />
                 {session?.user.role === "STUDENT" ? (
                   <Link
-                    className="inline-flex min-h-11 items-center justify-self-start rounded-full border border-line bg-white px-4 text-[0.95rem] font-semibold text-ink no-underline hover:bg-surface-muted"
+                    className="inline-flex min-h-11 items-center justify-self-start rounded-full border border-line bg-white px-4 text-[0.95rem] font-semibold text-ink no-underline hover:bg-surface-muted btn-secondary"
                     href={`/hostels/${encodeURIComponent(hostel.slug)}/roommates`}
                   >
                     Find a roommate for this hostel

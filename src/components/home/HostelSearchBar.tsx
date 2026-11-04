@@ -183,7 +183,7 @@ export function HostelSearchBar({
               <h2 className="m-0 text-[1.15rem] font-bold">Search stays</h2>
               <button
                 aria-label="Close search"
-                className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
+                className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink btn-secondary"
                 onClick={() => searchDialogRef.current?.close()}
                 type="button"
               >

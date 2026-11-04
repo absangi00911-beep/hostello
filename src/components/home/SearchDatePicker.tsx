@@ -64,7 +64,7 @@ export function SearchDatePicker({
             <div className="flex gap-2">
               <button
                 aria-label="Previous month"
-                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-[#cbd5e1] enabled:hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand!"
+                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-[#cbd5e1] enabled:hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 disabled={monthOffset === 0}
                 onClick={() => setMonthOffset((offset) => offset - 1)}
                 type="button"
@@ -73,7 +73,7 @@ export function SearchDatePicker({
               </button>
               <button
                 aria-label="Next month"
-                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!"
+                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={() => setMonthOffset((offset) => offset + 1)}
                 type="button"
               >
@@ -118,7 +118,7 @@ export function SearchDatePicker({
                 );
                 return (
                   <button
-                    className="min-h-12 rounded-lg border border-line px-3 text-left text-sm font-medium text-ink transition-colors hover:border-ink focus-visible:outline-2! focus-visible:outline-brand!"
+                    className="min-h-12 rounded-lg border border-line px-3 text-left text-sm font-medium text-ink hover:border-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                     key={toDateKey(month)}
                     onClick={() => setFlexibleMonth(month)}
                     type="button"
@@ -131,7 +131,7 @@ export function SearchDatePicker({
           ) : (
             <div>
               <button
-                className="mb-3 min-h-9 rounded-full border border-line px-3 text-xs font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand!"
+                className="mb-3 min-h-9 rounded-full border border-line px-3 text-xs font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={() => setFlexibleMonth(null)}
                 type="button"
               >
