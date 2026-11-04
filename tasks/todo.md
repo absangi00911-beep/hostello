@@ -1,117 +1,27 @@
-# Tasks: Owner-Managed Room Inventory
+# HostelLo backlog
 
-> **Paused (October 19, 2026):** The owner UI tasks below reference removed
-> pages and components. Do not use this checklist as an active implementation
-> plan until the redesign is scoped and the remaining backend work is checked
-> against the current API and schema.
+Replaces the paused room-inventory checklist (Oct 19, 2026); that checklist is kept in git history. Rules: small tasks, build order from HOSTELLO-CAPABILITY-MAP.md, student booking first. Task status lives in `tasks/team-assignments.md`.
 
-## Task 1: Defining the roomTypes request contract
+## Now (approved Nov 4, 2026)
+- [ ] A-002 Auditor: re-audit web-foundation at 86cf03b
+- [ ] B-006 Backend: constant-time secret compares + stale refunds.ts comment
+- [ ] Q-001 QA: role-matrix test + role-redirect e2e
+- [ ] OWNER-1: Safepay sandbox E1 and F runs
 
-**Description:** Add a shared validated `roomTypes` payload for room name,
-description, monthly price, photos, capacity, and an optional existing room ID
-used during edits. Keep the current numeric `rooms` field compatible.
+## Next, needs a decision first
+- [ ] Owner decision D-4 (inventory model: seat holds vs monthly buckets), which gates room-inventory and room-availability (R-01)
+- [ ] Owner decision D-2 (stay rules, billing, booking-time method list), R-02
+- [ ] Owner decision D-3 (payout timing and custody), R-03 and R-05
+- [ ] Owner policy on late payments (reinstate if seat free, else refund), R-04 item 11
+- [ ] Design direction (audit rows 18-19): blue/Inter in code vs green/system fonts in spec
 
-**Acceptance criteria:**
-- [ ] Valid room entries pass; empty names, non-positive prices/capacities,
-  excessive image lists, and malformed IDs fail validation.
-- [ ] Existing listing payloads without `roomTypes` remain valid for backward
-  compatibility.
-- [ ] Validation tests describe both valid and invalid room entries.
+## Then, in build order
+1. web-foundation: finish whatever A-002 still lists as Partial/Missing (one PKR formatter, skip link, 44px admin tap targets, shared empty state)
+2. room-inventory (re-scope from current schema; old plan references removed pages)
+3. room-availability (needs D-4)
+4. notification-center
+5. student-marketplace / owner-workspace / admin-console (parallel)
+6. availability-alerts
 
-**Verification:**
-- [ ] Run the focused shared-validation test.
-- [ ] Confirm new assertions fail before implementation and pass afterward.
-
-**Dependencies:** None.
-**Files likely touched:**
-- `packages/shared/src/validations/index.ts`
-- `packages/shared/src/validations/index.test.ts`
-**Estimated scope:** Small.
-
-## Task 2: Persisting rooms during listing creation
-
-**Description:** Create submitted room records atomically with the new hostel,
-initialize system-managed availability from each room's capacity, and derive
-the hostel's aggregate room and capacity totals.
-
-**Acceptance criteria:**
-- [ ] The listing-create transaction persists all submitted room entries.
-- [ ] A failed room write leaves neither a partial hostel nor partial rooms.
-- [ ] Hostel aggregate room and capacity values equal the submitted totals.
-- [ ] Requests without `roomTypes` preserve existing API behavior.
-
-**Verification:**
-- [ ] Run focused `hostel-service` and `POST /api/hostels` tests.
-- [ ] Confirm tests cover multi-room creation, empty legacy payloads, and
-  transaction failures.
-
-**Dependencies:** Task 1.
-**Files likely touched:**
-- `src/lib/hostel-service.ts`
-- `src/lib/hostel-service.test.ts`
-- `src/app/api/hostels/route.ts`
-- `src/app/api/hostels/route.test.ts`
-**Estimated scope:** Medium.
-
-## Task 3: Adding the owner room editor to listing creation
-
-**Description:** Let owners add, edit, and remove room entries in the existing
-listing wizard and submit the validated `roomTypes` payload, using the existing
-photo upload pattern.
-
-**Acceptance criteria:**
-- [ ] The create wizard supports multiple room entries with name, description,
-  monthly price, seat capacity, and photos.
-- [ ] Removing a draft entry updates the submitted payload and aggregate
-  preview values.
-- [ ] The owner cannot submit invalid room entries; room availability remains
-  system-managed.
-
-**Verification:**
-- [ ] Run focused room-editor/form tests.
-- [ ] Verify keyboard access and responsive layout at mobile and desktop widths.
-- [ ] Confirm the create payload matches the shared schema.
-
-**Dependencies:** Tasks 1 and 2.
-**Files likely touched:**
-- `src/components/owner/ListingFormWizard.tsx`
-- `src/components/owner/ListingFormWizard.test.tsx`
-**Estimated scope:** Small.
-
-## Checkpoint: After Tasks 1-3
-
-- [ ] Focused shared-schema, service, route, and form tests pass.
-- [ ] New listings can create multiple persisted rooms from the owner form.
-- [ ] `npm run typecheck` and `npm run build` pass.
-- [ ] Review the create flow before proceeding to edits.
-
-## Task 4: Loading and safely editing room inventory
-
-**Description:** Preload existing rooms into the owner edit wizard and persist
-changes transactionally while retaining room IDs. Reject foreign room IDs,
-deletion of rooms with pending/confirmed future bookings, and capacity
-reductions that would make those stays exceed room capacity.
-
-**Acceptance criteria:**
-- [ ] The edit form displays existing room data and submits edits by stable
-  room ID.
-- [ ] Room updates, additions, removals, and aggregate hostel totals commit
-  atomically.
-- [ ] Edits cannot affect rooms owned by another hostel.
-- [ ] Capacity reductions are allowed only when every overlapping active stay
-  still fits; unsafe removals/reductions return a conflict.
-- [ ] Existing edit requests without `roomTypes` preserve current behavior.
-
-**Verification:**
-- [ ] Run focused owner edit page and `PATCH /api/hostels/[param]` tests.
-- [ ] Test overlapping versus non-overlapping active stays for capacity edits.
-- [ ] Run `npm test -- --run`, `npm run lint`, `npm run typecheck`, and
-  `npm run build`.
-- [ ] Manually verify owner create/edit flows with multiple rooms.
-
-**Dependencies:** Tasks 1-3.
-**Files likely touched:**
-- `src/app/owner/listings/[id]/edit/page.tsx`
-- `src/app/api/hostels/[param]/route.ts`
-- `src/app/api/hostels/[param]/route.test.ts`
-**Estimated scope:** Medium.
+## Launch gates (no real money until all P0 closed)
+R-01, R-02, R-03, R-04 (late payments, sweeper, refund-audit trigger, QStash retry), R-05. R-06 console steps reported done by owner; first green production run still to be confirmed.
