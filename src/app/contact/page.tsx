@@ -12,6 +12,16 @@ export default async function ContactPage() {
     <AuthPageShell
       description="Questions about a booking, a listing, or your account? Send us a message and we'll reply by email."
       title="Contact us"
+      user={
+        session?.user
+          ? {
+              name: session.user.name,
+              email: session.user.email,
+              avatar: session.user.image,
+              role: session.user.role,
+            }
+          : null
+      }
     >
       <ContactForm
         defaultEmail={session?.user.email ?? ""}

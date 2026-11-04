@@ -1,5 +1,6 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import type { BrowseAccountUser } from "./BrowseAccountMenu";
 
 export const authInputClassName =
   "min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!";
@@ -35,21 +36,16 @@ export function AuthPageShell({
   children,
   description,
   title,
+  user = null,
 }: {
   children: ReactNode;
   description?: string;
   title: string;
+  user?: BrowseAccountUser | null;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
-      <header className="px-6 py-5">
-        <Link
-          className="text-[1.25rem] font-extrabold tracking-tight text-brand-dark"
-          href="/"
-        >
-          HostelLo
-        </Link>
-      </header>
+      <SiteHeader hideOnMobile={false} user={user} />
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6">
         <div className="w-full max-w-[440px] rounded-[16px] border border-line bg-surface p-6 shadow-[0_8px_24px_rgb(15_23_42_/_6%)] sm:p-8">
           <h1 className="m-0 text-[1.5rem] font-bold leading-tight text-ink">
