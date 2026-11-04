@@ -224,7 +224,7 @@ export function HostelDetailGallery({
           )}
           {photos.length > 0 && (
             <button
-              className="hostel-detail-show-photos absolute right-[14px] bottom-[14px] z-[1] min-h-[34px] cursor-pointer rounded-md border border-ink bg-white px-3 text-[0.76rem] font-semibold text-ink hover:bg-surface-muted motion-reduce:transition-none [@media(max-width:720px)]:right-3 [@media(max-width:720px)]:bottom-3"
+              className="hostel-detail-show-photos absolute right-[14px] bottom-[14px] z-[1] min-h-[34px] cursor-pointer rounded-md border border-ink bg-white px-3 text-[0.76rem] font-semibold text-ink hover:bg-surface-muted motion-reduce:transition-none [@media(max-width:720px)]:right-3 [@media(max-width:720px)]:bottom-3 btn-secondary"
               onClick={() => dialogRef.current?.showModal()}
               type="button"
             >
@@ -343,7 +343,7 @@ export function HostelDetailGallery({
             </h2>
             <button
               aria-label="Close photos"
-              className="grid size-10 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
+              className="grid size-10 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink btn-secondary"
               onClick={() => dialogRef.current?.close()}
               type="button"
             >

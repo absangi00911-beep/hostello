@@ -32,7 +32,7 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 });
 
 const secondaryButtonClassName =
-  "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand!";
+  "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
 
 const statusBadgeClassName: Record<ListingStatus, string> = {
   ACTIVE: "bg-brand-soft text-brand-dark",
@@ -229,7 +229,7 @@ export function OwnerDashboardContent({
           {STATUS_FILTERS.map(({ value, label }) => (
             <button
               aria-pressed={filter === value}
-              className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-[0.82rem] font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand!"
+              className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-[0.82rem] font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
               key={value}
               onClick={() => onFilterChange(value)}
               type="button"

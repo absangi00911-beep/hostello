@@ -552,7 +552,7 @@ export default function LoginDialog({
                 <span className="h-px bg-line" />
               </div>
               <button
-                className="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-[8px] border border-muted bg-white text-base font-[650] text-ink enabled:hover:bg-surface-muted disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-[8px] border border-muted bg-white text-base font-[650] text-ink enabled:hover:bg-surface-muted disabled:cursor-wait disabled:opacity-70 btn-secondary"
                 disabled={isSubmitting || isGoogleRedirecting}
                 onClick={() => void handleGoogleSignIn()}
                 type="button"

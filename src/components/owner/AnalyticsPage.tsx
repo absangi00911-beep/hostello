@@ -216,7 +216,7 @@ export function AnalyticsPageContent({
           >
             <p className="m-0 text-[0.95rem]">{error}</p>
             <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current transition-all duration-200 hover:bg-[rgb(236_213_208_/_0.3)] active:scale-[0.97]"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
               type="button"
             >
@@ -268,7 +268,7 @@ export function AnalyticsPageContent({
               Could not load analytics data. Please try again.
             </p>
             <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current transition-all duration-200 hover:bg-[rgb(236_213_208_/_0.3)] active:scale-[0.97]"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
               type="button"
             >

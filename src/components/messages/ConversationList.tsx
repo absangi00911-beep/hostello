@@ -71,7 +71,7 @@ function ConversationListHeader({
             aria-controls="conversation-search"
             aria-expanded={searchOpen}
             aria-label="Search conversations"
-            className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
             onClick={() => {
               if (searchOpen) onSearchChange("");
               setSearchOpen((open) => !open);
@@ -85,7 +85,7 @@ function ConversationListHeader({
               aria-controls="inbox-settings"
               aria-expanded={settingsOpen}
               aria-label="Inbox settings"
-              className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
               onClick={() => setSettingsOpen((open) => !open)}
               type="button"
             >
@@ -109,7 +109,7 @@ function ConversationListHeader({
                 Unread messages only
               </label>
               <button
-                className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 text-left text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
+                className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 text-left text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
                 disabled={loading}
                 onClick={onRefresh}
                 type="button"
@@ -164,7 +164,7 @@ function ConversationListEmptyState({
           When you contact a hostel, your conversations will appear here.
         </p>
         <Link
-          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
           href="/search"
         >
           Get started
@@ -187,7 +187,7 @@ function ConversationListEmptyState({
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {searchQuery.trim() && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink transition-colors hover:border-brand"
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onSearchChange("")}
             type="button"
           >
@@ -196,7 +196,7 @@ function ConversationListEmptyState({
         )}
         {unreadOnly && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink transition-colors hover:border-brand"
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onUnreadOnlyChange(false)}
             type="button"
           >
@@ -246,7 +246,7 @@ export function ConversationList({
         >
           <p className="m-0">{error}</p>
           <button
-            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
             onClick={onRetry}
             type="button"
           >
@@ -337,7 +337,7 @@ export function ConversationList({
       )}
       {page?.hasMore && (
         <button
-          className="mx-auto mt-3 block w-[calc(100%-32px)] rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand disabled:cursor-wait disabled:opacity-60"
+          className="mx-auto mt-3 block w-[calc(100%-32px)] rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
           disabled={paging}
           onClick={onLoadMore}
           type="button"

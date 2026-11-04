@@ -57,14 +57,14 @@ export function MessagesInbox({
               <p role="alert">{inbox.pendingError}</p>
               <div className="mt-3 flex flex-wrap gap-2.5">
                 <button
-                  className="rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+                  className="rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.retryPendingInquiry}
                   type="button"
                 >
                   Retry delivery
                 </button>
                 <button
-                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:border-brand"
+                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.cancelPendingInquiry}
                   type="button"
                 >
