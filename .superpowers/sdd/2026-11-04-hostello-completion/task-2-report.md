@@ -44,3 +44,19 @@ Vitest emits its existing non-failing warning that `vitest.config.ts` uses `__di
 
 - `5c1b9af` — `fix: disambiguate owner listing form helper`
 - Documentation and this report are committed in a separate commit from the code.
+
+## Review round 1: ListingForm interaction coverage
+
+The pre-change focused run was already green: `npm run test -- --run src/components/owner/ListingForm.test.tsx src/app/owner/listings/new/page.test.tsx 'src/app/owner/listings/[id]/edit/page.test.tsx'` passed 3 files / 22 tests. This review identified a coverage gap, not a failing production behavior, so there was no application code fix to drive red. The first run of the added assertions with that same command had 4 failed / 22 passed: the test harness lacked a `React` runtime import. After adding it, a rerun had 1 failed / 25 passed because the edit fixture was passed in the wrong prop shape. A subsequent harness simplification omitted the existing `ListingRoomsEditor` test import (2 failed / 24 passed); the import was restored. These RED results were test-harness errors, not product failures. No production behavior was changed.
+
+Added component-level submissions to `ListingForm.test.tsx`: create submits POST with the exact validated JSON payload; edit submits PATCH with the stored listing payload; empty required values prevent network submission and expose validation feedback; and a rejected server response is rendered in the form error summary. The component is invoked with a small React hook-state harness because this Vitest project uses Node and has no DOM renderer; tests call the component's real submit handler and inspect its resulting element tree. No dependencies were added.
+
+**Final verification**
+
+- `npm run test -- --run src/components/owner/ListingForm.test.tsx src/app/owner/listings/new/page.test.tsx 'src/app/owner/listings/[id]/edit/page.test.tsx'` — 3 files / 26 tests passed.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run test -- --run` — 203 files / 1,335 tests passed.
+- `git diff --check` — passed.
+
+The existing non-failing Vitest warning about `__dirname` in `vitest.config.ts` remains. Only `ListingForm.test.tsx` and this report changed in this review round.
