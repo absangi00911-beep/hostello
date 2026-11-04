@@ -539,9 +539,9 @@ choice without exposing private owner/admin data.
   OK shows payment accepted only after confirmation; D for unauthorized
   booking; C when booking/payment eligibility changed; U after callback or
   network uncertainty warns against paying again until status is checked.
-  Show only the status and outcome reported by the server. Do not imply that a
-  late payment has reinstated a booking or resulted in a refund before the
-  server confirms that outcome.
+  Show only server-confirmed payment and booking state. Never infer late-
+  payment resolution from a redirect or callback; do not imply an outcome
+  before the server confirms it.
 - **Responsive/accessibility:** Amount and booking reference remain visible;
   any external handoff has an announced destination and does not erase the
   booking context.
@@ -993,12 +993,6 @@ These are implementation prerequisites, not new product decisions:
   selection, room booking, owner blocks, and availability alerts depend on
   the planned authoritative date-aware backend work. Never disguise the
   monthly response as exact availability.
-- The human owner approved the late-payment backend rule before approving
-  the plan: reinstate only when the requested seats are available for the full
-  date range; otherwise refund the full successful payment. This is a backend
-  implementation dependency, not a UI assumption. The UI shows only
-  server-reported status/outcome. Task 6 must reconcile the older
-  pending-policy text in `SPEC-late-payment.md` before implementation.
 - The current admin-only hostel detail route cannot supply a public student
   detail page. The planned public-safe projection in
   `SPEC-student-marketplace.md` is required before public detail is wired.
