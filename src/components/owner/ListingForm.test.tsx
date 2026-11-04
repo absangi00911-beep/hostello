@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ListingForm, ListingSubmitted } from "./ListingForm";
 import { ListingRoomsEditor } from "./ListingRoomsEditor";
 import { ListingPhotosField, validateImageFile } from "./ListingPhotosField";
-import { emptyRoom, roomFieldKey } from "./listingForm";
+import { emptyRoom, roomFieldKey } from "./listing-form";
 
 describe("ListingForm", () => {
   const markup = renderToStaticMarkup(<ListingForm />);

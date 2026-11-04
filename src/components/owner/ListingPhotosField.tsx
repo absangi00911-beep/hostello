@@ -7,7 +7,7 @@ import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_SIZE_MB,
 } from "@hostello/shared";
-import { LISTING_LIMITS } from "./listingForm";
+import { LISTING_LIMITS } from "./listing-form";
 import { secondaryButtonClassName } from "./ListingFormFields";
 
 /** Client-side mirror of the /api/upload checks, so obvious problems fail fast. */
