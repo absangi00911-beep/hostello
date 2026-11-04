@@ -17,6 +17,129 @@
 
 **Prerequisite build.** Run this on a build that includes task B-001 (the refund claim fix). Without it, check E3 (two simultaneous refund requests) is expected to be able to refund twice in the sandbox.
 
+**Two variants.** The steps below are written for a local `npm run dev` behind a tunnel. To run on a Vercel Preview deployment instead, read "Running on a preview deployment" first: it replaces 0.2, the tunnel and the restarts, and marks the steps that change or cannot run there.
+
+---
+
+## Running on a preview deployment
+
+Use this variant instead of `npm run dev` behind a tunnel. Steps B to F still apply unless this section says otherwise. Code facts below were read from `main` (file and line given). Anything about the Vercel, Upstash or Safepay dashboards cannot be checked from the repo and is marked UNVERIFIABLE FROM REPO. No values, keys or URLs with secrets go in this document or in chat: names and placeholders only.
+
+**Why a preview behaves differently from a local run.** A Vercel Preview build runs with `NODE_ENV=production` (`src/lib/deployment-env.ts`, `src/lib/env-validation.ts:216`). The code's development-only shortcuts therefore do not apply:
+
+- **No inline webhook processing.** Without `QSTASH_TOKEN` the webhook throws instead of processing (`src/app/api/payment/webhook/route.ts:677`). QStash is required on a preview.
+- **No in-memory rate limits.** Without Upstash Redis variables the rate limiter throws (`src/lib/rate-limit.ts:51`). Redis is required on a preview.
+- Email checks `VERCEL_ENV`, but SMS, rate limits, CSRF and the app URL check `NODE_ENV`, so providers do not all behave the same way on a preview (see the email/SMS item below).
+
+### P1. Prerequisites checklist
+
+Tick every box before the first payment. If one cannot be ticked, stop and report which.
+
+**Which deployment**
+
+- [ ] The deployment's environment in Vercel is **Preview**, not Production. A deployment of the project's Production branch uses Production-scope variables (live keys, production database). Do not use it. To test `main`'s code, deploy it from a non-production branch. (UNVERIFIABLE FROM REPO: which branch is Production.)
+- [ ] The commit includes B-001. The deployment page in Vercel shows the branch and full commit SHA. The app does not report its own commit (nothing in `src/` reads `VERCEL_GIT_COMMIT_SHA`), so that page is the only source. In a clone of the repo run:
+
+  ```
+  git merge-base --is-ancestor 048db532a9a6c51a30e8e8d674a1598254ebbd09 <deployed-sha> && echo "B-001 included"
+  ```
+
+  `048db53...` is the B-001 code commit. `0d4710e9fe54d626e500e11f786781923f808154` is the merge of PR #37 that put it on `main`, and it descends from the code commit, so a build from `main` at or after the merge passes the same check. The `preview` branch contains the code commit but not the merge commit (checked when this was written), so a preview of that branch is also acceptable. Second check: `git show <deployed-sha>:src/lib/refunds.ts | grep -n "refundedAmount: booking.refundedAmount"` must print one line inside the refund claim.
+- [ ] Write the full deployed SHA in "Build/PR under test" in the final report.
+- [ ] `NEXT_PUBLIC_*` values are compiled into the build. After changing `NEXT_PUBLIC_APP_URL` or `NEXT_PUBLIC_SAFEPAY_ENV`, redeploy and re-check the SHA.
+
+**Data isolation**
+
+- [ ] Separate non-production database (a Neon branch or similar). The Preview-scope `DATABASE_URL` has a different host and database name from the Production one. Compare them in the Vercel variables page; do not copy the values anywhere.
+- [ ] Each of these has its own Preview-scope entry and is not one entry shared by "All Environments" with production: `DATABASE_URL`, `SAFEPAY_SECRET`, `SAFEPAY_API_KEY`, `SAFEPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_SAFEPAY_ENV`, `NEXT_PUBLIC_APP_URL`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`. (UNVERIFIABLE FROM REPO.)
+- [ ] The database schema is migrated before the first test. The Vercel build does not migrate (`scripts/vercel-build.mjs`). From your machine run `npm run db:migrate:preview`. It refuses unless `DATABASE_URL` matches the configured preview database and differs from production. Its settings (names only): `HOSTELLO_MIGRATION_TARGET=preview`, `HOSTELLO_PREVIEW_DATABASE_HOST`, `HOSTELLO_PREVIEW_DATABASE_NAME`, `HOSTELLO_PRODUCTION_DATABASE_HOST`, `HOSTELLO_PRODUCTION_DATABASE_NAME` (`scripts/migrate-preview.mjs`). Do not run `db:push` or `db:seed` against it unless you have checked which database `DATABASE_URL` points to.
+- [ ] **Separate Redis database.** Create a separate Upstash Redis database for Preview and set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` at Preview scope. A shared database with a different key prefix is not possible: the rate-limit prefix is fixed in code (`src/lib/rate-limit.ts:76`, `hostello:ratelimit`) and cannot be set by an environment variable. Sharing production's Redis would share the admin refund counters with production (the token-version cache also uses Redis; its key names were not checked).
+- [ ] **QStash configured.** Set `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY` and `QSTASH_NEXT_SIGNING_KEY` at Preview scope, from a QStash project that production does not use if you can. The app publishes the queued event to `<NEXT_PUBLIC_APP_URL>/api/payment/webhook` with a failure callback to `<NEXT_PUBLIC_APP_URL>/api/payment/webhook/failure` (`route.ts:664-669`), so the messages go to the preview alias and never to production as long as that URL is correct. The queued call is accepted only with a valid QStash signature; the `CRON_SECRET` fallback is off for it (`route.ts:539-560`).
+- [ ] **Test-only recipients.** No code in `src/` restricts who receives email or SMS, so protection is data hygiene: fake users only, addresses and numbers you control. Leave `RESEND_API_KEY` unset on Preview. On a non-production deployment `sendEmail` then reports success without sending (`src/lib/email.ts:36-41`). If you set it, every user address in the preview database must be one you control. SMS differs: `sendSms` checks `NODE_ENV`, so with Twilio unset on a preview it returns "SMS delivery is unavailable" instead of skipping (`src/lib/sms.ts:93-96`). This validation needs no SMS. A flow that needs an OTP will fail unless you set Twilio variables, and then only to numbers you own.
+- [ ] Fake test users (0.4). Never real people's emails, names or numbers.
+
+**URL and Deployment Protection**
+
+- [ ] **Stable branch alias.** In Vercel, find the branch alias for the branch you deploy (the address that stays the same across commits). Do not use the per-deployment address that changes with each commit. Set `NEXT_PUBLIC_APP_URL` at Preview scope to that origin (`https://`, no path, no trailing slash), then redeploy. The same value is used for the checkout return, the QStash target and the CSRF check. The CSRF check rejects state-changing requests whose `Origin` is not that origin (`src/lib/csrf.ts`), so browse the app **only** through the alias. On any other address the admin refund actions return 403 "Cross-origin request rejected." Leave `AUTH_URL` unset or equal to the alias (`NEXT_PUBLIC_APP_URL` is read first, `src/lib/app-url.ts`).
+- [ ] The Safepay sandbox webhook (0.1 item 3) is `https://<alias>/api/payment/webhook`. Never register `/api/payment/webhook/failure`.
+- [ ] **Deployment Protection must not block `/api/payment/webhook` or `/api/payment/webhook/failure`.** Two callers must reach them: Safepay's sandbox, and QStash (calling back with the queued event). Upstash's documentation describes a Vercel bypass secret sent in the header `x-vercel-protection-bypass`. The app's QStash publish sends no custom header (`route.ts:664-669`), and nothing in the repo shows that Safepay can add one, so the bypass-secret route does not work without a code change. For the duration of the run turn Deployment Protection off for Preview in the Vercel project settings, and turn it back on afterwards. (UNVERIFIABLE FROM REPO.) While it is off, anyone with the address can reach the preview: use fake data only, long random passwords for the test admin, do not share the address, and disable or delete the test accounts afterwards.
+- [ ] Check it from a browser or machine not signed in to Vercel:
+
+  ```
+  curl -s -X POST https://<alias>/api/payment/webhook
+  ```
+
+  Expected: the JSON `{"error":"Invalid signature."}` (`route.ts:622-625`). An HTML page (a Vercel sign-in or protection page) means the route is still blocked: stop. The request carries no secret and is rejected before any database work.
+- [ ] `CRON_SECRET` is set at Preview scope only if you will call a cron route (P4). Otherwise leave it unset.
+
+### P2. Confirm sandbox mode and no production data (replaces 0.3 for this variant)
+
+| # | Check | How | What it proves |
+|---|-------|-----|----------------|
+| 1 | Deployment is Preview | Vercel deployment page, environment label | You are not on Production-scope variables |
+| 2 | `NEXT_PUBLIC_SAFEPAY_ENV` is `sandbox`, set explicitly | Preview-scope variable in Vercel. Environment validation only enforces it for production deployments (`env-validation.ts:239`), and the app treats any value other than `production`, including unset, as sandbox (`src/lib/safepay.ts:24,38`). Set it anyway so a missing value is visible. | Configuration only |
+| 3 | Checkout host | Start a payment (step B). The checkout address must be on `sandbox.api.getsafepay.com/embedded/` and contain `environment=sandbox`. If it is not, **stop and do not pay**. | The only proof about the **deployed** build. The value is compiled in at build time, so nothing on your machine can show it |
+| 4 | Tracker in the dashboard | The tracker appears in the Safepay **sandbox** dashboard | Keys are sandbox keys (this check is yours; the repo cannot tell sandbox keys from live ones) |
+| 5 | Same database | After step B, run `report` with the `DATABASE_URL` from the Preview scope. It must show the booking you just created on the preview site. If it does not, you are looking at a different database from the one the preview writes to: stop | The database you query is the one the preview uses. Together with the host comparison in P1 it is the evidence that production was not touched |
+
+**Local validation file.** `preflight` and `report` run on your machine. Create a dedicated file such as `.env.preview-validation.local` (the repo's `.gitignore` covers `.env*.local`) holding only: `NEXT_PUBLIC_SAFEPAY_ENV=sandbox`, `SAFEPAY_SECRET`, `SAFEPAY_API_KEY`, `SAFEPAY_WEBHOOK_SECRET` and `DATABASE_URL` (the preview database). The script requires all five even for `report`. Type them in from the dashboards rather than pulling every Preview variable to disk. Do not set `NODE_ENV=production` in it. Use `--env-file=.env.preview-validation.local` wherever the steps say `--env-file=.env.local`. Delete the file after the run. Preflight reads only this local file, so it checks your file, not the deployment. Its two lines about QStash and Redis (for example "processed inline") describe your local file and are wrong for a preview: ignore them. `npm run db:studio`, used in D2 and F, reads the app's normal env file: confirm it points at the preview database before you edit a row.
+
+Nothing new to send for P2. Use the existing "Send back for 0" list (the checklist table, the preflight output, and the checkout hostname only) and put the full deployed commit SHA in "Build/PR under test" in the final report.
+
+### P3. Step by step: what changes on a preview
+
+| Step | Preview status | What to do |
+|------|----------------|------------|
+| 0.1 dashboard checklist | Run as written | Item 3 is the alias URL. Item 11 (can the dashboard resend a real delivery?) now matters for E1 |
+| 0.2 local environment | **Replaced** | Use P1. Do not leave `QSTASH_TOKEN` or the Redis variables unset |
+| 0.3 confirm sandbox | **Replaced** | Use P2 |
+| 0.4 accounts and report tool | Run as written | Create the accounts on the alias. `report` uses the local validation file |
+| 0.5 bookings | Run as written | |
+| 0.6 refund rate limit | **Changed** | The limit is held in the preview Redis, so restarting or redeploying does not reset it. The key is per admin (`admin-refund:<admin id>`, `src/app/api/admin/bookings/[id]/refund/route.ts:23`). Between sittings wait an hour, or use a second test admin, or clear the preview Redis database (never production's). A `429` is still not a failure |
+| 0.7 refund from the console | Run as written | Run it in the console of a page opened on the **alias** (the `Origin` must match) |
+| B pay and confirm webhook | **QSTASH-DEPENDENT** | There is no inline path. Expected webhook row `status` moves `RECEIVED` to `QUEUED` to `PROCESSED`; the report may catch `QUEUED` for a moment. If the booking is still `PENDING` after a couple of minutes with a row at `RECEIVED`, `QUEUED` or `RETRYABLE`, check in this order: the QStash variables, that Deployment Protection is off (P1 check), and that `NEXT_PUBLIC_APP_URL` is the alias. The admin retry route also needs the QStash variables (`payment-events/[id]/retry/route.ts:78-80`). Replace "Dev server log" with the Vercel runtime logs: search for `booking.payment_confirmed` and note yes or no; do not send raw logs |
+| C full refund | Run as written | |
+| D1, D2, D3 partial refunds | Run as written | D2 edits a row: check the database target first (P2) |
+| E1 scripted replay | **SKIPPED-ON-PREVIEW** | `replay-webhook` refuses any `--base-url` that is not localhost (`scripts/safepay-sandbox-validation.mjs`), so it cannot reach a preview. Do not work around it |
+| E1 optional dashboard resend | Applies, and is a stronger test here | If 0.1 item 11 says the dashboard can resend a real delivery, resend one for BK-3 and send both reports. The resend goes through the real Safepay and QStash path. If it cannot be done, record `E1: SKIPPED-ON-PREVIEW` in the final report. The Tech Lead decides whether a local run for E1 alone is needed before launch |
+| E2 repeated refund | Run as written | |
+| E3 simultaneous refunds | Run as written | |
+| F rejected refund | Run as written | The step edits a row: check the database target first |
+| Final report | Unchanged | Write "preview" and the full SHA in "Build/PR under test" |
+
+### P4. Cron routes: none are needed, and none run by themselves on a preview
+
+No step in B to F calls a cron route, so nothing in this runbook is skipped because of cron. Nothing schedules the cron routes on a preview: `vercel.json` has no `crons` entry, and QStash schedules are set up in Upstash (UNVERIFIABLE FROM REPO). All seven routes are `POST`, accept `Authorization: Bearer <CRON_SECRET>` and are exempt from the CSRF check (`src/proxy.ts`). Run one by hand only if a step of your own needs it, from your shell, with the secret in an environment variable and not typed into the command:
+
+```
+curl -s -X POST -H "Authorization: Bearer $CRON_SECRET" https://<alias>/api/cron/<route>
+```
+
+| Route | What it does to the preview database | Needed for B to F? |
+|-------|--------------------------------------|--------------------|
+| `cancel-abandoned-payments` | Cancels old `PENDING` bookings that are still unpaid (sets status `CANCELLED`, `paymentStatus` `FAILED`) and gives their room places back | No. It is the path behind the late-payment gap, which this runbook does not cover. Do not run it on a booking you are about to pay |
+| `expire-unanswered-bookings` | Sends owner reminders and expires unanswered paid bookings, which **starts sandbox refunds** with actor `system:owner-response-timeout` (audit E-1) | No. Do not run it during this validation; it can move sandbox money outside the steps |
+| `mark-completed-stays` | Applies the stay-finished status transition and creates an in-app notification | No |
+| `check-price-alerts` | Runs the price-alert check (`checkPriceAlerts`) | No |
+| `cleanup-tokens` | Deletes expired password-reset and verification tokens | No |
+| `cleanup-verification-uploads` | Deletes expired verification uploads (`deleteExpiredVerificationUploads`) | No |
+| `process-account-deletions` | Runs the account-deletion queue (`processAccountDeletionQueue`) | No |
+
+`GET /api/health/payments` is a read-only detector for cancelled-but-paid and stuck refunds. It accepts an admin session, or the header `x-cron-health-secret` equal to `CRON_SECRET` (`src/app/api/health/payments/route.ts:9-10`). It is optional here.
+
+### P5. Parts of the local variant that do not apply on a preview
+
+- The public tunnel and tunnel URL (0.2). The alias replaces it.
+- `npm run dev`, `npm start` and restarting the dev server (0.2, 0.6).
+- Leaving `QSTASH_TOKEN` unset for inline processing and leaving the Redis variables unset for in-memory limits (0.2). Both must be set on a preview.
+- The `.env.local` file as the app's environment (0.2). The app reads Preview-scope variables in Vercel; only the validation commands read your local file.
+- `replay-webhook` and its `--base-url` option (E1).
+- The "Dev server log" row in B (use runtime logs).
+
+### P6. After the run
+
+Turn Deployment Protection back on for Preview. Delete `.env.preview-validation.local`. Disable or delete the test accounts. Remove the sandbox webhook URL from the Safepay sandbox dashboard if you will not reuse it. Do not enable live payments: that goes to the Founder after the report is reviewed.
+
 ---
 
 ## 0. Setup
@@ -44,6 +167,8 @@ Do **not** register `/api/payment/webhook/failure` with Safepay. It is the inter
 
 ### 0.2 Local environment
 
+> **Preview variant: REPLACED.** Skip this section and use "P1. Prerequisites checklist". On a preview, `QSTASH_TOKEN` and the Redis variables must be set, not left unset.
+
 Set these in your local env file (names only here, never put values in the repo, this document or chat):
 
 `NEXT_PUBLIC_SAFEPAY_ENV` (must be exactly `sandbox`), `SAFEPAY_SECRET`, `SAFEPAY_API_KEY`, `SAFEPAY_WEBHOOK_SECRET`, `DATABASE_URL` (non-production), `NEXT_PUBLIC_APP_URL` (your public tunnel URL), plus the other variables in `.env.example` the app needs to start.
@@ -53,6 +178,8 @@ Leave `QSTASH_TOKEN` unset for the simplest run: outside production the webhook 
 Safepay's sandbox must reach your webhook, so expose the local app on a public HTTPS URL with any tunnel you trust, and use that URL in 0.1 item 3 and in `NEXT_PUBLIC_APP_URL`. Start the app with `npm run dev` (not `npm start`: production mode refuses to process webhooks without QStash).
 
 ### 0.3 Confirm the app is in sandbox mode
+
+> **Preview variant: REPLACED.** Use "P2. Confirm sandbox mode and no production data".
 
 Do all three:
 
@@ -92,6 +219,8 @@ Why these preparations: a student who cancels before the owner accepts is refund
 
 ### 0.6 Refund rate limit
 
+> **Preview variant: CHANGED.** The limit lives in the preview Redis and a restart does not reset it. See the 0.6 row in "P3".
+
 The admin refund route allows **5 actions per hour per admin**, and every request counts, including rejected ones. This runbook uses about 9. Plan three sittings: C and D (4 actions), then E2 and E3 (3), then F (2). Between sittings restart `npm run dev` (resets the in-memory limit) or wait an hour. A `429` "Too many refund actions" is not a failure.
 
 ### 0.7 Sending a refund request without the button
@@ -108,6 +237,8 @@ This uses your existing session. Do not copy cookies anywhere.
 ---
 
 ## Step B. Pay a booking and confirm the webhook
+
+> **Preview variant: QSTASH-DEPENDENT.** The webhook is processed only through QStash on a preview. Complete "P1" first and see the B row in "P3".
 
 1. As the student, create a booking and press Pay. Complete payment with the sandbox test card.
 2. Wait up to a minute. Run the report for the booking.
@@ -167,7 +298,11 @@ Expected: HTTP **409** with "No refund amount remains for this booking."; **no**
 
 ## Step E. No double effect on repeats
 
-**E1. Repeated webhook delivery.** Use BK-3 (paid, untouched). Take the report first. Then:
+**E1. Repeated webhook delivery.**
+
+> **Preview variant: the scripted replay below is SKIPPED-ON-PREVIEW** (the script only posts to localhost). Use the optional dashboard resend further down if the dashboard offers it, otherwise record `E1: SKIPPED-ON-PREVIEW`. See the E1 rows in "P3".
+
+Use BK-3 (paid, untouched). Take the report first. Then:
 
 ```
 npx tsx --env-file=.env.local scripts/safepay-sandbox-validation.mjs replay-webhook BK-3_ID --confirm-non-production-db
