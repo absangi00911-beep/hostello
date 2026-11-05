@@ -9,6 +9,7 @@ import {
   fieldClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
 import {
   HOSTEL_ID_MAX,
   interpretSyncResponse,
@@ -42,19 +43,26 @@ export async function runSearchSync(
       response.headers.get("Retry-After"),
     );
   } catch {
-    return { ok: false, message: "Could not reach the server. Try again." };
+    return {
+      ok: false,
+      message: "Could not reach the server.",
+      uncertain: true,
+    };
   }
 }
 
 function ResultNotice({ result }: { result: SearchSyncResult | null }) {
   if (!result) return null;
   return (
-    <p
-      className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${result.ok ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-[#c13515]"}`}
-      role={result.ok ? "status" : "alert"}
-    >
-      {result.message}
-    </p>
+    <div className="grid gap-3">
+      <p
+        className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${result.ok ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-[#c13515]"}`}
+        role={result.ok ? "status" : "alert"}
+      >
+        {result.message}
+      </p>
+      {result.uncertain ? <AdminUncertainActionNotice /> : null}
+    </div>
   );
 }
 
@@ -106,7 +114,7 @@ export function SyncAllCard({ onRun }: { onRun: RunSyncAction }) {
             </button>
           </div>
         </div>
-      ) : (
+      ) : result?.uncertain ? null : (
         <div>
           <button
             className={secondaryButtonClassName}
@@ -179,7 +187,7 @@ export function SingleHostelCard({ onRun }: { onRun: RunSyncAction }) {
           <div className="flex flex-wrap gap-2">
             <button
               className={dangerButtonClassName}
-              disabled={busy}
+              disabled={busy || result?.uncertain === true}
               onClick={() => void run("remove")}
               type="button"
             >
@@ -195,11 +203,11 @@ export function SingleHostelCard({ onRun }: { onRun: RunSyncAction }) {
             </button>
           </div>
         </div>
-      ) : (
+      ) : result?.uncertain ? null : (
         <div className="flex flex-wrap gap-2">
           <button
             className={secondaryButtonClassName}
-            disabled={busy}
+            disabled={busy || result?.uncertain === true}
             onClick={() => void run("sync-single")}
             type="button"
           >
@@ -207,7 +215,7 @@ export function SingleHostelCard({ onRun }: { onRun: RunSyncAction }) {
           </button>
           <button
             className={secondaryButtonClassName}
-            disabled={busy}
+            disabled={busy || result?.uncertain === true}
             onClick={() => {
               setTouched(true);
               setResult(null);

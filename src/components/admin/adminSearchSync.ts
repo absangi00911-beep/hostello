@@ -1,4 +1,5 @@
 import { readAdminError } from "./adminListings";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 
 /** Same cap as the sync route's request schema. */
 export const HOSTEL_ID_MAX = 64;
@@ -9,6 +10,7 @@ export interface SearchSyncResult {
   ok: boolean;
   /** Text to show the admin: the API's message on success, a safe error otherwise. */
   message: string;
+  uncertain?: boolean;
 }
 
 export function validateHostelId(value: string): string | null {
@@ -67,5 +69,6 @@ export function interpretSyncResponse(
   return {
     ok: false,
     message: readAdminError(payload, "Something went wrong. Try again."),
+    uncertain: isUncertainAdminActionStatus(status),
   };
 }

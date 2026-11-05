@@ -9,6 +9,8 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
   ADMIN_VERIFICATION_TABS,
@@ -35,6 +37,7 @@ const dangerButtonClassName =
 export interface DecisionResult {
   /** Error to show on the card; null when the decision went through. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type DecideAction = (
@@ -150,6 +153,7 @@ function VerificationCard({
   const [panel, setPanel] = useState<VerificationDecision | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
 
   const isPending = status === "PENDING";
   // Approving without having a document to look at would be a blind decision.
@@ -161,7 +165,11 @@ function VerificationCard({
     const result = await onDecide(student, action);
     // On success the parent removes this card, so only failures need state.
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+      if (result.uncertain) setShowDocument(false);
+    }
   }
 
   return (
@@ -185,35 +193,41 @@ function VerificationCard({
 
       {isPending ? (
         <>
-          <div className="flex flex-wrap gap-2">
-            <button
-              aria-expanded={showDocument}
-              className={secondaryButtonClassName}
-              onClick={() => setShowDocument((open) => !open)}
-              type="button"
-            >
-              {showDocument ? "Hide document" : "Review document"}
-            </button>
-            <button
-              className={secondaryButtonClassName}
-              disabled={!canApprove}
-              onClick={() => setPanel(panel === "approve" ? null : "approve")}
-              type="button"
-            >
-              Approve
-            </button>
-            <button
-              className={secondaryButtonClassName}
-              onClick={() => setPanel(panel === "reject" ? null : "reject")}
-              type="button"
-            >
-              Reject
-            </button>
-          </div>
+          {uncertain ? (
+            <AdminUncertainActionNotice />
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  aria-expanded={showDocument}
+                  className={secondaryButtonClassName}
+                  onClick={() => setShowDocument((open) => !open)}
+                  type="button"
+                >
+                  {showDocument ? "Hide document" : "Review document"}
+                </button>
+                <button
+                  className={secondaryButtonClassName}
+                  disabled={!canApprove}
+                  onClick={() => setPanel(panel === "approve" ? null : "approve")}
+                  type="button"
+                >
+                  Approve
+                </button>
+                <button
+                  className={secondaryButtonClassName}
+                  onClick={() => setPanel(panel === "reject" ? null : "reject")}
+                  type="button"
+                >
+                  Reject
+                </button>
+              </div>
 
-          {showDocument ? <DocumentPreview student={student} /> : null}
+              {showDocument ? <DocumentPreview student={student} /> : null}
+            </>
+          )}
 
-          {panel ? (
+          {panel && !uncertain ? (
             <DecisionForm
               busy={busy}
               error={error}
@@ -522,9 +536,15 @@ export function AdminVerificationsPage() {
         setNotice({ tone: "error", text: message });
         setRetryCount((count) => count + 1);
       }
-      return { error: message };
+      return {
+        error: message,
+        uncertain: isUncertainAdminActionStatus(response.status),
+      };
     } catch {
-      return { error: "We couldn't save this decision. Please try again." };
+      return {
+        error: "We couldn't save this decision. Please try again.",
+        uncertain: true,
+      };
     }
   }, []);
 

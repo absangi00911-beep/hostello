@@ -9,6 +9,8 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import {
   ADMIN_LISTING_TABS,
   FLAGGED_THRESHOLD,
@@ -50,6 +52,7 @@ const dangerButtonClassName =
 export interface ModerationResult {
   /** Error to show on the card; null when the change went through. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type ModerateAction = (
@@ -308,6 +311,7 @@ function ListingReviewCard({
   const [panel, setPanel] = useState<ModerationAction | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
   const [detail, setDetail] = useState<AdminListingDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -353,7 +357,10 @@ function ListingReviewCard({
     );
     // On success the parent removes this card, so only failures need state.
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
   }
 
   const lowCompleteness = listing.completeness < FLAGGED_THRESHOLD;
@@ -389,7 +396,7 @@ function ListingReviewCard({
         >
           {expanded ? "Hide details" : "Review details"}
         </button>
-        {listing.status === "PENDING_REVIEW" ? (
+        {!uncertain && listing.status === "PENDING_REVIEW" ? (
           <button
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "verify" ? null : "verify")}
@@ -398,7 +405,8 @@ function ListingReviewCard({
             Verify and publish
           </button>
         ) : null}
-        {listing.status === "PENDING_REVIEW" || listing.status === "ACTIVE" ? (
+        {!uncertain &&
+        (listing.status === "PENDING_REVIEW" || listing.status === "ACTIVE") ? (
           <button
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "suspend" ? null : "suspend")}
@@ -407,7 +415,7 @@ function ListingReviewCard({
             Suspend
           </button>
         ) : null}
-        {listing.status === "SUSPENDED" ? (
+        {!uncertain && listing.status === "SUSPENDED" ? (
           <button
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "activate" ? null : "activate")}
@@ -416,7 +424,7 @@ function ListingReviewCard({
             Reactivate
           </button>
         ) : null}
-        {listing.status === "ACTIVE" ? (
+        {!uncertain && listing.status === "ACTIVE" ? (
           <Link
             className={secondaryButtonClassName}
             href={`/hostels/${encodeURIComponent(listing.slug)}`}
@@ -425,6 +433,8 @@ function ListingReviewCard({
           </Link>
         ) : null}
       </div>
+
+      {uncertain ? <AdminUncertainActionNotice /> : null}
 
       {expanded ? (
         <ReviewDetails
@@ -435,7 +445,7 @@ function ListingReviewCard({
         />
       ) : null}
 
-      {panel ? (
+      {panel && !uncertain ? (
         <ModerationForm
           busy={busy}
           error={error}
@@ -724,9 +734,15 @@ export function AdminListingsPage() {
         setNotice({ tone: "error", text: message });
         setRetryCount((count) => count + 1);
       }
-      return { error: message };
+      return {
+        error: message,
+        uncertain: isUncertainAdminActionStatus(response.status),
+      };
     } catch {
-      return { error: "We couldn't update this listing. Please try again." };
+      return {
+        error: "We couldn't update this listing. Please try again.",
+        uncertain: true,
+      };
     }
   }, []);
 
