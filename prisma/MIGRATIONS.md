@@ -83,7 +83,7 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
 
 ## Existing migrations (do not touch)
 
-**Last audited:** October 19, 2026. The repository currently has 30 migration
+**Last audited:** November 5, 2026. The repository currently has 33 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -119,11 +119,14 @@ migration is committed.
 | 20261009150000 | resumable_account_deletion |
 | 20261016114500 | remove_mobile_device_tokens |
 | 20261017151800 | add_room_facilities |
+| 20261026000000 | add_host_response_summaries |
+| 20261102000000 | backfill_hostel_cancellation_policy |
+| 20261105000000 | add_seat_holds |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL
 must never be edited; create a corrective migration instead.
 
-The latest migration adds a non-null `facilities` text array to rooms, defaulting
-to an empty array. Applied status must be verified separately for each target
-database before release.
+The latest migration adds a date-bounded seat-hold table and refuses to backfill
+until active legacy bookings pass its mapping and capacity preflight. Applied
+status must be verified separately for each target database before release.

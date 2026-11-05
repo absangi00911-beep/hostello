@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/client";
 import { sendEmail } from "@/lib/email";
 import { runAfterResponse } from "@/lib/background";
 import { newListingAdminEmail } from "@/lib/email-templates/new-listing";
+import { deriveHostelInventoryTotals } from "@/lib/room-inventory-service";
 import { slugify } from "@/lib/utils";
 import type { HostelCreateInput } from "@/lib/validations";
 
@@ -20,6 +21,8 @@ export async function createHostelRecord(
   ownerId: string,
   data: HostelCreateInput
 ) {
+  const inventoryTotals = deriveHostelInventoryTotals(data.roomTypes);
+
   // Generate a unique slug
   const baseSlug = slugify(data.name);
   let slug = baseSlug;
@@ -50,8 +53,8 @@ export async function createHostelRecord(
       latitude: data.latitude ?? null,
       longitude: data.longitude ?? null,
       pricePerMonth: data.pricePerMonth,
-      rooms: data.rooms,
-      capacity: data.capacity,
+      rooms: inventoryTotals.rooms,
+      capacity: inventoryTotals.capacity,
       gender: data.gender,
       cancellationPolicy: data.cancellationPolicy,
       minStay: data.minStay,

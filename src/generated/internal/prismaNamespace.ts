@@ -409,6 +409,7 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
@@ -441,7 +442,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1330,6 +1331,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.BookingCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.BookingCountAggregateOutputType> | number
+        }
+      }
+    }
+    SeatHold: {
+      payload: Prisma.$SeatHoldPayload<ExtArgs>
+      fields: Prisma.SeatHoldFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SeatHoldFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SeatHoldFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        findFirst: {
+          args: Prisma.SeatHoldFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SeatHoldFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        findMany: {
+          args: Prisma.SeatHoldFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        create: {
+          args: Prisma.SeatHoldCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        createMany: {
+          args: Prisma.SeatHoldCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SeatHoldCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        delete: {
+          args: Prisma.SeatHoldDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        update: {
+          args: Prisma.SeatHoldUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        deleteMany: {
+          args: Prisma.SeatHoldDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SeatHoldUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SeatHoldUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        upsert: {
+          args: Prisma.SeatHoldUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        aggregate: {
+          args: Prisma.SeatHoldAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSeatHold>
+        }
+        groupBy: {
+          args: Prisma.SeatHoldGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SeatHoldGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SeatHoldCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SeatHoldCountAggregateOutputType> | number
         }
       }
     }
@@ -2862,6 +2937,19 @@ export const BookingScalarFieldEnum = {
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
+export const SeatHoldScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  seatNo: 'seatNo',
+  bookingId: 'bookingId',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  createdAt: 'createdAt'
+} as const
+
+export type SeatHoldScalarFieldEnum = (typeof SeatHoldScalarFieldEnum)[keyof typeof SeatHoldScalarFieldEnum]
+
+
 export const HostelVerificationReviewScalarFieldEnum = {
   id: 'id',
   hostelId: 'hostelId',
@@ -3567,6 +3655,7 @@ export type GlobalOmitConfig = {
   hostel?: Prisma.HostelOmit
   room?: Prisma.RoomOmit
   booking?: Prisma.BookingOmit
+  seatHold?: Prisma.SeatHoldOmit
   hostelVerificationReview?: Prisma.HostelVerificationReviewOmit
   refundAuditEvent?: Prisma.RefundAuditEventOmit
   safepayWebhookEvent?: Prisma.SafepayWebhookEventOmit

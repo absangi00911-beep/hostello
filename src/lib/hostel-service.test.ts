@@ -32,8 +32,8 @@ describe("createHostelRecord room inventory", () => {
       city: "Lahore",
       address: "123 Main Road, Lahore",
       pricePerMonth: 25_000,
-      rooms: 1,
-      capacity: 1,
+      rooms: 99,
+      capacity: 999,
       gender: "MIXED",
       cancellationPolicy: "STANDARD",
       minStay: 1,
@@ -55,6 +55,9 @@ describe("createHostelRecord room inventory", () => {
     const result = await createHostelRecord(client, "owner_1", data);
 
     expect(result).toEqual(hostel);
+    expect(client.hostel.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ rooms: 1, capacity: 1 }),
+    }));
     expect(client.room.createMany).toHaveBeenCalledWith({
       data: [
         {

@@ -32,6 +32,9 @@ const transactionRoom = {
   createMany: vi.fn(),
   deleteMany: vi.fn(),
 };
+const transactionSeatHold = {
+  findMany: vi.fn().mockResolvedValue([]),
+};
 
 function ownerSession(id = "usr_owner_1") {
   return { user: { id, role: "OWNER" } } as any;
@@ -102,7 +105,7 @@ beforeEach(() => {
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
   transactionRoom.findMany.mockResolvedValue([]);
   vi.mocked(db.$transaction).mockImplementation(async (operation: any) =>
-    operation({ hostel: db.hostel, room: transactionRoom }),
+    operation({ hostel: db.hostel, room: transactionRoom, seatHold: transactionSeatHold }),
   );
 });
 
@@ -280,6 +283,8 @@ describe("PATCH /api/hostels/[param]", () => {
       where: { id: "hst_1", ownerId: "usr_owner_1", status: "ACTIVE" },
       data: expect.objectContaining({
         name: "Green View Updated",
+        rooms: 1,
+        capacity: 3,
         images: expect.arrayContaining([expect.stringContaining("https://images.hostello.test/")]),
         status: "PENDING_REVIEW",
       }),

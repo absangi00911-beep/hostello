@@ -19,7 +19,16 @@ function inventoryClient(rooms = [existingRoom]) {
       create: vi.fn().mockResolvedValue({ id: "room_new" }),
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
-  } as unknown as Pick<Prisma.TransactionClient, "room">;
+    seatHold: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+  } as unknown as Pick<Prisma.TransactionClient, "room" | "seatHold">;
+}
+
+function inventoryClientWithHolds(holds: Array<{ roomId: string; seatNo: number }>) {
+  const client = inventoryClient();
+  client.seatHold.findMany.mockResolvedValue(holds);
+  return client;
 }
 
 function roomInput(overrides: Partial<RoomTypeInput> = {}): RoomTypeInput {
@@ -64,6 +73,26 @@ describe("syncHostelRooms", () => {
     await expect(
       syncHostelRooms(client, "hostel_1", [roomInput({ capacity: 1 })]),
     ).rejects.toBeInstanceOf(RoomInventoryConflictError);
+
+    expect(client.room.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects removing a room with an active seat hold", async () => {
+    const client = inventoryClientWithHolds([{ roomId: "room_1", seatNo: 1 }]);
+
+    await expect(syncHostelRooms(client, "hostel_1", [])).rejects.toMatchObject({
+      reason: "ROOM_HAS_ACTIVE_HOLDS",
+    });
+
+    expect(client.room.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects capacity reductions that would invalidate an active seat assignment", async () => {
+    const client = inventoryClientWithHolds([{ roomId: "room_1", seatNo: 3 }]);
+
+    await expect(
+      syncHostelRooms(client, "hostel_1", [roomInput({ capacity: 2 })]),
+    ).rejects.toMatchObject({ reason: "CAPACITY_BELOW_RESERVED" });
 
     expect(client.room.updateMany).not.toHaveBeenCalled();
   });

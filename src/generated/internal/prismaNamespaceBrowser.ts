@@ -63,6 +63,7 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
@@ -328,6 +329,19 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const SeatHoldScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  seatNo: 'seatNo',
+  bookingId: 'bookingId',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  createdAt: 'createdAt'
+} as const
+
+export type SeatHoldScalarFieldEnum = (typeof SeatHoldScalarFieldEnum)[keyof typeof SeatHoldScalarFieldEnum]
 
 
 export const HostelVerificationReviewScalarFieldEnum = {

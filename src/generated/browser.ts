@@ -78,6 +78,11 @@ export type Room = Prisma.RoomModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model SeatHold
+ *
+ */
+export type SeatHold = Prisma.SeatHoldModel
+/**
  * Model HostelVerificationReview
  * 
  */

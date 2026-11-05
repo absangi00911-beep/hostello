@@ -18,7 +18,11 @@ import { rateLimit } from "@/lib/rate-limit";
 import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import { hostelCreateSchema } from "@hostello/shared";
 import { removeHostelIndex } from "@/lib/typesense-sync";
-import { RoomInventoryConflictError, syncHostelRooms } from "@/lib/room-inventory-service";
+import {
+  deriveHostelInventoryTotals,
+  RoomInventoryConflictError,
+  syncHostelRooms,
+} from "@/lib/room-inventory-service";
 
 // Owners can only move their own listing between these two states from
 // this endpoint — ACTIVE<->PENDING_REVIEW and SUSPENDED are admin-only,
@@ -147,6 +151,7 @@ export async function PATCH(
       }
 
       const listing = parsed.data;
+      const inventoryTotals = deriveHostelInventoryTotals(listing.roomTypes);
       let transactionResult: { kind: "changed" | "updated" };
       try {
         transactionResult = await db.$transaction(async (tx) => {
@@ -161,8 +166,8 @@ export async function PATCH(
               latitude: listing.latitude ?? null,
               longitude: listing.longitude ?? null,
               pricePerMonth: listing.pricePerMonth,
-              rooms: listing.rooms,
-              capacity: listing.capacity,
+              rooms: inventoryTotals.rooms,
+              capacity: inventoryTotals.capacity,
               gender: listing.gender,
               cancellationPolicy: listing.cancellationPolicy,
               minStay: listing.minStay,

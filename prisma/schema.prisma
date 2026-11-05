@@ -385,6 +385,7 @@ model Room {
   facilities String[] @default([])
 
   bookings Booking[]
+  seatHolds SeatHold[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -430,6 +431,7 @@ model Booking {
   payoutId String?
 
   notifications Notification[]
+  seatHolds SeatHold[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -441,6 +443,23 @@ model Booking {
   @@index([checkIn, checkOut])
   @@index([payoutId])
   @@map("bookings")
+}
+
+model SeatHold {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  seatNo    Int
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  checkIn   DateTime @db.Date
+  checkOut  DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, seatNo])
+  @@index([roomId])
+  @@index([bookingId])
+  @@map("seat_holds")
 }
 
 // Records the checks an admin completed before applying the public "verified" badge.
