@@ -273,6 +273,46 @@ describe("ListingRoomsEditor", () => {
     expect(markup).not.toMatch(/aria-label="Remove room type 1"[^>]*\sdisabled=""/);
     expect(markup).toContain("Room type 2");
   });
+
+  it("adds a new room without changing the existing room entry", () => {
+    const existingRoom = { ...emptyRoom(), id: "room-1", name: "Twin room" };
+    const onChange = vi.fn();
+    const tree = ListingRoomsEditor({
+      errors: {},
+      onChange,
+      rooms: [existingRoom],
+    });
+    const addButton = findElements(
+      tree,
+      (element) =>
+        element.type === "button" &&
+        textContent(element.props.children).includes("Add another room type"),
+    )[0];
+
+    expect(addButton).toBeDefined();
+    (addButton?.props.onClick as () => void)();
+
+    expect(onChange).toHaveBeenCalledWith([existingRoom, emptyRoom()]);
+  });
+
+  it("removes only the selected room and preserves the remaining room ID", () => {
+    const rooms = [
+      { ...emptyRoom(), id: "room-1", name: "Twin room" },
+      { ...emptyRoom(), id: "room-2", name: "Private room" },
+    ];
+    const onChange = vi.fn();
+    const tree = ListingRoomsEditor({ errors: {}, onChange, rooms });
+    const removeButton = findElements(
+      tree,
+      (element) => element.props["aria-label"] === "Remove room type 1",
+    )[0];
+
+    expect(removeButton).toBeDefined();
+    (removeButton?.props.onClick as () => void)();
+
+    expect(onChange).toHaveBeenCalledWith([rooms[1]]);
+    expect((onChange.mock.calls[0]?.[0] as typeof rooms)[0]?.id).toBe("room-2");
+  });
 });
 
 describe("ListingPhotosField", () => {
@@ -394,6 +434,57 @@ describe("ListingForm in edit mode", () => {
         ],
       }),
     });
+  });
+
+  it("keeps the remaining room's stable ID when another room is removed", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+    const existingWithRooms = {
+      ...existing,
+      listing: {
+        ...existing.listing,
+        rooms: [
+          ...existing.listing.rooms,
+          {
+            id: "r2",
+            name: "Private room",
+            description: "Quiet room.",
+            pricePerMonth: 32000,
+            capacity: 1,
+            facilities: ["Study desk"],
+            images: [],
+          },
+        ],
+      },
+    };
+    const tree = renderListingForm({ existing: existingWithRooms });
+    const editor = findElements(tree, (element) => element.type === ListingRoomsEditor)[0];
+    const rooms = editor?.props.rooms as import("./listing-form").RoomFormValues[];
+    const onChange = editor?.props.onChange as (
+      nextRooms: import("./listing-form").RoomFormValues[],
+    ) => void;
+
+    expect(rooms).toHaveLength(2);
+    onChange([rooms[1]!]);
+    await submitForm(renderListingForm({ existing: existingWithRooms }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/hostels/h1",
+      expect.objectContaining({
+        method: "PATCH",
+        body: expect.stringContaining('"id":"r2"'),
+      }),
+    );
+    expect(fetchMock.mock.calls[0]?.[1]?.body).not.toContain('"id":"r1"');
+  });
+
+  it("shows the server-confirmed pending-review state after a successful edit", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+
+    await submitForm(renderListingForm({ existing }));
+
+    expect(
+      renderToStaticMarkup(renderListingForm({ existing })),
+    ).toContain("Your listing is pending review again");
   });
 });
 
