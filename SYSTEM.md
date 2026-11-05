@@ -33,11 +33,11 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 <!-- docs-check:begin -->
 | Fact | Value |
 |---|---:|
-| Page files (`src/app/**/page.tsx`) | 36 |
+| Page files (`src/app/**/page.tsx`) | 38 |
 | API route handler files | 77 |
 | Prisma models | 31 |
 | Prisma migrations | 34 |
-| Vitest test files | 217 |
+| Vitest test files | 220 |
 | Cron jobs in the schedule registry | 8 |
 | Cron route handlers | 8 |
 <!-- docs-check:end -->
