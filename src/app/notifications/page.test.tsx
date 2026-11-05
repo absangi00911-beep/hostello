@@ -57,9 +57,58 @@ describe("getNotificationHref", () => {
     expect(getNotificationHref(item, "OWNER")).toBeNull();
   });
 
-  it("encodes hostel ids and never returns external URLs", () => {
-    const item = { ...base, type: "PRICE_ALERT", hostelId: "a/b?c" };
+  it("links only known notification types to destinations for the current role", () => {
+    expect(
+      getNotificationHref(
+        { ...base, type: "BOOKING_REQUEST", bookingId: "b1" },
+        "OWNER",
+      ),
+    ).toBe("/owner/bookings");
+    expect(
+      getNotificationHref(
+        { ...base, type: "BOOKING_CONFIRMED", bookingId: "b1" },
+        "STUDENT",
+      ),
+    ).toBe("/trips");
+    expect(
+      getNotificationHref(
+        { ...base, type: "REVIEW_RECEIVED" },
+        "OWNER",
+      ),
+    ).toBe("/owner/reviews");
+    expect(
+      getNotificationHref(
+        { ...base, type: "HOSTEL_APPROVED" },
+        "STUDENT",
+      ),
+    ).toBeNull();
+  });
 
-    expect(getNotificationHref(item, "STUDENT")).toBe("/hostels/a%2Fb%3Fc");
+  it("does not use identifiers from unknown notification types as destinations", () => {
+    const item = {
+      type: "UNRECOGNIZED",
+      bookingId: "booking-from-payload",
+      hostelId: "hostel-from-payload",
+    };
+
+    expect(getNotificationHref(item, "STUDENT")).toBeNull();
+    expect(getNotificationHref(item, "OWNER")).toBeNull();
+    expect(getNotificationHref(item, "ADMIN")).toBeNull();
+  });
+
+  it("links valid hostel identifiers only for student price alerts", () => {
+    const item = { ...base, type: "PRICE_ALERT", hostelId: "hostel_123-abc" };
+
+    expect(getNotificationHref(item, "STUDENT")).toBe("/hostels/hostel_123-abc");
+    expect(getNotificationHref(item, "OWNER")).toBeNull();
+  });
+
+  it("does not construct a route from path-like or external hostel identifiers", () => {
+    expect(
+      getNotificationHref(
+        { ...base, type: "PRICE_ALERT", hostelId: "https://evil.example/path" },
+        "STUDENT",
+      ),
+    ).toBeNull();
   });
 });

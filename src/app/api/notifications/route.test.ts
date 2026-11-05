@@ -57,7 +57,25 @@ describe("/api/notifications collection route", () => {
       hasMore: false,
     });
     expect(body.data).toHaveLength(1);
+    expect(db.notification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "user-1" } }),
+    );
+    expect(db.notification.count).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+    });
     expect(rateLimit).toHaveBeenCalledWith("notifications:list:user-1", { limit: 60, windowMs: 60_000 });
+  });
+
+  it("does not list notifications for an unauthenticated request", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(null);
+
+    const response = await GET(
+      new NextRequest("https://hostello.test/api/notifications"),
+    );
+
+    expect(response.status).toBe(401);
+    expect(db.notification.findMany).not.toHaveBeenCalled();
+    expect(db.notification.count).not.toHaveBeenCalled();
   });
 
   it("throttles notification listing before database reads", async () => {
@@ -85,6 +103,20 @@ describe("/api/notifications collection route", () => {
     expect(res.status).toBe(200);
     expect(markAllNotificationsAsRead).toHaveBeenCalledWith("user-1");
     expect(rateLimit).toHaveBeenCalledWith("notifications:read-all:user-1", { limit: 5, windowMs: 60_000 });
+  });
+
+  it("does not mark notifications read for an unauthenticated request", async () => {
+    vi.mocked(auth).mockResolvedValueOnce(null);
+
+    const response = await PUT(
+      new NextRequest("https://hostello.test/api/notifications", {
+        method: "PUT",
+        body: JSON.stringify({ action: "read-all" }),
+      }),
+    );
+
+    expect(response.status).toBe(401);
+    expect(markAllNotificationsAsRead).not.toHaveBeenCalled();
   });
 
   it("throttles read-all before parsing the request body or updating notifications", async () => {
