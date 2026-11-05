@@ -398,6 +398,7 @@ export type BookingWhereInput = {
   payout?: Prisma.XOR<Prisma.PayoutNullableScalarRelationFilter, Prisma.PayoutWhereInput> | null
   notifications?: Prisma.NotificationListRelationFilter
   seatHolds?: Prisma.SeatHoldListRelationFilter
+  latePaymentResolutions?: Prisma.LatePaymentResolutionListRelationFilter
 }
 
 export type BookingOrderByWithRelationInput = {
@@ -432,6 +433,7 @@ export type BookingOrderByWithRelationInput = {
   payout?: Prisma.PayoutOrderByWithRelationInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   seatHolds?: Prisma.SeatHoldOrderByRelationAggregateInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionOrderByRelationAggregateInput
 }
 
 export type BookingWhereUniqueInput = Prisma.AtLeast<{
@@ -469,6 +471,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   payout?: Prisma.XOR<Prisma.PayoutNullableScalarRelationFilter, Prisma.PayoutWhereInput> | null
   notifications?: Prisma.NotificationListRelationFilter
   seatHolds?: Prisma.SeatHoldListRelationFilter
+  latePaymentResolutions?: Prisma.LatePaymentResolutionListRelationFilter
 }, "id" | "transactionId">
 
 export type BookingOrderByWithAggregationInput = {
@@ -563,6 +566,7 @@ export type BookingCreateInput = {
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateInput = {
@@ -593,6 +597,7 @@ export type BookingUncheckedCreateInput = {
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUpdateInput = {
@@ -623,6 +628,7 @@ export type BookingUpdateInput = {
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateInput = {
@@ -653,6 +659,7 @@ export type BookingUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingCreateManyInput = {
@@ -1049,6 +1056,20 @@ export type BookingUpdateOneRequiredWithoutSeatHoldsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutSeatHoldsInput, Prisma.BookingUpdateWithoutSeatHoldsInput>, Prisma.BookingUncheckedUpdateWithoutSeatHoldsInput>
 }
 
+export type BookingCreateNestedOneWithoutLatePaymentResolutionsInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedCreateWithoutLatePaymentResolutionsInput>
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutLatePaymentResolutionsInput
+  connect?: Prisma.BookingWhereUniqueInput
+}
+
+export type BookingUpdateOneRequiredWithoutLatePaymentResolutionsNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedCreateWithoutLatePaymentResolutionsInput>
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutLatePaymentResolutionsInput
+  upsert?: Prisma.BookingUpsertWithoutLatePaymentResolutionsInput
+  connect?: Prisma.BookingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutLatePaymentResolutionsInput, Prisma.BookingUpdateWithoutLatePaymentResolutionsInput>, Prisma.BookingUncheckedUpdateWithoutLatePaymentResolutionsInput>
+}
+
 export type BookingCreateNestedOneWithoutNotificationsInput = {
   create?: Prisma.XOR<Prisma.BookingCreateWithoutNotificationsInput, Prisma.BookingUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.BookingCreateOrConnectWithoutNotificationsInput
@@ -1092,6 +1113,7 @@ export type BookingCreateWithoutUserInput = {
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutUserInput = {
@@ -1121,6 +1143,7 @@ export type BookingUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutUserInput = {
@@ -1207,6 +1230,7 @@ export type BookingCreateWithoutPayoutInput = {
   user: Prisma.UserCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutPayoutInput = {
@@ -1236,6 +1260,7 @@ export type BookingUncheckedCreateWithoutPayoutInput = {
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutPayoutInput = {
@@ -1291,6 +1316,7 @@ export type BookingCreateWithoutHostelInput = {
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutHostelInput = {
@@ -1320,6 +1346,7 @@ export type BookingUncheckedCreateWithoutHostelInput = {
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutHostelInput = {
@@ -1375,6 +1402,7 @@ export type BookingCreateWithoutRoomInput = {
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutRoomInput = {
@@ -1404,6 +1432,7 @@ export type BookingUncheckedCreateWithoutRoomInput = {
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutRoomInput = {
@@ -1459,6 +1488,7 @@ export type BookingCreateWithoutSeatHoldsInput = {
   user: Prisma.UserCreateNestedOneWithoutBookingsInput
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutSeatHoldsInput = {
@@ -1488,6 +1518,7 @@ export type BookingUncheckedCreateWithoutSeatHoldsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutSeatHoldsInput = {
@@ -1533,6 +1564,7 @@ export type BookingUpdateWithoutSeatHoldsInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutBookingsNestedInput
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutSeatHoldsInput = {
@@ -1562,6 +1594,143 @@ export type BookingUncheckedUpdateWithoutSeatHoldsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingCreateWithoutLatePaymentResolutionsInput = {
+  id?: string
+  checkIn: Date | string
+  checkOut: Date | string
+  months: number
+  guests?: number
+  total: number
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  cancellationRefundAmount?: number | null
+  refundedAmount?: number
+  paymentStatus?: $Enums.PaymentStatus
+  paymentMethod?: string | null
+  transactionId?: string | null
+  refundState?: $Enums.RefundState
+  refundedAt?: Date | string | null
+  refundedBy?: string | null
+  status?: $Enums.BookingStatus
+  ownerResponseDueAt?: Date | string | null
+  ownerResponseReminderSentAt?: Date | string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  hostel: Prisma.HostelCreateNestedOneWithoutBookingsInput
+  room?: Prisma.RoomCreateNestedOneWithoutBookingsInput
+  user: Prisma.UserCreateNestedOneWithoutBookingsInput
+  payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutBookingInput
+  seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+}
+
+export type BookingUncheckedCreateWithoutLatePaymentResolutionsInput = {
+  id?: string
+  hostelId: string
+  roomId?: string | null
+  userId: string
+  checkIn: Date | string
+  checkOut: Date | string
+  months: number
+  guests?: number
+  total: number
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  cancellationRefundAmount?: number | null
+  refundedAmount?: number
+  paymentStatus?: $Enums.PaymentStatus
+  paymentMethod?: string | null
+  transactionId?: string | null
+  refundState?: $Enums.RefundState
+  refundedAt?: Date | string | null
+  refundedBy?: string | null
+  status?: $Enums.BookingStatus
+  ownerResponseDueAt?: Date | string | null
+  ownerResponseReminderSentAt?: Date | string | null
+  notes?: string | null
+  payoutId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutBookingInput
+  seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+}
+
+export type BookingCreateOrConnectWithoutLatePaymentResolutionsInput = {
+  where: Prisma.BookingWhereUniqueInput
+  create: Prisma.XOR<Prisma.BookingCreateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedCreateWithoutLatePaymentResolutionsInput>
+}
+
+export type BookingUpsertWithoutLatePaymentResolutionsInput = {
+  update: Prisma.XOR<Prisma.BookingUpdateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedUpdateWithoutLatePaymentResolutionsInput>
+  create: Prisma.XOR<Prisma.BookingCreateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedCreateWithoutLatePaymentResolutionsInput>
+  where?: Prisma.BookingWhereInput
+}
+
+export type BookingUpdateToOneWithWhereWithoutLatePaymentResolutionsInput = {
+  where?: Prisma.BookingWhereInput
+  data: Prisma.XOR<Prisma.BookingUpdateWithoutLatePaymentResolutionsInput, Prisma.BookingUncheckedUpdateWithoutLatePaymentResolutionsInput>
+}
+
+export type BookingUpdateWithoutLatePaymentResolutionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  checkIn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  checkOut?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  months?: Prisma.IntFieldUpdateOperationsInput | number
+  guests?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  cancellationRefundAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  refundedAmount?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
+  refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  ownerResponseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ownerResponseReminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hostel?: Prisma.HostelUpdateOneRequiredWithoutBookingsNestedInput
+  room?: Prisma.RoomUpdateOneWithoutBookingsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutBookingsNestedInput
+  payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
+  seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutLatePaymentResolutionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  hostelId?: Prisma.StringFieldUpdateOperationsInput | string
+  roomId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  checkIn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  checkOut?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  months?: Prisma.IntFieldUpdateOperationsInput | number
+  guests?: Prisma.IntFieldUpdateOperationsInput | number
+  total?: Prisma.IntFieldUpdateOperationsInput | number
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  cancellationRefundAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  refundedAmount?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  transactionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refundState?: Prisma.EnumRefundStateFieldUpdateOperationsInput | $Enums.RefundState
+  refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  refundedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  ownerResponseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ownerResponseReminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
+  seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingCreateWithoutNotificationsInput = {
@@ -1591,6 +1760,7 @@ export type BookingCreateWithoutNotificationsInput = {
   user: Prisma.UserCreateNestedOneWithoutBookingsInput
   payout?: Prisma.PayoutCreateNestedOneWithoutBookingsInput
   seatHolds?: Prisma.SeatHoldCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionCreateNestedManyWithoutBookingInput
 }
 
 export type BookingUncheckedCreateWithoutNotificationsInput = {
@@ -1620,6 +1790,7 @@ export type BookingUncheckedCreateWithoutNotificationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   seatHolds?: Prisma.SeatHoldUncheckedCreateNestedManyWithoutBookingInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedCreateNestedManyWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutNotificationsInput = {
@@ -1665,6 +1836,7 @@ export type BookingUpdateWithoutNotificationsInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutBookingsNestedInput
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutNotificationsInput = {
@@ -1694,6 +1866,7 @@ export type BookingUncheckedUpdateWithoutNotificationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingCreateManyUserInput = {
@@ -1750,6 +1923,7 @@ export type BookingUpdateWithoutUserInput = {
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutUserInput = {
@@ -1779,6 +1953,7 @@ export type BookingUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutUserInput = {
@@ -1862,6 +2037,7 @@ export type BookingUpdateWithoutPayoutInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutPayoutInput = {
@@ -1891,6 +2067,7 @@ export type BookingUncheckedUpdateWithoutPayoutInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutPayoutInput = {
@@ -1974,6 +2151,7 @@ export type BookingUpdateWithoutHostelInput = {
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutHostelInput = {
@@ -2003,6 +2181,7 @@ export type BookingUncheckedUpdateWithoutHostelInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutHostelInput = {
@@ -2086,6 +2265,7 @@ export type BookingUpdateWithoutRoomInput = {
   payout?: Prisma.PayoutUpdateOneWithoutBookingsNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutRoomInput = {
@@ -2115,6 +2295,7 @@ export type BookingUncheckedUpdateWithoutRoomInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutBookingNestedInput
   seatHolds?: Prisma.SeatHoldUncheckedUpdateManyWithoutBookingNestedInput
+  latePaymentResolutions?: Prisma.LatePaymentResolutionUncheckedUpdateManyWithoutBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutRoomInput = {
@@ -2152,11 +2333,13 @@ export type BookingUncheckedUpdateManyWithoutRoomInput = {
 export type BookingCountOutputType = {
   notifications: number
   seatHolds: number
+  latePaymentResolutions: number
 }
 
 export type BookingCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | BookingCountOutputTypeCountNotificationsArgs
   seatHolds?: boolean | BookingCountOutputTypeCountSeatHoldsArgs
+  latePaymentResolutions?: boolean | BookingCountOutputTypeCountLatePaymentResolutionsArgs
 }
 
 /**
@@ -2181,6 +2364,13 @@ export type BookingCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime
  */
 export type BookingCountOutputTypeCountSeatHoldsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SeatHoldWhereInput
+}
+
+/**
+ * BookingCountOutputType without action
+ */
+export type BookingCountOutputTypeCountLatePaymentResolutionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LatePaymentResolutionWhereInput
 }
 
 
@@ -2216,6 +2406,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   payout?: boolean | Prisma.Booking$payoutArgs<ExtArgs>
   notifications?: boolean | Prisma.Booking$notificationsArgs<ExtArgs>
   seatHolds?: boolean | Prisma.Booking$seatHoldsArgs<ExtArgs>
+  latePaymentResolutions?: boolean | Prisma.Booking$latePaymentResolutionsArgs<ExtArgs>
   _count?: boolean | Prisma.BookingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["booking"]>
 
@@ -2319,6 +2510,7 @@ export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   payout?: boolean | Prisma.Booking$payoutArgs<ExtArgs>
   notifications?: boolean | Prisma.Booking$notificationsArgs<ExtArgs>
   seatHolds?: boolean | Prisma.Booking$seatHoldsArgs<ExtArgs>
+  latePaymentResolutions?: boolean | Prisma.Booking$latePaymentResolutionsArgs<ExtArgs>
   _count?: boolean | Prisma.BookingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2343,6 +2535,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     payout: Prisma.$PayoutPayload<ExtArgs> | null
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     seatHolds: Prisma.$SeatHoldPayload<ExtArgs>[]
+    latePaymentResolutions: Prisma.$LatePaymentResolutionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2770,6 +2963,7 @@ export interface Prisma__BookingClient<T, Null = never, ExtArgs extends runtime.
   payout<T extends Prisma.Booking$payoutArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$payoutArgs<ExtArgs>>): Prisma.Prisma__PayoutClient<runtime.Types.Result.GetResult<Prisma.$PayoutPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   notifications<T extends Prisma.Booking$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   seatHolds<T extends Prisma.Booking$seatHoldsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$seatHoldsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SeatHoldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  latePaymentResolutions<T extends Prisma.Booking$latePaymentResolutionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$latePaymentResolutionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LatePaymentResolutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3308,6 +3502,30 @@ export type Booking$seatHoldsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.SeatHoldScalarFieldEnum | Prisma.SeatHoldScalarFieldEnum[]
+}
+
+/**
+ * Booking.latePaymentResolutions
+ */
+export type Booking$latePaymentResolutionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LatePaymentResolution
+   */
+  select?: Prisma.LatePaymentResolutionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LatePaymentResolution
+   */
+  omit?: Prisma.LatePaymentResolutionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LatePaymentResolutionInclude<ExtArgs> | null
+  where?: Prisma.LatePaymentResolutionWhereInput
+  orderBy?: Prisma.LatePaymentResolutionOrderByWithRelationInput | Prisma.LatePaymentResolutionOrderByWithRelationInput[]
+  cursor?: Prisma.LatePaymentResolutionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LatePaymentResolutionScalarFieldEnum | Prisma.LatePaymentResolutionScalarFieldEnum[]
 }
 
 /**

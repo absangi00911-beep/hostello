@@ -412,6 +412,7 @@ export const ModelName = {
   SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
+  LatePaymentResolution: 'LatePaymentResolution',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
   SafepayWebhookReplayEvent: 'SafepayWebhookReplayEvent',
   Review: 'Review',
@@ -442,7 +443,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "latePaymentResolution" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1553,6 +1554,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.RefundAuditEventCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RefundAuditEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    LatePaymentResolution: {
+      payload: Prisma.$LatePaymentResolutionPayload<ExtArgs>
+      fields: Prisma.LatePaymentResolutionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LatePaymentResolutionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LatePaymentResolutionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        findFirst: {
+          args: Prisma.LatePaymentResolutionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LatePaymentResolutionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        findMany: {
+          args: Prisma.LatePaymentResolutionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        create: {
+          args: Prisma.LatePaymentResolutionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        createMany: {
+          args: Prisma.LatePaymentResolutionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LatePaymentResolutionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        delete: {
+          args: Prisma.LatePaymentResolutionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        update: {
+          args: Prisma.LatePaymentResolutionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        deleteMany: {
+          args: Prisma.LatePaymentResolutionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LatePaymentResolutionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LatePaymentResolutionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        upsert: {
+          args: Prisma.LatePaymentResolutionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        aggregate: {
+          args: Prisma.LatePaymentResolutionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLatePaymentResolution>
+        }
+        groupBy: {
+          args: Prisma.LatePaymentResolutionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LatePaymentResolutionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LatePaymentResolutionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LatePaymentResolutionCountAggregateOutputType> | number
         }
       }
     }
@@ -2985,6 +3060,21 @@ export const RefundAuditEventScalarFieldEnum = {
 export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
 
 
+export const LatePaymentResolutionScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  sourceWebhookEventId: 'sourceWebhookEventId',
+  providerTracker: 'providerTracker',
+  reason: 'reason',
+  outcome: 'outcome',
+  amount: 'amount',
+  currency: 'currency',
+  recordedAt: 'recordedAt'
+} as const
+
+export type LatePaymentResolutionScalarFieldEnum = (typeof LatePaymentResolutionScalarFieldEnum)[keyof typeof LatePaymentResolutionScalarFieldEnum]
+
+
 export const SafepayWebhookEventScalarFieldEnum = {
   id: 'id',
   bodyHash: 'bodyHash',
@@ -3466,6 +3556,34 @@ export type ListEnumRefundAuditEventTypeFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'LatePaymentReason'
+ */
+export type EnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason'>
+
+
+
+/**
+ * Reference to a field of type 'LatePaymentReason[]'
+ */
+export type ListEnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason[]'>
+
+
+
+/**
+ * Reference to a field of type 'LatePaymentOutcome'
+ */
+export type EnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome'>
+
+
+
+/**
+ * Reference to a field of type 'LatePaymentOutcome[]'
+ */
+export type ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome[]'>
+
+
+
+/**
  * Reference to a field of type 'SafepayWebhookEventStatus'
  */
 export type EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus'>
@@ -3658,6 +3776,7 @@ export type GlobalOmitConfig = {
   seatHold?: Prisma.SeatHoldOmit
   hostelVerificationReview?: Prisma.HostelVerificationReviewOmit
   refundAuditEvent?: Prisma.RefundAuditEventOmit
+  latePaymentResolution?: Prisma.LatePaymentResolutionOmit
   safepayWebhookEvent?: Prisma.SafepayWebhookEventOmit
   safepayWebhookReplayEvent?: Prisma.SafepayWebhookReplayEventOmit
   review?: Prisma.ReviewOmit

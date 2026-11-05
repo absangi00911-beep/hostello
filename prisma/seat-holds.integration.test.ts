@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { PrismaClient } from "../src/generated/client";
 import { BookingServiceError, createBooking } from "../src/lib/booking-service";
 import { getDisposableSeatHoldTestDatabaseUrl } from "../src/lib/disposable-seat-hold-db";
+import { resolveLatePayment } from "../src/lib/late-payment-resolution";
 import {
   createOwnerBlockedDate,
   lockHostelInventory,
@@ -102,7 +103,7 @@ describe.skipIf(!testDatabaseUrl)("PostgreSQL production-path seat-hold races", 
   const studentId = "student_1";
   const roomId = "room_1";
 
-  async function createInventoryFixture(capacity = 2) {
+  async function createInventoryFixture(capacity = 2, includePaymentResilience = false) {
     if (!testDatabaseUrl) throw new Error("Disposable PostgreSQL target is not configured.");
     const schema = `seat_hold_race_${randomBytes(8).toString("hex")}`;
     const pool = new Pool({ connectionString: testDatabaseUrl, max: 10 });
@@ -206,6 +207,37 @@ describe.skipIf(!testDatabaseUrl)("PostgreSQL production-path seat-hold races", 
         "utf8",
       );
       await client.query(migration);
+      if (includePaymentResilience) {
+        await client.query(`
+          CREATE TYPE "NotificationType" AS ENUM (
+            'BOOKING_REQUEST', 'BOOKING_CONFIRMED', 'BOOKING_CANCELLED',
+            'BOOKING_COMPLETED', 'BOOKING_REFUNDED', 'MESSAGE_RECEIVED',
+            'REVIEW_RECEIVED', 'HOSTEL_APPROVED', 'HOSTEL_REJECTED',
+            'STUDENT_VERIFICATION_APPROVED', 'STUDENT_VERIFICATION_REJECTED',
+            'PRICE_ALERT'
+          );
+          CREATE TABLE "safepay_webhook_events" ("id" TEXT PRIMARY KEY);
+          CREATE TABLE "refund_audit_events" ("id" TEXT PRIMARY KEY);
+          CREATE TABLE "notifications" (
+            "id" TEXT PRIMARY KEY,
+            "userId" TEXT NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+            "type" "NotificationType" NOT NULL,
+            "title" TEXT NOT NULL,
+            "message" TEXT NOT NULL,
+            "bookingId" TEXT REFERENCES "bookings"("id") ON DELETE SET NULL,
+            "reviewId" TEXT,
+            "hostelId" TEXT REFERENCES "hostels"("id") ON DELETE SET NULL,
+            "read" BOOLEAN NOT NULL DEFAULT false,
+            "readAt" TIMESTAMP(3),
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        const latePaymentMigration = readFileSync(
+          "prisma/migrations/20261105100000_add_late_payment_resolution/migration.sql",
+          "utf8",
+        );
+        await client.query(latePaymentMigration);
+      }
       client.release();
       client = undefined;
 
@@ -419,6 +451,58 @@ describe.skipIf(!testDatabaseUrl)("PostgreSQL production-path seat-hold races", 
       });
       expect(await attemptBooking(fixture.prisma, "2032-05-05", "2032-05-06")).toBe(true);
       expect(await fixture.prisma.seatHold.count({ where: { bookingId: confirmed.id } })).toBe(1);
+    } finally {
+      await fixture.cleanup();
+    }
+  });
+
+  it("serializes concurrent late-payment resolution through the production transaction", async () => {
+    const fixture = await createInventoryFixture(1, true);
+    const bookingId = "late_booking_1";
+    const tracker = "late_tracker_1";
+    const sourceEvents = ["late_event_1", "late_event_2"];
+    try {
+      await fixture.prisma.$executeRaw`
+        INSERT INTO "safepay_webhook_events" ("id")
+        VALUES (${sourceEvents[0]}), (${sourceEvents[1]})
+      `;
+      await fixture.prisma.booking.create({
+        data: {
+          id: bookingId,
+          hostelId,
+          roomId,
+          userId: studentId,
+          checkIn: new Date("2032-06-01T00:00:00.000Z"),
+          checkOut: new Date("2032-06-05T00:00:00.000Z"),
+          months: 1,
+          guests: 1,
+          total: 1000,
+          cancellationPolicy: "STANDARD",
+          status: "CANCELLED",
+          paymentStatus: "FAILED",
+          paymentMethod: "safepay",
+          transactionId: tracker,
+        },
+      });
+
+      const outcomes = await Promise.all(sourceEvents.map((sourceWebhookEventId) =>
+        resolveLatePayment({
+          bookingId,
+          sourceWebhookEventId,
+          providerTracker: tracker,
+          amountMinorUnits: 100_000,
+          currency: "PKR",
+        }, fixture.prisma),
+      ));
+
+      expect(outcomes.map(({ outcome }) => outcome).sort()).toEqual(["DUPLICATE", "REINSTATED"]);
+      await expect(fixture.prisma.latePaymentResolution.count({ where: { bookingId } })).resolves.toBe(1);
+      await expect(fixture.prisma.seatHold.count({ where: { bookingId } })).resolves.toBe(1);
+      await expect(fixture.prisma.booking.findUniqueOrThrow({ where: { id: bookingId } }))
+        .resolves.toMatchObject({
+          status: "PENDING",
+          paymentStatus: "PAID",
+        });
     } finally {
       await fixture.cleanup();
     }

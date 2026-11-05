@@ -6,6 +6,7 @@ import { isProductionDeployment } from "@/lib/deployment-env";
 export { escapeHtml } from "@hostello/shared";
 
 const FROM = process.env.EMAIL_FROM ?? "HostelLo <noreply@hostello.pk>";
+const RESEND_TIMEOUT_MS = 10_000;
 
 function getResendClient() {
   const key = process.env.RESEND_API_KEY?.trim();
@@ -48,12 +49,21 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
       return { success: false, error: "Missing Resend API key." };
     }
 
-    const { data, error } = await resend.emails.send({
-      from: FROM,
-      to,
-      subject,
-      html,
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), RESEND_TIMEOUT_MS);
+    let response: Awaited<ReturnType<typeof resend.emails.send>>;
+    try {
+      response = await resend.emails.send({
+        from: FROM,
+        to,
+        subject,
+        html,
+      }, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const { data, error } = response;
 
     if (error) {
       console.error("[email] Resend rejected a message:", getSafeErrorSummary(error));

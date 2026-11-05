@@ -27,14 +27,21 @@ vi.mock("@/lib/safepay", () => ({
 }));
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn() }));
+vi.mock("@/lib/email-templates/booking", () => ({
+  bookingNotificationEmail: vi.fn(() => ({ to: "owner@example.com", subject: "Booking", html: "<p>Booking</p>" })),
+  bookingConfirmationEmail: vi.fn(() => ({ to: "student@example.com", subject: "Booking", html: "<p>Booking</p>" })),
+}));
 vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn() }));
 vi.mock("@/lib/email-templates/booking-status", () => ({ bookingStatusEmail: vi.fn() }));
 vi.mock("@/lib/verify-upstash", () => ({ verifyUpstashRequest: vi.fn() }));
+vi.mock("@/lib/late-payment-resolution", () => ({ resolveLatePayment: vi.fn() }));
 
 import { POST } from "./route";
 import { verifyWebhookSignature } from "@/lib/safepay";
 import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
+import { sendEmail } from "@/lib/email";
+import { resolveLatePayment } from "@/lib/late-payment-resolution";
 
 function request(body: string, headers: Record<string, string> = {}) {
   return new NextRequest("https://hostello.test/api/payment/webhook", {
@@ -44,8 +51,76 @@ function request(body: string, headers: Record<string, string> = {}) {
   });
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.stubEnv("SAFEPAY_API_KEY", "sec_test");
+  vi.stubEnv("QSTASH_TOKEN", "");
+  vi.mocked(verifyWebhookSignature).mockResolvedValue(true);
+  vi.mocked(sendEmail).mockResolvedValue({ success: true } as Awaited<ReturnType<typeof sendEmail>>);
+  vi.mocked(resolveLatePayment).mockResolvedValue({ outcome: "REINSTATED" });
+});
 afterEach(() => vi.unstubAllEnvs());
+
+const booking = {
+  id: "booking_1",
+  userId: "student_1",
+  status: "PENDING",
+  paymentStatus: "PENDING",
+  paymentMethod: "safepay",
+  transactionId: null,
+  total: 25_000,
+  checkIn: new Date("2027-01-01T00:00:00.000Z"),
+  checkOut: new Date("2027-02-01T00:00:00.000Z"),
+  months: 1,
+  user: { name: "Ayesha", email: "student@example.com" },
+  hostel: {
+    name: "Garden Hostel",
+    slug: "garden-hostel",
+    owner: { id: "owner_1", name: "Owner", email: "owner@example.com" },
+  },
+};
+
+function successEvent(overrides: {
+  bookingStatus?: string;
+  paymentStatus?: string;
+  transactionId?: string | null;
+  tracker?: string;
+} = {}) {
+  const event = {
+    type: "payment.succeeded",
+    merchant_api_key: "sec_test",
+    data: {
+      tracker: overrides.tracker ?? "tracker_1",
+      state: "TRACKER_ENDED",
+      amount: 2_500_000,
+      currency: "PKR",
+      metadata: { order_id: "booking_1" },
+    },
+  };
+  const storedPayload = JSON.stringify({
+    type: event.type,
+    merchant_api_key: "[REDACTED]",
+    data: event.data,
+  });
+  vi.mocked(db.safepayWebhookEvent.findUnique).mockResolvedValue({
+    id: "event_1",
+    status: "RECEIVED",
+    processingStartedAt: null,
+    payloadEvidence: storedPayload,
+  } as never);
+  vi.mocked(db.safepayWebhookEvent.updateMany).mockResolvedValue({ count: 1 } as never);
+  return { event };
+}
+
+function transactionWithPaymentResult(count: number) {
+  const tx = {
+    booking: { updateMany: vi.fn().mockResolvedValue({ count }) },
+    notification: { createMany: vi.fn().mockResolvedValue({ count: 2 }) },
+  };
+  vi.mocked(db.$transaction).mockImplementation(((callback: (client: typeof db) => Promise<unknown>) =>
+    callback(tx as unknown as typeof db)) as typeof db.$transaction);
+  return tx;
+}
 
 describe("POST /api/payment/webhook", () => {
   it("rejects an oversized raw body before signature verification or database access", async () => {
@@ -199,5 +274,130 @@ describe("POST /api/payment/webhook", () => {
 
     expect(response.status).toBe(400);
     expect(db.booking.findUnique).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["abandoned checkout", "CANCELLED", "FAILED"],
+    ["cancelled while unpaid", "CANCELLED", "PENDING"],
+  ])("routes %s successes through late-payment resolution", async (_label, status, paymentStatus) => {
+    const { event } = successEvent({ bookingStatus: status, paymentStatus, transactionId: "tracker_1" });
+    vi.mocked(db.booking.findUnique).mockResolvedValue({
+      ...booking,
+      status,
+      paymentStatus,
+      transactionId: "tracker_1",
+    } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(resolveLatePayment).toHaveBeenCalledWith({
+      bookingId: "booking_1",
+      sourceWebhookEventId: "event_1",
+      providerTracker: "tracker_1",
+      amountMinorUnits: 2_500_000,
+      currency: "PKR",
+    });
+  });
+
+  it("accepts a successful payment after a failed event on the same live booking tracker", async () => {
+    const { event } = successEvent({
+      bookingStatus: "PENDING",
+      paymentStatus: "FAILED",
+      transactionId: "tracker_1",
+    });
+    const tx = transactionWithPaymentResult(1);
+    vi.mocked(db.booking.findUnique).mockResolvedValue({
+      ...booking,
+      status: "PENDING",
+      paymentStatus: "FAILED",
+      transactionId: "tracker_1",
+    } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ paymentStatus: "FAILED", transactionId: "tracker_1" }),
+      data: expect.objectContaining({ paymentStatus: "PAID", transactionId: "tracker_1" }),
+    }));
+    expect(resolveLatePayment).not.toHaveBeenCalled();
+  });
+
+  it("re-reads a lost normal-payment update and resolves a cancellation race", async () => {
+    const { event } = successEvent();
+    transactionWithPaymentResult(0);
+    vi.mocked(db.booking.findUnique)
+      .mockResolvedValueOnce(booking as never)
+      .mockResolvedValueOnce({
+        ...booking,
+        status: "CANCELLED",
+        paymentStatus: "FAILED",
+        transactionId: null,
+      } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(resolveLatePayment).toHaveBeenCalledWith(expect.objectContaining({
+      bookingId: "booking_1",
+      sourceWebhookEventId: "event_1",
+      providerTracker: "tracker_1",
+    }));
+  });
+
+  it("acknowledges an identical completed delivery without resolving it again", async () => {
+    const { event } = successEvent();
+    vi.mocked(db.safepayWebhookEvent.findUnique).mockResolvedValue({
+      id: "event_1",
+      status: "PROCESSED",
+      processingStartedAt: null,
+    } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ duplicate: true });
+    expect(db.booking.findUnique).not.toHaveBeenCalled();
+    expect(resolveLatePayment).not.toHaveBeenCalled();
+  });
+
+  it("asks QStash to retry a concurrent delivery while the first claim is active", async () => {
+    const { event } = successEvent();
+    const storedPayload = JSON.stringify(event);
+    let releaseFirstRead!: () => void;
+    let markFirstReadEntered!: () => void;
+    const firstReadReleased = new Promise<void>((resolve) => {
+      releaseFirstRead = resolve;
+    });
+    const firstReadEntered = new Promise<void>((resolve) => {
+      markFirstReadEntered = resolve;
+    });
+    let readCount = 0;
+    vi.mocked(verifyUpstashRequest).mockResolvedValue(undefined);
+    vi.mocked(db.safepayWebhookEvent.updateMany)
+      .mockResolvedValueOnce({ count: 1 } as never)
+      .mockResolvedValueOnce({ count: 0 } as never)
+      .mockResolvedValueOnce({ count: 1 } as never);
+    vi.mocked(db.safepayWebhookEvent.findUnique).mockImplementation((async () => {
+      readCount++;
+      if (readCount === 1) {
+        markFirstReadEntered();
+        await firstReadReleased;
+        return { payloadEvidence: storedPayload } as never;
+      }
+      return { status: "PROCESSING", processingStartedAt: new Date() } as never;
+    }) as never);
+    vi.mocked(db.booking.findUnique).mockResolvedValue(booking as never);
+    transactionWithPaymentResult(1);
+
+    const firstRequest = POST(request('{"eventId":"event_1"}', { "upstash-signature": "valid" }));
+    await firstReadEntered;
+    const concurrentResponse = await POST(request('{"eventId":"event_1"}', { "upstash-signature": "valid" }));
+
+    expect(concurrentResponse.status).toBe(503);
+    expect(db.booking.findUnique).not.toHaveBeenCalled();
+    releaseFirstRead();
+    expect((await firstRequest).status).toBe(200);
   });
 });

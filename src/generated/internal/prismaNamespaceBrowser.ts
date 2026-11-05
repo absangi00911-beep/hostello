@@ -66,6 +66,7 @@ export const ModelName = {
   SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
+  LatePaymentResolution: 'LatePaymentResolution',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
   SafepayWebhookReplayEvent: 'SafepayWebhookReplayEvent',
   Review: 'Review',
@@ -377,6 +378,21 @@ export const RefundAuditEventScalarFieldEnum = {
 } as const
 
 export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
+
+
+export const LatePaymentResolutionScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  sourceWebhookEventId: 'sourceWebhookEventId',
+  providerTracker: 'providerTracker',
+  reason: 'reason',
+  outcome: 'outcome',
+  amount: 'amount',
+  currency: 'currency',
+  recordedAt: 'recordedAt'
+} as const
+
+export type LatePaymentResolutionScalarFieldEnum = (typeof LatePaymentResolutionScalarFieldEnum)[keyof typeof LatePaymentResolutionScalarFieldEnum]
 
 
 export const SafepayWebhookEventScalarFieldEnum = {

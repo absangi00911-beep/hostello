@@ -76,6 +76,16 @@ enum RefundAuditEventType {
   MANUAL_CONFIRMED
 }
 
+enum LatePaymentReason {
+  ABANDONED_CHECKOUT
+  CANCELLED_WHILE_UNPAID
+}
+
+enum LatePaymentOutcome {
+  REINSTATED
+  REFUND_REQUIRED
+}
+
 enum SafepayWebhookEventStatus {
   RECEIVED
   QUEUED
@@ -432,6 +442,7 @@ model Booking {
 
   notifications Notification[]
   seatHolds SeatHold[]
+  latePaymentResolutions LatePaymentResolution[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -440,6 +451,7 @@ model Booking {
   @@index([userId])
   @@index([status])
   @@index([status, paymentStatus, ownerResponseDueAt])
+  @@index([status, paymentStatus, refundState, updatedAt])
   @@index([checkIn, checkOut])
   @@index([payoutId])
   @@map("bookings")
@@ -505,6 +517,24 @@ model RefundAuditEvent {
   @@map("refund_audit_events")
 }
 
+model LatePaymentResolution {
+  id                   String            @id @default(cuid())
+  bookingId            String
+  sourceWebhookEventId String            @unique
+  providerTracker      String            @unique
+  reason               LatePaymentReason
+  outcome              LatePaymentOutcome
+  amount               Int
+  currency             String            @default("PKR")
+  recordedAt           DateTime          @default(now())
+
+  booking            Booking             @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  sourceWebhookEvent SafepayWebhookEvent @relation(fields: [sourceWebhookEventId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId, recordedAt])
+  @@map("late_payment_resolutions")
+}
+
 // Stores minimal, verified Safepay event evidence before applying its business effects.
 // The merchant API key is redacted from payloadEvidence; bodyHash fingerprints the
 // exact signed bytes without retaining the credential embedded in the request.
@@ -526,6 +556,7 @@ model SafepayWebhookEvent {
   receivedAt          DateTime                 @default(now())
   updatedAt           DateTime                 @updatedAt
   replayEvents        SafepayWebhookReplayEvent[]
+  latePaymentResolution LatePaymentResolution?
 
   @@index([status, receivedAt])
   @@index([merchantOrderId, receivedAt])

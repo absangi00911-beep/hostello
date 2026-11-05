@@ -106,6 +106,22 @@ export const RefundAuditEventType = {
 export type RefundAuditEventType = (typeof RefundAuditEventType)[keyof typeof RefundAuditEventType]
 
 
+export const LatePaymentReason = {
+  ABANDONED_CHECKOUT: 'ABANDONED_CHECKOUT',
+  CANCELLED_WHILE_UNPAID: 'CANCELLED_WHILE_UNPAID'
+} as const
+
+export type LatePaymentReason = (typeof LatePaymentReason)[keyof typeof LatePaymentReason]
+
+
+export const LatePaymentOutcome = {
+  REINSTATED: 'REINSTATED',
+  REFUND_REQUIRED: 'REFUND_REQUIRED'
+} as const
+
+export type LatePaymentOutcome = (typeof LatePaymentOutcome)[keyof typeof LatePaymentOutcome]
+
+
 export const SafepayWebhookEventStatus = {
   RECEIVED: 'RECEIVED',
   QUEUED: 'QUEUED',

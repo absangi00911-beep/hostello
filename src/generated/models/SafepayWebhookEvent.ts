@@ -309,6 +309,7 @@ export type SafepayWebhookEventWhereInput = {
   receivedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventListRelationFilter
+  latePaymentResolution?: Prisma.XOR<Prisma.LatePaymentResolutionNullableScalarRelationFilter, Prisma.LatePaymentResolutionWhereInput> | null
 }
 
 export type SafepayWebhookEventOrderByWithRelationInput = {
@@ -329,6 +330,7 @@ export type SafepayWebhookEventOrderByWithRelationInput = {
   receivedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   replayEvents?: Prisma.SafepayWebhookReplayEventOrderByRelationAggregateInput
+  latePaymentResolution?: Prisma.LatePaymentResolutionOrderByWithRelationInput
 }
 
 export type SafepayWebhookEventWhereUniqueInput = Prisma.AtLeast<{
@@ -352,6 +354,7 @@ export type SafepayWebhookEventWhereUniqueInput = Prisma.AtLeast<{
   receivedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SafepayWebhookEvent"> | Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventListRelationFilter
+  latePaymentResolution?: Prisma.XOR<Prisma.LatePaymentResolutionNullableScalarRelationFilter, Prisma.LatePaymentResolutionWhereInput> | null
 }, "id" | "bodyHash">
 
 export type SafepayWebhookEventOrderByWithAggregationInput = {
@@ -418,6 +421,7 @@ export type SafepayWebhookEventCreateInput = {
   receivedAt?: Date | string
   updatedAt?: Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventCreateNestedManyWithoutWebhookEventInput
+  latePaymentResolution?: Prisma.LatePaymentResolutionCreateNestedOneWithoutSourceWebhookEventInput
 }
 
 export type SafepayWebhookEventUncheckedCreateInput = {
@@ -438,6 +442,7 @@ export type SafepayWebhookEventUncheckedCreateInput = {
   receivedAt?: Date | string
   updatedAt?: Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedCreateNestedManyWithoutWebhookEventInput
+  latePaymentResolution?: Prisma.LatePaymentResolutionUncheckedCreateNestedOneWithoutSourceWebhookEventInput
 }
 
 export type SafepayWebhookEventUpdateInput = {
@@ -458,6 +463,7 @@ export type SafepayWebhookEventUpdateInput = {
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventUpdateManyWithoutWebhookEventNestedInput
+  latePaymentResolution?: Prisma.LatePaymentResolutionUpdateOneWithoutSourceWebhookEventNestedInput
 }
 
 export type SafepayWebhookEventUncheckedUpdateInput = {
@@ -478,6 +484,7 @@ export type SafepayWebhookEventUncheckedUpdateInput = {
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedUpdateManyWithoutWebhookEventNestedInput
+  latePaymentResolution?: Prisma.LatePaymentResolutionUncheckedUpdateOneWithoutSourceWebhookEventNestedInput
 }
 
 export type SafepayWebhookEventCreateManyInput = {
@@ -535,6 +542,11 @@ export type SafepayWebhookEventUncheckedUpdateManyInput = {
   lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SafepayWebhookEventScalarRelationFilter = {
+  is?: Prisma.SafepayWebhookEventWhereInput
+  isNot?: Prisma.SafepayWebhookEventWhereInput
 }
 
 export type SafepayWebhookEventCountOrderByAggregateInput = {
@@ -604,9 +616,18 @@ export type SafepayWebhookEventSumOrderByAggregateInput = {
   processingAttempts?: Prisma.SortOrder
 }
 
-export type SafepayWebhookEventScalarRelationFilter = {
-  is?: Prisma.SafepayWebhookEventWhereInput
-  isNot?: Prisma.SafepayWebhookEventWhereInput
+export type SafepayWebhookEventCreateNestedOneWithoutLatePaymentResolutionInput = {
+  create?: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutLatePaymentResolutionInput>
+  connectOrCreate?: Prisma.SafepayWebhookEventCreateOrConnectWithoutLatePaymentResolutionInput
+  connect?: Prisma.SafepayWebhookEventWhereUniqueInput
+}
+
+export type SafepayWebhookEventUpdateOneRequiredWithoutLatePaymentResolutionNestedInput = {
+  create?: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutLatePaymentResolutionInput>
+  connectOrCreate?: Prisma.SafepayWebhookEventCreateOrConnectWithoutLatePaymentResolutionInput
+  upsert?: Prisma.SafepayWebhookEventUpsertWithoutLatePaymentResolutionInput
+  connect?: Prisma.SafepayWebhookEventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SafepayWebhookEventUpdateToOneWithWhereWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUpdateWithoutLatePaymentResolutionInput>, Prisma.SafepayWebhookEventUncheckedUpdateWithoutLatePaymentResolutionInput>
 }
 
 export type EnumSafepayWebhookEventStatusFieldUpdateOperationsInput = {
@@ -627,6 +648,102 @@ export type SafepayWebhookEventUpdateOneRequiredWithoutReplayEventsNestedInput =
   update?: Prisma.XOR<Prisma.XOR<Prisma.SafepayWebhookEventUpdateToOneWithWhereWithoutReplayEventsInput, Prisma.SafepayWebhookEventUpdateWithoutReplayEventsInput>, Prisma.SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput>
 }
 
+export type SafepayWebhookEventCreateWithoutLatePaymentResolutionInput = {
+  id?: string
+  bodyHash: string
+  eventType: string
+  merchantOrderId?: string | null
+  tracker?: string | null
+  providerState?: string | null
+  amountMinorUnits?: number | null
+  currency?: string | null
+  payloadEvidence: string
+  status?: $Enums.SafepayWebhookEventStatus
+  processingAttempts?: number
+  processingStartedAt?: Date | string | null
+  processedAt?: Date | string | null
+  lastErrorCode?: string | null
+  receivedAt?: Date | string
+  updatedAt?: Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventCreateNestedManyWithoutWebhookEventInput
+}
+
+export type SafepayWebhookEventUncheckedCreateWithoutLatePaymentResolutionInput = {
+  id?: string
+  bodyHash: string
+  eventType: string
+  merchantOrderId?: string | null
+  tracker?: string | null
+  providerState?: string | null
+  amountMinorUnits?: number | null
+  currency?: string | null
+  payloadEvidence: string
+  status?: $Enums.SafepayWebhookEventStatus
+  processingAttempts?: number
+  processingStartedAt?: Date | string | null
+  processedAt?: Date | string | null
+  lastErrorCode?: string | null
+  receivedAt?: Date | string
+  updatedAt?: Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedCreateNestedManyWithoutWebhookEventInput
+}
+
+export type SafepayWebhookEventCreateOrConnectWithoutLatePaymentResolutionInput = {
+  where: Prisma.SafepayWebhookEventWhereUniqueInput
+  create: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutLatePaymentResolutionInput>
+}
+
+export type SafepayWebhookEventUpsertWithoutLatePaymentResolutionInput = {
+  update: Prisma.XOR<Prisma.SafepayWebhookEventUpdateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedUpdateWithoutLatePaymentResolutionInput>
+  create: Prisma.XOR<Prisma.SafepayWebhookEventCreateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedCreateWithoutLatePaymentResolutionInput>
+  where?: Prisma.SafepayWebhookEventWhereInput
+}
+
+export type SafepayWebhookEventUpdateToOneWithWhereWithoutLatePaymentResolutionInput = {
+  where?: Prisma.SafepayWebhookEventWhereInput
+  data: Prisma.XOR<Prisma.SafepayWebhookEventUpdateWithoutLatePaymentResolutionInput, Prisma.SafepayWebhookEventUncheckedUpdateWithoutLatePaymentResolutionInput>
+}
+
+export type SafepayWebhookEventUpdateWithoutLatePaymentResolutionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  merchantOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amountMinorUnits?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payloadEvidence?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSafepayWebhookEventStatusFieldUpdateOperationsInput | $Enums.SafepayWebhookEventStatus
+  processingAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  processingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUpdateManyWithoutWebhookEventNestedInput
+}
+
+export type SafepayWebhookEventUncheckedUpdateWithoutLatePaymentResolutionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  merchantOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracker?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  amountMinorUnits?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payloadEvidence?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSafepayWebhookEventStatusFieldUpdateOperationsInput | $Enums.SafepayWebhookEventStatus
+  processingAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  processingStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replayEvents?: Prisma.SafepayWebhookReplayEventUncheckedUpdateManyWithoutWebhookEventNestedInput
+}
+
 export type SafepayWebhookEventCreateWithoutReplayEventsInput = {
   id?: string
   bodyHash: string
@@ -644,6 +761,7 @@ export type SafepayWebhookEventCreateWithoutReplayEventsInput = {
   lastErrorCode?: string | null
   receivedAt?: Date | string
   updatedAt?: Date | string
+  latePaymentResolution?: Prisma.LatePaymentResolutionCreateNestedOneWithoutSourceWebhookEventInput
 }
 
 export type SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput = {
@@ -663,6 +781,7 @@ export type SafepayWebhookEventUncheckedCreateWithoutReplayEventsInput = {
   lastErrorCode?: string | null
   receivedAt?: Date | string
   updatedAt?: Date | string
+  latePaymentResolution?: Prisma.LatePaymentResolutionUncheckedCreateNestedOneWithoutSourceWebhookEventInput
 }
 
 export type SafepayWebhookEventCreateOrConnectWithoutReplayEventsInput = {
@@ -698,6 +817,7 @@ export type SafepayWebhookEventUpdateWithoutReplayEventsInput = {
   lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  latePaymentResolution?: Prisma.LatePaymentResolutionUpdateOneWithoutSourceWebhookEventNestedInput
 }
 
 export type SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput = {
@@ -717,6 +837,7 @@ export type SafepayWebhookEventUncheckedUpdateWithoutReplayEventsInput = {
   lastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receivedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  latePaymentResolution?: Prisma.LatePaymentResolutionUncheckedUpdateOneWithoutSourceWebhookEventNestedInput
 }
 
 
@@ -768,6 +889,7 @@ export type SafepayWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.I
   receivedAt?: boolean
   updatedAt?: boolean
   replayEvents?: boolean | Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>
+  latePaymentResolution?: boolean | Prisma.SafepayWebhookEvent$latePaymentResolutionArgs<ExtArgs>
   _count?: boolean | Prisma.SafepayWebhookEventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["safepayWebhookEvent"]>
 
@@ -831,6 +953,7 @@ export type SafepayWebhookEventSelectScalar = {
 export type SafepayWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bodyHash" | "eventType" | "merchantOrderId" | "tracker" | "providerState" | "amountMinorUnits" | "currency" | "payloadEvidence" | "status" | "processingAttempts" | "processingStartedAt" | "processedAt" | "lastErrorCode" | "receivedAt" | "updatedAt", ExtArgs["result"]["safepayWebhookEvent"]>
 export type SafepayWebhookEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   replayEvents?: boolean | Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>
+  latePaymentResolution?: boolean | Prisma.SafepayWebhookEvent$latePaymentResolutionArgs<ExtArgs>
   _count?: boolean | Prisma.SafepayWebhookEventCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SafepayWebhookEventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -840,6 +963,7 @@ export type $SafepayWebhookEventPayload<ExtArgs extends runtime.Types.Extensions
   name: "SafepayWebhookEvent"
   objects: {
     replayEvents: Prisma.$SafepayWebhookReplayEventPayload<ExtArgs>[]
+    latePaymentResolution: Prisma.$LatePaymentResolutionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1253,6 +1377,7 @@ readonly fields: SafepayWebhookEventFieldRefs;
 export interface Prisma__SafepayWebhookEventClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   replayEvents<T extends Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SafepayWebhookEvent$replayEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SafepayWebhookReplayEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  latePaymentResolution<T extends Prisma.SafepayWebhookEvent$latePaymentResolutionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SafepayWebhookEvent$latePaymentResolutionArgs<ExtArgs>>): Prisma.Prisma__LatePaymentResolutionClient<runtime.Types.Result.GetResult<Prisma.$LatePaymentResolutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1712,6 +1837,25 @@ export type SafepayWebhookEvent$replayEventsArgs<ExtArgs extends runtime.Types.E
   take?: number
   skip?: number
   distinct?: Prisma.SafepayWebhookReplayEventScalarFieldEnum | Prisma.SafepayWebhookReplayEventScalarFieldEnum[]
+}
+
+/**
+ * SafepayWebhookEvent.latePaymentResolution
+ */
+export type SafepayWebhookEvent$latePaymentResolutionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LatePaymentResolution
+   */
+  select?: Prisma.LatePaymentResolutionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LatePaymentResolution
+   */
+  omit?: Prisma.LatePaymentResolutionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LatePaymentResolutionInclude<ExtArgs> | null
+  where?: Prisma.LatePaymentResolutionWhereInput
 }
 
 /**

@@ -11,6 +11,7 @@ describe("CRON_SCHEDULES", () => {
       "expire-unanswered-bookings",
       "mark-completed-stays",
       "process-account-deletions",
+      "sweep-cancelled-refunds",
     ]);
     expect(Object.values(CRON_SCHEDULES).map(({ endpoint }) => endpoint).sort()).toEqual([
       "/api/cron/cancel-abandoned-payments",
@@ -20,6 +21,7 @@ describe("CRON_SCHEDULES", () => {
       "/api/cron/expire-unanswered-bookings",
       "/api/cron/mark-completed-stays",
       "/api/cron/process-account-deletions",
+      "/api/cron/sweep-cancelled-refunds",
     ]);
   });
 
@@ -34,5 +36,6 @@ describe("CRON_SCHEDULES", () => {
   it("runs token cleanup daily after the midnight completion job", () => {
     expect(CRON_SCHEDULES["mark-completed-stays"].cron).toBe("0 0 * * *");
     expect(CRON_SCHEDULES["cleanup-tokens"].cron).toBe("0 1 * * *");
+    expect(CRON_SCHEDULES["sweep-cancelled-refunds"].cron).toBe("*/5 * * * *");
   });
 });

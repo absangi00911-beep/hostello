@@ -2,7 +2,15 @@
 
 Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
 
-## Unreleased (November 4, 2026)
+## Unreleased (November 5, 2026)
+
+B-007: late-payment recovery and bounded retry improvements.
+
+- **Payments:** late successful payments now atomically reinstate a cancelled booking only when the full stay can be reacquired; otherwise the booking records a full-refund obligation and uses the existing audited refund path. Immutable resolution evidence and a bounded refund sweeper make these outcomes traceable and retryable.
+- **Authentication and email:** unknown-account credential checks use bcrypt cost 12 and generic login failures; the account throttle is scoped to account-and-IP. Resend requests now abort after 10 seconds.
+- **Migration:** `20261105100000_add_late_payment_resolution` adds the append-only resolution ledger and refund-sweep index. It was applied only to temporary schemas in an isolated disposable loopback test database; no shared or production database was migrated.
+- **Verification:** 1,406 Vitest tests passed (7 guarded PostgreSQL cases skipped in the regular run and passed separately on the isolated loopback database); typecheck, lint, Prisma validation, docs check, and 23 script tests passed.
+- **Deferred by owner:** the email outbox, price-alert duplicate-send fix, and provider sandbox validation remain open; outbox work awaits a retention policy. No provider calls were made.
 
 B-006: constant-time secret checks and a stale refund comment (R-04, findings 1, E-1 and E-2 of the A-001b3 payments audit).
 

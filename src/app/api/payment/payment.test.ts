@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   bookingUpdateMany: vi.fn(),
   notificationCreateMany: vi.fn(),
   notificationCreate: vi.fn(),
+  resolveLatePayment: vi.fn(),
   subscriptionFindUnique: vi.fn(),
   subscriptionUpdateMany: vi.fn(),
   userUpdate: vi.fn(),
@@ -107,12 +108,16 @@ vi.mock("@/lib/gateway-ip-allowlist", () => ({ verifyGatewayIp: vi.fn().mockRetu
 vi.mock("@/lib/jazzcash", () => ({ parseJazzCashCallback: vi.fn() }));
 vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("@/lib/payment-methods", () => ({ PAYMENT_METHODS: mocks.paymentMethods }));
+vi.mock("@/lib/late-payment-resolution", () => ({
+  resolveLatePayment: mocks.resolveLatePayment,
+}));
 
 import { GET as callbackGET, POST as callbackPOST } from "@/app/api/payment/callback/route";
 import { POST as webhookPOST } from "@/app/api/payment/webhook/route";
 import { sendEmail } from "@/lib/email";
 import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
 import { parseJazzCashCallback } from "@/lib/jazzcash";
+import { resolveLatePayment } from "@/lib/late-payment-resolution";
 
 const BOOKING_ID = "cltest0000000000000000001";
 const JAZZCASH_TXN = "T000111222333";
@@ -352,6 +357,7 @@ describe("Safepay webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.webhookEvents.clear();
+    mocks.resolveLatePayment.mockResolvedValue({ outcome: "REFUND_REQUIRED" });
     vi.mocked(sendEmail).mockResolvedValue({ success: true } as any);
     mocks.bookingFindUnique.mockResolvedValue(makeBooking());
     mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });
@@ -478,8 +484,13 @@ describe("Safepay webhook", () => {
     mocks.bookingFindUnique.mockResolvedValue(makeBooking({ status: "CANCELLED" }));
     const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
     expect(response.status).toBe(200);
-    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).toMatchObject({ paymentStatus: "PAID", transactionId: TRACKER });
-    expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
+    expect(resolveLatePayment).toHaveBeenCalledWith(expect.objectContaining({
+      bookingId: BOOKING_ID,
+      providerTracker: TRACKER,
+      amountMinorUnits: 1_200_000,
+      currency: "PKR",
+    }));
+    expect(mocks.bookingUpdateMany).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
     expect(mocks.notificationCreateMany).not.toHaveBeenCalled();
   });

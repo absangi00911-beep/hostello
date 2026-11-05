@@ -10,6 +10,13 @@ export const CRON_SCHEDULES = {
     label: "Cancel abandoned payments",
     description: "Cancel bookings stuck in PENDING for 30+ minutes",
   },
+  "sweep-cancelled-refunds": {
+    cron: "*/5 * * * *",
+    endpoint: "/api/cron/sweep-cancelled-refunds",
+    maxAgeMs: 10 * 60 * 1000,
+    label: "Sweep cancelled refunds",
+    description: "Process eligible refunds for cancelled paid bookings",
+  },
   "expire-unanswered-bookings": {
     cron: "*/15 * * * *",
     endpoint: "/api/cron/expire-unanswered-bookings",

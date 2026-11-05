@@ -1,10 +1,30 @@
 # Spec: `late-payment` (R-04, audit row 11)
 
-Status: DESIGN ONLY. No production code, no migration. Review: Tech Lead.
+Status: Historical design record; superseded by the approved completion plan.
+Review: Tech Lead.
 Task: B-002. Author: Backend/Integrations. Date: 2026-11-04.
-Policy status: Option A is the Founder's recommendation, pending the human owner's confirmation.
+Policy status: The owner approved the newer completion-plan policy on 2026-11-05; it supersedes Option A below.
 
-Everything below was read from code on `main` at `be031e9`. Nothing was run: no tests, no database, no Safepay or QStash call. Where a statement depends on provider behavior I have not seen, it is marked **ASSUMPTION**.
+## 0. Approved decision update (2026-11-05)
+
+For implementation, a late successful payment reinstates the booking as paid and
+pending only when the full stay can be acquired atomically through the Task 5
+seat-hold path and the listing/room remain eligible. Otherwise the booking stays
+cancelled with a full-refund obligation and uses the existing audited refund
+flow. The student is told the payment is under review for a full refund, without
+a completion promise or timeline. Existing admin refund/payment queues and
+health reporting are the escalation path; no new recipient or alert channel is
+invented.
+
+The email outbox and price-alert duplicate-send fix are deferred until the owner
+chooses a payload-retention policy. No provider sandbox calls or shared/
+production database migration are authorized by this decision. The remainder
+of this file records the earlier Option A investigation and is non-binding
+where it conflicts with this update or the approved completion plan.
+
+The historical investigation below was read from code on `main` at `be031e9`.
+Where a statement depended on provider behavior not verified at the time, it is
+marked **ASSUMPTION**.
 
 ## 1. Objective
 

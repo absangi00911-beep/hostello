@@ -34,6 +34,7 @@ describe("GET /api/health/crons", () => {
         name: {
           in: [
             "cancel-abandoned-payments",
+            "sweep-cancelled-refunds",
             "expire-unanswered-bookings",
             "check-price-alerts",
             "cleanup-tokens",

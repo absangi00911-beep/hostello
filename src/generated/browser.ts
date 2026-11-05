@@ -93,6 +93,11 @@ export type HostelVerificationReview = Prisma.HostelVerificationReviewModel
  */
 export type RefundAuditEvent = Prisma.RefundAuditEventModel
 /**
+ * Model LatePaymentResolution
+ *
+ */
+export type LatePaymentResolution = Prisma.LatePaymentResolutionModel
+/**
  * Model SafepayWebhookEvent
  * 
  */

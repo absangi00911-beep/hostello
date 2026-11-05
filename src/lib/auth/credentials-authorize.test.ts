@@ -74,7 +74,7 @@ describe("authorizeCredentials", () => {
 
   it("keys the account limit with an HMAC instead of storing the email in the limiter key", async () => {
     const accountKey = createHmac("sha256", "test-auth-secret")
-      .update(user.email.trim().toLowerCase())
+      .update(`${user.email.trim().toLowerCase()}\0${"203.0.113.10"}`)
       .digest("hex");
 
     await authorizeCredentials({ email: user.email, password: "password123" }, request);
@@ -88,6 +88,24 @@ describe("authorizeCredentials", () => {
       windowMs: 15 * 60 * 1000,
     });
     expect(JSON.stringify(vi.mocked(rateLimit).mock.calls)).not.toContain(user.email);
+  });
+
+  it("uses a separate pseudonymous account bucket for each source IP", async () => {
+    const firstIpKey = createHmac("sha256", "test-auth-secret")
+      .update(`${user.email.trim().toLowerCase()}\0${"203.0.113.10"}`)
+      .digest("hex");
+    vi.mocked(getIp).mockReturnValue("203.0.113.11");
+    const secondIpKey = createHmac("sha256", "test-auth-secret")
+      .update(`${user.email.trim().toLowerCase()}\0${"203.0.113.11"}`)
+      .digest("hex");
+
+    await authorizeCredentials({ email: user.email, password: "password123" }, request);
+
+    expect(firstIpKey).not.toBe(secondIpKey);
+    expect(rateLimit).toHaveBeenNthCalledWith(2, `login-account:${secondIpKey}`, {
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
   });
 
   it("returns the authenticated user only after both limits and password verification pass", async () => {
@@ -129,6 +147,22 @@ describe("authorizeCredentials", () => {
       { request_id: "req_test" },
     );
     expect(JSON.stringify(vi.mocked(logOperationalEvent).mock.calls)).not.toContain(user.email);
+  });
+
+  it("performs a password hash check for an unknown account and returns the same rejection", async () => {
+    vi.mocked(db.user.findUnique).mockResolvedValue(null as never);
+    vi.mocked(compare).mockResolvedValue(false);
+
+    await expect(authorizeCredentials({ email: "unknown@example.com", password: "wrong-password" }, request))
+      .resolves.toBeNull();
+
+    expect(compare).toHaveBeenCalledWith("wrong-password", expect.stringMatching(/^\$2[aby]\$12\$/));
+    expect(logOperationalEvent).toHaveBeenCalledWith(
+      "warn",
+      "auth.login.rejected",
+      expect.objectContaining({ reason: "invalid_credentials" }),
+      { request_id: "req_test" },
+    );
   });
 
   it("does not query the account when its attempt limit is exhausted", async () => {

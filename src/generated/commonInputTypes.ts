@@ -477,6 +477,40 @@ export type EnumRefundAuditEventTypeWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumRefundAuditEventTypeFilter<$PrismaModel>
 }
 
+export type EnumLatePaymentReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentReason | Prisma.EnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel> | $Enums.LatePaymentReason
+}
+
+export type EnumLatePaymentOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentOutcome | Prisma.EnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel> | $Enums.LatePaymentOutcome
+}
+
+export type EnumLatePaymentReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentReason | Prisma.EnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentReasonWithAggregatesFilter<$PrismaModel> | $Enums.LatePaymentReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel>
+}
+
+export type EnumLatePaymentOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentOutcome | Prisma.EnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.LatePaymentOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel>
+}
+
 export type EnumSafepayWebhookEventStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.SafepayWebhookEventStatus | Prisma.EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel>
   in?: $Enums.SafepayWebhookEventStatus[] | Prisma.ListEnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel>
@@ -976,6 +1010,40 @@ export type NestedEnumRefundAuditEventTypeWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumRefundAuditEventTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumRefundAuditEventTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumLatePaymentReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentReason | Prisma.EnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel> | $Enums.LatePaymentReason
+}
+
+export type NestedEnumLatePaymentOutcomeFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentOutcome | Prisma.EnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel> | $Enums.LatePaymentOutcome
+}
+
+export type NestedEnumLatePaymentReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentReason | Prisma.EnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentReason[] | Prisma.ListEnumLatePaymentReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentReasonWithAggregatesFilter<$PrismaModel> | $Enums.LatePaymentReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLatePaymentReasonFilter<$PrismaModel>
+}
+
+export type NestedEnumLatePaymentOutcomeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LatePaymentOutcome | Prisma.EnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  in?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.LatePaymentOutcome[] | Prisma.ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumLatePaymentOutcomeWithAggregatesFilter<$PrismaModel> | $Enums.LatePaymentOutcome
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumLatePaymentOutcomeFilter<$PrismaModel>
 }
 
 export type NestedEnumSafepayWebhookEventStatusFilter<$PrismaModel = never> = {
