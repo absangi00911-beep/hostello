@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Prisma } from "@/generated/client";
 import {
+  createOwnerBlockedDate,
   createSeatHolds,
   getHostelStayAvailability,
   getRoomStayAvailability,
@@ -29,6 +30,12 @@ function inventoryClient(overrides: {
     },
     blockedDate: {
       findFirst: vi.fn().mockResolvedValue(overrides.block ?? null),
+      create: vi.fn().mockResolvedValue({
+        id: "block_1",
+        startDate: checkIn,
+        endDate: checkOut,
+        reason: "Repairs",
+      }),
     },
   } as unknown as Pick<
     Prisma.TransactionClient,
@@ -142,6 +149,41 @@ describe("room availability transaction service", () => {
     await lockHostelInventory(client, "hostel_1");
 
     expect(client.$queryRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("creates an inclusive owner block through the shared inventory transaction path", async () => {
+    const client = inventoryClient();
+
+    await expect(createOwnerBlockedDate(client, {
+      hostelId: "hostel_1",
+      ownerId: "owner_1",
+      startDate: checkIn,
+      endDate: checkOut,
+      reason: "Repairs",
+    })).resolves.toMatchObject({ kind: "created" });
+
+    expect(client.seatHold.findFirst).toHaveBeenCalledWith({
+      where: {
+        room: { is: { hostelId: "hostel_1" } },
+        checkIn: { lt: new Date("2099-04-15T00:00:00.000Z") },
+        checkOut: { gt: checkIn },
+      },
+      select: { id: true },
+    });
+  });
+
+  it("does not create an owner block across an active hold", async () => {
+    const client = inventoryClient();
+    client.seatHold.findFirst.mockResolvedValue({ id: "hold_1" });
+
+    await expect(createOwnerBlockedDate(client, {
+      hostelId: "hostel_1",
+      ownerId: "owner_1",
+      startDate: checkIn,
+      endDate: checkOut,
+      reason: null,
+    })).resolves.toEqual({ kind: "conflict" });
+    expect(client.blockedDate.create).not.toHaveBeenCalled();
   });
 
   it("creates one seat hold per requested guest seat", async () => {

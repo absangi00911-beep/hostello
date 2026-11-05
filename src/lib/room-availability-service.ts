@@ -6,6 +6,10 @@ type InventoryClient = Pick<
   "$queryRaw" | "room" | "seatHold" | "blockedDate"
 >;
 type InventoryLockClient = Pick<PrismaTypes.TransactionClient, "$queryRaw">;
+type BlockClient = Pick<
+  PrismaTypes.TransactionClient,
+  "$queryRaw" | "seatHold" | "blockedDate"
+>;
 
 type StayRange = {
   hostelId: string;
@@ -51,6 +55,44 @@ export async function lockHostelInventory(client: InventoryLockClient, hostelId:
     Prisma.sql`SELECT "id" FROM "rooms" WHERE "hostelId" = ${hostelId} ORDER BY "id" FOR UPDATE`,
   );
   return true;
+}
+
+export async function createOwnerBlockedDate(
+  client: BlockClient,
+  input: {
+    hostelId: string;
+    ownerId: string;
+    startDate: Date;
+    endDate: Date;
+    reason: string | null;
+  },
+) {
+  if (!await lockHostelInventory(client, input.hostelId)) {
+    return { kind: "missing" as const };
+  }
+
+  const endExclusive = new Date(input.endDate);
+  endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+  const activeHold = await client.seatHold.findFirst({
+    where: {
+      room: { is: { hostelId: input.hostelId } },
+      checkIn: { lt: endExclusive },
+      checkOut: { gt: input.startDate },
+    },
+    select: { id: true },
+  });
+  if (activeHold) return { kind: "conflict" as const };
+
+  const blocked = await client.blockedDate.create({
+    data: {
+      hostel: { connect: { id: input.hostelId, ownerId: input.ownerId } },
+      startDate: input.startDate,
+      endDate: input.endDate,
+      reason: input.reason,
+    },
+    select: { id: true, startDate: true, endDate: true, reason: true },
+  });
+  return { kind: "created" as const, blocked };
 }
 
 export async function getRoomStayAvailability(

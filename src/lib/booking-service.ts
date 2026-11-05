@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import type { PrismaClient } from "@/generated/client";
 import { calculateMonths } from "@/lib/utils";
 import {
   getPakistanCalendarDate,
@@ -20,6 +21,8 @@ export class BookingServiceError extends Error {
     this.name = "BookingServiceError";
   }
 }
+
+type BookingDatabase = Pick<PrismaClient, "$transaction">;
 
 function getErrorCode(error: unknown): string | undefined {
   if (typeof error !== "object" || error === null) return undefined;
@@ -60,11 +63,15 @@ function validateBookingInput(input: BookingInput) {
   }
 }
 
-export async function createBooking(userId: string, input: BookingInput) {
+export async function createBooking(
+  userId: string,
+  input: BookingInput,
+  database: BookingDatabase = db,
+) {
   validateBookingInput(input);
 
   try {
-    return await db.$transaction(async (tx) => {
+    return await database.$transaction(async (tx) => {
       if (!await lockHostelInventory(tx, input.hostelId)) {
         throw new BookingServiceError("Hostel not found or not available for booking.", 404);
       }

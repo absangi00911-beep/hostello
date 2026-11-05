@@ -1,8 +1,17 @@
-import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool, type PoolClient } from "pg";
 import { describe, expect, it } from "vitest";
+import { PrismaClient } from "../src/generated/client";
+import { BookingServiceError, createBooking } from "../src/lib/booking-service";
 import { getDisposableSeatHoldTestDatabaseUrl } from "../src/lib/disposable-seat-hold-db";
+import {
+  createOwnerBlockedDate,
+  lockHostelInventory,
+  releaseSeatHolds,
+} from "../src/lib/room-availability-service";
+import { syncHostelRooms } from "../src/lib/room-inventory-service";
 
 const requestedDatabaseUrl = process.env.HOSTELLO_SEAT_HOLD_TEST_DATABASE_URL;
 const disposableConfirmation = process.env.HOSTELLO_SEAT_HOLD_TEST_DISPOSABLE;
@@ -11,7 +20,6 @@ const testDatabaseUrl = optedIn
   ? getDisposableSeatHoldTestDatabaseUrl({
       url: requestedDatabaseUrl,
       confirmation: disposableConfirmation,
-      applicationDatabaseUrl: process.env.DATABASE_URL,
     })
   : undefined;
 
@@ -88,304 +96,331 @@ describe.skipIf(!testDatabaseUrl)("PostgreSQL seat-hold migration", () => {
   });
 });
 
-describe.skipIf(!testDatabaseUrl)("PostgreSQL seat-hold booking races", () => {
-  async function createInventorySchema(pool: Pool, capacity = 2) {
+describe.skipIf(!testDatabaseUrl)("PostgreSQL production-path seat-hold races", () => {
+  const hostelId = "hostel_1";
+  const ownerId = "owner_1";
+  const studentId = "student_1";
+  const roomId = "room_1";
+
+  async function createInventoryFixture(capacity = 2) {
+    if (!testDatabaseUrl) throw new Error("Disposable PostgreSQL target is not configured.");
     const schema = `seat_hold_race_${randomBytes(8).toString("hex")}`;
-    const client = await pool.connect();
+    const pool = new Pool({ connectionString: testDatabaseUrl, max: 10 });
+    let client: PoolClient | undefined;
+    let adapterPool: Pool | undefined;
+    let prisma: PrismaClient | undefined;
     try {
+      client = await pool.connect();
       await client.query(`CREATE SCHEMA "${schema}"`);
       await client.query("CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public");
       await client.query(`SET search_path TO "${schema}", public`);
       await client.query(`
-        CREATE TABLE "hostels" ("id" TEXT PRIMARY KEY);
+        CREATE TYPE "Role" AS ENUM ('STUDENT', 'OWNER', 'ADMIN');
+        CREATE TYPE "HostelStatus" AS ENUM ('DRAFT', 'PENDING_REVIEW', 'ACTIVE', 'SUSPENDED');
+        CREATE TYPE "CancellationPolicy" AS ENUM ('FLEXIBLE', 'STANDARD', 'STRICT');
+        CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED');
+        CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID', 'PARTIALLY_REFUNDED', 'REFUNDED', 'FAILED');
+        CREATE TYPE "RefundState" AS ENUM ('NONE', 'PROCESSING', 'UNCERTAIN', 'PARTIALLY_REFUNDED', 'REFUNDED');
+
+        CREATE TABLE "users" (
+          "id" TEXT PRIMARY KEY,
+          "email" TEXT NOT NULL UNIQUE,
+          "name" TEXT NOT NULL,
+          "role" "Role" NOT NULL DEFAULT 'STUDENT',
+          "deletionRequestedAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE "hostels" (
+          "id" TEXT PRIMARY KEY,
+          "name" TEXT NOT NULL,
+          "slug" TEXT NOT NULL UNIQUE,
+          "ownerId" TEXT NOT NULL REFERENCES "users"("id"),
+          "status" "HostelStatus" NOT NULL DEFAULT 'DRAFT',
+          "pricePerMonth" INTEGER NOT NULL,
+          "cancellationPolicy" "CancellationPolicy",
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
         CREATE TABLE "rooms" (
           "id" TEXT PRIMARY KEY,
-          "hostelId" TEXT NOT NULL,
-          "capacity" INTEGER NOT NULL
+          "hostelId" TEXT NOT NULL REFERENCES "hostels"("id") ON DELETE CASCADE,
+          "name" TEXT NOT NULL,
+          "description" TEXT,
+          "pricePerMonth" INTEGER NOT NULL,
+          "capacity" INTEGER NOT NULL,
+          "available" INTEGER NOT NULL,
+          "version" INTEGER NOT NULL DEFAULT 0,
+          "images" TEXT[] NOT NULL DEFAULT '{}',
+          "facilities" TEXT[] NOT NULL DEFAULT '{}',
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE "bookings" (
           "id" TEXT PRIMARY KEY,
-          "status" TEXT NOT NULL,
-          "checkIn" DATE NOT NULL,
-          "checkOut" DATE NOT NULL,
-          "guests" INTEGER NOT NULL
+          "hostelId" TEXT NOT NULL REFERENCES "hostels"("id"),
+          "roomId" TEXT REFERENCES "rooms"("id"),
+          "userId" TEXT NOT NULL REFERENCES "users"("id"),
+          "checkIn" TIMESTAMP(3) NOT NULL,
+          "checkOut" TIMESTAMP(3) NOT NULL,
+          "months" INTEGER NOT NULL,
+          "guests" INTEGER NOT NULL DEFAULT 1,
+          "total" INTEGER NOT NULL,
+          "cancellationPolicy" "CancellationPolicy",
+          "cancellationRefundAmount" INTEGER,
+          "refundedAmount" INTEGER NOT NULL DEFAULT 0,
+          "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
+          "paymentMethod" TEXT,
+          "transactionId" TEXT UNIQUE,
+          "refundState" "RefundState" NOT NULL DEFAULT 'NONE',
+          "refundedAt" TIMESTAMP(3),
+          "refundedBy" TEXT,
+          "status" "BookingStatus" NOT NULL DEFAULT 'PENDING',
+          "ownerResponseDueAt" TIMESTAMP(3),
+          "ownerResponseReminderSentAt" TIMESTAMP(3),
+          "notes" TEXT,
+          "payoutId" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE "blocked_dates" (
           "id" TEXT PRIMARY KEY,
-          "hostelId" TEXT NOT NULL,
-          "startDate" DATE NOT NULL,
-          "endDate" DATE NOT NULL
+          "hostelId" TEXT NOT NULL REFERENCES "hostels"("id") ON DELETE CASCADE,
+          "startDate" TIMESTAMP(3) NOT NULL,
+          "endDate" TIMESTAMP(3) NOT NULL,
+          "reason" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE TABLE "seat_holds" (
-          "id" TEXT PRIMARY KEY,
-          "roomId" TEXT NOT NULL,
-          "seatNo" INTEGER NOT NULL,
-          "bookingId" TEXT NOT NULL,
-          "checkIn" DATE NOT NULL,
-          "checkOut" DATE NOT NULL,
-          UNIQUE ("bookingId", "seatNo"),
-          EXCLUDE USING gist (
-            "roomId" WITH =,
-            daterange("checkIn", "checkOut", '[)') WITH &&,
-            "seatNo" WITH =
-          )
-        );
-        INSERT INTO "hostels" ("id") VALUES ('hostel_1');
-        INSERT INTO "rooms" ("id", "hostelId", "capacity") VALUES ('room_1', 'hostel_1', ${capacity});
+        INSERT INTO "users" ("id", "email", "name", "role")
+        VALUES
+          ('${ownerId}', 'owner@example.test', 'Owner', 'OWNER'),
+          ('${studentId}', 'student@example.test', 'Student', 'STUDENT');
+        INSERT INTO "hostels" ("id", "name", "slug", "ownerId", "status", "pricePerMonth", "cancellationPolicy")
+        VALUES ('${hostelId}', 'Test Hostel', 'test-hostel', '${ownerId}', 'ACTIVE', 1000, 'STANDARD');
+        INSERT INTO "rooms" ("id", "hostelId", "name", "pricePerMonth", "capacity", "available")
+        VALUES ('${roomId}', '${hostelId}', 'Test Room', 1000, ${capacity}, ${capacity});
       `);
-    } finally {
-      client.release();
-    }
 
+      const migration = readFileSync(
+        "prisma/migrations/20261105000000_add_seat_holds/migration.sql",
+        "utf8",
+      );
+      await client.query(migration);
+      client.release();
+      client = undefined;
+
+      adapterPool = new Pool({
+        connectionString: testDatabaseUrl,
+        options: `-c search_path=${schema},public`,
+        max: 8,
+      });
+      prisma = new PrismaClient({ adapter: new PrismaPg(adapterPool, { schema }) });
+
+      return {
+        prisma,
+        async cleanup() {
+          await prisma?.$disconnect();
+          await adapterPool?.end();
+          const cleanupClient = await pool.connect();
+          try {
+            await cleanupClient.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+          } finally {
+            cleanupClient.release();
+            await pool.end();
+          }
+        },
+      };
+    } catch (error) {
+      await prisma?.$disconnect().catch(() => undefined);
+      await adapterPool?.end().catch(() => undefined);
+      if (client) {
+        try {
+          await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+        } finally {
+          client.release();
+        }
+      } else {
+        await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`).catch(() => undefined);
+      }
+      await pool.end();
+      throw error;
+    }
+  }
+
+  function bookingInput(checkIn: string, checkOut: string, guests = 1) {
     return {
-      schema,
-      async connect() {
-        const connection = await pool.connect();
-        await connection.query(`SET search_path TO "${schema}", public`);
-        return connection;
-      },
+      hostelId,
+      roomId,
+      checkIn: new Date(`${checkIn}T00:00:00.000Z`),
+      checkOut: new Date(`${checkOut}T00:00:00.000Z`),
+      guests,
+      paymentMethod: "safepay" as const,
     };
   }
 
-  async function cleanupInventorySchema(pool: Pool, schema: string) {
-    const client = await pool.connect();
-    try {
-      await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
-    } finally {
-      client.release();
-    }
-  }
-
-  async function reserveStay(
-    client: PoolClient,
-    bookingId: string,
+  async function attemptBooking(
+    prisma: PrismaClient,
     checkIn: string,
     checkOut: string,
     guests = 1,
   ) {
-    await client.query("BEGIN");
     try {
-      await client.query(`SELECT "id" FROM "hostels" WHERE "id" = 'hostel_1' FOR UPDATE`);
-      const room = await client.query<{ capacity: number }>(
-        `SELECT "capacity" FROM "rooms" WHERE "id" = 'room_1' FOR UPDATE`,
-      );
-      const block = await client.query(
-        `SELECT 1 FROM "blocked_dates"
-         WHERE "hostelId" = 'hostel_1' AND "startDate" < $2::date AND "endDate" >= $1::date
-         LIMIT 1`,
-        [checkIn, checkOut],
-      );
-      if (block.rowCount) {
-        await client.query("ROLLBACK");
-        return false;
-      }
-
-      const occupied = await client.query<{ seatNo: number }>(
-        `SELECT DISTINCT "seatNo" FROM "seat_holds"
-         WHERE "roomId" = 'room_1' AND "checkIn" < $2::date AND "checkOut" > $1::date`,
-        [checkIn, checkOut],
-      );
-      const occupiedSeats = new Set(occupied.rows.map((row) => row.seatNo));
-      const seatNumbers = Array.from({ length: room.rows[0].capacity }, (_, index) => index + 1)
-        .filter((seatNo) => !occupiedSeats.has(seatNo))
-        .slice(0, guests);
-      if (seatNumbers.length !== guests) {
-        await client.query("ROLLBACK");
-        return false;
-      }
-
-      await client.query(
-        `INSERT INTO "bookings" ("id", "status", "checkIn", "checkOut", "guests")
-         VALUES ($1, 'PENDING', $2::date, $3::date, $4)`,
-        [bookingId, checkIn, checkOut, guests],
-      );
-      for (const seatNo of seatNumbers) {
-        await client.query(
-          `INSERT INTO "seat_holds" ("id", "roomId", "seatNo", "bookingId", "checkIn", "checkOut")
-           VALUES ($1, 'room_1', $2, $3, $4::date, $5::date)`,
-          [`hold_${bookingId}_${seatNo}`, seatNo, bookingId, checkIn, checkOut],
-        );
-      }
-      await client.query("COMMIT");
+      await createBooking(studentId, bookingInput(checkIn, checkOut, guests), prisma);
       return true;
     } catch (error) {
-      await client.query("ROLLBACK");
-      if ((error as { code?: string }).code === "23P01") return false;
+      if (error instanceof BookingServiceError) return false;
       throw error;
     }
   }
 
-  async function transitionAndRelease(client: PoolClient, bookingId: string, nextStatus: string) {
-    await client.query("BEGIN");
-    try {
-      const transition = await client.query(
-        `UPDATE "bookings" SET "status" = $2 WHERE "id" = $1 AND "status" = 'PENDING'`,
-        [bookingId, nextStatus],
-      );
-      if (transition.rowCount !== 1) {
-        await client.query("ROLLBACK");
-        return false;
-      }
-      if (nextStatus === "CANCELLED") {
-        await client.query(`DELETE FROM "seat_holds" WHERE "bookingId" = $1`, [bookingId]);
-      }
-      await client.query("COMMIT");
+  async function cancelAndRelease(prisma: PrismaClient, bookingId: string) {
+    return prisma.$transaction(async (tx) => {
+      const transitioned = await tx.booking.updateMany({
+        where: { id: bookingId, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      });
+      if (transitioned.count !== 1) return false;
+      await releaseSeatHolds(tx, bookingId);
       return true;
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    }
+    });
   }
 
-  it("allows exactly one concurrent booking to allocate the last seat", async () => {
-    const pool = new Pool({ connectionString: testDatabaseUrl });
-    const fixture = await createInventorySchema(pool, 1);
-    const first = await fixture.connect();
-    const second = await fixture.connect();
+  async function createGate() {
+    let release!: () => void;
+    let signal!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const locked = new Promise<void>((resolve) => { signal = resolve; });
+    return { gate, locked, release, signal };
+  }
+
+  it("allows exactly one concurrent production booking to allocate the last seat", async () => {
+    const fixture = await createInventoryFixture(1);
     try {
       const outcomes = await Promise.all([
-        reserveStay(first, "booking_a", "2032-01-01", "2032-01-04"),
-        reserveStay(second, "booking_b", "2032-01-02", "2032-01-03"),
+        attemptBooking(fixture.prisma, "2032-01-01", "2032-01-04"),
+        attemptBooking(fixture.prisma, "2032-01-02", "2032-01-03"),
       ]);
 
       expect(outcomes.filter(Boolean)).toHaveLength(1);
-      const held = await first.query(`SELECT COUNT(*)::int AS count FROM "seat_holds"`);
-      expect(held.rows[0].count).toBe(1);
+      expect(await fixture.prisma.seatHold.count()).toBe(1);
     } finally {
-      first.release();
-      second.release();
-      await cleanupInventorySchema(pool, fixture.schema);
-      await pool.end();
+      await fixture.cleanup();
     }
   });
 
-  it("releases cancellation and expiry holds, and permits checkout-boundary reuse", async () => {
-    const pool = new Pool({ connectionString: testDatabaseUrl });
-    const fixture = await createInventorySchema(pool, 1);
-    const client = await fixture.connect();
+  it("releases production holds on cancellation and keeps half-open checkout boundary reuse", async () => {
+    const fixture = await createInventoryFixture(1);
     try {
-      expect(await reserveStay(client, "booking_cancelled", "2032-02-01", "2032-02-04")).toBe(true);
-      expect(await transitionAndRelease(client, "booking_cancelled", "CANCELLED")).toBe(true);
-      expect(await reserveStay(client, "booking_rebooked", "2032-02-02", "2032-02-03")).toBe(true);
-      expect(await transitionAndRelease(client, "booking_rebooked", "CANCELLED")).toBe(true);
-      expect(await reserveStay(client, "booking_checkout", "2032-02-01", "2032-02-04")).toBe(true);
-      expect(await reserveStay(client, "booking_after_checkout", "2032-02-04", "2032-02-05")).toBe(true);
-
-      const overlapsAfterCheckout = await client.query(
-        `SELECT COUNT(*)::int AS count FROM "seat_holds"
-         WHERE "roomId" = 'room_1' AND "checkIn" < '2032-02-05'
-           AND "checkOut" > '2032-02-04'`,
+      const cancelled = await createBooking(
+        studentId,
+        bookingInput("2032-02-01", "2032-02-04"),
+        fixture.prisma,
       );
-      expect(overlapsAfterCheckout.rows[0].count).toBe(1);
-      expect(await transitionAndRelease(client, "booking_checkout", "CANCELLED")).toBe(true);
-      expect(await reserveStay(client, "booking_expired", "2032-02-02", "2032-02-03")).toBe(true);
-      expect(await transitionAndRelease(client, "booking_expired", "CANCELLED")).toBe(true);
+      expect(await cancelAndRelease(fixture.prisma, cancelled.id)).toBe(true);
+      expect(await fixture.prisma.seatHold.count({ where: { bookingId: cancelled.id } })).toBe(0);
+      expect(await attemptBooking(fixture.prisma, "2032-02-02", "2032-02-03")).toBe(true);
+
+      const checkout = await createBooking(
+        studentId,
+        bookingInput("2032-02-04", "2032-02-06"),
+        fixture.prisma,
+      );
+      expect(await attemptBooking(fixture.prisma, "2032-02-06", "2032-02-07")).toBe(true);
+      expect(await fixture.prisma.seatHold.count({ where: { bookingId: checkout.id } })).toBe(1);
     } finally {
-      client.release();
-      await cleanupInventorySchema(pool, fixture.schema);
-      await pool.end();
+      await fixture.cleanup();
     }
   });
 
-  it("serializes an owner block against booking allocation", async () => {
-    const pool = new Pool({ connectionString: testDatabaseUrl });
-    const fixture = await createInventorySchema(pool);
-    const blockClient = await fixture.connect();
-    const bookingClient = await fixture.connect();
-    let releaseBlock!: () => void;
-    let signalLock!: () => void;
-    const blockGate = new Promise<void>((resolve) => { releaseBlock = resolve; });
-    const locked = new Promise<void>((resolve) => { signalLock = resolve; });
-    const blockWrite = (async () => {
-      await blockClient.query("BEGIN");
-      await blockClient.query(`SELECT "id" FROM "hostels" WHERE "id" = 'hostel_1' FOR UPDATE`);
-      signalLock();
-      await blockGate;
-      await blockClient.query(
-        `INSERT INTO "blocked_dates" ("id", "hostelId", "startDate", "endDate")
-         VALUES ('block_1', 'hostel_1', '2032-03-10', '2032-03-11')`,
-      );
-      await blockClient.query("COMMIT");
-    })();
+  it("serializes the production owner-block path against booking allocation", async () => {
+    const fixture = await createInventoryFixture();
+    const synchronization = await createGate();
+    const blockWrite = fixture.prisma.$transaction(async (tx) => {
+      await lockHostelInventory(tx, hostelId);
+      synchronization.signal();
+      await synchronization.gate;
+      return createOwnerBlockedDate(tx, {
+        hostelId,
+        ownerId,
+        startDate: new Date("2032-03-10T00:00:00.000Z"),
+        endDate: new Date("2032-03-11T00:00:00.000Z"),
+        reason: "Repairs",
+      });
+    });
 
     try {
-      await locked;
-      const booking = reserveStay(bookingClient, "booking_during_block", "2032-03-11", "2032-03-12");
-      releaseBlock();
-      await blockWrite;
+      await synchronization.locked;
+      const booking = attemptBooking(fixture.prisma, "2032-03-11", "2032-03-12");
+      synchronization.release();
+      await expect(blockWrite).resolves.toMatchObject({ kind: "created" });
       await expect(booking).resolves.toBe(false);
     } finally {
-      releaseBlock();
+      synchronization.release();
       await blockWrite.catch(() => undefined);
-      blockClient.release();
-      bookingClient.release();
-      await cleanupInventorySchema(pool, fixture.schema);
-      await pool.end();
+      await fixture.cleanup();
     }
   });
 
-  it("serializes capacity edits against booking allocation", async () => {
-    const pool = new Pool({ connectionString: testDatabaseUrl });
-    const fixture = await createInventorySchema(pool);
-    const editClient = await fixture.connect();
-    const bookingClient = await fixture.connect();
-    let releaseEdit!: () => void;
-    let signalLock!: () => void;
-    const editGate = new Promise<void>((resolve) => { releaseEdit = resolve; });
-    const locked = new Promise<void>((resolve) => { signalLock = resolve; });
-    const capacityEdit = (async () => {
-      await editClient.query("BEGIN");
-      await editClient.query(`SELECT "id" FROM "hostels" WHERE "id" = 'hostel_1' FOR UPDATE`);
-      await editClient.query(`SELECT "id" FROM "rooms" WHERE "id" = 'room_1' FOR UPDATE`);
-      signalLock();
-      await editGate;
-      await editClient.query(`UPDATE "rooms" SET "capacity" = 1 WHERE "id" = 'room_1'`);
-      await editClient.query("COMMIT");
-    })();
+  it("serializes production capacity edits against booking allocation", async () => {
+    const fixture = await createInventoryFixture(2);
+    const synchronization = await createGate();
+    const capacityEdit = fixture.prisma.$transaction(async (tx) => {
+      await lockHostelInventory(tx, hostelId);
+      synchronization.signal();
+      await synchronization.gate;
+      await syncHostelRooms(tx, hostelId, [{
+        id: roomId,
+        name: "Test Room",
+        description: null,
+        pricePerMonth: 1000,
+        capacity: 1,
+        facilities: [],
+        images: [],
+      }]);
+    });
 
     try {
-      await locked;
-      const booking = reserveStay(bookingClient, "booking_stale_capacity", "2032-04-01", "2032-04-05", 2);
-      releaseEdit();
+      await synchronization.locked;
+      const booking = attemptBooking(fixture.prisma, "2032-04-01", "2032-04-05", 2);
+      synchronization.release();
       await capacityEdit;
       await expect(booking).resolves.toBe(false);
     } finally {
-      releaseEdit();
+      synchronization.release();
       await capacityEdit.catch(() => undefined);
-      editClient.release();
-      bookingClient.release();
-      await cleanupInventorySchema(pool, fixture.schema);
-      await pool.end();
+      await fixture.cleanup();
     }
   });
 
-  it("preserves occupancy for confirmed stays and releases declined or expired requests", async () => {
-    const pool = new Pool({ connectionString: testDatabaseUrl });
-    const fixture = await createInventorySchema(pool, 1);
-    const client = await fixture.connect();
+  it("preserves confirmed occupancy, releases declined holds, and retains completed holds until checkout", async () => {
+    const fixture = await createInventoryFixture(1);
     try {
-      expect(await reserveStay(client, "booking_confirmed", "2032-05-01", "2032-05-05")).toBe(true);
-      await client.query(`UPDATE "bookings" SET "status" = 'CONFIRMED' WHERE "id" = 'booking_confirmed'`);
-      const confirmedHolds = await client.query(
-        `SELECT COUNT(*)::int AS count FROM "seat_holds" WHERE "bookingId" = 'booking_confirmed'`,
+      const confirmed = await createBooking(
+        studentId,
+        bookingInput("2032-05-01", "2032-05-05"),
+        fixture.prisma,
       );
-      expect(confirmedHolds.rows[0].count).toBe(1);
+      await fixture.prisma.booking.update({
+        where: { id: confirmed.id },
+        data: { status: "CONFIRMED" },
+      });
+      expect(await attemptBooking(fixture.prisma, "2032-05-01", "2032-05-05")).toBe(false);
 
-      expect(await reserveStay(client, "booking_declined", "2032-05-05", "2032-05-06")).toBe(true);
-      expect(await transitionAndRelease(client, "booking_declined", "CANCELLED")).toBe(true);
-      expect(await reserveStay(client, "booking_expired", "2032-05-01", "2032-05-05")).toBe(false);
-
-      await transitionAndRelease(client, "booking_confirmed", "COMPLETED");
-      const nextStay = await reserveStay(client, "booking_after_checkout", "2032-05-05", "2032-05-06");
-      expect(nextStay).toBe(true);
-      const bookingHolds = await client.query(
-        `SELECT COUNT(*)::int AS count FROM "seat_holds" WHERE "bookingId" = 'booking_confirmed'`,
+      const declined = await createBooking(
+        studentId,
+        bookingInput("2032-05-05", "2032-05-06"),
+        fixture.prisma,
       );
-      expect(bookingHolds.rows[0].count).toBe(1);
+      expect(await cancelAndRelease(fixture.prisma, declined.id)).toBe(true);
+
+      await fixture.prisma.booking.update({
+        where: { id: confirmed.id },
+        data: { status: "COMPLETED" },
+      });
+      expect(await attemptBooking(fixture.prisma, "2032-05-05", "2032-05-06")).toBe(true);
+      expect(await fixture.prisma.seatHold.count({ where: { bookingId: confirmed.id } })).toBe(1);
     } finally {
-      client.release();
-      await cleanupInventorySchema(pool, fixture.schema);
-      await pool.end();
+      await fixture.cleanup();
     }
   });
 });
