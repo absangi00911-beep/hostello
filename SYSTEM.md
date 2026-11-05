@@ -37,7 +37,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | API route handler files | 75 |
 | Prisma models | 30 |
 | Prisma migrations | 33 |
-| Vitest test files | 210 |
+| Vitest test files | 211 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
 <!-- docs-check:end -->
@@ -719,7 +719,7 @@ Each needs a decision from you before the related code is written.
 | ID | Sev | Finding | Evidence | Next step |
 |---|---|---|---|---|
 | R-01 | P0 | **Seat-hold authority implemented; PostgreSQL race verification pending.** Booking writes and exact-range reads now use one hold per guest seat over `[checkIn, checkOut)`, and blocks/capacity edits share listing/room locks. `Room.available` remains a legacy field and is no longer booking authority. The guarded local PostgreSQL race suite was not run because no explicitly confirmed disposable database was configured | `booking-service.ts`; `room-availability-service.ts`; `bookings/[id]/route.ts`; `hostels/[param]/availability/exact`; `prisma/seat-holds.integration.test.ts` | Run guarded race suite on an explicitly configured disposable local database |
-| R-02 | P0 | **Stay rules partially unenforced.** `minStay`/`maxStay` are not checked and there is no maximum duration; `calculateMonths` still ignores the day of month; booking accepts `jazzcash` and `easypaisa` that payment then rejects, holding seats 30 minutes. Date-only inputs now use strict calendar dates and the Pakistan-local “today” boundary | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment/initiate` | D-2 |
+| R-02 | P0 | **Stay rules partially unenforced.** `minStay`/`maxStay` are not checked and there is no maximum duration; `calculateMonths` still ignores the day of month. Booking validation and the booking service reject disabled payment methods using the shared enabled-method list, so unavailable wallets cannot create a hold. Date-only inputs use strict calendar dates and the Pakistan-local “today” boundary | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment-methods.ts` | D-2 |
 | R-03 | P0 | **Payout timing and custody undecided.** Owners are paid after the whole prepaid stay ends | `payouts.ts` | D-3 |
 | R-04 | P0 | **Safepay and refund reconciliation** (partly implemented: durable evidence, audit events, admin queue, audited retries; the automatic refund claim is a compare-and-set on `total`, `cancellationRefundAmount` and `refundedAmount`, so a stale read cannot send a second partial refund. B-001, November 4, 2026, PR pending; the webhook `merchant_api_key` check and the `x-cron-health-secret` check on `health/payments` use a length-safe `timingSafeEqual`, and `processRefund` is documented as called by the owner-timeout cron and the booking decline and cancel paths as well as the admin route, B-006, November 4, 2026). Open: sandbox validation of merchant setup and refund call, legacy in-flight sessions, QStash retry exercise, a sweeper for `CANCELLED` + `PAID` + refund `NONE`, automatic handling of late payments (reinstate if the seat is free, else refund) | `payment/webhook`, `refunds.ts` | Sandbox round trip; sweeper job |
 | R-05 | P0 | **Payout accounting.** No double-entry ledger, fee accounting, reversal or settlement reconciliation; batches created before the snapshot change have no destination snapshot | `payouts.ts`, schema | Approved accounting model (D-3) |

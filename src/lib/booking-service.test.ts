@@ -183,6 +183,21 @@ describe("createBooking", () => {
     expect(tx.booking.create).not.toHaveBeenCalled();
   });
 
+  it.each(["jazzcash", "easypaisa"])(
+    "rejects disabled payment method %s before starting a transaction or creating a hold",
+    async (paymentMethod) => {
+      const tx = transaction();
+      await expect(createBooking(
+        userId,
+        bookingInput({ paymentMethod }) as never,
+      )).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining("Payment method") });
+
+      expect(db.$transaction).not.toHaveBeenCalled();
+      expect(tx.booking.create).not.toHaveBeenCalled();
+      expect(tx.seatHold.createMany).not.toHaveBeenCalled();
+    },
+  );
+
   it("maps exclusion-constraint races to HTTP 409 instead of an internal error", async () => {
     const tx = transaction();
     tx.seatHold.createMany.mockRejectedValue(

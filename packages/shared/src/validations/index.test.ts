@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hostelCreateSchema } from "./index";
+import { bookingSchema, hostelCreateSchema } from "./index";
 
 const listing = {
   name: "Campus Hostel",
@@ -26,6 +26,24 @@ const listing = {
 describe("hostelCreateSchema room totals", () => {
   it("allows client totals that disagree with the rooms because the server derives totals", () => {
     expect(hostelCreateSchema.safeParse(listing).success).toBe(true);
+  });
+
+  describe("bookingSchema payment methods", () => {
+    const booking = {
+      hostelId: "clh1234567890123456789012",
+      roomId: "room-1",
+      checkIn: "2099-01-01",
+      checkOut: "2099-02-01",
+      guests: 1,
+    };
+
+    it("accepts the enabled Safepay method", () => {
+      expect(bookingSchema.safeParse({ ...booking, paymentMethod: "safepay" }).success).toBe(true);
+    });
+
+    it.each(["jazzcash", "easypaisa"])("rejects disabled payment method %s", (paymentMethod) => {
+      expect(bookingSchema.safeParse({ ...booking, paymentMethod }).success).toBe(false);
+    });
   });
 
   it("does not add an undocumented aggregate capacity limit", () => {

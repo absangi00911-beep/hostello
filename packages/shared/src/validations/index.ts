@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getPakistanCalendarDate } from "../utils/dates";
+import { ENABLED_PAYMENT_METHODS } from "../constants/payment-methods";
 
 // -- Sanitization --
 
@@ -206,7 +207,7 @@ export const bookingSchema = z
     checkIn: dateOnlySchema,
     checkOut: dateOnlySchema,
     guests: z.number().int().min(1).max(4),
-    paymentMethod: z.enum(["safepay", "jazzcash", "easypaisa"]),
+    paymentMethod: z.enum(ENABLED_PAYMENT_METHODS),
   })
   .superRefine(validateStayDates);
 

@@ -1,6 +1,10 @@
 import { db } from "@/lib/db";
 import { calculateMonths } from "@/lib/utils";
-import { getPakistanCalendarDate, type BookingInput } from "@hostello/shared";
+import {
+  getPakistanCalendarDate,
+  isEnabledPaymentMethod,
+  type BookingInput,
+} from "@hostello/shared";
 import {
   createSeatHolds,
   getRoomStayAvailability,
@@ -37,6 +41,9 @@ function isDateOnly(date: Date) {
 }
 
 function validateBookingInput(input: BookingInput) {
+  if (!isEnabledPaymentMethod(input.paymentMethod)) {
+    throw new BookingServiceError("Payment method is not available.", 409);
+  }
   if (!input.roomId) {
     throw new BookingServiceError("Select a room before submitting this booking.", 409);
   }
