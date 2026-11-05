@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { blockedDateSchema } from "@hostello/shared";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { parsePagination } from "@/lib/pagination";
 import { isBoundedRouteParam } from "@/lib/route-params";
+import { lockHostelInventory } from "@/lib/room-availability-service";
 
 type Ctx = { params: Promise<{ id: string }> };
 const MAX_BODY_BYTES = 2_048;
@@ -105,27 +107,48 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
   const reason = typeof body.reason === "string" ? body.reason.trim() || null : null;
 
-  const start = new Date(startDate);
-  const end   = new Date(endDate);
-
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+  const dateRange = blockedDateSchema.safeParse({ startDate, endDate });
+  if (!dateRange.success) {
+    return NextResponse.json({ error: "Provide valid inclusive calendar dates." }, { status: 400 });
   }
-  if (end < start) {
-    return NextResponse.json({ error: "endDate must be on or after startDate" }, { status: 400 });
-  }
+  const { startDate: start, endDate: end } = dateRange.data;
+  const endExclusive = new Date(end);
+  endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
 
-  const blocked = await db.blockedDate.create({
-    data: {
-      hostel: { connect: { id: hostel.id, ownerId: session.user.id } },
-      startDate: start,
-      endDate:   end,
-      reason:    reason ?? null,
-    },
-    select: { id: true, startDate: true, endDate: true, reason: true },
+  const result = await db.$transaction(async (tx) => {
+    if (!await lockHostelInventory(tx, hostel.id)) return { kind: "missing" as const };
+
+    const activeHold = await tx.seatHold.findFirst({
+      where: {
+        room: { is: { hostelId: hostel.id } },
+        checkIn: { lt: endExclusive },
+        checkOut: { gt: start },
+      },
+      select: { id: true },
+    });
+    if (activeHold) return { kind: "conflict" as const };
+
+    const blocked = await tx.blockedDate.create({
+      data: {
+        hostel: { connect: { id: hostel.id, ownerId: session.user.id } },
+        startDate: start,
+        endDate: end,
+        reason: reason ?? null,
+      },
+      select: { id: true, startDate: true, endDate: true, reason: true },
+    });
+    return { kind: "created" as const, blocked };
   });
 
-  return NextResponse.json({ data: blocked }, { status: 201 });
+  if (result.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (result.kind === "conflict") {
+    return NextResponse.json(
+      { error: "This block overlaps an active booking hold. Change the range or resolve the booking first." },
+      { status: 409 },
+    );
+  }
+
+  return NextResponse.json({ data: result.blocked }, { status: 201 });
 }
 
 /** DELETE — remove a blocked range by id */

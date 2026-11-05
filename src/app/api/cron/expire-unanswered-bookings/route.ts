@@ -10,6 +10,7 @@ import { createOperationalLogContext, hashOperationalIdentifier, logOperationalE
 import { runCronJob } from "@/lib/cron-utils";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { releaseSeatHolds } from "@/lib/room-availability-service";
 
 export const maxDuration = 60;
 const REMINDER_WINDOW_MS = 6 * 60 * 60 * 1000;
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
     const reminderBefore = new Date(now.getTime() + REMINDER_WINDOW_MS);
     let remindersSent = 0;
     let expired = 0;
+    let holdsReleased = 0;
     let refundsStarted = 0;
     let refundsNeedingReview = 0;
 
@@ -152,12 +154,13 @@ export async function POST(req: NextRequest) {
         },
         orderBy: [{ ownerResponseDueAt: "asc" }, { id: "asc" }],
         take: Math.min(BATCH_SIZE, MAX_EXPIRATIONS_PER_RUN - expired),
-        select: { id: true, hostelId: true, roomId: true, total: true, guests: true },
+        select: { id: true, hostelId: true, total: true },
       });
       if (expiredCandidates.length === 0) break;
 
       const cancelled = await db.$transaction(async (tx) => {
         const claimed: typeof expiredCandidates = [];
+        let batchHoldsReleased = 0;
         for (const candidate of expiredCandidates) {
           const transition = await tx.booking.updateMany({
             where: {
@@ -170,21 +173,18 @@ export async function POST(req: NextRequest) {
               data: { status: "CANCELLED", cancellationRefundAmount: candidate.total },
           });
           if (transition.count !== 1) continue;
-          if (candidate.roomId) {
-            await tx.room.updateMany({
-              where: { id: candidate.roomId },
-              data: { available: { increment: candidate.guests }, version: { increment: 1 } },
-            });
-          }
+          const released = await releaseSeatHolds(tx, candidate.id);
+          batchHoldsReleased += released.count;
           claimed.push(candidate);
         }
-        return claimed;
+        return { claimed, holdsReleased: batchHoldsReleased };
       });
 
-      if (cancelled.length === 0) break;
-      expired += cancelled.length;
+      if (cancelled.claimed.length === 0) break;
+      expired += cancelled.claimed.length;
+      holdsReleased += cancelled.holdsReleased;
 
-      const results = await Promise.allSettled(cancelled.map(async (candidate) => {
+      const results = await Promise.allSettled(cancelled.claimed.map(async (candidate) => {
         try {
           const refund = await processRefund(candidate.id, "system:owner-response-timeout");
           if (refund.automatic) {
@@ -250,6 +250,7 @@ export async function POST(req: NextRequest) {
     return {
       message: "Owner response reminders and expirations processed",
       count: expired,
+      holdsReleased,
       remindersSent,
       refundsStarted,
       refundsNeedingReview,

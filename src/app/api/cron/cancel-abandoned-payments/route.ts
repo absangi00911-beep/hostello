@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
 import { createOperationalLogContext } from "@/lib/operational-logger";
+import { releaseSeatHolds } from "@/lib/room-availability-service";
 
 export const maxDuration = 60;
 const BATCH_SIZE = 100;
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   return runCronJob("cancel-abandoned-payments", async () => {
     const olderThan = new Date(Date.now() - ABANDONED_AFTER_MS);
     let cancelled = 0;
-    let roomsRestored = 0;
+    let holdsReleased = 0;
 
     while (true) {
       const candidates = await db.booking.findMany({
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
         },
         orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: BATCH_SIZE,
-        select: { id: true, roomId: true, guests: true },
+        select: { id: true },
       });
 
       if (candidates.length === 0) break;
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
       // its room must not be released by the cleanup job.
       const batchResult = await db.$transaction(async (tx) => {
         let batchCancelled = 0;
-        let batchRoomsRestored = 0;
+        let batchHoldsReleased = 0;
 
         for (const booking of candidates) {
           const result = await tx.booking.updateMany({
@@ -56,21 +57,15 @@ export async function POST(req: NextRequest) {
 
           if (result.count === 0) continue;
           batchCancelled += result.count;
-
-          if (booking.roomId) {
-            const roomResult = await tx.room.updateMany({
-              where: { id: booking.roomId },
-              data: { available: { increment: booking.guests }, version: { increment: 1 } },
-            });
-            batchRoomsRestored += roomResult.count;
-          }
+          const released = await releaseSeatHolds(tx, booking.id);
+          batchHoldsReleased += released.count;
         }
 
-        return { cancelled: batchCancelled, roomsRestored: batchRoomsRestored };
+        return { cancelled: batchCancelled, holdsReleased: batchHoldsReleased };
       });
 
       cancelled += batchResult.cancelled;
-      roomsRestored += batchResult.roomsRestored;
+      holdsReleased += batchResult.holdsReleased;
 
       if (candidates.length < BATCH_SIZE) break;
     }
@@ -78,7 +73,7 @@ export async function POST(req: NextRequest) {
     return {
       message:       "Abandoned payments cancelled",
       count: cancelled,
-      roomsRestored,
+      holdsReleased,
     };
   }, logContext);
 }

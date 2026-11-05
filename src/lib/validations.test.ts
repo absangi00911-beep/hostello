@@ -8,6 +8,14 @@ import {
   roomTypeSchema,
   sanitizeString,
 } from "./validations";
+import { getPakistanCalendarDate } from "@hostello/shared";
+
+describe("Pakistan calendar boundary", () => {
+  it("uses the Pakistan date regardless of the server's UTC date", () => {
+    expect(getPakistanCalendarDate(new Date("2026-01-01T20:00:00.000Z")).toISOString())
+      .toBe("2026-01-02T00:00:00.000Z");
+  });
+});
 
 describe("roomTypeSchema", () => {
   it("accepts a room with its own description, facilities, and photos", () => {
@@ -61,8 +69,8 @@ describe("hostelCreateSchema room inventory", () => {
 describe("bookingSchema room selection", () => {
   const booking = {
     hostelId: "clh1234567890123456789012",
-    checkIn: "2027-01-01T00:00:00.000Z",
-    checkOut: "2027-02-01T00:00:00.000Z",
+    checkIn: "2099-01-01",
+    checkOut: "2099-02-01",
     guests: 1,
     paymentMethod: "safepay",
   };
@@ -73,6 +81,47 @@ describe("bookingSchema room selection", () => {
 
   it("accepts a selected room ID from the room inventory", () => {
     expect(bookingSchema.safeParse({ ...booking, roomId: "room-bsh-1" }).success).toBe(true);
+  });
+
+  it("normalizes date-only values to UTC calendar boundaries", () => {
+    const result = bookingSchema.safeParse({ ...booking, roomId: "room-bsh-1" });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.checkIn.toISOString()).toBe("2099-01-01T00:00:00.000Z");
+      expect(result.data.checkOut.toISOString()).toBe("2099-02-01T00:00:00.000Z");
+    }
+  });
+
+  it("rejects timestamp and invalid calendar-date input", () => {
+    expect(bookingSchema.safeParse({
+      ...booking,
+      roomId: "room-bsh-1",
+      checkIn: "2099-02-30",
+    }).success).toBe(false);
+    expect(bookingSchema.safeParse({
+      ...booking,
+      roomId: "room-bsh-1",
+      checkIn: "2099-99-99",
+    }).success).toBe(false);
+    expect(bookingSchema.safeParse({
+      ...booking,
+      roomId: "room-bsh-1",
+      checkIn: "2099-01-01T00:00:00.000Z",
+    }).success).toBe(false);
+  });
+
+  it("rejects checkout on or before check-in and past Pakistan-local check-in dates", () => {
+    expect(bookingSchema.safeParse({
+      ...booking,
+      roomId: "room-bsh-1",
+      checkOut: booking.checkIn,
+    }).success).toBe(false);
+    expect(bookingSchema.safeParse({
+      ...booking,
+      roomId: "room-bsh-1",
+      checkIn: "2000-01-01",
+    }).success).toBe(false);
   });
 });
 

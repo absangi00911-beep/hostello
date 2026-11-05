@@ -34,10 +34,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 36 |
-| API route handler files | 74 |
+| API route handler files | 75 |
 | Prisma models | 30 |
 | Prisma migrations | 33 |
-| Vitest test files | 207 |
+| Vitest test files | 210 |
 | Cron jobs in the schedule registry | 7 |
 | Cron route handlers | 7 |
 <!-- docs-check:end -->
@@ -440,7 +440,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Student verification | `/api/user/verify-student`, `/api/user/verify-student/upload` | Student |
 | Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/nearby` (POST nearby search; 25 km radius), `/api/hostels/mine` | Public / Owner |
 | | `/api/hostels/[param]` (GET returns owner contact details, Admin; PATCH edits the listing, Owner) | Admin / Owner |
-| | `/api/hostels/[param]/availability`, `/api/hostels/[param]/view` (view counter) | Public |
+| | `/api/hostels/[param]/availability` (informational 12-month calendar), `/api/hostels/[param]/availability/exact` (room seats for a requested stay), `/api/hostels/[param]/view` (view counter) | Public |
 | | `/api/hostels/[param]/favorite`, `/api/hostels/[param]/roommates` | Student |
 | | `/api/favorites` | Signed in |
 | Roommates | `/api/roommates/[id]` (author deletes own post), `/api/roommates/[id]/report` (Student) | Signed in / Student |
@@ -581,7 +581,7 @@ Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`
 
 Known problems (R-13): `city` and amenity values are interpolated into Typesense `filter_by` without quoting or escaping; every zero-hit query runs `ILIKE` scans over five columns with no trigram index; and there is no university search despite hostels having coordinates and the shared package carrying a university list. Nearby search is available, but students still cannot search by campus. For a student marketplace, "near my campus" is the primary query, so treat this as a product gap and not only a technical one.
 
-`GET /api/hostels/[param]/availability` returns a 12-month calendar. It is hostel-wide and date-based, computed from raw bookings and blocked dates on every request without caching, and disagrees with the room-level counter that gates booking (R-01).
+`GET /api/hostels/[param]/availability` returns an informational 12-month hostel-wide calendar. `GET /api/hostels/[param]/availability/exact` requires `checkIn`, `checkOut`, and `guests`, then returns per-room capacity, seats available across the full half-open stay, and fit status from seat holds. Booking writes use the same seat-hold authority. Owner blocks are inclusive and cannot overlap active holds; the monthly aggregate is not a booking decision.
 
 ---
 
@@ -718,8 +718,8 @@ Each needs a decision from you before the related code is written.
 
 | ID | Sev | Finding | Evidence | Next step |
 |---|---|---|---|---|
-| R-01 | P0 | **Seat inventory is wrong.** `Room.available` is decremented at booking and restored only by decline, expiry, abandonment, and cancellation before check-in. Completion never restores it, and mid-stay cancellation skips the restore, so each completed stay consumes seats permanently. It is not date-aware (a booking for next semester takes seats now), ignores `BlockedDate`, and the public availability endpoint computes a different number | `booking-service.ts`; `bookings/[id]/route.ts`; `cron/mark-completed-stays`; `hostels/[param]/availability` | D-4, Appendix A, concurrency tests |
-| R-02 | P0 | **Stay rules unenforced.** `minStay`/`maxStay` never read; no maximum duration (a ten-year stay validates); `calculateMonths` ignores the day of month (Jan 1 to Feb 28 bills 1 month, Jan 1 to Mar 1 bills 2); booking accepts `jazzcash` and `easypaisa` that payment then rejects, holding seats 30 minutes; "today" uses server-local time (UTC), a day behind Pakistan for five hours a day | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment/initiate` | D-2 |
+| R-01 | P0 | **Seat-hold authority implemented; PostgreSQL race verification pending.** Booking writes and exact-range reads now use one hold per guest seat over `[checkIn, checkOut)`, and blocks/capacity edits share listing/room locks. `Room.available` remains a legacy field and is no longer booking authority. The guarded local PostgreSQL race suite was not run because no explicitly confirmed disposable database was configured | `booking-service.ts`; `room-availability-service.ts`; `bookings/[id]/route.ts`; `hostels/[param]/availability/exact`; `prisma/seat-holds.integration.test.ts` | Run guarded race suite on an explicitly configured disposable local database |
+| R-02 | P0 | **Stay rules partially unenforced.** `minStay`/`maxStay` are not checked and there is no maximum duration; `calculateMonths` still ignores the day of month; booking accepts `jazzcash` and `easypaisa` that payment then rejects, holding seats 30 minutes. Date-only inputs now use strict calendar dates and the Pakistan-local “today” boundary | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment/initiate` | D-2 |
 | R-03 | P0 | **Payout timing and custody undecided.** Owners are paid after the whole prepaid stay ends | `payouts.ts` | D-3 |
 | R-04 | P0 | **Safepay and refund reconciliation** (partly implemented: durable evidence, audit events, admin queue, audited retries; the automatic refund claim is a compare-and-set on `total`, `cancellationRefundAmount` and `refundedAmount`, so a stale read cannot send a second partial refund. B-001, November 4, 2026, PR pending; the webhook `merchant_api_key` check and the `x-cron-health-secret` check on `health/payments` use a length-safe `timingSafeEqual`, and `processRefund` is documented as called by the owner-timeout cron and the booking decline and cancel paths as well as the admin route, B-006, November 4, 2026). Open: sandbox validation of merchant setup and refund call, legacy in-flight sessions, QStash retry exercise, a sweeper for `CANCELLED` + `PAID` + refund `NONE`, automatic handling of late payments (reinstate if the seat is free, else refund) | `payment/webhook`, `refunds.ts` | Sandbox round trip; sweeper job |
 | R-05 | P0 | **Payout accounting.** No double-entry ledger, fee accounting, reversal or settlement reconciliation; batches created before the snapshot change have no destination snapshot | `payouts.ts`, schema | Approved accounting model (D-3) |

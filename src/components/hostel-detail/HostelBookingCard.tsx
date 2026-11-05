@@ -3,6 +3,7 @@
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import { useRef, useState, type FormEvent } from "react";
 import { calculateMonths } from "@/lib/utils";
+import { getPakistanCalendarDate } from "@hostello/shared";
 import { isStayWithinBounds } from "@/lib/hostel-date-selection";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
@@ -12,7 +13,6 @@ interface BookableRoom {
   name: string;
   pricePerMonth: number;
   capacity: number;
-  available: number;
 }
 
 interface HostelBookingCardProps {
@@ -57,13 +57,11 @@ function formatPrice(amount: number): string {
 }
 
 function todayDateInputValue(): string {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
+  return getPakistanCalendarDate().toISOString().slice(0, 10);
 }
 
 function maxGuestsFor(room: BookableRoom | undefined): number {
-  return room ? Math.min(4, room.capacity, room.available) : 0;
+  return room ? Math.min(4, room.capacity) : 0;
 }
 
 export function HostelBookingCard({
@@ -88,8 +86,8 @@ export function HostelBookingCard({
   const stayMonths =
     checkIn && checkOut && checkOut > checkIn
       ? calculateMonths(
-          new Date(`${checkIn}T00:00:00`),
-          new Date(`${checkOut}T00:00:00`),
+          new Date(`${checkIn}T00:00:00.000Z`),
+          new Date(`${checkOut}T00:00:00.000Z`),
         )
       : 0;
   const stayIsValid = isStayWithinBounds(
@@ -249,7 +247,7 @@ export function HostelBookingCard({
           <label className="grid min-w-0 gap-1">
             <span className="text-[0.68rem] font-[650] text-ink">Room</span>
             <select
-              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
               onChange={(event) => {
                 const nextRoom = rooms.find((candidate) => candidate.id === event.target.value);
                 setRoomId(event.target.value);
@@ -270,7 +268,7 @@ export function HostelBookingCard({
                 Move in
               </span>
               <input
-                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
                 ref={moveInInputRef}
                 min={todayDateInputValue()}
                 onChange={(event) => setMoveIn(event.target.value)}
@@ -284,7 +282,7 @@ export function HostelBookingCard({
                 Move out
               </span>
               <input
-                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
                 min={checkIn || todayDateInputValue()}
                 onChange={(event) => setMoveOut(event.target.value)}
                 required
@@ -296,7 +294,7 @@ export function HostelBookingCard({
           <label className="grid min-w-0 gap-1">
             <span className="text-[0.68rem] font-[650] text-ink">Guests</span>
             <select
-              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
               onChange={(event) => setGuests(Number(event.target.value))}
               value={guests}
             >

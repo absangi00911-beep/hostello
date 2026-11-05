@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getPakistanCalendarDate } from "../utils/dates";
 
 // -- Sanitization --
 
@@ -167,28 +168,64 @@ export const reviewSchema = z.object({
 
 // --- Booking ------------------------------------------------------------------
 
+const dateOnlySchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a calendar date in YYYY-MM-DD format")
+  .transform((value, context) => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+      context.addIssue({ code: "custom", message: "Enter a valid calendar date" });
+      return z.NEVER;
+    }
+    return date;
+  });
+
+function validateStayDates(
+  data: { checkIn: Date; checkOut: Date },
+  context: z.RefinementCtx,
+) {
+  if (data.checkIn < getPakistanCalendarDate()) {
+    context.addIssue({
+      code: "custom",
+      message: "Check-in must be today or later in Pakistan.",
+      path: ["checkIn"],
+    });
+  }
+  if (data.checkOut <= data.checkIn) {
+    context.addIssue({
+      code: "custom",
+      message: "Check-out must be after check-in.",
+      path: ["checkOut"],
+    });
+  }
+}
+
 export const bookingSchema = z
   .object({
     hostelId: z.string().cuid(),
     roomId: z.string().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/),
-    checkIn: z.coerce.date(),
-    checkOut: z.coerce.date(),
+    checkIn: dateOnlySchema,
+    checkOut: dateOnlySchema,
     guests: z.number().int().min(1).max(4),
     paymentMethod: z.enum(["safepay", "jazzcash", "easypaisa"]),
   })
-  .refine((data) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkInDate = new Date(data.checkIn);
-    checkInDate.setHours(0, 0, 0, 0);
-    return checkInDate >= today;
-  }, {
-    message: "Check-in must be today or later",
-    path: ["checkIn"],
+  .superRefine(validateStayDates);
+
+export const exactAvailabilitySchema = z
+  .object({
+    checkIn: dateOnlySchema,
+    checkOut: dateOnlySchema,
+    guests: z.coerce.number().int().min(1).max(4),
   })
-  .refine((data) => data.checkOut > data.checkIn, {
-    message: "Check-out must be after check-in",
-    path: ["checkOut"],
+  .superRefine(validateStayDates);
+
+export const blockedDateSchema = z
+  .object({
+    startDate: dateOnlySchema,
+    endDate: dateOnlySchema,
+  })
+  .refine((data) => data.endDate >= data.startDate, {
+    message: "End date must be on or after start date.",
+    path: ["endDate"],
   });
 
 // --- Search -------------------------------------------------------------------

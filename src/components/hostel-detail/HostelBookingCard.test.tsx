@@ -19,7 +19,6 @@ describe("HostelBookingCard", () => {
               name: "Twin room",
               pricePerMonth: 25000,
               capacity: 2,
-              available: 2,
             },
           ]}
         />
@@ -29,5 +28,29 @@ describe("HostelBookingCard", () => {
     expect(markup).toContain('aria-label="Quick reserve"');
     expect(markup).toContain("hostel-booking-mobile-bar");
     expect(markup).toContain('type="button">Choose dates</button>');
+    expect(markup).toContain(">2 guests</option>");
+  });
+
+  it("keeps every booking control at least 44 pixels tall", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={null}
+          minStay={1}
+          rooms={[
+            {
+              id: "room-1",
+              name: "Twin room",
+              pricePerMonth: 25000,
+              capacity: 2,
+            },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect([...markup.matchAll(/class="min-h-11 w-full/g)]).toHaveLength(4);
   });
 });

@@ -53,7 +53,7 @@ export async function getPublicHostelDetail(param: string) {
         },
       },
       rooms_rel: {
-        where: { available: { gt: 0 } },
+        where: { capacity: { gt: 0 } },
         orderBy: { pricePerMonth: "asc" },
         select: {
           id: true,
@@ -61,7 +61,6 @@ export async function getPublicHostelDetail(param: string) {
           description: true,
           pricePerMonth: true,
           capacity: true,
-          available: true,
           images: true,
         },
       },

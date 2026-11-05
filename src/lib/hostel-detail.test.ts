@@ -44,7 +44,7 @@ describe("getPublicHostelDetail", () => {
     expect(db.hostel.findFirst).not.toHaveBeenCalled();
   });
 
-  it("selects only public listing and available room fields", async () => {
+  it("selects public room capacity without relying on the legacy availability counter", async () => {
     await getPublicHostelDetail("murree-student-hostel");
 
     const query = mocks.findFirst.mock.calls[0][0];
@@ -64,18 +64,19 @@ describe("getPublicHostelDetail", () => {
       latitude: true,
       longitude: true,
       rooms_rel: {
-        where: { available: { gt: 0 } },
         select: {
           id: true,
           name: true,
           description: true,
           pricePerMonth: true,
           capacity: true,
-          available: true,
           images: true,
         },
       },
     });
+    expect(query.select.rooms_rel.where).toEqual({ capacity: { gt: 0 } });
+    expect(query.select.rooms_rel.where).not.toHaveProperty("available");
+    expect(query.select.rooms_rel.select).not.toHaveProperty("available");
     expect(query.select).not.toHaveProperty("address");
     expect(query.select.owner).toEqual({
       select: {

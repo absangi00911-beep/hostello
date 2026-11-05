@@ -4,7 +4,6 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/db", () => ({
   db: {
     booking: { findMany: vi.fn() },
-    room: { updateMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -25,7 +24,7 @@ import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 const tx = {
   booking: { updateMany: vi.fn() },
-  room: { updateMany: vi.fn() },
+  seatHold: { deleteMany: vi.fn() },
 };
 
 function request() {
@@ -40,7 +39,7 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
     vi.mocked(verifyUpstashRequest).mockResolvedValue(true);
     vi.mocked(db.booking.findMany).mockResolvedValue([]);
     tx.booking.updateMany.mockReset().mockResolvedValue({ count: 1 });
-    tx.room.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    tx.seatHold.deleteMany.mockReset().mockResolvedValue({ count: 1 });
     vi.mocked(db.$transaction).mockImplementation(((callback: (client: typeof db) => Promise<unknown>) => {
       return callback(tx as unknown as typeof db);
     }) as typeof db.$transaction);
@@ -55,10 +54,10 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
     expect(db.booking.findMany).not.toHaveBeenCalled();
   });
 
-  it("rechecks payment state before cancelling and restores only successfully released rooms", async () => {
+  it("rechecks payment state before cancelling and releases holds only after the transition", async () => {
     vi.mocked(db.booking.findMany).mockResolvedValue([
-      { id: "booking-paid", roomId: "room-paid", guests: 2 },
-      { id: "booking-abandoned", roomId: "room-abandoned", guests: 3 },
+      { id: "booking-paid" },
+      { id: "booking-abandoned" },
     ] as Awaited<ReturnType<typeof db.booking.findMany>>);
     tx.booking.updateMany
       .mockResolvedValueOnce({ count: 0 })
@@ -68,7 +67,7 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toMatchObject({ count: 1, roomsRestored: 1 });
+    expect(body).toMatchObject({ count: 1, holdsReleased: 1 });
     expect(tx.booking.updateMany).toHaveBeenNthCalledWith(1, expect.objectContaining({
       where: expect.objectContaining({
         id: "booking-paid",
@@ -77,10 +76,9 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
       }),
       data: { status: "CANCELLED", paymentStatus: "FAILED" },
     }));
-    expect(tx.room.updateMany).toHaveBeenCalledTimes(1);
-    expect(tx.room.updateMany).toHaveBeenCalledWith({
-      where: { id: "room-abandoned" },
-      data: { available: { increment: 3 }, version: { increment: 1 } },
+    expect(tx.seatHold.deleteMany).toHaveBeenCalledOnce();
+    expect(tx.seatHold.deleteMany).toHaveBeenCalledWith({
+      where: { bookingId: "booking-abandoned" },
     });
     expect(db.booking.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
   });

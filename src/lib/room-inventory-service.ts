@@ -1,5 +1,7 @@
 import { Prisma } from "@/generated/client";
+import { getPakistanCalendarDate } from "@hostello/shared";
 import type { RoomTypeInput } from "@/lib/validations";
+import { lockHostelInventory } from "@/lib/room-availability-service";
 
 type RoomInventoryConflictReason =
   | "UNKNOWN_ROOM"
@@ -16,23 +18,25 @@ export class RoomInventoryConflictError extends Error {
 }
 
 export async function syncHostelRooms(
-  client: Pick<Prisma.TransactionClient, "room" | "seatHold">,
+  client: Pick<Prisma.TransactionClient, "$queryRaw" | "room" | "seatHold">,
   hostelId: string,
   roomTypes: RoomTypeInput[],
 ) {
+  if (!await lockHostelInventory(client, hostelId)) {
+    throw new RoomInventoryConflictError("ROOM_CHANGED");
+  }
+
   const existingRooms = await client.room.findMany({
     where: { hostelId },
     select: {
       id: true,
       capacity: true,
-      available: true,
       version: true,
       _count: { select: { bookings: true } },
     },
   });
   const existingById = new Map(existingRooms.map((room) => [room.id, room]));
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  const today = getPakistanCalendarDate();
   const activeHolds = existingRooms.length
     ? await client.seatHold.findMany({
         where: {
@@ -69,10 +73,6 @@ export async function syncHostelRooms(
     const existing = existingById.get(room.id);
     if (!existing) throw new RoomInventoryConflictError("UNKNOWN_ROOM");
 
-    const reserved = Math.max(0, existing.capacity - existing.available);
-    if (room.capacity < reserved) {
-      throw new RoomInventoryConflictError("CAPACITY_BELOW_RESERVED");
-    }
     if ((holdsByRoom.get(existing.id) ?? []).some((hold) => hold.seatNo > room.capacity)) {
       throw new RoomInventoryConflictError("CAPACITY_BELOW_RESERVED");
     }
@@ -80,9 +80,7 @@ export async function syncHostelRooms(
     return [{
       room,
       existing,
-      available: room.capacity === existing.capacity
-        ? Math.min(existing.available, room.capacity)
-        : room.capacity - reserved,
+      available: room.capacity,
     }];
   });
 

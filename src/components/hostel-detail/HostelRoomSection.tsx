@@ -6,7 +6,6 @@ interface HostelRoom {
   description: string | null;
   pricePerMonth: number;
   capacity: number;
-  available: number;
   images: string[];
 }
 

@@ -32,6 +32,7 @@ const transactionRoom = {
   createMany: vi.fn(),
   deleteMany: vi.fn(),
 };
+const transactionQueryRaw = vi.fn().mockResolvedValue([{ id: "hst_1" }]);
 const transactionSeatHold = {
   findMany: vi.fn().mockResolvedValue([]),
 };
@@ -104,8 +105,15 @@ beforeEach(() => {
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60 * 60 * 1000 });
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
   transactionRoom.findMany.mockResolvedValue([]);
+  transactionQueryRaw.mockReset().mockResolvedValue([{ id: "hst_1" }]);
+  transactionSeatHold.findMany.mockReset().mockResolvedValue([]);
   vi.mocked(db.$transaction).mockImplementation(async (operation: any) =>
-    operation({ hostel: db.hostel, room: transactionRoom, seatHold: transactionSeatHold }),
+    operation({
+      $queryRaw: transactionQueryRaw,
+      hostel: db.hostel,
+      room: transactionRoom,
+      seatHold: transactionSeatHold,
+    }),
   );
 });
 
@@ -322,6 +330,36 @@ describe("PATCH /api/hostels/[param]", () => {
     expect(res.status).toBe(409);
     expect(transactionRoom.deleteMany).not.toHaveBeenCalled();
     expect(removeHostelIndex).not.toHaveBeenCalled();
+  });
+
+  it("returns HTTP 409 when a capacity edit would invalidate an active seat hold", async () => {
+    vi.mocked(auth).mockResolvedValue(ownerSession());
+    vi.mocked(db.hostel.findFirst).mockResolvedValue(makeHostel({ status: "ACTIVE" }) as any);
+    transactionRoom.findMany.mockResolvedValue([{
+      id: "room_1",
+      capacity: 3,
+      version: 1,
+      _count: { bookings: 0 },
+    }]);
+    transactionSeatHold.findMany.mockResolvedValue([{
+      roomId: "room_1",
+      seatNo: 3,
+    }]);
+
+    const body = listingEditBody({
+      roomTypes: [{
+        id: "room_1",
+        name: "Standard room",
+        pricePerMonth: 18_000,
+        capacity: 2,
+        facilities: ["Shared bathroom"],
+        images: ["https://images.hostello.test/room.jpg"],
+      }],
+    });
+    const response = await PATCH(patchReq(body), paramsFor("hst_1"));
+
+    expect(response.status).toBe(409);
+    expect(transactionRoom.updateMany).not.toHaveBeenCalled();
   });
 
   it("does not allow owners to edit suspended listings", async () => {
