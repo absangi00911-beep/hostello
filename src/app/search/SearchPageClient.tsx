@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AMENITIES, SORT_OPTIONS } from "@hostello/shared";
 import {
   BrowseAccountActions,
 } from "@/components/auth/BrowseAccountActions";
@@ -23,6 +24,10 @@ import {
   NEARBY_COORDINATES_SESSION_KEY,
   type NearbyCoordinates,
 } from "@/lib/nearby-search";
+import {
+  buildSearchParams,
+  type HostelSearchSort,
+} from "./search-params";
 
 interface HostelSearchResult {
   id: string;
@@ -43,13 +48,6 @@ interface HostelSearchResponse {
 }
 
 const PAGE_SIZE = 20;
-const pageFilters = [
-  "Women-only",
-  "Wi-Fi",
-  "Meals included",
-  "Laundry",
-  "Verified stays",
-];
 const mapPinPositions = [
   { top: "23%", left: "24%" },
   { top: "39%", left: "69%" },
@@ -253,12 +251,22 @@ export default function SearchPageClient({
   initialNearby,
   initialMoveInDate,
   initialGuests,
+  initialFilters,
+  initialPage,
 }: {
   accountUser: BrowseAccountUser | null;
   initialCity: string;
   initialNearby: boolean;
   initialMoveInDate: string;
   initialGuests: number;
+  initialFilters: {
+    gender: "" | "MALE" | "FEMALE" | "MIXED";
+    minPrice: string;
+    maxPrice: string;
+    amenities: string[];
+    sort: HostelSearchSort;
+  };
+  initialPage: number;
 }) {
   const router = useRouter();
   const [destination, setDestination] = useState(
@@ -271,11 +279,15 @@ export default function SearchPageClient({
   const [appliedMoveInDate, setAppliedMoveInDate] = useState(initialMoveInDate);
   const [guests, setGuests] = useState(String(initialGuests));
   const [appliedGuests, setAppliedGuests] = useState(String(initialGuests));
+  const [filters, setFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+  const [filterError, setFilterError] = useState<string | null>(null);
   const [hostels, setHostels] = useState<HostelSearchResult[]>([]);
   const [totalHostels, setTotalHostels] = useState(0);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(true);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchReload, setSearchReload] = useState(0);
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
 
   useEffect(() => {
@@ -284,10 +296,21 @@ export default function SearchPageClient({
     async function loadHostels() {
       setIsLoading(true);
       setSearchError(null);
-      const query = new URLSearchParams({
-        sort: "newest",
-        page: String(page),
-        limit: String(PAGE_SIZE),
+      const query = buildSearchParams({
+        city: appliedCity,
+        moveInDate: appliedMoveInDate,
+        guests: Number(appliedGuests),
+        gender: appliedFilters.gender || undefined,
+        minPrice: appliedFilters.minPrice
+          ? Number(appliedFilters.minPrice)
+          : undefined,
+        maxPrice: appliedFilters.maxPrice
+          ? Number(appliedFilters.maxPrice)
+          : undefined,
+        amenities: appliedFilters.amenities,
+        sort: appliedFilters.sort,
+        page,
+        limit: PAGE_SIZE,
       });
 
       try {
@@ -322,11 +345,6 @@ export default function SearchPageClient({
             signal: controller.signal,
           });
         } else {
-          if (appliedCity) query.set("city", appliedCity);
-          if (appliedMoveInDate) {
-            query.set("moveInDate", appliedMoveInDate);
-            query.set("guests", appliedGuests);
-          }
           response = await fetch(`/api/hostels?${query}`, {
             signal: controller.signal,
           });
@@ -367,7 +385,15 @@ export default function SearchPageClient({
 
     void loadHostels();
     return () => controller.abort();
-  }, [appliedCity, appliedGuests, appliedMoveInDate, appliedNearby, page]);
+  }, [
+    appliedCity,
+    appliedGuests,
+    appliedMoveInDate,
+    appliedNearby,
+    appliedFilters,
+    page,
+    searchReload,
+  ]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -381,13 +407,23 @@ export default function SearchPageClient({
     setAppliedGuests(guests);
     setIsNearby(useNearby);
 
-    const params = new URLSearchParams();
+    const params = buildSearchParams({
+      city: useNearby ? undefined : trimmedDestination,
+      moveInDate: moveInDate || undefined,
+      guests: Number(guests),
+      gender: appliedFilters.gender || undefined,
+      minPrice: appliedFilters.minPrice
+        ? Number(appliedFilters.minPrice)
+        : undefined,
+      maxPrice: appliedFilters.maxPrice
+        ? Number(appliedFilters.maxPrice)
+        : undefined,
+      amenities: appliedFilters.amenities,
+      sort: appliedFilters.sort,
+      page: 1,
+      limit: PAGE_SIZE,
+    });
     if (useNearby) params.set("nearby", "true");
-    else if (trimmedDestination) params.set("city", trimmedDestination);
-    if (moveInDate) {
-      params.set("moveInDate", moveInDate);
-      params.set("guests", guests);
-    }
     const query = params.toString();
     router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
 
@@ -400,8 +436,121 @@ export default function SearchPageClient({
     }
   }
 
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const minPrice = filters.minPrice.trim();
+    const maxPrice = filters.maxPrice.trim();
+    if (
+      (minPrice && (!/^\d{1,8}$/.test(minPrice) || Number(minPrice) < 0)) ||
+      (maxPrice && (!/^\d{1,8}$/.test(maxPrice) || Number(maxPrice) < 0)) ||
+      (minPrice && maxPrice && Number(minPrice) > Number(maxPrice))
+    ) {
+      setFilterError("Enter a valid monthly price range.");
+      return;
+    }
+
+    setFilterError(null);
+    setPage(1);
+    setAppliedFilters({
+      ...filters,
+      minPrice,
+      maxPrice,
+    });
+    const params = buildSearchParams({
+      city: appliedCity,
+      moveInDate: appliedMoveInDate || undefined,
+      guests: Number(appliedGuests),
+      gender: filters.gender || undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      amenities: filters.amenities,
+      sort: filters.sort,
+      page: 1,
+      limit: PAGE_SIZE,
+    });
+    if (appliedNearby) params.set("nearby", "true");
+    const query = params.toString();
+    router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
+  }
+
+  function removeAppliedFilter(filterId: string) {
+    const next = {
+      ...appliedFilters,
+      gender: filterId === "gender" ? "" as const : appliedFilters.gender,
+      minPrice: filterId === "price" ? "" : appliedFilters.minPrice,
+      maxPrice: filterId === "price" ? "" : appliedFilters.maxPrice,
+      amenities: filterId.startsWith("amenity:")
+        ? appliedFilters.amenities.filter(
+            (amenity) => amenity !== filterId.slice("amenity:".length),
+          )
+        : appliedFilters.amenities,
+    };
+    setFilters(next);
+    setAppliedFilters(next);
+    setPage(1);
+    const params = buildSearchParams({
+      city: appliedCity,
+      moveInDate: appliedMoveInDate || undefined,
+      guests: Number(appliedGuests),
+      gender: next.gender || undefined,
+      minPrice: next.minPrice ? Number(next.minPrice) : undefined,
+      maxPrice: next.maxPrice ? Number(next.maxPrice) : undefined,
+      amenities: next.amenities,
+      sort: next.sort,
+      page: 1,
+      limit: PAGE_SIZE,
+    });
+    if (appliedNearby) params.set("nearby", "true");
+    const query = params.toString();
+    router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
+  }
+
+  function clearFilters() {
+    const reset = {
+      gender: "" as const,
+      minPrice: "",
+      maxPrice: "",
+      amenities: [],
+      sort: "newest" as const,
+    };
+    setFilters(reset);
+    setAppliedFilters(reset);
+    setFilterError(null);
+    setPage(1);
+    const params = buildSearchParams({
+      city: appliedCity,
+      moveInDate: appliedMoveInDate || undefined,
+      guests: Number(appliedGuests),
+      page: 1,
+      limit: PAGE_SIZE,
+    });
+    if (appliedNearby) params.set("nearby", "true");
+    const query = params.toString();
+    router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
+  }
+
   function selectPage(nextPage: number) {
-    setPage(Math.min(pageCount, Math.max(1, nextPage)));
+    const next = Math.min(pageCount, Math.max(1, nextPage));
+    setPage(next);
+    const params = buildSearchParams({
+      city: appliedCity,
+      moveInDate: appliedMoveInDate || undefined,
+      guests: Number(appliedGuests),
+      gender: appliedFilters.gender || undefined,
+      minPrice: appliedFilters.minPrice
+        ? Number(appliedFilters.minPrice)
+        : undefined,
+      maxPrice: appliedFilters.maxPrice
+        ? Number(appliedFilters.maxPrice)
+        : undefined,
+      amenities: appliedFilters.amenities,
+      sort: appliedFilters.sort,
+      page: next,
+      limit: PAGE_SIZE,
+    });
+    if (appliedNearby) params.set("nearby", "true");
+    const query = params.toString();
+    router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -410,6 +559,28 @@ export default function SearchPageClient({
     : appliedCity
     ? `Hostels in ${appliedCity}`
     : "Hostels across Pakistan";
+  const activeFilterTags = [
+    ...(appliedFilters.gender
+      ? [{
+          id: "gender",
+          label: appliedFilters.gender === "FEMALE"
+            ? "Women only"
+            : appliedFilters.gender === "MALE"
+              ? "Men only"
+              : "All genders accepted",
+        }]
+      : []),
+    ...(appliedFilters.minPrice || appliedFilters.maxPrice
+      ? [{
+          id: "price",
+          label: `PKR ${appliedFilters.minPrice || "0"}–${appliedFilters.maxPrice || "no maximum"}`,
+        }]
+      : []),
+    ...appliedFilters.amenities.map((amenityId) => ({
+      id: `amenity:${amenityId}`,
+      label: AMENITIES.find((amenity) => amenity.id === amenityId)?.label ?? amenityId,
+    })),
+  ];
 
   return (
     <div className="search-results-page min-h-dvh bg-white text-ink">
@@ -489,23 +660,143 @@ export default function SearchPageClient({
 
       <div className="search-filter-bar sticky top-[82px] z-[15] border-b border-line bg-white/[0.97] [@media(max-width:780px)]:top-[133px]">
         <div className="search-filter-inner mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]!">
-          <div
-            aria-label="Hostel filters"
-            className="search-filter-list flex min-h-[66px] items-center gap-[10px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [@media(max-width:780px)]:min-h-[58px]"
-          >
-            <span className="search-filter-control inline-flex min-h-[38px] shrink-0 items-center justify-center gap-2 rounded-full border border-line bg-white px-[15px] text-[0.77rem] font-[550] text-ink whitespace-nowrap">
+          <details className="search-filter-details py-3">
+            <summary className="search-filter-control inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-white px-4 text-[0.82rem] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2">
               <SlidersHorizontal aria-hidden="true" size={16} />
               Filters
-            </span>
-            {pageFilters.map((filter) => (
-              <span
-                className="search-filter-chip inline-flex min-h-[38px] shrink-0 items-center justify-center gap-2 rounded-full border border-line bg-white px-[15px] text-[0.77rem] font-[550] text-ink whitespace-nowrap"
-                key={filter}
-              >
-                {filter}
-              </span>
-            ))}
-          </div>
+              {(appliedFilters.gender ||
+                appliedFilters.minPrice ||
+                appliedFilters.maxPrice ||
+                appliedFilters.amenities.length > 0) && (
+                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand-dark">
+                  Active
+                </span>
+              )}
+            </summary>
+            <form
+              aria-label="Hostel filters"
+              className="search-filter-form mt-3 grid gap-4 rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-4"
+              onSubmit={applyFilters}
+            >
+              <label className="grid min-w-0 gap-1 text-sm font-medium">
+                Hostel type
+                <select
+                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-sm"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      gender: event.target.value as typeof current.gender,
+                    }))
+                  }
+                  value={filters.gender}
+                >
+                  <option value="">All genders</option>
+                  <option value="FEMALE">Women only</option>
+                  <option value="MALE">Men only</option>
+                  <option value="MIXED">All genders accepted</option>
+                </select>
+              </label>
+              <label className="grid min-w-0 gap-1 text-sm font-medium">
+                Sort by
+                <select
+                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-sm"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      sort: event.target.value as HostelSearchSort,
+                    }))
+                  }
+                  value={filters.sort}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid min-w-0 gap-1 text-sm font-medium">
+                Minimum monthly price (PKR)
+                <input
+                  className="min-h-11 rounded-lg border border-line px-3 text-sm"
+                  inputMode="numeric"
+                  min="0"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      minPrice: event.target.value,
+                    }))
+                  }
+                  type="number"
+                  value={filters.minPrice}
+                />
+              </label>
+              <label className="grid min-w-0 gap-1 text-sm font-medium">
+                Maximum monthly price (PKR)
+                <input
+                  className="min-h-11 rounded-lg border border-line px-3 text-sm"
+                  inputMode="numeric"
+                  min="0"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      maxPrice: event.target.value,
+                    }))
+                  }
+                  type="number"
+                  value={filters.maxPrice}
+                />
+              </label>
+              <fieldset className="grid gap-2 border-0 p-0 sm:col-span-2 lg:col-span-4">
+                <legend className="mb-1 text-sm font-semibold">Amenities</legend>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
+                  {AMENITIES.map((amenity) => (
+                    <label
+                      className="inline-flex min-h-11 items-center gap-2 text-sm"
+                      key={amenity.id}
+                    >
+                      <input
+                        checked={filters.amenities.includes(amenity.id)}
+                        onChange={(event) =>
+                          setFilters((current) => ({
+                            ...current,
+                            amenities: event.target.checked
+                              ? [...current.amenities, amenity.id]
+                              : current.amenities.filter(
+                                  (value) => value !== amenity.id,
+                                ),
+                          }))
+                        }
+                        type="checkbox"
+                        value={amenity.id}
+                      />
+                      {amenity.label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              {filterError && (
+                <p className="m-0 text-sm text-[#991b1b]" role="alert">
+                  {filterError}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
+                <button
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                  type="submit"
+                >
+                  Apply filters
+                </button>
+                <button
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-line bg-white px-5 font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                  onClick={clearFilters}
+                  type="button"
+                >
+                  Clear filters
+                </button>
+              </div>
+            </form>
+          </details>
         </div>
       </div>
 
@@ -520,7 +811,7 @@ export default function SearchPageClient({
                 {pageTitle}
               </h1>
               {!isLoading && !searchError && totalHostels > 0 && (
-                <p className="m-0 flex-none text-[0.82rem] text-muted">
+                <p aria-live="polite" className="m-0 flex-none text-[0.82rem] text-muted" role="status">
                   {totalHostels} {totalHostels === 1 ? "hostel" : "hostels"}
                   {appliedCity ? ` in ${appliedCity}` : ""}
                 </p>
@@ -530,6 +821,25 @@ export default function SearchPageClient({
             <p className="search-price-note mt-0 mb-[18px] text-[0.76rem] text-muted">
               Prices include monthly rent
             </p>
+            {activeFilterTags.length > 0 && (
+              <div
+                aria-label="Active filters"
+                className="mb-4 flex flex-wrap gap-2"
+              >
+                {activeFilterTags.map((filter) => (
+                  <button
+                    aria-label={`Remove ${filter.label} filter`}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface-muted px-3 text-sm text-ink"
+                    key={filter.id}
+                    onClick={() => removeAppliedFilter(filter.id)}
+                    type="button"
+                  >
+                    {filter.label}
+                    <span aria-hidden="true">×</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {isLoading && (
               <p
@@ -540,12 +850,19 @@ export default function SearchPageClient({
               </p>
             )}
             {searchError && (
-              <p
+              <div
                 className="search-results-message m-0 py-[30px] text-[0.9rem] text-muted"
                 role="alert"
               >
-                {searchError}
-              </p>
+                <p className="m-0">{searchError}</p>
+                <button
+                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
+                  onClick={() => setSearchReload((current) => current + 1)}
+                  type="button"
+                >
+                  Try again
+                </button>
+              </div>
             )}
             {!isLoading && !searchError && hostels.length === 0 && (
               <p

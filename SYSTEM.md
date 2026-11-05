@@ -4,7 +4,7 @@
 |---|---|
 | **Version** | 4.4 |
 | **Verified against code** | November 5, 2026 (repository snapshot plus seat-hold and payment-resilience changes) |
-| **Stage** | Pre-launch, backend only. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
+| **Stage** | Pre-launch. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
 | **Document owner** | _To be assigned_ |
 
 ## How to read this document
@@ -34,10 +34,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 36 |
-| API route handler files | 76 |
+| API route handler files | 77 |
 | Prisma models | 31 |
 | Prisma migrations | 34 |
-| Vitest test files | 214 |
+| Vitest test files | 217 |
 | Cron jobs in the schedule registry | 8 |
 | Cron route handlers | 8 |
 <!-- docs-check:end -->
@@ -55,7 +55,7 @@ HostelLo is a Pakistan-focused student hostel marketplace. Students search for h
 | Admin | Approve or suspend listings, verify student identities, moderate reviews and roommate posts, issue refunds, create payout batches, reconcile payment events, sync the search index |
 | System | QStash-triggered cron jobs, Safepay webhooks |
 
-**Current state.** The repository is an API-only Next.js 16 application: route handlers under `src/app/api` and the root layout the framework requires, with no pages or UI components. The web UI was removed on October 19, 2026 for a redesign, and native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. The backend still emits some links and redirects to pages that no longer exist (R-09).
+**Current state.** The repository is a Next.js 16 application with API route handlers and a partially restored browser UI; marketplace and account flows are still being completed and are not release-cleared. Native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. Some auth and payment redirects may still target pages that are not implemented (R-09).
 
 **Out of scope for the MVP:** separate backend services, international expansion and multi-currency, native mobile apps, offline search, video reviews, Apple Pay and Google Pay until Safepay support is confirmed.
 
@@ -442,6 +442,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Student verification | `/api/user/verify-student`, `/api/user/verify-student/upload` | Student |
 | Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/nearby` (POST nearby search; 25 km radius), `/api/hostels/mine` | Public / Owner |
 | | `/api/hostels/[param]` (GET returns owner contact details, Admin; PATCH edits the listing, Owner) | Admin / Owner |
+| | `/api/hostels/[param]/public` (public-safe detail projection) | Public |
 | | `/api/hostels/[param]/availability` (informational 12-month calendar), `/api/hostels/[param]/availability/exact` (room seats for a requested stay), `/api/hostels/[param]/view` (view counter) | Public |
 | | `/api/hostels/[param]/favorite`, `/api/hostels/[param]/roommates` | Student |
 | | `/api/favorites` | Signed in |

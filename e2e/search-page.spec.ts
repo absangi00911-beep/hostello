@@ -154,6 +154,71 @@ test("search_results_are_available_without_a_city_filter", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("supported filters and pagination are reflected in the search request and URL", async ({
+  page,
+}) => {
+  const requests: URL[] = [];
+  await page.route("**/api/hostels**", async (route) => {
+    const url = new URL(route.request().url());
+    requests.push(url);
+    const currentPage = Number(url.searchParams.get("page") ?? 1);
+    const data = Array.from({ length: 20 }, (_, index) => ({
+      id: `filtered-hostel-${currentPage}-${index + 1}`,
+      name: `Filtered hostel ${currentPage}-${index + 1}`,
+      slug: `filtered-hostel-${currentPage}-${index + 1}`,
+      city: "Lahore",
+      area: "Gulberg",
+      pricePerMonth: 18_000,
+      coverImage: null,
+      images: [],
+      rating: 4.5,
+      reviewCount: 18,
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data,
+        total: 45,
+        page: currentPage,
+        limit: 20,
+        hasMore: currentPage < 3,
+      }),
+    });
+  });
+
+  await page.goto("/search?city=Lahore");
+  await page.getByText("Filters", { exact: true }).click();
+  await page.getByLabel("Hostel type").selectOption("FEMALE");
+  await page.getByLabel("Sort by").selectOption("price_asc");
+  await page.getByLabel("Minimum monthly price (PKR)").fill("8000");
+  await page.getByLabel("Maximum monthly price (PKR)").fill("24000");
+  await page.getByLabel("Wi-Fi").check();
+  await page.getByRole("button", { name: "Apply filters" }).click();
+
+  await expect.poll(() =>
+    requests.some((url) =>
+      url.searchParams.get("gender") === "FEMALE" &&
+      url.searchParams.get("minPrice") === "8000" &&
+      url.searchParams.get("maxPrice") === "24000" &&
+      url.searchParams.get("amenities") === "wifi" &&
+      url.searchParams.get("sort") === "price_asc",
+    ),
+  ).toBe(true);
+  await expect(page).toHaveURL(/gender=FEMALE/);
+  await expect(page.getByRole("button", { name: "Remove Women only filter" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Page 2" }).click();
+  await expect.poll(() =>
+    requests.some((url) =>
+      url.searchParams.get("page") === "2" &&
+      url.searchParams.get("gender") === "FEMALE" &&
+      url.searchParams.get("amenities") === "wifi",
+    ),
+  ).toBe(true);
+  await expect(page).toHaveURL(/page=2/);
+});
+
 test("home_search_opens_the_results_page_for_the_entered_city", async ({
   page,
 }) => {

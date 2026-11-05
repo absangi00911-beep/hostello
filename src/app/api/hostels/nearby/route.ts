@@ -14,6 +14,8 @@ const MAX_QUERY_LENGTH = 4_096;
 const MAX_SEARCH_REQUESTS_PER_MINUTE = 120;
 const MAX_SEARCH_GUESTS = 8;
 const MAX_REQUEST_BODY_BYTES = 4_096;
+const MAX_AMENITY_FILTERS = 30;
+const MAX_AMENITY_LENGTH = 100;
 
 interface NearbySearchBody {
   latitude: number;
@@ -104,6 +106,48 @@ export async function POST(req: NextRequest) {
       defaultLimit: DEFAULT_LIMIT,
       maxLimit: MAX_LIMIT,
     });
+    const genderValues = req.nextUrl.searchParams.getAll("gender");
+    const genderValue = genderValues[0];
+    const gender =
+      genderValue === "MALE" || genderValue === "FEMALE" || genderValue === "MIXED"
+        ? genderValue
+        : undefined;
+    const minPriceValues = req.nextUrl.searchParams.getAll("minPrice");
+    const maxPriceValues = req.nextUrl.searchParams.getAll("maxPrice");
+    const minPrice = minPriceValues[0] === undefined
+      ? undefined
+      : Number(minPriceValues[0]);
+    const maxPrice = maxPriceValues[0] === undefined
+      ? undefined
+      : Number(maxPriceValues[0]);
+    const amenities = req.nextUrl.searchParams.getAll("amenities");
+    const sortValues = req.nextUrl.searchParams.getAll("sort");
+    const sortValue = sortValues[0];
+    const sort =
+      sortValue === "price_asc" ||
+      sortValue === "price_desc" ||
+      sortValue === "rating" ||
+      sortValue === "newest"
+        ? sortValue
+        : "newest";
+    if (
+      genderValues.length > 1 ||
+      (genderValue !== undefined && gender === undefined) ||
+      minPriceValues.length > 1 ||
+      maxPriceValues.length > 1 ||
+      (minPrice !== undefined && (!Number.isFinite(minPrice) || minPrice < 0)) ||
+      (maxPrice !== undefined && (!Number.isFinite(maxPrice) || maxPrice < 0)) ||
+      (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) ||
+      amenities.length > MAX_AMENITY_FILTERS ||
+      amenities.some((amenity) => amenity.length > MAX_AMENITY_LENGTH) ||
+      sortValues.length > 1 ||
+      (sortValue !== undefined && sort !== sortValue)
+    ) {
+      return NextResponse.json(
+        { error: "One or more search filters are invalid." },
+        { status: 400 },
+      );
+    }
     const moveInDate = body.data.moveInDate
       ? new Date(`${body.data.moveInDate}T00:00:00.000Z`)
       : undefined;
@@ -114,9 +158,13 @@ export async function POST(req: NextRequest) {
             latitude: body.data.latitude,
             longitude: body.data.longitude,
           },
+          gender,
+          minPrice,
+          maxPrice,
+          amenities: amenities.length ? amenities : undefined,
           moveInDate,
           guests: moveInDate ? body.data.guests ?? 1 : undefined,
-          sort: "newest",
+          sort,
           page,
           limit,
         },

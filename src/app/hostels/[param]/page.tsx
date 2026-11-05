@@ -16,7 +16,10 @@ import { HostelReviewsSection } from "@/components/hostel-detail/HostelReviewsSe
 import { HostelRoomSection } from "@/components/hostel-detail/HostelRoomSection";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { getPublicHostelDetail } from "@/lib/hostel-detail";
+import {
+  getPublicHostelDetail,
+  projectPublicHostelDetail,
+} from "@/lib/hostel-detail";
 import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
 
 function genderLabel(gender: string): string {
@@ -38,6 +41,7 @@ export default async function HostelDetailPage({
   const { param } = await params;
   const hostel = await getPublicHostelDetail(param);
   if (!hostel) notFound();
+  const publicHostel = projectPublicHostelDetail(hostel);
 
   const session = await auth();
   const isSaved =
@@ -192,8 +196,8 @@ export default async function HostelDetailPage({
                 <HostelLocationSection
                   area={hostel.area}
                   city={hostel.city}
-                  latitude={hostel.latitude}
-                  longitude={hostel.longitude}
+                  latitude={publicHostel.latitude}
+                  longitude={publicHostel.longitude}
                 />
               </div>
             </div>

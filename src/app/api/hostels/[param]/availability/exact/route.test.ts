@@ -72,7 +72,10 @@ describe("GET exact hostel availability", () => {
     ]);
     expect(JSON.stringify(body)).not.toContain("bookingId");
     expect(db.hostel.findFirst).toHaveBeenCalledWith({
-      where: { slug: "green-view", status: "ACTIVE" },
+      where: {
+        OR: [{ id: "green-view" }, { slug: "green-view" }],
+        status: "ACTIVE",
+      },
       select: { id: true },
     });
     expect(tx.room.findMany).toHaveBeenCalledWith(expect.objectContaining({
@@ -102,5 +105,17 @@ describe("GET exact hostel availability", () => {
 
     expect(response.status).toBe(429);
     expect(db.hostel.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("resolves the same public detail identifier when the client has a hostel id", async () => {
+    await GET(request(), params("hostel_1") as any);
+
+    expect(db.hostel.findFirst).toHaveBeenCalledWith({
+      where: {
+        OR: [{ id: "hostel_1" }, { slug: "hostel_1" }],
+        status: "ACTIVE",
+      },
+      select: { id: true },
+    });
   });
 });

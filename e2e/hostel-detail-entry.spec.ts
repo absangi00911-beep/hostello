@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
 
 const hostelId = "cmvp8pemp000ogwvvh5cnpm6g";
@@ -26,6 +25,52 @@ async function mockHostelSearch(page: Page) {
       }),
     }),
   );
+}
+
+function dateAtMonthOffset(offset: number): string {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1),
+  ).toISOString().slice(0, 10);
+}
+
+async function openExactRoomReview(page: Page) {
+  const checkIn = dateAtMonthOffset(3);
+  const checkOut = dateAtMonthOffset(4);
+  const roomSelect = page.getByLabel("Room");
+  await roomSelect.selectOption({ index: 1 });
+  const roomId = await roomSelect.inputValue();
+  const availabilityRequests: URL[] = [];
+
+  await page.route("**/api/hostels/*/availability/exact?*", async (route) => {
+    const url = new URL(route.request().url());
+    availabilityRequests.push(url);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: [{ roomId, capacity: 2, availableSeats: 2, fits: true }],
+      }),
+    });
+  });
+  await page.getByLabel("Move in").fill(checkIn);
+  await page.getByLabel("Move out").fill(checkOut);
+  await expect(
+    page.getByText(/Available for all selected dates: 2 of 2 seats/),
+  ).toBeVisible();
+  await expect.poll(() =>
+    availabilityRequests.some((url) =>
+      url.searchParams.get("checkIn") === checkIn &&
+      url.searchParams.get("checkOut") === checkOut &&
+      url.searchParams.get("guests") === "1",
+    ),
+  ).toBe(true);
+
+  await page.getByRole("button", { name: "Review booking" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Review your booking" }),
+  ).toBeVisible();
+  return { checkIn, checkOut, roomId };
 }
 
 test("hostel detail header matches homepage size and wordmark alignment", async ({
@@ -319,6 +364,92 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   expect(documentWidth.scrollWidth).toBeLessThanOrEqual(
     documentWidth.clientWidth,
   );
+});
+
+test("search to detail reviews an exact room stay before requesting a pending booking", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await mockHostelSearch(page);
+  await page.route("**/api/payment/initiate", async (route) => {
+    await route.fulfill({ status: 500, body: "Payment must not start yet." });
+  });
+
+  await page.goto("/search?city=Lahore");
+  await page.getByRole("link", { name: /Garden View Hostel/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Garden View Hostel" }),
+  ).toBeVisible();
+  const { checkIn, checkOut, roomId } = await openExactRoomReview(page);
+  const bookingRequests: unknown[] = [];
+  await page.route("**/api/bookings", async (route) => {
+    bookingRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: {
+          id: "booking-pending-1",
+          total: 48000,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+        },
+      }),
+    });
+  });
+
+  expect(bookingRequests).toHaveLength(0);
+  await page.getByRole("button", { name: "Request booking" }).click();
+  await expect(page.getByText("Booking status: Pending")).toBeVisible();
+  await expect(page.getByText("Payment status: Payment pending")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Continue to Safepay" }),
+  ).toBeVisible();
+  expect(bookingRequests).toEqual([
+    expect.objectContaining({
+      roomId,
+      checkIn,
+      checkOut,
+      guests: 1,
+      paymentMethod: "safepay",
+    }),
+  ]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+});
+
+test("an unavailable-room conflict clears the room and offers a retry path", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(`/hostels/${hostelId}`);
+  const roomId = await page.getByLabel("Room").inputValue();
+  await page.route("**/api/hostels/*/availability/exact?*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: [{ roomId, capacity: 2, availableSeats: 2, fits: true }],
+      }),
+    });
+  });
+  await page.route("**/api/bookings", async (route) => {
+    await route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Room availability changed." }),
+    });
+  });
+
+  await openExactRoomReview(page);
+  await page.getByRole("button", { name: "Request booking" }).click();
+
+  await expect(
+    page.getByRole("alert").getByText(
+      "This room is no longer available for those dates. Change dates or choose another room.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByLabel("Room")).toHaveValue("");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
 
 test("hostel details show the public listing overview", async ({ page }) => {

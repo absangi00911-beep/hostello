@@ -6,27 +6,15 @@ export async function fetchHostelSearchResults(hostelIds: string[]) {
         where: { id: { in: hostelIds }, status: "ACTIVE" },
         select: {
           id: true,
-          name: true,
           slug: true,
+          name: true,
           city: true,
           area: true,
           pricePerMonth: true,
-          gender: true,
-          amenities: true,
           coverImage: true,
           images: true,
-          verified: true,
-          featured: true,
           rating: true,
           reviewCount: true,
-          safetyScore: true,
-          capacity: true,
-          rooms: true,
-          latitude: true,
-          longitude: true,
-          owner: {
-            select: { id: true, name: true, avatar: true },
-          },
         },
       })
     : [];
@@ -34,5 +22,17 @@ export async function fetchHostelSearchResults(hostelIds: string[]) {
   const byId = new Map(hostels.map((hostel) => [hostel.id, hostel]));
   return hostelIds
     .map((id) => byId.get(id))
-    .filter((hostel): hostel is NonNullable<typeof hostel> => hostel !== undefined);
+    .filter((hostel): hostel is NonNullable<typeof hostel> => hostel !== undefined)
+    .map((hostel) => ({
+      id: hostel.id,
+      slug: hostel.slug,
+      name: hostel.name,
+      city: hostel.city,
+      area: hostel.area,
+      pricePerMonth: hostel.pricePerMonth,
+      coverImage: hostel.coverImage,
+      images: hostel.images,
+      rating: hostel.rating,
+      reviewCount: hostel.reviewCount,
+    }));
 }

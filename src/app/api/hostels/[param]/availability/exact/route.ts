@@ -4,6 +4,11 @@ import { exactAvailabilitySchema } from "@hostello/shared";
 import { db } from "@/lib/db";
 import { getIp, rateLimit } from "@/lib/rate-limit";
 import { getHostelStayAvailability } from "@/lib/room-availability-service";
+import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
+import {
+  isBoundedRouteParam,
+  MAX_HOSTEL_ROUTE_PARAM_LENGTH,
+} from "@/lib/route-params";
 
 export async function GET(
   req: NextRequest,
@@ -11,7 +16,10 @@ export async function GET(
 ) {
   try {
     const { param } = await params;
-    if (param.length > 200 || req.nextUrl.search.length > 1_024) {
+    if (
+      !isBoundedRouteParam(param, MAX_HOSTEL_ROUTE_PARAM_LENGTH) ||
+      req.nextUrl.search.length > 1_024
+    ) {
       return NextResponse.json({ error: "Invalid availability request." }, { status: 400 });
     }
 
@@ -39,7 +47,7 @@ export async function GET(
     }
 
     const hostel = await db.hostel.findFirst({
-      where: { slug: param, status: "ACTIVE" },
+      where: { ...hostelIdOrSlugWhere(param), status: "ACTIVE" },
       select: { id: true },
     });
     if (!hostel) {

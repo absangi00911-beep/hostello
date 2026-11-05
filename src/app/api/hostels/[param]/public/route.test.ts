@@ -41,8 +41,8 @@ const privateHostelFixture = {
   verified: true,
   rating: 4.5,
   reviewCount: 2,
-  latitude: 31.5,
-  longitude: 74.3,
+  latitude: 31.51234,
+  longitude: 74.31234,
   status: "ACTIVE",
   featured: true,
   safetyScore: 98,
@@ -88,6 +88,8 @@ describe("GET /api/hostels/[param]/public", () => {
       id: "hostel-1",
       slug: "green-view",
       name: "Green View",
+      latitude: 31.51,
+      longitude: 74.31,
       owner: { name: "Host Name", bio: "Host bio", city: "Lahore" },
     });
     expect(body.data.owner).not.toHaveProperty("id");

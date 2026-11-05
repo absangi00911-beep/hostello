@@ -102,6 +102,29 @@ describe("POST /api/hostels/nearby", () => {
     });
   });
 
+  it("applies supported price, gender, amenity, sort, and page filters to nearby results", async () => {
+    await POST(
+      request(
+        { latitude: 33.6844, longitude: 73.0479 },
+        "?gender=FEMALE&minPrice=8000&maxPrice=24000&amenities=wifi&amenities=laundry&sort=price_asc&page=2&limit=5",
+      ),
+    );
+
+    expect(searchHostelsWithFallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nearby: { latitude: 33.6844, longitude: 73.0479 },
+        gender: "FEMALE",
+        minPrice: 8000,
+        maxPrice: 24000,
+        amenities: ["wifi", "laundry"],
+        sort: "price_asc",
+        page: 2,
+        limit: 5,
+      }),
+      expect.anything(),
+    );
+  });
+
   it("defaults to one student when a move-in date is provided without a count", async () => {
     await POST(
       request({

@@ -140,6 +140,12 @@ type PublicHostelDetailRecord = NonNullable<
   Awaited<ReturnType<typeof getPublicHostelDetail>>
 >;
 
+function roundedPublicCoordinate(value: number | null): number | null {
+  return value !== null && Number.isFinite(value)
+    ? Number(value.toFixed(2))
+    : null;
+}
+
 export function projectPublicHostelDetail(hostel: PublicHostelDetailRecord) {
   return {
     id: hostel.id,
@@ -161,8 +167,8 @@ export function projectPublicHostelDetail(hostel: PublicHostelDetailRecord) {
     verified: hostel.verified,
     rating: hostel.rating,
     reviewCount: hostel.reviewCount,
-    latitude: hostel.latitude,
-    longitude: hostel.longitude,
+    latitude: roundedPublicCoordinate(hostel.latitude),
+    longitude: roundedPublicCoordinate(hostel.longitude),
     owner: {
       name: hostel.owner.name,
       avatar: hostel.owner.avatar,
