@@ -397,6 +397,7 @@ export type UserWhereInput = {
   conversationParticipants?: Prisma.ConversationParticipantListRelationFilter
   passwordResets?: Prisma.PasswordResetTokenListRelationFilter
   priceAlerts?: Prisma.PriceAlertListRelationFilter
+  availabilityAlerts?: Prisma.AvailabilityAlertListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
@@ -443,6 +444,7 @@ export type UserOrderByWithRelationInput = {
   conversationParticipants?: Prisma.ConversationParticipantOrderByRelationAggregateInput
   passwordResets?: Prisma.PasswordResetTokenOrderByRelationAggregateInput
   priceAlerts?: Prisma.PriceAlertOrderByRelationAggregateInput
+  availabilityAlerts?: Prisma.AvailabilityAlertOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenOrderByRelationAggregateInput
   roommmatePosts?: Prisma.RoommatePostOrderByRelationAggregateInput
@@ -492,6 +494,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   conversationParticipants?: Prisma.ConversationParticipantListRelationFilter
   passwordResets?: Prisma.PasswordResetTokenListRelationFilter
   priceAlerts?: Prisma.PriceAlertListRelationFilter
+  availabilityAlerts?: Prisma.AvailabilityAlertListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
@@ -604,6 +607,7 @@ export type UserCreateInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -650,6 +654,7 @@ export type UserUncheckedCreateInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -696,6 +701,7 @@ export type UserUpdateInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -742,6 +748,7 @@ export type UserUncheckedUpdateInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -1178,6 +1185,20 @@ export type UserUpdateOneRequiredWithoutPriceAlertsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPriceAlertsInput, Prisma.UserUpdateWithoutPriceAlertsInput>, Prisma.UserUncheckedUpdateWithoutPriceAlertsInput>
 }
 
+export type UserCreateNestedOneWithoutAvailabilityAlertsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedCreateWithoutAvailabilityAlertsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAvailabilityAlertsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAvailabilityAlertsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedCreateWithoutAvailabilityAlertsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAvailabilityAlertsInput
+  upsert?: Prisma.UserUpsertWithoutAvailabilityAlertsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAvailabilityAlertsInput, Prisma.UserUpdateWithoutAvailabilityAlertsInput>, Prisma.UserUncheckedUpdateWithoutAvailabilityAlertsInput>
+}
+
 export type UserCreateNestedOneWithoutNotificationsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
@@ -1259,6 +1280,7 @@ export type UserCreateWithoutSubscriptionInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -1304,6 +1326,7 @@ export type UserUncheckedCreateWithoutSubscriptionInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -1365,6 +1388,7 @@ export type UserUpdateWithoutSubscriptionInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -1410,6 +1434,7 @@ export type UserUncheckedUpdateWithoutSubscriptionInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -1455,6 +1480,7 @@ export type UserCreateWithoutPayoutsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -1500,6 +1526,7 @@ export type UserUncheckedCreateWithoutPayoutsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -1561,6 +1588,7 @@ export type UserUpdateWithoutPayoutsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -1606,6 +1634,7 @@ export type UserUncheckedUpdateWithoutPayoutsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -1651,6 +1680,7 @@ export type UserCreateWithoutAccountsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -1696,6 +1726,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -1757,6 +1788,7 @@ export type UserUpdateWithoutAccountsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -1802,6 +1834,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -1847,6 +1880,7 @@ export type UserCreateWithoutSessionsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -1892,6 +1926,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -1953,6 +1988,7 @@ export type UserUpdateWithoutSessionsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -1998,6 +2034,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -2044,6 +2081,7 @@ export type UserCreateWithoutPhoneVerificationTokensInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
@@ -2089,6 +2127,7 @@ export type UserUncheckedCreateWithoutPhoneVerificationTokensInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
@@ -2150,6 +2189,7 @@ export type UserUpdateWithoutPhoneVerificationTokensInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
@@ -2195,6 +2235,7 @@ export type UserUncheckedUpdateWithoutPhoneVerificationTokensInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -2239,6 +2280,7 @@ export type UserCreateWithoutHostelsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -2284,6 +2326,7 @@ export type UserUncheckedCreateWithoutHostelsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -2345,6 +2388,7 @@ export type UserUpdateWithoutHostelsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -2390,6 +2434,7 @@ export type UserUncheckedUpdateWithoutHostelsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -2435,6 +2480,7 @@ export type UserCreateWithoutBookingsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -2480,6 +2526,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -2541,6 +2588,7 @@ export type UserUpdateWithoutBookingsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -2586,6 +2634,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -2631,6 +2680,7 @@ export type UserCreateWithoutReviewsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -2676,6 +2726,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -2737,6 +2788,7 @@ export type UserUpdateWithoutReviewsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -2782,6 +2834,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -2827,6 +2880,7 @@ export type UserCreateWithoutPasswordResetsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -2872,6 +2926,7 @@ export type UserUncheckedCreateWithoutPasswordResetsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -2933,6 +2988,7 @@ export type UserUpdateWithoutPasswordResetsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -2978,6 +3034,7 @@ export type UserUncheckedUpdateWithoutPasswordResetsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -3023,6 +3080,7 @@ export type UserCreateWithoutFavoritesInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -3068,6 +3126,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -3129,6 +3188,7 @@ export type UserUpdateWithoutFavoritesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -3174,6 +3234,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -3219,6 +3280,7 @@ export type UserCreateWithoutHostResponseSummaryInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -3264,6 +3326,7 @@ export type UserUncheckedCreateWithoutHostResponseSummaryInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -3325,6 +3388,7 @@ export type UserUpdateWithoutHostResponseSummaryInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -3370,6 +3434,7 @@ export type UserUncheckedUpdateWithoutHostResponseSummaryInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -3415,6 +3480,7 @@ export type UserCreateWithoutConversationParticipantsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -3460,6 +3526,7 @@ export type UserUncheckedCreateWithoutConversationParticipantsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -3521,6 +3588,7 @@ export type UserUpdateWithoutConversationParticipantsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -3566,6 +3634,7 @@ export type UserUncheckedUpdateWithoutConversationParticipantsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -3611,6 +3680,7 @@ export type UserCreateWithoutMessagesInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -3656,6 +3726,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -3717,6 +3788,7 @@ export type UserUpdateWithoutMessagesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -3762,6 +3834,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -3807,6 +3880,7 @@ export type UserCreateWithoutPriceAlertsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -3852,6 +3926,7 @@ export type UserUncheckedCreateWithoutPriceAlertsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -3913,6 +3988,7 @@ export type UserUpdateWithoutPriceAlertsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -3958,6 +4034,207 @@ export type UserUncheckedUpdateWithoutPriceAlertsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
+}
+
+export type UserCreateWithoutAvailabilityAlertsInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
+}
+
+export type UserUncheckedCreateWithoutAvailabilityAlertsInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
+}
+
+export type UserCreateOrConnectWithoutAvailabilityAlertsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedCreateWithoutAvailabilityAlertsInput>
+}
+
+export type UserUpsertWithoutAvailabilityAlertsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedUpdateWithoutAvailabilityAlertsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedCreateWithoutAvailabilityAlertsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAvailabilityAlertsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAvailabilityAlertsInput, Prisma.UserUncheckedUpdateWithoutAvailabilityAlertsInput>
+}
+
+export type UserUpdateWithoutAvailabilityAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAvailabilityAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -4004,6 +4281,7 @@ export type UserCreateWithoutNotificationsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
@@ -4049,6 +4327,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
@@ -4110,6 +4389,7 @@ export type UserUpdateWithoutNotificationsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
@@ -4155,6 +4435,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -4200,6 +4481,7 @@ export type UserCreateWithoutRoommmatePostsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
@@ -4245,6 +4527,7 @@ export type UserUncheckedCreateWithoutRoommmatePostsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
@@ -4306,6 +4589,7 @@ export type UserUpdateWithoutRoommmatePostsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
@@ -4351,6 +4635,7 @@ export type UserUncheckedUpdateWithoutRoommmatePostsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
@@ -4396,6 +4681,7 @@ export type UserCreateWithoutRoommateReportsInput = {
   conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
@@ -4441,6 +4727,7 @@ export type UserUncheckedCreateWithoutRoommateReportsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
@@ -4502,6 +4789,7 @@ export type UserUpdateWithoutRoommateReportsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
@@ -4547,6 +4835,7 @@ export type UserUncheckedUpdateWithoutRoommateReportsInput = {
   conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
   passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
@@ -4569,6 +4858,7 @@ export type UserCountOutputType = {
   conversationParticipants: number
   passwordResets: number
   priceAlerts: number
+  availabilityAlerts: number
   notifications: number
   phoneVerificationTokens: number
   roommmatePosts: number
@@ -4587,6 +4877,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   conversationParticipants?: boolean | UserCountOutputTypeCountConversationParticipantsArgs
   passwordResets?: boolean | UserCountOutputTypeCountPasswordResetsArgs
   priceAlerts?: boolean | UserCountOutputTypeCountPriceAlertsArgs
+  availabilityAlerts?: boolean | UserCountOutputTypeCountAvailabilityAlertsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   phoneVerificationTokens?: boolean | UserCountOutputTypeCountPhoneVerificationTokensArgs
   roommmatePosts?: boolean | UserCountOutputTypeCountRoommmatePostsArgs
@@ -4683,6 +4974,13 @@ export type UserCountOutputTypeCountPriceAlertsArgs<ExtArgs extends runtime.Type
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountAvailabilityAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AvailabilityAlertWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.NotificationWhereInput
 }
@@ -4749,6 +5047,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   conversationParticipants?: boolean | Prisma.User$conversationParticipantsArgs<ExtArgs>
   passwordResets?: boolean | Prisma.User$passwordResetsArgs<ExtArgs>
   priceAlerts?: boolean | Prisma.User$priceAlertsArgs<ExtArgs>
+  availabilityAlerts?: boolean | Prisma.User$availabilityAlertsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   phoneVerificationTokens?: boolean | Prisma.User$phoneVerificationTokensArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.User$roommmatePostsArgs<ExtArgs>
@@ -4858,6 +5157,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   conversationParticipants?: boolean | Prisma.User$conversationParticipantsArgs<ExtArgs>
   passwordResets?: boolean | Prisma.User$passwordResetsArgs<ExtArgs>
   priceAlerts?: boolean | Prisma.User$priceAlertsArgs<ExtArgs>
+  availabilityAlerts?: boolean | Prisma.User$availabilityAlertsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   phoneVerificationTokens?: boolean | Prisma.User$phoneVerificationTokensArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.User$roommmatePostsArgs<ExtArgs>
@@ -4883,6 +5183,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     conversationParticipants: Prisma.$ConversationParticipantPayload<ExtArgs>[]
     passwordResets: Prisma.$PasswordResetTokenPayload<ExtArgs>[]
     priceAlerts: Prisma.$PriceAlertPayload<ExtArgs>[]
+    availabilityAlerts: Prisma.$AvailabilityAlertPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     phoneVerificationTokens: Prisma.$PhoneVerificationTokenPayload<ExtArgs>[]
     roommmatePosts: Prisma.$RoommatePostPayload<ExtArgs>[]
@@ -5322,6 +5623,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   conversationParticipants<T extends Prisma.User$conversationParticipantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$conversationParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   passwordResets<T extends Prisma.User$passwordResetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$passwordResetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PasswordResetTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   priceAlerts<T extends Prisma.User$priceAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$priceAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PriceAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  availabilityAlerts<T extends Prisma.User$availabilityAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$availabilityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AvailabilityAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   phoneVerificationTokens<T extends Prisma.User$phoneVerificationTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$phoneVerificationTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PhoneVerificationTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   roommmatePosts<T extends Prisma.User$roommmatePostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$roommmatePostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoommatePostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6073,6 +6375,30 @@ export type User$priceAlertsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.PriceAlertScalarFieldEnum | Prisma.PriceAlertScalarFieldEnum[]
+}
+
+/**
+ * User.availabilityAlerts
+ */
+export type User$availabilityAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AvailabilityAlert
+   */
+  select?: Prisma.AvailabilityAlertSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AvailabilityAlert
+   */
+  omit?: Prisma.AvailabilityAlertOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AvailabilityAlertInclude<ExtArgs> | null
+  where?: Prisma.AvailabilityAlertWhereInput
+  orderBy?: Prisma.AvailabilityAlertOrderByWithRelationInput | Prisma.AvailabilityAlertOrderByWithRelationInput[]
+  cursor?: Prisma.AvailabilityAlertWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AvailabilityAlertScalarFieldEnum | Prisma.AvailabilityAlertScalarFieldEnum[]
 }
 
 /**

@@ -451,6 +451,7 @@ export type HostelWhereInput = {
   favorites?: Prisma.FavoriteListRelationFilter
   conversations?: Prisma.ConversationListRelationFilter
   priceAlerts?: Prisma.PriceAlertListRelationFilter
+  availabilityAlerts?: Prisma.AvailabilityAlertListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   blockedDates?: Prisma.BlockedDateListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
@@ -495,6 +496,7 @@ export type HostelOrderByWithRelationInput = {
   favorites?: Prisma.FavoriteOrderByRelationAggregateInput
   conversations?: Prisma.ConversationOrderByRelationAggregateInput
   priceAlerts?: Prisma.PriceAlertOrderByRelationAggregateInput
+  availabilityAlerts?: Prisma.AvailabilityAlertOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   blockedDates?: Prisma.BlockedDateOrderByRelationAggregateInput
   roommmatePosts?: Prisma.RoommatePostOrderByRelationAggregateInput
@@ -542,6 +544,7 @@ export type HostelWhereUniqueInput = Prisma.AtLeast<{
   favorites?: Prisma.FavoriteListRelationFilter
   conversations?: Prisma.ConversationListRelationFilter
   priceAlerts?: Prisma.PriceAlertListRelationFilter
+  availabilityAlerts?: Prisma.AvailabilityAlertListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   blockedDates?: Prisma.BlockedDateListRelationFilter
   roommmatePosts?: Prisma.RoommatePostListRelationFilter
@@ -659,6 +662,7 @@ export type HostelCreateInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -702,6 +706,7 @@ export type HostelUncheckedCreateInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -745,6 +750,7 @@ export type HostelUpdateInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -788,6 +794,7 @@ export type HostelUncheckedUpdateInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -1236,6 +1243,22 @@ export type HostelUpdateOneRequiredWithoutPriceAlertsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.HostelUpdateToOneWithWhereWithoutPriceAlertsInput, Prisma.HostelUpdateWithoutPriceAlertsInput>, Prisma.HostelUncheckedUpdateWithoutPriceAlertsInput>
 }
 
+export type HostelCreateNestedOneWithoutAvailabilityAlertsInput = {
+  create?: Prisma.XOR<Prisma.HostelCreateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedCreateWithoutAvailabilityAlertsInput>
+  connectOrCreate?: Prisma.HostelCreateOrConnectWithoutAvailabilityAlertsInput
+  connect?: Prisma.HostelWhereUniqueInput
+}
+
+export type HostelUpdateOneWithoutAvailabilityAlertsNestedInput = {
+  create?: Prisma.XOR<Prisma.HostelCreateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedCreateWithoutAvailabilityAlertsInput>
+  connectOrCreate?: Prisma.HostelCreateOrConnectWithoutAvailabilityAlertsInput
+  upsert?: Prisma.HostelUpsertWithoutAvailabilityAlertsInput
+  disconnect?: Prisma.HostelWhereInput | boolean
+  delete?: Prisma.HostelWhereInput | boolean
+  connect?: Prisma.HostelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HostelUpdateToOneWithWhereWithoutAvailabilityAlertsInput, Prisma.HostelUpdateWithoutAvailabilityAlertsInput>, Prisma.HostelUncheckedUpdateWithoutAvailabilityAlertsInput>
+}
+
 export type HostelCreateNestedOneWithoutNotificationsInput = {
   create?: Prisma.XOR<Prisma.HostelCreateWithoutNotificationsInput, Prisma.HostelUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.HostelCreateOrConnectWithoutNotificationsInput
@@ -1316,6 +1339,7 @@ export type HostelCreateWithoutOwnerInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -1358,6 +1382,7 @@ export type HostelUncheckedCreateWithoutOwnerInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -1462,6 +1487,7 @@ export type HostelCreateWithoutRooms_relInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -1504,6 +1530,7 @@ export type HostelUncheckedCreateWithoutRooms_relInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -1562,6 +1589,7 @@ export type HostelUpdateWithoutRooms_relInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -1604,6 +1632,7 @@ export type HostelUncheckedUpdateWithoutRooms_relInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -1646,6 +1675,7 @@ export type HostelCreateWithoutBookingsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -1688,6 +1718,7 @@ export type HostelUncheckedCreateWithoutBookingsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -1746,6 +1777,7 @@ export type HostelUpdateWithoutBookingsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -1788,6 +1820,7 @@ export type HostelUncheckedUpdateWithoutBookingsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -1831,6 +1864,7 @@ export type HostelCreateWithoutVerificationReviewsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -1873,6 +1907,7 @@ export type HostelUncheckedCreateWithoutVerificationReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -1931,6 +1966,7 @@ export type HostelUpdateWithoutVerificationReviewsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -1973,6 +2009,7 @@ export type HostelUncheckedUpdateWithoutVerificationReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -2014,6 +2051,7 @@ export type HostelCreateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -2056,6 +2094,7 @@ export type HostelUncheckedCreateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -2114,6 +2153,7 @@ export type HostelUpdateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -2156,6 +2196,7 @@ export type HostelUncheckedUpdateWithoutReviewsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -2198,6 +2239,7 @@ export type HostelCreateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -2240,6 +2282,7 @@ export type HostelUncheckedCreateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -2298,6 +2341,7 @@ export type HostelUpdateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -2340,6 +2384,7 @@ export type HostelUncheckedUpdateWithoutFavoritesInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -2382,6 +2427,7 @@ export type HostelCreateWithoutConversationsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutHostelInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -2424,6 +2470,7 @@ export type HostelUncheckedCreateWithoutConversationsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutHostelInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -2482,6 +2529,7 @@ export type HostelUpdateWithoutConversationsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutHostelNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -2524,6 +2572,7 @@ export type HostelUncheckedUpdateWithoutConversationsInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -2566,6 +2615,7 @@ export type HostelCreateWithoutPriceAlertsInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutHostelInput
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
@@ -2608,6 +2658,7 @@ export type HostelUncheckedCreateWithoutPriceAlertsInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutHostelInput
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
@@ -2666,6 +2717,7 @@ export type HostelUpdateWithoutPriceAlertsInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutHostelNestedInput
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -2708,6 +2760,195 @@ export type HostelUncheckedUpdateWithoutPriceAlertsInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
+  blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
+}
+
+export type HostelCreateWithoutAvailabilityAlertsInput = {
+  id?: string
+  name: string
+  slug: string
+  description: string
+  status?: $Enums.HostelStatus
+  city: string
+  area?: string | null
+  address: string
+  latitude?: number | null
+  longitude?: number | null
+  pricePerMonth: number
+  rooms: number
+  capacity: number
+  gender?: $Enums.Gender
+  minStay?: number
+  maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelCreateamenitiesInput | string[]
+  rules?: Prisma.HostelCreaterulesInput | string[]
+  images?: Prisma.HostelCreateimagesInput | string[]
+  coverImage?: string | null
+  verified?: boolean
+  featured?: boolean
+  viewCount?: number
+  rating?: number
+  reviewCount?: number
+  safetyScore?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutHostelsInput
+  rooms_rel?: Prisma.RoomCreateNestedManyWithoutHostelInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutHostelInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutHostelInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
+  priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
+  blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
+  roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
+}
+
+export type HostelUncheckedCreateWithoutAvailabilityAlertsInput = {
+  id?: string
+  name: string
+  slug: string
+  description: string
+  status?: $Enums.HostelStatus
+  city: string
+  area?: string | null
+  address: string
+  latitude?: number | null
+  longitude?: number | null
+  pricePerMonth: number
+  rooms: number
+  capacity: number
+  gender?: $Enums.Gender
+  minStay?: number
+  maxStay?: number | null
+  cancellationPolicy?: $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelCreateamenitiesInput | string[]
+  rules?: Prisma.HostelCreaterulesInput | string[]
+  images?: Prisma.HostelCreateimagesInput | string[]
+  coverImage?: string | null
+  verified?: boolean
+  featured?: boolean
+  viewCount?: number
+  rating?: number
+  reviewCount?: number
+  safetyScore?: number
+  ownerId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  rooms_rel?: Prisma.RoomUncheckedCreateNestedManyWithoutHostelInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutHostelInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutHostelInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
+  priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
+  blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
+  verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
+}
+
+export type HostelCreateOrConnectWithoutAvailabilityAlertsInput = {
+  where: Prisma.HostelWhereUniqueInput
+  create: Prisma.XOR<Prisma.HostelCreateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedCreateWithoutAvailabilityAlertsInput>
+}
+
+export type HostelUpsertWithoutAvailabilityAlertsInput = {
+  update: Prisma.XOR<Prisma.HostelUpdateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedUpdateWithoutAvailabilityAlertsInput>
+  create: Prisma.XOR<Prisma.HostelCreateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedCreateWithoutAvailabilityAlertsInput>
+  where?: Prisma.HostelWhereInput
+}
+
+export type HostelUpdateToOneWithWhereWithoutAvailabilityAlertsInput = {
+  where?: Prisma.HostelWhereInput
+  data: Prisma.XOR<Prisma.HostelUpdateWithoutAvailabilityAlertsInput, Prisma.HostelUncheckedUpdateWithoutAvailabilityAlertsInput>
+}
+
+export type HostelUpdateWithoutAvailabilityAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHostelStatusFieldUpdateOperationsInput | $Enums.HostelStatus
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  pricePerMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  rooms?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  minStay?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelUpdateamenitiesInput | string[]
+  rules?: Prisma.HostelUpdaterulesInput | string[]
+  images?: Prisma.HostelUpdateimagesInput | string[]
+  coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutHostelsNestedInput
+  rooms_rel?: Prisma.RoomUpdateManyWithoutHostelNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutHostelNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutHostelNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
+  priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
+  blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
+  roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
+  verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
+}
+
+export type HostelUncheckedUpdateWithoutAvailabilityAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHostelStatusFieldUpdateOperationsInput | $Enums.HostelStatus
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  area?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  pricePerMonth?: Prisma.IntFieldUpdateOperationsInput | number
+  rooms?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  minStay?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStay?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cancellationPolicy?: Prisma.NullableEnumCancellationPolicyFieldUpdateOperationsInput | $Enums.CancellationPolicy | null
+  amenities?: Prisma.HostelUpdateamenitiesInput | string[]
+  rules?: Prisma.HostelUpdaterulesInput | string[]
+  images?: Prisma.HostelUpdateimagesInput | string[]
+  coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  viewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  rating?: Prisma.FloatFieldUpdateOperationsInput | number
+  reviewCount?: Prisma.IntFieldUpdateOperationsInput | number
+  safetyScore?: Prisma.IntFieldUpdateOperationsInput | number
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rooms_rel?: Prisma.RoomUncheckedUpdateManyWithoutHostelNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutHostelNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutHostelNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
+  priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -2751,6 +2992,7 @@ export type HostelCreateWithoutNotificationsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
@@ -2793,6 +3035,7 @@ export type HostelUncheckedCreateWithoutNotificationsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
@@ -2851,6 +3094,7 @@ export type HostelUpdateWithoutNotificationsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
@@ -2893,6 +3137,7 @@ export type HostelUncheckedUpdateWithoutNotificationsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
@@ -2935,6 +3180,7 @@ export type HostelCreateWithoutBlockedDatesInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
@@ -2977,6 +3223,7 @@ export type HostelUncheckedCreateWithoutBlockedDatesInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
@@ -3035,6 +3282,7 @@ export type HostelUpdateWithoutBlockedDatesInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
@@ -3077,6 +3325,7 @@ export type HostelUncheckedUpdateWithoutBlockedDatesInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
@@ -3119,6 +3368,7 @@ export type HostelCreateWithoutRoommmatePostsInput = {
   favorites?: Prisma.FavoriteCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewCreateNestedManyWithoutHostelInput
@@ -3161,6 +3411,7 @@ export type HostelUncheckedCreateWithoutRoommmatePostsInput = {
   favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutHostelInput
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutHostelInput
   priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutHostelInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutHostelInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutHostelInput
   blockedDates?: Prisma.BlockedDateUncheckedCreateNestedManyWithoutHostelInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedCreateNestedManyWithoutHostelInput
@@ -3219,6 +3470,7 @@ export type HostelUpdateWithoutRoommmatePostsInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUpdateManyWithoutHostelNestedInput
@@ -3261,6 +3513,7 @@ export type HostelUncheckedUpdateWithoutRoommmatePostsInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   verificationReviews?: Prisma.HostelVerificationReviewUncheckedUpdateManyWithoutHostelNestedInput
@@ -3334,6 +3587,7 @@ export type HostelUpdateWithoutOwnerInput = {
   favorites?: Prisma.FavoriteUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutHostelNestedInput
@@ -3376,6 +3630,7 @@ export type HostelUncheckedUpdateWithoutOwnerInput = {
   favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutHostelNestedInput
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutHostelNestedInput
   priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutHostelNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutHostelNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutHostelNestedInput
   blockedDates?: Prisma.BlockedDateUncheckedUpdateManyWithoutHostelNestedInput
   roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutHostelNestedInput
@@ -3426,6 +3681,7 @@ export type HostelCountOutputType = {
   favorites: number
   conversations: number
   priceAlerts: number
+  availabilityAlerts: number
   notifications: number
   blockedDates: number
   roommmatePosts: number
@@ -3439,6 +3695,7 @@ export type HostelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   favorites?: boolean | HostelCountOutputTypeCountFavoritesArgs
   conversations?: boolean | HostelCountOutputTypeCountConversationsArgs
   priceAlerts?: boolean | HostelCountOutputTypeCountPriceAlertsArgs
+  availabilityAlerts?: boolean | HostelCountOutputTypeCountAvailabilityAlertsArgs
   notifications?: boolean | HostelCountOutputTypeCountNotificationsArgs
   blockedDates?: boolean | HostelCountOutputTypeCountBlockedDatesArgs
   roommmatePosts?: boolean | HostelCountOutputTypeCountRoommmatePostsArgs
@@ -3495,6 +3752,13 @@ export type HostelCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.
  */
 export type HostelCountOutputTypeCountPriceAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PriceAlertWhereInput
+}
+
+/**
+ * HostelCountOutputType without action
+ */
+export type HostelCountOutputTypeCountAvailabilityAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AvailabilityAlertWhereInput
 }
 
 /**
@@ -3564,6 +3828,7 @@ export type HostelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   favorites?: boolean | Prisma.Hostel$favoritesArgs<ExtArgs>
   conversations?: boolean | Prisma.Hostel$conversationsArgs<ExtArgs>
   priceAlerts?: boolean | Prisma.Hostel$priceAlertsArgs<ExtArgs>
+  availabilityAlerts?: boolean | Prisma.Hostel$availabilityAlertsArgs<ExtArgs>
   notifications?: boolean | Prisma.Hostel$notificationsArgs<ExtArgs>
   blockedDates?: boolean | Prisma.Hostel$blockedDatesArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.Hostel$roommmatePostsArgs<ExtArgs>
@@ -3681,6 +3946,7 @@ export type HostelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   favorites?: boolean | Prisma.Hostel$favoritesArgs<ExtArgs>
   conversations?: boolean | Prisma.Hostel$conversationsArgs<ExtArgs>
   priceAlerts?: boolean | Prisma.Hostel$priceAlertsArgs<ExtArgs>
+  availabilityAlerts?: boolean | Prisma.Hostel$availabilityAlertsArgs<ExtArgs>
   notifications?: boolean | Prisma.Hostel$notificationsArgs<ExtArgs>
   blockedDates?: boolean | Prisma.Hostel$blockedDatesArgs<ExtArgs>
   roommmatePosts?: boolean | Prisma.Hostel$roommmatePostsArgs<ExtArgs>
@@ -3704,6 +3970,7 @@ export type $HostelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     favorites: Prisma.$FavoritePayload<ExtArgs>[]
     conversations: Prisma.$ConversationPayload<ExtArgs>[]
     priceAlerts: Prisma.$PriceAlertPayload<ExtArgs>[]
+    availabilityAlerts: Prisma.$AvailabilityAlertPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     blockedDates: Prisma.$BlockedDatePayload<ExtArgs>[]
     roommmatePosts: Prisma.$RoommatePostPayload<ExtArgs>[]
@@ -4141,6 +4408,7 @@ export interface Prisma__HostelClient<T, Null = never, ExtArgs extends runtime.T
   favorites<T extends Prisma.Hostel$favoritesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$favoritesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   conversations<T extends Prisma.Hostel$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   priceAlerts<T extends Prisma.Hostel$priceAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$priceAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PriceAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  availabilityAlerts<T extends Prisma.Hostel$availabilityAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$availabilityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AvailabilityAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.Hostel$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   blockedDates<T extends Prisma.Hostel$blockedDatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$blockedDatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BlockedDatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   roommmatePosts<T extends Prisma.Hostel$roommmatePostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Hostel$roommmatePostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoommatePostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4746,6 +5014,30 @@ export type Hostel$priceAlertsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.PriceAlertScalarFieldEnum | Prisma.PriceAlertScalarFieldEnum[]
+}
+
+/**
+ * Hostel.availabilityAlerts
+ */
+export type Hostel$availabilityAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AvailabilityAlert
+   */
+  select?: Prisma.AvailabilityAlertSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AvailabilityAlert
+   */
+  omit?: Prisma.AvailabilityAlertOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AvailabilityAlertInclude<ExtArgs> | null
+  where?: Prisma.AvailabilityAlertWhereInput
+  orderBy?: Prisma.AvailabilityAlertOrderByWithRelationInput | Prisma.AvailabilityAlertOrderByWithRelationInput[]
+  cursor?: Prisma.AvailabilityAlertWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AvailabilityAlertScalarFieldEnum | Prisma.AvailabilityAlertScalarFieldEnum[]
 }
 
 /**

@@ -20,8 +20,18 @@ export type NotificationModel = runtime.Types.Result.DefaultSelection<Prisma.$No
 
 export type AggregateNotification = {
   _count: NotificationCountAggregateOutputType | null
+  _avg: NotificationAvgAggregateOutputType | null
+  _sum: NotificationSumAggregateOutputType | null
   _min: NotificationMinAggregateOutputType | null
   _max: NotificationMaxAggregateOutputType | null
+}
+
+export type NotificationAvgAggregateOutputType = {
+  availabilityAlertTransition: number | null
+}
+
+export type NotificationSumAggregateOutputType = {
+  availabilityAlertTransition: number | null
 }
 
 export type NotificationMinAggregateOutputType = {
@@ -33,6 +43,8 @@ export type NotificationMinAggregateOutputType = {
   bookingId: string | null
   reviewId: string | null
   hostelId: string | null
+  availabilityAlertId: string | null
+  availabilityAlertTransition: number | null
   read: boolean | null
   readAt: Date | null
   createdAt: Date | null
@@ -47,6 +59,8 @@ export type NotificationMaxAggregateOutputType = {
   bookingId: string | null
   reviewId: string | null
   hostelId: string | null
+  availabilityAlertId: string | null
+  availabilityAlertTransition: number | null
   read: boolean | null
   readAt: Date | null
   createdAt: Date | null
@@ -61,12 +75,22 @@ export type NotificationCountAggregateOutputType = {
   bookingId: number
   reviewId: number
   hostelId: number
+  availabilityAlertId: number
+  availabilityAlertTransition: number
   read: number
   readAt: number
   createdAt: number
   _all: number
 }
 
+
+export type NotificationAvgAggregateInputType = {
+  availabilityAlertTransition?: true
+}
+
+export type NotificationSumAggregateInputType = {
+  availabilityAlertTransition?: true
+}
 
 export type NotificationMinAggregateInputType = {
   id?: true
@@ -77,6 +101,8 @@ export type NotificationMinAggregateInputType = {
   bookingId?: true
   reviewId?: true
   hostelId?: true
+  availabilityAlertId?: true
+  availabilityAlertTransition?: true
   read?: true
   readAt?: true
   createdAt?: true
@@ -91,6 +117,8 @@ export type NotificationMaxAggregateInputType = {
   bookingId?: true
   reviewId?: true
   hostelId?: true
+  availabilityAlertId?: true
+  availabilityAlertTransition?: true
   read?: true
   readAt?: true
   createdAt?: true
@@ -105,6 +133,8 @@ export type NotificationCountAggregateInputType = {
   bookingId?: true
   reviewId?: true
   hostelId?: true
+  availabilityAlertId?: true
+  availabilityAlertTransition?: true
   read?: true
   readAt?: true
   createdAt?: true
@@ -149,6 +179,18 @@ export type NotificationAggregateArgs<ExtArgs extends runtime.Types.Extensions.I
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: NotificationAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: NotificationSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: NotificationMinAggregateInputType
@@ -179,6 +221,8 @@ export type NotificationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   _count?: NotificationCountAggregateInputType | true
+  _avg?: NotificationAvgAggregateInputType
+  _sum?: NotificationSumAggregateInputType
   _min?: NotificationMinAggregateInputType
   _max?: NotificationMaxAggregateInputType
 }
@@ -192,10 +236,14 @@ export type NotificationGroupByOutputType = {
   bookingId: string | null
   reviewId: string | null
   hostelId: string | null
+  availabilityAlertId: string | null
+  availabilityAlertTransition: number | null
   read: boolean
   readAt: Date | null
   createdAt: Date
   _count: NotificationCountAggregateOutputType | null
+  _avg: NotificationAvgAggregateOutputType | null
+  _sum: NotificationSumAggregateOutputType | null
   _min: NotificationMinAggregateOutputType | null
   _max: NotificationMaxAggregateOutputType | null
 }
@@ -227,6 +275,8 @@ export type NotificationWhereInput = {
   bookingId?: Prisma.StringNullableFilter<"Notification"> | string | null
   reviewId?: Prisma.StringNullableFilter<"Notification"> | string | null
   hostelId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertTransition?: Prisma.IntNullableFilter<"Notification"> | number | null
   read?: Prisma.BoolFilter<"Notification"> | boolean
   readAt?: Prisma.DateTimeNullableFilter<"Notification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
@@ -234,6 +284,7 @@ export type NotificationWhereInput = {
   booking?: Prisma.XOR<Prisma.BookingNullableScalarRelationFilter, Prisma.BookingWhereInput> | null
   review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
   hostel?: Prisma.XOR<Prisma.HostelNullableScalarRelationFilter, Prisma.HostelWhereInput> | null
+  availabilityAlert?: Prisma.XOR<Prisma.AvailabilityAlertNullableScalarRelationFilter, Prisma.AvailabilityAlertWhereInput> | null
 }
 
 export type NotificationOrderByWithRelationInput = {
@@ -245,6 +296,8 @@ export type NotificationOrderByWithRelationInput = {
   bookingId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewId?: Prisma.SortOrderInput | Prisma.SortOrder
   hostelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  availabilityAlertId?: Prisma.SortOrderInput | Prisma.SortOrder
+  availabilityAlertTransition?: Prisma.SortOrderInput | Prisma.SortOrder
   read?: Prisma.SortOrder
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -252,10 +305,12 @@ export type NotificationOrderByWithRelationInput = {
   booking?: Prisma.BookingOrderByWithRelationInput
   review?: Prisma.ReviewOrderByWithRelationInput
   hostel?: Prisma.HostelOrderByWithRelationInput
+  availabilityAlert?: Prisma.AvailabilityAlertOrderByWithRelationInput
 }
 
 export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  availabilityAlertId_availabilityAlertTransition?: Prisma.NotificationAvailabilityAlertIdAvailabilityAlertTransitionCompoundUniqueInput
   AND?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
   OR?: Prisma.NotificationWhereInput[]
   NOT?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
@@ -266,6 +321,8 @@ export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   bookingId?: Prisma.StringNullableFilter<"Notification"> | string | null
   reviewId?: Prisma.StringNullableFilter<"Notification"> | string | null
   hostelId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertTransition?: Prisma.IntNullableFilter<"Notification"> | number | null
   read?: Prisma.BoolFilter<"Notification"> | boolean
   readAt?: Prisma.DateTimeNullableFilter<"Notification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
@@ -273,7 +330,8 @@ export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   booking?: Prisma.XOR<Prisma.BookingNullableScalarRelationFilter, Prisma.BookingWhereInput> | null
   review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
   hostel?: Prisma.XOR<Prisma.HostelNullableScalarRelationFilter, Prisma.HostelWhereInput> | null
-}, "id">
+  availabilityAlert?: Prisma.XOR<Prisma.AvailabilityAlertNullableScalarRelationFilter, Prisma.AvailabilityAlertWhereInput> | null
+}, "id" | "availabilityAlertId_availabilityAlertTransition">
 
 export type NotificationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -284,12 +342,16 @@ export type NotificationOrderByWithAggregationInput = {
   bookingId?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewId?: Prisma.SortOrderInput | Prisma.SortOrder
   hostelId?: Prisma.SortOrderInput | Prisma.SortOrder
+  availabilityAlertId?: Prisma.SortOrderInput | Prisma.SortOrder
+  availabilityAlertTransition?: Prisma.SortOrderInput | Prisma.SortOrder
   read?: Prisma.SortOrder
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.NotificationCountOrderByAggregateInput
+  _avg?: Prisma.NotificationAvgOrderByAggregateInput
   _max?: Prisma.NotificationMaxOrderByAggregateInput
   _min?: Prisma.NotificationMinOrderByAggregateInput
+  _sum?: Prisma.NotificationSumOrderByAggregateInput
 }
 
 export type NotificationScalarWhereWithAggregatesInput = {
@@ -304,6 +366,8 @@ export type NotificationScalarWhereWithAggregatesInput = {
   bookingId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   reviewId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
   hostelId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
+  availabilityAlertId?: Prisma.StringNullableWithAggregatesFilter<"Notification"> | string | null
+  availabilityAlertTransition?: Prisma.IntNullableWithAggregatesFilter<"Notification"> | number | null
   read?: Prisma.BoolWithAggregatesFilter<"Notification"> | boolean
   readAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Notification"> | Date | string
@@ -314,6 +378,7 @@ export type NotificationCreateInput = {
   type: $Enums.NotificationType
   title: string
   message: string
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -321,6 +386,7 @@ export type NotificationCreateInput = {
   booking?: Prisma.BookingCreateNestedOneWithoutNotificationsInput
   review?: Prisma.ReviewCreateNestedOneWithoutNotificationsInput
   hostel?: Prisma.HostelCreateNestedOneWithoutNotificationsInput
+  availabilityAlert?: Prisma.AvailabilityAlertCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateInput = {
@@ -332,6 +398,8 @@ export type NotificationUncheckedCreateInput = {
   bookingId?: string | null
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -342,6 +410,7 @@ export type NotificationUpdateInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -349,6 +418,7 @@ export type NotificationUpdateInput = {
   booking?: Prisma.BookingUpdateOneWithoutNotificationsNestedInput
   review?: Prisma.ReviewUpdateOneWithoutNotificationsNestedInput
   hostel?: Prisma.HostelUpdateOneWithoutNotificationsNestedInput
+  availabilityAlert?: Prisma.AvailabilityAlertUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateInput = {
@@ -360,6 +430,8 @@ export type NotificationUncheckedUpdateInput = {
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -374,6 +446,8 @@ export type NotificationCreateManyInput = {
   bookingId?: string | null
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -384,6 +458,7 @@ export type NotificationUpdateManyMutationInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -398,6 +473,8 @@ export type NotificationUncheckedUpdateManyInput = {
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -413,6 +490,11 @@ export type NotificationOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type NotificationAvailabilityAlertIdAvailabilityAlertTransitionCompoundUniqueInput = {
+  availabilityAlertId: string
+  availabilityAlertTransition: number
+}
+
 export type NotificationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -422,9 +504,15 @@ export type NotificationCountOrderByAggregateInput = {
   bookingId?: Prisma.SortOrder
   reviewId?: Prisma.SortOrder
   hostelId?: Prisma.SortOrder
+  availabilityAlertId?: Prisma.SortOrder
+  availabilityAlertTransition?: Prisma.SortOrder
   read?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type NotificationAvgOrderByAggregateInput = {
+  availabilityAlertTransition?: Prisma.SortOrder
 }
 
 export type NotificationMaxOrderByAggregateInput = {
@@ -436,6 +524,8 @@ export type NotificationMaxOrderByAggregateInput = {
   bookingId?: Prisma.SortOrder
   reviewId?: Prisma.SortOrder
   hostelId?: Prisma.SortOrder
+  availabilityAlertId?: Prisma.SortOrder
+  availabilityAlertTransition?: Prisma.SortOrder
   read?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -450,9 +540,15 @@ export type NotificationMinOrderByAggregateInput = {
   bookingId?: Prisma.SortOrder
   reviewId?: Prisma.SortOrder
   hostelId?: Prisma.SortOrder
+  availabilityAlertId?: Prisma.SortOrder
+  availabilityAlertTransition?: Prisma.SortOrder
   read?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type NotificationSumOrderByAggregateInput = {
+  availabilityAlertTransition?: Prisma.SortOrder
 }
 
 export type NotificationCreateNestedManyWithoutUserInput = {
@@ -623,6 +719,48 @@ export type NotificationUncheckedUpdateManyWithoutReviewNestedInput = {
   deleteMany?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
 }
 
+export type NotificationCreateNestedManyWithoutAvailabilityAlertInput = {
+  create?: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput> | Prisma.NotificationCreateWithoutAvailabilityAlertInput[] | Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput[]
+  connectOrCreate?: Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput | Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput[]
+  createMany?: Prisma.NotificationCreateManyAvailabilityAlertInputEnvelope
+  connect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+}
+
+export type NotificationUncheckedCreateNestedManyWithoutAvailabilityAlertInput = {
+  create?: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput> | Prisma.NotificationCreateWithoutAvailabilityAlertInput[] | Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput[]
+  connectOrCreate?: Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput | Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput[]
+  createMany?: Prisma.NotificationCreateManyAvailabilityAlertInputEnvelope
+  connect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+}
+
+export type NotificationUpdateManyWithoutAvailabilityAlertNestedInput = {
+  create?: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput> | Prisma.NotificationCreateWithoutAvailabilityAlertInput[] | Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput[]
+  connectOrCreate?: Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput | Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput[]
+  upsert?: Prisma.NotificationUpsertWithWhereUniqueWithoutAvailabilityAlertInput | Prisma.NotificationUpsertWithWhereUniqueWithoutAvailabilityAlertInput[]
+  createMany?: Prisma.NotificationCreateManyAvailabilityAlertInputEnvelope
+  set?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  disconnect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  delete?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  connect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  update?: Prisma.NotificationUpdateWithWhereUniqueWithoutAvailabilityAlertInput | Prisma.NotificationUpdateWithWhereUniqueWithoutAvailabilityAlertInput[]
+  updateMany?: Prisma.NotificationUpdateManyWithWhereWithoutAvailabilityAlertInput | Prisma.NotificationUpdateManyWithWhereWithoutAvailabilityAlertInput[]
+  deleteMany?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
+}
+
+export type NotificationUncheckedUpdateManyWithoutAvailabilityAlertNestedInput = {
+  create?: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput> | Prisma.NotificationCreateWithoutAvailabilityAlertInput[] | Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput[]
+  connectOrCreate?: Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput | Prisma.NotificationCreateOrConnectWithoutAvailabilityAlertInput[]
+  upsert?: Prisma.NotificationUpsertWithWhereUniqueWithoutAvailabilityAlertInput | Prisma.NotificationUpsertWithWhereUniqueWithoutAvailabilityAlertInput[]
+  createMany?: Prisma.NotificationCreateManyAvailabilityAlertInputEnvelope
+  set?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  disconnect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  delete?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  connect?: Prisma.NotificationWhereUniqueInput | Prisma.NotificationWhereUniqueInput[]
+  update?: Prisma.NotificationUpdateWithWhereUniqueWithoutAvailabilityAlertInput | Prisma.NotificationUpdateWithWhereUniqueWithoutAvailabilityAlertInput[]
+  updateMany?: Prisma.NotificationUpdateManyWithWhereWithoutAvailabilityAlertInput | Prisma.NotificationUpdateManyWithWhereWithoutAvailabilityAlertInput[]
+  deleteMany?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
+}
+
 export type EnumNotificationTypeFieldUpdateOperationsInput = {
   set?: $Enums.NotificationType
 }
@@ -632,12 +770,14 @@ export type NotificationCreateWithoutUserInput = {
   type: $Enums.NotificationType
   title: string
   message: string
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
   booking?: Prisma.BookingCreateNestedOneWithoutNotificationsInput
   review?: Prisma.ReviewCreateNestedOneWithoutNotificationsInput
   hostel?: Prisma.HostelCreateNestedOneWithoutNotificationsInput
+  availabilityAlert?: Prisma.AvailabilityAlertCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateWithoutUserInput = {
@@ -648,6 +788,8 @@ export type NotificationUncheckedCreateWithoutUserInput = {
   bookingId?: string | null
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -691,6 +833,8 @@ export type NotificationScalarWhereInput = {
   bookingId?: Prisma.StringNullableFilter<"Notification"> | string | null
   reviewId?: Prisma.StringNullableFilter<"Notification"> | string | null
   hostelId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertId?: Prisma.StringNullableFilter<"Notification"> | string | null
+  availabilityAlertTransition?: Prisma.IntNullableFilter<"Notification"> | number | null
   read?: Prisma.BoolFilter<"Notification"> | boolean
   readAt?: Prisma.DateTimeNullableFilter<"Notification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
@@ -701,12 +845,14 @@ export type NotificationCreateWithoutHostelInput = {
   type: $Enums.NotificationType
   title: string
   message: string
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutNotificationsInput
   booking?: Prisma.BookingCreateNestedOneWithoutNotificationsInput
   review?: Prisma.ReviewCreateNestedOneWithoutNotificationsInput
+  availabilityAlert?: Prisma.AvailabilityAlertCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateWithoutHostelInput = {
@@ -717,6 +863,8 @@ export type NotificationUncheckedCreateWithoutHostelInput = {
   message: string
   bookingId?: string | null
   reviewId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -753,12 +901,14 @@ export type NotificationCreateWithoutBookingInput = {
   type: $Enums.NotificationType
   title: string
   message: string
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutNotificationsInput
   review?: Prisma.ReviewCreateNestedOneWithoutNotificationsInput
   hostel?: Prisma.HostelCreateNestedOneWithoutNotificationsInput
+  availabilityAlert?: Prisma.AvailabilityAlertCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateWithoutBookingInput = {
@@ -769,6 +919,8 @@ export type NotificationUncheckedCreateWithoutBookingInput = {
   message: string
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -805,12 +957,14 @@ export type NotificationCreateWithoutReviewInput = {
   type: $Enums.NotificationType
   title: string
   message: string
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutNotificationsInput
   booking?: Prisma.BookingCreateNestedOneWithoutNotificationsInput
   hostel?: Prisma.HostelCreateNestedOneWithoutNotificationsInput
+  availabilityAlert?: Prisma.AvailabilityAlertCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateWithoutReviewInput = {
@@ -821,6 +975,8 @@ export type NotificationUncheckedCreateWithoutReviewInput = {
   message: string
   bookingId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -852,6 +1008,62 @@ export type NotificationUpdateManyWithWhereWithoutReviewInput = {
   data: Prisma.XOR<Prisma.NotificationUpdateManyMutationInput, Prisma.NotificationUncheckedUpdateManyWithoutReviewInput>
 }
 
+export type NotificationCreateWithoutAvailabilityAlertInput = {
+  id?: string
+  type: $Enums.NotificationType
+  title: string
+  message: string
+  availabilityAlertTransition?: number | null
+  read?: boolean
+  readAt?: Date | string | null
+  createdAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutNotificationsInput
+  booking?: Prisma.BookingCreateNestedOneWithoutNotificationsInput
+  review?: Prisma.ReviewCreateNestedOneWithoutNotificationsInput
+  hostel?: Prisma.HostelCreateNestedOneWithoutNotificationsInput
+}
+
+export type NotificationUncheckedCreateWithoutAvailabilityAlertInput = {
+  id?: string
+  userId: string
+  type: $Enums.NotificationType
+  title: string
+  message: string
+  bookingId?: string | null
+  reviewId?: string | null
+  hostelId?: string | null
+  availabilityAlertTransition?: number | null
+  read?: boolean
+  readAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type NotificationCreateOrConnectWithoutAvailabilityAlertInput = {
+  where: Prisma.NotificationWhereUniqueInput
+  create: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput>
+}
+
+export type NotificationCreateManyAvailabilityAlertInputEnvelope = {
+  data: Prisma.NotificationCreateManyAvailabilityAlertInput | Prisma.NotificationCreateManyAvailabilityAlertInput[]
+  skipDuplicates?: boolean
+}
+
+export type NotificationUpsertWithWhereUniqueWithoutAvailabilityAlertInput = {
+  where: Prisma.NotificationWhereUniqueInput
+  update: Prisma.XOR<Prisma.NotificationUpdateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedUpdateWithoutAvailabilityAlertInput>
+  create: Prisma.XOR<Prisma.NotificationCreateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedCreateWithoutAvailabilityAlertInput>
+}
+
+export type NotificationUpdateWithWhereUniqueWithoutAvailabilityAlertInput = {
+  where: Prisma.NotificationWhereUniqueInput
+  data: Prisma.XOR<Prisma.NotificationUpdateWithoutAvailabilityAlertInput, Prisma.NotificationUncheckedUpdateWithoutAvailabilityAlertInput>
+}
+
+export type NotificationUpdateManyWithWhereWithoutAvailabilityAlertInput = {
+  where: Prisma.NotificationScalarWhereInput
+  data: Prisma.XOR<Prisma.NotificationUpdateManyMutationInput, Prisma.NotificationUncheckedUpdateManyWithoutAvailabilityAlertInput>
+}
+
 export type NotificationCreateManyUserInput = {
   id?: string
   type: $Enums.NotificationType
@@ -860,6 +1072,8 @@ export type NotificationCreateManyUserInput = {
   bookingId?: string | null
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -870,12 +1084,14 @@ export type NotificationUpdateWithoutUserInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneWithoutNotificationsNestedInput
   review?: Prisma.ReviewUpdateOneWithoutNotificationsNestedInput
   hostel?: Prisma.HostelUpdateOneWithoutNotificationsNestedInput
+  availabilityAlert?: Prisma.AvailabilityAlertUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateWithoutUserInput = {
@@ -886,6 +1102,8 @@ export type NotificationUncheckedUpdateWithoutUserInput = {
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -899,6 +1117,8 @@ export type NotificationUncheckedUpdateManyWithoutUserInput = {
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -912,6 +1132,8 @@ export type NotificationCreateManyHostelInput = {
   message: string
   bookingId?: string | null
   reviewId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -922,12 +1144,14 @@ export type NotificationUpdateWithoutHostelInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutNotificationsNestedInput
   booking?: Prisma.BookingUpdateOneWithoutNotificationsNestedInput
   review?: Prisma.ReviewUpdateOneWithoutNotificationsNestedInput
+  availabilityAlert?: Prisma.AvailabilityAlertUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateWithoutHostelInput = {
@@ -938,6 +1162,8 @@ export type NotificationUncheckedUpdateWithoutHostelInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -951,6 +1177,8 @@ export type NotificationUncheckedUpdateManyWithoutHostelInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -964,6 +1192,8 @@ export type NotificationCreateManyBookingInput = {
   message: string
   reviewId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -974,12 +1204,14 @@ export type NotificationUpdateWithoutBookingInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutNotificationsNestedInput
   review?: Prisma.ReviewUpdateOneWithoutNotificationsNestedInput
   hostel?: Prisma.HostelUpdateOneWithoutNotificationsNestedInput
+  availabilityAlert?: Prisma.AvailabilityAlertUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateWithoutBookingInput = {
@@ -990,6 +1222,8 @@ export type NotificationUncheckedUpdateWithoutBookingInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1003,6 +1237,8 @@ export type NotificationUncheckedUpdateManyWithoutBookingInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1016,6 +1252,8 @@ export type NotificationCreateManyReviewInput = {
   message: string
   bookingId?: string | null
   hostelId?: string | null
+  availabilityAlertId?: string | null
+  availabilityAlertTransition?: number | null
   read?: boolean
   readAt?: Date | string | null
   createdAt?: Date | string
@@ -1026,12 +1264,14 @@ export type NotificationUpdateWithoutReviewInput = {
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutNotificationsNestedInput
   booking?: Prisma.BookingUpdateOneWithoutNotificationsNestedInput
   hostel?: Prisma.HostelUpdateOneWithoutNotificationsNestedInput
+  availabilityAlert?: Prisma.AvailabilityAlertUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateWithoutReviewInput = {
@@ -1042,6 +1282,8 @@ export type NotificationUncheckedUpdateWithoutReviewInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1055,6 +1297,68 @@ export type NotificationUncheckedUpdateManyWithoutReviewInput = {
   message?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  read?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type NotificationCreateManyAvailabilityAlertInput = {
+  id?: string
+  userId: string
+  type: $Enums.NotificationType
+  title: string
+  message: string
+  bookingId?: string | null
+  reviewId?: string | null
+  hostelId?: string | null
+  availabilityAlertTransition?: number | null
+  read?: boolean
+  readAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type NotificationUpdateWithoutAvailabilityAlertInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.StringFieldUpdateOperationsInput | string
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  read?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutNotificationsNestedInput
+  booking?: Prisma.BookingUpdateOneWithoutNotificationsNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutNotificationsNestedInput
+  hostel?: Prisma.HostelUpdateOneWithoutNotificationsNestedInput
+}
+
+export type NotificationUncheckedUpdateWithoutAvailabilityAlertInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  read?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type NotificationUncheckedUpdateManyWithoutAvailabilityAlertInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reviewId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hostelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  availabilityAlertTransition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   read?: Prisma.BoolFieldUpdateOperationsInput | boolean
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1071,6 +1375,8 @@ export type NotificationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   bookingId?: boolean
   reviewId?: boolean
   hostelId?: boolean
+  availabilityAlertId?: boolean
+  availabilityAlertTransition?: boolean
   read?: boolean
   readAt?: boolean
   createdAt?: boolean
@@ -1078,6 +1384,7 @@ export type NotificationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }, ExtArgs["result"]["notification"]>
 
 export type NotificationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1089,6 +1396,8 @@ export type NotificationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   bookingId?: boolean
   reviewId?: boolean
   hostelId?: boolean
+  availabilityAlertId?: boolean
+  availabilityAlertTransition?: boolean
   read?: boolean
   readAt?: boolean
   createdAt?: boolean
@@ -1096,6 +1405,7 @@ export type NotificationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }, ExtArgs["result"]["notification"]>
 
 export type NotificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1107,6 +1417,8 @@ export type NotificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   bookingId?: boolean
   reviewId?: boolean
   hostelId?: boolean
+  availabilityAlertId?: boolean
+  availabilityAlertTransition?: boolean
   read?: boolean
   readAt?: boolean
   createdAt?: boolean
@@ -1114,6 +1426,7 @@ export type NotificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }, ExtArgs["result"]["notification"]>
 
 export type NotificationSelectScalar = {
@@ -1125,29 +1438,34 @@ export type NotificationSelectScalar = {
   bookingId?: boolean
   reviewId?: boolean
   hostelId?: boolean
+  availabilityAlertId?: boolean
+  availabilityAlertTransition?: boolean
   read?: boolean
   readAt?: boolean
   createdAt?: boolean
 }
 
-export type NotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "title" | "message" | "bookingId" | "reviewId" | "hostelId" | "read" | "readAt" | "createdAt", ExtArgs["result"]["notification"]>
+export type NotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "type" | "title" | "message" | "bookingId" | "reviewId" | "hostelId" | "availabilityAlertId" | "availabilityAlertTransition" | "read" | "readAt" | "createdAt", ExtArgs["result"]["notification"]>
 export type NotificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }
 export type NotificationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }
 export type NotificationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   booking?: boolean | Prisma.Notification$bookingArgs<ExtArgs>
   review?: boolean | Prisma.Notification$reviewArgs<ExtArgs>
   hostel?: boolean | Prisma.Notification$hostelArgs<ExtArgs>
+  availabilityAlert?: boolean | Prisma.Notification$availabilityAlertArgs<ExtArgs>
 }
 
 export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1157,6 +1475,7 @@ export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     booking: Prisma.$BookingPayload<ExtArgs> | null
     review: Prisma.$ReviewPayload<ExtArgs> | null
     hostel: Prisma.$HostelPayload<ExtArgs> | null
+    availabilityAlert: Prisma.$AvailabilityAlertPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1167,6 +1486,8 @@ export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     bookingId: string | null
     reviewId: string | null
     hostelId: string | null
+    availabilityAlertId: string | null
+    availabilityAlertTransition: number | null
     read: boolean
     readAt: Date | null
     createdAt: Date
@@ -1568,6 +1889,7 @@ export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends run
   booking<T extends Prisma.Notification$bookingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$bookingArgs<ExtArgs>>): Prisma.Prisma__BookingClient<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   review<T extends Prisma.Notification$reviewArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$reviewArgs<ExtArgs>>): Prisma.Prisma__ReviewClient<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   hostel<T extends Prisma.Notification$hostelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$hostelArgs<ExtArgs>>): Prisma.Prisma__HostelClient<runtime.Types.Result.GetResult<Prisma.$HostelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  availabilityAlert<T extends Prisma.Notification$availabilityAlertArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$availabilityAlertArgs<ExtArgs>>): Prisma.Prisma__AvailabilityAlertClient<runtime.Types.Result.GetResult<Prisma.$AvailabilityAlertPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1605,6 +1927,8 @@ export interface NotificationFieldRefs {
   readonly bookingId: Prisma.FieldRef<"Notification", 'String'>
   readonly reviewId: Prisma.FieldRef<"Notification", 'String'>
   readonly hostelId: Prisma.FieldRef<"Notification", 'String'>
+  readonly availabilityAlertId: Prisma.FieldRef<"Notification", 'String'>
+  readonly availabilityAlertTransition: Prisma.FieldRef<"Notification", 'Int'>
   readonly read: Prisma.FieldRef<"Notification", 'Boolean'>
   readonly readAt: Prisma.FieldRef<"Notification", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Notification", 'DateTime'>
@@ -2063,6 +2387,25 @@ export type Notification$hostelArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.HostelInclude<ExtArgs> | null
   where?: Prisma.HostelWhereInput
+}
+
+/**
+ * Notification.availabilityAlert
+ */
+export type Notification$availabilityAlertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AvailabilityAlert
+   */
+  select?: Prisma.AvailabilityAlertSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AvailabilityAlert
+   */
+  omit?: Prisma.AvailabilityAlertOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AvailabilityAlertInclude<ExtArgs> | null
+  where?: Prisma.AvailabilityAlertWhereInput
 }
 
 /**

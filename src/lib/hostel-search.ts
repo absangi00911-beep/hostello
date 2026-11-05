@@ -27,6 +27,11 @@ export interface SearchParams {
   limit: number;
 }
 
+export type PublicSearchFilters = Pick<
+  SearchParams,
+  "q" | "city" | "gender" | "minPrice" | "maxPrice" | "amenities" | "verified" | "nearby"
+>;
+
 export interface SearchResult {
   hostelIds: string[];
   total: number;
@@ -112,6 +117,15 @@ function buildNearbyWhereClause(params: SearchParams): Prisma.HostelWhereInput {
     where.AND = [longitudeWhere];
   }
   return where;
+}
+
+export function buildPublicSearchWhereClause(
+  filters: PublicSearchFilters,
+): Prisma.HostelWhereInput {
+  const params = { ...filters, page: 1, limit: 1 } satisfies SearchParams;
+  return filters.nearby
+    ? buildNearbyWhereClause(params)
+    : buildWhereClause(params);
 }
 
 function isWithinNearbyRadius(

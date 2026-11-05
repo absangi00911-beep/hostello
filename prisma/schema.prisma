@@ -128,6 +128,12 @@ enum NotificationType {
   STUDENT_VERIFICATION_APPROVED
   STUDENT_VERIFICATION_REJECTED
   PRICE_ALERT
+  AVAILABILITY_ALERT
+}
+
+enum AvailabilityAlertType {
+  HOSTEL
+  SEARCH
 }
 
 // ─── Models ─────────────────────────────────────────────────────────────────
@@ -171,6 +177,7 @@ model User {
   conversationParticipants ConversationParticipant[]
   passwordResets PasswordResetToken[]
   priceAlerts    PriceAlert[]
+  availabilityAlerts AvailabilityAlert[]
   notifications  Notification[]
   phoneVerificationTokens PhoneVerificationToken[]
   roommmatePosts    RoommatePost[]
@@ -362,6 +369,7 @@ model Hostel {
   favorites Favorite[]
   conversations Conversation[]
   priceAlerts PriceAlert[]
+  availabilityAlerts AvailabilityAlert[]
   notifications Notification[]
   blockedDates BlockedDate[]
   roommmatePosts  RoommatePost[]
@@ -734,6 +742,29 @@ model PriceAlert {
   @@map("price_alerts")
 }
 
+model AvailabilityAlert {
+  id            String               @id @default(cuid())
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  type          AvailabilityAlertType
+  hostel        Hostel?              @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId      String?
+  searchCriteria Json?
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  active        Boolean              @default(true)
+  matched       Boolean              @default(false)
+  matchVersion  Int                  @default(0)
+  notifications Notification[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([userId, active, checkIn])
+  @@index([hostelId, active, checkIn])
+  @@map("availability_alerts")
+}
+
 model Notification {
   id String @id @default(cuid())
 
@@ -756,14 +787,20 @@ model Notification {
   hostel   Hostel? @relation(fields: [hostelId], references: [id], onDelete: SetNull)
   hostelId String?
 
+  availabilityAlert           AvailabilityAlert? @relation(fields: [availabilityAlertId], references: [id], onDelete: SetNull)
+  availabilityAlertId         String?
+  availabilityAlertTransition Int?
+
   read      Boolean  @default(false)
   readAt    DateTime?
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([bookingId])
+  @@index([availabilityAlertId])
   @@index([read])
   @@index([createdAt])
+  @@unique([availabilityAlertId, availabilityAlertTransition], map: "notifications_alert_transition_key")
   @@map("notifications")
 }
 

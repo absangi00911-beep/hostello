@@ -423,6 +423,7 @@ export const ModelName = {
   ConversationParticipant: 'ConversationParticipant',
   Message: 'Message',
   PriceAlert: 'PriceAlert',
+  AvailabilityAlert: 'AvailabilityAlert',
   Notification: 'Notification',
   CronLog: 'CronLog',
   BlockedDate: 'BlockedDate',
@@ -443,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "latePaymentResolution" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "latePaymentResolution" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "availabilityAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2371,6 +2372,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AvailabilityAlert: {
+      payload: Prisma.$AvailabilityAlertPayload<ExtArgs>
+      fields: Prisma.AvailabilityAlertFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AvailabilityAlertFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AvailabilityAlertFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        findFirst: {
+          args: Prisma.AvailabilityAlertFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AvailabilityAlertFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        findMany: {
+          args: Prisma.AvailabilityAlertFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        create: {
+          args: Prisma.AvailabilityAlertCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        createMany: {
+          args: Prisma.AvailabilityAlertCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AvailabilityAlertCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        delete: {
+          args: Prisma.AvailabilityAlertDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        update: {
+          args: Prisma.AvailabilityAlertUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        deleteMany: {
+          args: Prisma.AvailabilityAlertDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AvailabilityAlertUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AvailabilityAlertUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        upsert: {
+          args: Prisma.AvailabilityAlertUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        aggregate: {
+          args: Prisma.AvailabilityAlertAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAvailabilityAlert>
+        }
+        groupBy: {
+          args: Prisma.AvailabilityAlertGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AvailabilityAlertGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AvailabilityAlertCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AvailabilityAlertCountAggregateOutputType> | number
+        }
+      }
+    }
     Notification: {
       payload: Prisma.$NotificationPayload<ExtArgs>
       fields: Prisma.NotificationFieldRefs
@@ -3213,6 +3288,25 @@ export const PriceAlertScalarFieldEnum = {
 export type PriceAlertScalarFieldEnum = (typeof PriceAlertScalarFieldEnum)[keyof typeof PriceAlertScalarFieldEnum]
 
 
+export const AvailabilityAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  hostelId: 'hostelId',
+  searchCriteria: 'searchCriteria',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  guests: 'guests',
+  active: 'active',
+  matched: 'matched',
+  matchVersion: 'matchVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AvailabilityAlertScalarFieldEnum = (typeof AvailabilityAlertScalarFieldEnum)[keyof typeof AvailabilityAlertScalarFieldEnum]
+
+
 export const NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3222,6 +3316,8 @@ export const NotificationScalarFieldEnum = {
   bookingId: 'bookingId',
   reviewId: 'reviewId',
   hostelId: 'hostelId',
+  availabilityAlertId: 'availabilityAlertId',
+  availabilityAlertTransition: 'availabilityAlertTransition',
   read: 'read',
   readAt: 'readAt',
   createdAt: 'createdAt'
@@ -3288,6 +3384,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -3302,6 +3406,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -3559,28 +3672,28 @@ export type ListEnumRefundAuditEventTypeFieldRefInput<$PrismaModel> = FieldRefIn
  * Reference to a field of type 'LatePaymentReason'
  */
 export type EnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason'>
-
+    
 
 
 /**
  * Reference to a field of type 'LatePaymentReason[]'
  */
 export type ListEnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason[]'>
-
+    
 
 
 /**
  * Reference to a field of type 'LatePaymentOutcome'
  */
 export type EnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome'>
-
+    
 
 
 /**
  * Reference to a field of type 'LatePaymentOutcome[]'
  */
 export type ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome[]'>
-
+    
 
 
 /**
@@ -3594,6 +3707,34 @@ export type EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefI
  * Reference to a field of type 'SafepayWebhookEventStatus[]'
  */
 export type ListEnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AvailabilityAlertType'
+ */
+export type EnumAvailabilityAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AvailabilityAlertType'>
+    
+
+
+/**
+ * Reference to a field of type 'AvailabilityAlertType[]'
+ */
+export type ListEnumAvailabilityAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AvailabilityAlertType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -3787,6 +3928,7 @@ export type GlobalOmitConfig = {
   conversationParticipant?: Prisma.ConversationParticipantOmit
   message?: Prisma.MessageOmit
   priceAlert?: Prisma.PriceAlertOmit
+  availabilityAlert?: Prisma.AvailabilityAlertOmit
   notification?: Prisma.NotificationOmit
   cronLog?: Prisma.CronLogOmit
   blockedDate?: Prisma.BlockedDateOmit
