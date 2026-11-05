@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { secondaryButtonClassName } from "@/components/owner/ListingFormFields";
 import { readAdminError } from "./adminListings";
 import {
   ADMIN_BOOKING_STATUSES,
   adminBookingStatusLabel,
+  isCurrentAdminBookingsFilter,
   parseAdminBookingsPage,
   type AdminBooking,
   type AdminBookingStatusFilter,
@@ -220,6 +221,15 @@ export function AdminBookingsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [moreError, setMoreError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const activeStatusRef = useRef(status);
+
+  const handleStatusChange = useCallback((nextStatus: AdminBookingStatusFilter) => {
+    if (nextStatus !== activeStatusRef.current) {
+      activeStatusRef.current = nextStatus;
+      setIsLoadingMore(false);
+    }
+    setStatus(nextStatus);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -249,6 +259,7 @@ export function AdminBookingsPage() {
     setMoreError(null);
     try {
       const result = await fetchBookings(status, page + 1);
+      if (!isCurrentAdminBookingsFilter(status, activeStatusRef.current)) return;
       setBookings((current) => {
         const seen = new Set(current.map((booking) => booking.id));
         return [
@@ -259,11 +270,14 @@ export function AdminBookingsPage() {
       setPage(result.page);
       setHasMore(result.hasMore);
     } catch (error) {
+      if (!isCurrentAdminBookingsFilter(status, activeStatusRef.current)) return;
       setMoreError(
         error instanceof Error ? error.message : "Could not load more bookings.",
       );
     } finally {
-      setIsLoadingMore(false);
+      if (isCurrentAdminBookingsFilter(status, activeStatusRef.current)) {
+        setIsLoadingMore(false);
+      }
     }
   }, [page, status]);
 
@@ -277,7 +291,7 @@ export function AdminBookingsPage() {
       moreError={moreError}
       onLoadMore={() => void loadMore()}
       onRetry={() => setRetryCount((count) => count + 1)}
-      onStatusChange={setStatus}
+      onStatusChange={handleStatusChange}
       status={status}
     />
   );

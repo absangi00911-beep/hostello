@@ -8,6 +8,13 @@ export const ADMIN_BOOKING_STATUSES = [
 export type AdminBookingStatus = (typeof ADMIN_BOOKING_STATUSES)[number];
 export type AdminBookingStatusFilter = AdminBookingStatus | "ALL";
 
+export function isCurrentAdminBookingsFilter(
+  requestStatus: AdminBookingStatusFilter,
+  activeStatus: AdminBookingStatusFilter,
+): boolean {
+  return requestStatus === activeStatus;
+}
+
 export interface AdminBooking {
   id: string;
   status: AdminBookingStatus;

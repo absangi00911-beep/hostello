@@ -7,6 +7,7 @@ import {
 import type { AdminBooking } from "./adminBookings";
 import { AdminBookingDetailContent } from "./AdminBookingDetailPage";
 import {
+  isCurrentAdminBookingsFilter,
   parseAdminBooking,
   parseAdminBookingsPage,
 } from "./adminBookings";
@@ -100,6 +101,45 @@ describe("AdminBookingsContent", () => {
     expect(markup).not.toContain("Ayesha Khan");
     expect(markup).not.toContain("room_1");
     expect(markup).not.toContain("provider-tracker-secret");
+  });
+
+  it("ignores a delayed load-more response after the selected status changes", async () => {
+    let activeStatus: "ALL" | "PENDING" = "ALL";
+    let bookings = [booking({ id: "pending-booking", status: "PENDING" })];
+    let page = 1;
+    let hasMore = true;
+    let resolveOldPage!: (result: {
+      data: AdminBooking[];
+      page: number;
+      hasMore: boolean;
+    }) => void;
+    const oldPage = new Promise<{
+      data: AdminBooking[];
+      page: number;
+      hasMore: boolean;
+    }>((resolve) => {
+      resolveOldPage = resolve;
+    });
+    const requestedStatus = activeStatus;
+
+    const loadingMore = oldPage.then((result) => {
+      if (!isCurrentAdminBookingsFilter(requestedStatus, activeStatus)) return;
+      bookings = [...bookings, ...result.data];
+      page = result.page;
+      hasMore = result.hasMore;
+    });
+
+    activeStatus = "PENDING";
+    resolveOldPage({
+      data: [booking({ id: "stale-all-booking" })],
+      page: 2,
+      hasMore: false,
+    });
+    await loadingMore;
+
+    expect(bookings.map(({ id }) => id)).toEqual(["pending-booking"]);
+    expect(page).toBe(1);
+    expect(hasMore).toBe(true);
   });
 });
 
