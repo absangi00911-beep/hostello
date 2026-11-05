@@ -11,7 +11,6 @@ const booking = (overrides: Partial<RefundBooking> = {}): RefundBooking => ({
   id: "b1",
   hostelName: "Green Hostel",
   studentName: "Ayesha",
-  studentEmail: "ayesha@example.com",
   checkIn: "2026-12-01T00:00:00.000Z",
   checkOut: "2027-01-01T00:00:00.000Z",
   total: 20000,
@@ -64,9 +63,11 @@ describe("AdminRefundsContent", () => {
     const markup = render({ bookings: [booking()] });
     expect(markup).toContain("Ayesha");
     expect(markup).toContain("Green Hostel");
+    expect(markup).toContain('href="/admin/bookings/b1"');
     expect(markup).toContain("Not refunded");
     expect(markup).toContain("Left to refund");
     expect(markup).toContain("Refund via Safepay");
+    expect(markup).not.toContain("ayesha@example.com");
     expect(markup).not.toContain("Confirm refund manually");
   });
 

@@ -74,8 +74,15 @@ export type VoidAction = (
 ) => Promise<PayoutActionResult>;
 
 function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
   if (payout.status !== "PENDING") return null;
   if (payout.destinationStatus === "available" && payout.destination) {
+    const accountId = `payout-account-${payout.id}`;
+    const accountNumber = payout.destination.bankAccountNumber;
+    const maskedAccountNumber =
+      accountNumber.length > 4
+        ? `•••• ${accountNumber.slice(-4)}`
+        : "••••";
     return (
       <dl className="m-0 grid gap-1 rounded-[12px] bg-surface-muted p-3 text-[0.85rem]">
         <div className="flex flex-wrap gap-x-2">
@@ -86,10 +93,22 @@ function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
         </div>
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Account number</dt>
-          <dd className="m-0 font-semibold text-ink">
-            {payout.destination.bankAccountNumber}
+          <dd
+            className="m-0 font-semibold text-ink"
+            id={accountId}
+          >
+            {showAccountNumber ? accountNumber : maskedAccountNumber}
           </dd>
         </div>
+        <button
+          aria-controls={accountId}
+          aria-expanded={showAccountNumber}
+          className="w-fit text-left font-semibold text-brand underline"
+          onClick={() => setShowAccountNumber((shown) => !shown)}
+          type="button"
+        >
+          {showAccountNumber ? "Hide account number" : "Show account number"}
+        </button>
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Bank</dt>
           <dd className="m-0 font-semibold text-ink">

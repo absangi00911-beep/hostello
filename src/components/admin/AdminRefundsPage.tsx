@@ -153,10 +153,16 @@ function RefundCard({
         </span>
       </div>
       <p className="m-0 text-[0.85rem] text-muted">
-        {booking.studentEmail} · {booking.hostelName} ·{" "}
+        {booking.hostelName} ·{" "}
         {dateFormatter.format(new Date(booking.checkIn))} to{" "}
         {dateFormatter.format(new Date(booking.checkOut))}
       </p>
+      <Link
+        className="w-fit text-[0.85rem] font-semibold text-brand hover:underline"
+        href={`/admin/bookings/${encodeURIComponent(booking.id)}`}
+      >
+        View booking
+      </Link>
       <dl className="m-0 grid gap-1 text-[0.88rem]">
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Paid</dt>
