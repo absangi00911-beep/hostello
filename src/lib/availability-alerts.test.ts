@@ -37,6 +37,11 @@ function createHarness(initialAlert?: Partial<AvailabilityAlertRecord>) {
     : null;
   let fits = true;
   const notifications: Array<Record<string, unknown>> = [];
+  const inventoryQueries = {
+    rooms: [] as unknown[],
+    holds: [] as unknown[],
+    blockedDates: [] as unknown[],
+  };
   const tx = {
     $queryRaw: vi.fn(async (query: { values: unknown[] }) =>
       query.values.includes("student-2") ? [] : [{ id: "alert-1" }],
@@ -81,13 +86,26 @@ function createHarness(initialAlert?: Partial<AvailabilityAlertRecord>) {
       ]),
     },
     room: {
-      findMany: vi.fn(async () => [{ id: "room-1", capacity: 4 }]),
+      findMany: vi.fn(async (args: unknown) => {
+        inventoryQueries.rooms.push(args);
+        return [{ id: "room-1", capacity: 4 }];
+      }),
     },
     seatHold: {
-      findMany: vi.fn(async () => (fits ? [] : [{ roomId: "room-1", seatNo: 1 }, { roomId: "room-1", seatNo: 2 }, { roomId: "room-1", seatNo: 3 }])),
+      findMany: vi.fn(async (args: unknown) => {
+        inventoryQueries.holds.push(args);
+        return fits ? [] : [
+          { roomId: "room-1", seatNo: 1 },
+          { roomId: "room-1", seatNo: 2 },
+          { roomId: "room-1", seatNo: 3 },
+        ];
+      }),
     },
     blockedDate: {
-      findFirst: vi.fn(async () => null),
+      findFirst: vi.fn(async (args: unknown) => {
+        inventoryQueries.blockedDates.push(args);
+        return null;
+      }),
     },
     notification: {
       create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
@@ -106,6 +124,7 @@ function createHarness(initialAlert?: Partial<AvailabilityAlertRecord>) {
     database,
     tx,
     notifications,
+    inventoryQueries,
     get alert() {
       return alert;
     },
@@ -149,6 +168,79 @@ describe("availability alert service", () => {
       availabilityAlertId: "alert-1",
       availabilityAlertTransition: 1,
     });
+  });
+
+  it("evaluates saved searches against public candidates and exact stay availability", async () => {
+      const harness = createHarness();
+
+      await createAvailabilityAlert(
+        "student-1",
+        {
+          type: "SEARCH",
+          criteria: {
+            city: "Lahore",
+            gender: "FEMALE",
+            minPrice: 10_000,
+            amenities: ["wifi"],
+          },
+          checkIn: checkInInput,
+          checkOut: checkOutInput,
+          guests: 2,
+        },
+        harness.database as never,
+        today,
+      );
+
+      expect(harness.tx.hostel.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: "ACTIVE",
+            city: "Lahore",
+            gender: "FEMALE",
+            pricePerMonth: { gte: 10_000 },
+            amenities: { hasEvery: ["wifi"] },
+          }),
+          select: { id: true, latitude: true, longitude: true },
+        }),
+      );
+      expect(harness.inventoryQueries.holds[0]).toMatchObject({
+        where: {
+          roomId: { in: ["room-1"] },
+          checkIn: { lt: checkOut },
+          checkOut: { gt: checkIn },
+        },
+      });
+      expect(harness.inventoryQueries.blockedDates[0]).toMatchObject({
+        where: {
+          hostelId: "hostel-1",
+          startDate: { lt: checkOut },
+          endDate: { gte: checkIn },
+        },
+      });
+      expect(harness.alert?.matched).toBe(true);
+      expect(harness.notifications).toHaveLength(1);
+    });
+
+  it("does not match a saved search when exact stay inventory cannot fit the guests", async () => {
+      const harness = createHarness();
+      harness.fits = false;
+
+      await createAvailabilityAlert(
+        "student-1",
+        {
+          type: "SEARCH",
+          criteria: { city: "Lahore" },
+          checkIn: checkInInput,
+          checkOut: checkOutInput,
+          guests: 2,
+        },
+        harness.database as never,
+        today,
+      );
+
+      expect(harness.tx.hostel.findMany).toHaveBeenCalledOnce();
+      expect(harness.alert?.matched).toBe(false);
+      expect(harness.notifications).toHaveLength(0);
   });
 
   it("emits only on unmatched-to-matched transitions and resets when unavailable", async () => {

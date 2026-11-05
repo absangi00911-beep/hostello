@@ -105,6 +105,8 @@ export function getNotificationHref(
         /^[a-zA-Z0-9_-]{1,128}$/.test(item.hostelId)
         ? `/hostels/${encodeURIComponent(item.hostelId)}`
         : null;
+    case "AVAILABILITY_ALERT":
+      return role === "STUDENT" ? "/student/availability-alerts" : null;
     default:
       return null;
   }

@@ -33,13 +33,13 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 <!-- docs-check:begin -->
 | Fact | Value |
 |---|---:|
-| Page files (`src/app/**/page.tsx`) | 38 |
-| API route handler files | 77 |
-| Prisma models | 31 |
-| Prisma migrations | 34 |
-| Vitest test files | 221 |
-| Cron jobs in the schedule registry | 8 |
-| Cron route handlers | 8 |
+| Page files (`src/app/**/page.tsx`) | 39 |
+| API route handler files | 80 |
+| Prisma models | 32 |
+| Prisma migrations | 35 |
+| Vitest test files | 231 |
+| Cron jobs in the schedule registry | 9 |
+| Cron route handlers | 9 |
 <!-- docs-check:end -->
 
 ---
@@ -456,6 +456,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Messaging | `/api/conversations` (start with an active hostel, Student), `/api/conversations/[id]` | Participant |
 | Notifications | `/api/notifications`, `/api/notifications/[id]` | Signed in |
 | Price alerts and email preferences | `/api/price-alerts`, `/api/price-alerts/[id]` (Signed in); `/api/alerts/unsubscribe`, `/api/email/unsubscribe` (signed token) | Signed in / Public |
+| Availability alerts | `/api/availability-alerts` (paginated list and create), `/api/availability-alerts/[id]` (edit, pause/resume, delete) | Student |
 | Owner tools | `/api/owner/analytics`, `/api/owner/earnings` (earnings and bank details), `/api/owner/hostels/[id]/blocked-dates`, `/api/owner/subscription` | Owner |
 | Admin: listings and search | `/api/admin/listings`, `/api/admin/listings/stats`, `/api/admin/hostels` (verify, activate, suspend), `/api/admin/search/sync` | Admin |
 | Admin: people and community | `/api/admin/verifications`, `/api/admin/verifications/analytics`, `/api/admin/verifications/[userId]/document`, `/api/admin/roommate-reports`, `/api/admin/roommate-reports/[postId]` | Admin |
@@ -463,7 +464,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Uploads | `/api/upload` (listing images; Owner or Admin when `hostelId` is given, otherwise any signed-in user, R-11) | Signed in |
 | Support | `/api/contact`, `/api/report` | Signed in |
 | Health | `/api/health/crons`, `/api/health/payments` | Admin |
-| Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions`, `/api/cron/sweep-cancelled-refunds` | QStash |
+| Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-availability-alerts`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions`, `/api/cron/sweep-cancelled-refunds` | QStash |
 
 ---
 
@@ -534,7 +535,7 @@ Both are disabled. The callback route still ships: JazzCash callbacks fail close
 ---
 ## 9. Background jobs
 
-Eight jobs run on QStash schedules. The schedule, endpoint and health-freshness threshold are defined once in `src/lib/cron-schedules.ts`, which both the registration script (`npm run schedule-cron`) and the health endpoint read.
+Nine jobs run on QStash schedules. The schedule, endpoint and health-freshness threshold are defined once in `src/lib/cron-schedules.ts`, which both the registration script (`npm run schedule-cron`) and the health endpoint read.
 
 | Job | Schedule (UTC) | What it does | Alert if older than |
 |---|---|---|---|
@@ -542,6 +543,7 @@ Eight jobs run on QStash schedules. The schedule, endpoint and health-freshness 
 | `sweep-cancelled-refunds` | every 5 minutes | Retries eligible positive refunds for cancelled paid bookings through the existing refund claim | 10 minutes |
 | `expire-unanswered-bookings` | every 15 minutes | Reminds owners before the deadline; cancels and refunds paid bookings the owner has not answered within 24 hours | 30 minutes |
 | `check-price-alerts` | every 6 hours | Emails users when an active hostel's price drops to their target | 8 hours |
+| `expire-availability-alerts` | every 5 minutes | Expires active date-bound alerts when their check-in date begins | 10 minutes |
 | `cleanup-tokens` | daily at 01:00 | Deletes expired password-reset, verification and phone tokens | 26 hours |
 | `cleanup-verification-uploads` | hourly | Deletes abandoned temporary uploads from the private verification bucket | 2 hours |
 | `mark-completed-stays` | daily at 00:00 | Moves `CONFIRMED` and `PAID` bookings past check-out to `COMPLETED`; completion notifications are written in the same transaction | 26 hours |
@@ -559,13 +561,14 @@ Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`
 
 | Channel | Provider | Used for |
 |---|---|---|
-| In-app | `Notification` table, read through `/api/notifications` | Booking requested, confirmed, cancelled, completed, refunded; message received; review received; listing approved or rejected; student verification decided; price alert |
+| In-app | `Notification` table, read through `/api/notifications` | Booking requested, confirmed, cancelled, completed, refunded; message received; review received; listing approved or rejected; student verification decided; price and availability alerts |
 | Email | Resend | Verification and welcome, password reset, booking lifecycle, refunds, price alerts, admin moderation, support and report mail. Price-alert and global preferences can be changed through signed unsubscribe links |
 | SMS | Twilio | Phone verification codes only. Without credentials the code is logged in development |
 
 **Delivery guarantees.**
 
 - **In-app notifications** are database rows. They are awaited, and for payment events (booking paid, Pro activated) they are written in the same transaction as the state change, so they exist if and only if the change was applied. If that transaction fails, the booking stays unpaid and QStash retries the event.
+- Availability alerts are student-only, date-range-aware `HOSTEL` or `SEARCH` rules. They use the room seat-hold availability authority, re-evaluate after inventory and listing transitions, and atomically record the match transition with one English in-app notification. Each notification links only to the student's alert manager; criteria and dates can be edited, alerts paused/resumed, and expired alerts deleted or replaced.
 - **Emails** run after the response through `runAfterResponse`. This stops the platform from cutting them off, but they are still best effort: nothing retries a send that fails or an invocation that crashes. A durable outbox is the remaining step (R-07).
 - The Safepay worker awaits its two emails before acknowledging; the completion job writes its notifications transactionally.
 - In production, `sendEmail` returns a failure, and logs an error, when the Resend key is missing or a placeholder. Startup validation also rejects a malformed key (R-14).

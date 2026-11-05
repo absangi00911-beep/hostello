@@ -12,6 +12,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { processRefund } from "@/lib/refunds";
 import { CANCELLATION_POLICY_DETAILS, getCancellationRefundAmount } from "@/lib/cancellation-policy";
 import { releaseSeatHolds } from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 import {
   createOperationalLogContext,
   hashOperationalIdentifier,
@@ -206,6 +207,7 @@ export async function PATCH(
 
         if (cancelled.count !== 1) return null;
         await releaseSeatHolds(tx, id);
+        await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
 
         return { id, status: "CANCELLED" as const, roomId: booking.roomId, cancellationRefundAmount: refundAmount };
       });
@@ -328,6 +330,7 @@ export async function PATCH(
 
       if (result.count !== 1) return null;
       if (newStatus === "CANCELLED") await releaseSeatHolds(tx, id);
+      await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
 
       return { id, status: newStatus, roomId: booking.roomId };
     });

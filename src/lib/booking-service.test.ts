@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({
   db: { $transaction: vi.fn() },
 }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { db } from "@/lib/db";
 import { BookingServiceError, createBooking } from "./booking-service";

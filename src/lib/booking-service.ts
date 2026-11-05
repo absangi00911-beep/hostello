@@ -11,6 +11,7 @@ import {
   getRoomStayAvailability,
   lockHostelInventory,
 } from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export class BookingServiceError extends Error {
   constructor(
@@ -164,6 +165,7 @@ export async function createBooking(
         checkOut: input.checkOut,
         seatNumbers: availability.availableSeatNumbers.slice(0, input.guests),
       });
+      await reevaluateAvailabilityAlertsForHostel(tx, input.hostelId);
 
       return booking;
     }, { isolationLevel: "ReadCommitted" });

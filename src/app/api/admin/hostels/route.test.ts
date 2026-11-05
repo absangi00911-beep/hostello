@@ -25,6 +25,9 @@ vi.mock("@/lib/typesense-sync", () => ({
 vi.mock("@/lib/notifications", () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { PATCH } from "./route";
 import { auth } from "@/lib/auth/config";

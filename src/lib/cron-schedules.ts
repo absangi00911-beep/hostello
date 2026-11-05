@@ -31,6 +31,13 @@ export const CRON_SCHEDULES = {
     label: "Check price alerts",
     description: "Check price alerts and send notifications",
   },
+  "expire-availability-alerts": {
+    cron: "*/5 * * * *",
+    endpoint: "/api/cron/expire-availability-alerts",
+    maxAgeMs: 10 * 60 * 1000,
+    label: "Expire availability alerts",
+    description: "Expire date-bound availability alerts when check-in day begins",
+  },
   "cleanup-tokens": {
     cron: "0 1 * * *",
     endpoint: "/api/cron/cleanup-tokens",

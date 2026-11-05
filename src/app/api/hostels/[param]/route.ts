@@ -23,6 +23,7 @@ import {
   RoomInventoryConflictError,
   syncHostelRooms,
 } from "@/lib/room-inventory-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 // Owners can only move their own listing between these two states from
 // this endpoint — ACTIVE<->PENDING_REVIEW and SUSPENDED are admin-only,
@@ -182,6 +183,9 @@ export async function PATCH(
           if (result.count !== 1) return { kind: "changed" } as const;
 
           await syncHostelRooms(tx, hostel.id, listing.roomTypes);
+          await reevaluateAvailabilityAlertsForHostel(tx, hostel.id, {
+            includeAllSearchAlerts: true,
+          });
           return { kind: "updated" } as const;
         }, { isolationLevel: "Serializable" });
       } catch (error) {
@@ -217,9 +221,17 @@ export async function PATCH(
       );
     }
 
-    const result = await db.hostel.updateMany({
-      where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
-      data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },
+    const result = await db.$transaction(async (tx) => {
+      const transition = await tx.hostel.updateMany({
+        where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
+        data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },
+      });
+      if (transition.count === 1) {
+        await reevaluateAvailabilityAlertsForHostel(tx, hostel.id, {
+          includeAllSearchAlerts: true,
+        });
+      }
+      return transition;
     });
     if (result.count !== 1) {
       return NextResponse.json(

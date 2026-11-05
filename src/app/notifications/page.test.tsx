@@ -103,6 +103,14 @@ describe("getNotificationHref", () => {
     expect(getNotificationHref(item, "OWNER")).toBeNull();
   });
 
+  it("links availability alerts to the authenticated student management screen", () => {
+    const item = { ...base, type: "AVAILABILITY_ALERT" };
+
+    expect(getNotificationHref(item, "STUDENT")).toBe("/student/availability-alerts");
+    expect(getNotificationHref(item, "OWNER")).toBeNull();
+    expect(getNotificationHref(item, "ADMIN")).toBeNull();
+  });
+
   it("does not construct a route from path-like or external hostel identifiers", () => {
     expect(
       getNotificationHref(

@@ -83,12 +83,15 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
+        include: { hostel: { select: { name: true } } },
       }),
       db.availabilityAlert.count({ where }),
     ]);
 
     return NextResponse.json({
-      data: alerts.map((alert) => serializeAvailabilityAlert(alert, today)),
+      data: alerts.map((alert) =>
+        serializeAvailabilityAlert(alert, today, alert.hostel?.name),
+      ),
       total,
       page,
       limit,

@@ -19,6 +19,9 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/typesense-sync", () => ({
   removeHostelIndex: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { GET, PATCH } from "./route";
 import { auth } from "@/lib/auth/config";

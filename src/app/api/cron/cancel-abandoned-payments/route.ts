@@ -5,6 +5,7 @@ import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
 import { createOperationalLogContext } from "@/lib/operational-logger";
 import { releaseSeatHolds } from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export const maxDuration = 60;
 const BATCH_SIZE = 100;
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
         },
         orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: BATCH_SIZE,
-        select: { id: true },
+        select: { id: true, hostelId: true },
       });
 
       if (candidates.length === 0) break;
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
           batchCancelled += result.count;
           const released = await releaseSeatHolds(tx, booking.id);
           batchHoldsReleased += released.count;
+          await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
         }
 
         return { cancelled: batchCancelled, holdsReleased: batchHoldsReleased };

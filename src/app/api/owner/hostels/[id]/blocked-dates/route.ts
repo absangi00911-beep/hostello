@@ -6,7 +6,11 @@ import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { parsePagination } from "@/lib/pagination";
 import { isBoundedRouteParam } from "@/lib/route-params";
-import { createOwnerBlockedDate } from "@/lib/room-availability-service";
+import {
+  createOwnerBlockedDate,
+  lockHostelInventory,
+} from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 type Ctx = { params: Promise<{ id: string }> };
 const MAX_BODY_BYTES = 2_048;
@@ -112,13 +116,19 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error: "Provide valid inclusive calendar dates." }, { status: 400 });
   }
   const { startDate: start, endDate: end } = dateRange.data;
-  const result = await db.$transaction((tx) => createOwnerBlockedDate(tx, {
-    hostelId: hostel.id,
-    ownerId: session.user.id,
-    startDate: start,
-    endDate: end,
-    reason,
-  }));
+  const result = await db.$transaction(async (tx) => {
+    const created = await createOwnerBlockedDate(tx, {
+      hostelId: hostel.id,
+      ownerId: session.user.id,
+      startDate: start,
+      endDate: end,
+      reason,
+    });
+    if (created.kind === "created") {
+      await reevaluateAvailabilityAlertsForHostel(tx, hostel.id);
+    }
+    return created;
+  });
 
   if (result.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (result.kind === "conflict") {
@@ -160,12 +170,18 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  await db.blockedDate.deleteMany({
-    where: {
-      id,
-      hostelId,
-      hostel: { is: { ownerId: session.user.id } },
-    },
+  await db.$transaction(async (tx) => {
+    if (!await lockHostelInventory(tx, hostelId)) return;
+    const deleted = await tx.blockedDate.deleteMany({
+      where: {
+        id,
+        hostelId,
+        hostel: { is: { ownerId: session.user.id } },
+      },
+    });
+    if (deleted.count > 0) {
+      await reevaluateAvailabilityAlertsForHostel(tx, hostelId);
+    }
   });
 
   return NextResponse.json({ ok: true });

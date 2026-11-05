@@ -11,6 +11,7 @@ import { runCronJob } from "@/lib/cron-utils";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { releaseSeatHolds } from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export const maxDuration = 60;
 const REMINDER_WINDOW_MS = 6 * 60 * 60 * 1000;
@@ -175,6 +176,7 @@ export async function POST(req: NextRequest) {
           if (transition.count !== 1) continue;
           const released = await releaseSeatHolds(tx, candidate.id);
           batchHoldsReleased += released.count;
+          await reevaluateAvailabilityAlertsForHostel(tx, candidate.hostelId);
           claimed.push(candidate);
         }
         return { claimed, holdsReleased: batchHoldsReleased };

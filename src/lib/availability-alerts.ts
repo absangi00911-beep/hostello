@@ -434,10 +434,12 @@ export function getAvailabilityAlertStatus(
 export function serializeAvailabilityAlert(
   alert: AvailabilityAlert,
   today = getPakistanCalendarDate(),
+  hostelName?: string | null,
 ) {
   return {
     id: alert.id,
     type: alert.type satisfies AvailabilityAlertType,
+    ...(alert.type === "HOSTEL" ? { hostelName: hostelName ?? null } : {}),
     criteria: alert.type === "HOSTEL"
       ? { hostelId: alert.hostelId }
       : criteriaFor(alert),

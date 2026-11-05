@@ -28,6 +28,9 @@ vi.mock("@/lib/cron-utils", () => ({
   ),
 }));
 vi.mock("@/lib/refunds", () => ({ processRefund: mocks.processRefund }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { POST } from "./route";
 

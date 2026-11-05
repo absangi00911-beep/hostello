@@ -11,6 +11,7 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 const schema = z.object({
   hostelId: z.string().cuid(),
@@ -124,12 +125,22 @@ export async function PATCH(req: NextRequest) {
               notes: verification!.notes?.trim() || null,
             },
           });
+          await reevaluateAvailabilityAlertsForHostel(tx, hostelId, {
+            includeAllSearchAlerts: true,
+          });
           return true;
         })
-      : (await db.hostel.updateMany({
-          where: { id: hostelId, status: hostel.status },
-          data,
-        })).count === 1;
+      : await db.$transaction(async (tx) => {
+          const result = await tx.hostel.updateMany({
+            where: { id: hostelId, status: hostel.status },
+            data,
+          });
+          if (result.count !== 1) return false;
+          await reevaluateAvailabilityAlertsForHostel(tx, hostelId, {
+            includeAllSearchAlerts: true,
+          });
+          return true;
+        });
     if (!changed) {
       return NextResponse.json(
         { error: "This listing has already changed. Refresh the moderation queue and try again." },

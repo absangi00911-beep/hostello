@@ -24,6 +24,7 @@ import {
   NEARBY_COORDINATES_SESSION_KEY,
   type NearbyCoordinates,
 } from "@/lib/nearby-search";
+import { buildSearchAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import {
   buildSearchParams,
   type HostelSearchSort,
@@ -275,6 +276,10 @@ export default function SearchPageClient({
   const [isNearby, setIsNearby] = useState(initialNearby);
   const [appliedCity, setAppliedCity] = useState(initialCity);
   const [appliedNearby, setAppliedNearby] = useState(initialNearby);
+  const [alertNearbyCoordinates, setAlertNearbyCoordinates] =
+    useState<NearbyCoordinates | null>(null);
+  const [alertNearbyCoordinatesLoaded, setAlertNearbyCoordinatesLoaded] =
+    useState(false);
   const [moveInDate, setMoveInDate] = useState(initialMoveInDate);
   const [appliedMoveInDate, setAppliedMoveInDate] = useState(initialMoveInDate);
   const [guests, setGuests] = useState(String(initialGuests));
@@ -289,6 +294,39 @@ export default function SearchPageClient({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchReload, setSearchReload] = useState(0);
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
+  const availabilityAlertHref = buildSearchAvailabilityAlertHref({
+    city: appliedNearby ? undefined : appliedCity,
+    gender: appliedFilters.gender || undefined,
+    minPrice: appliedFilters.minPrice
+      ? Number(appliedFilters.minPrice)
+      : undefined,
+    maxPrice: appliedFilters.maxPrice
+      ? Number(appliedFilters.maxPrice)
+      : undefined,
+    amenities: appliedFilters.amenities,
+    ...(appliedNearby && alertNearbyCoordinates
+      ? { nearby: alertNearbyCoordinates }
+      : {}),
+    checkIn: appliedMoveInDate || undefined,
+    guests: Number(appliedGuests),
+  });
+
+  useEffect(() => {
+    if (!appliedNearby) {
+      setAlertNearbyCoordinates(null);
+      setAlertNearbyCoordinatesLoaded(true);
+      return;
+    }
+
+    setAlertNearbyCoordinatesLoaded(false);
+    try {
+      setAlertNearbyCoordinates(readNearbyCoordinates());
+    } catch {
+      setAlertNearbyCoordinates(null);
+    } finally {
+      setAlertNearbyCoordinatesLoaded(true);
+    }
+  }, [appliedNearby]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -840,6 +878,28 @@ export default function SearchPageClient({
                 ))}
               </div>
             )}
+
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface-muted px-4 py-3">
+              <p className="m-0 text-sm text-muted">
+                Want to know when a matching hostel has space for your stay?
+              </p>
+              {appliedNearby && !alertNearbyCoordinatesLoaded ? (
+                <p className="m-0 text-sm text-muted" role="status">
+                  Loading nearby location…
+                </p>
+              ) : appliedNearby && !alertNearbyCoordinates ? (
+                <p className="m-0 text-sm text-muted" role="status">
+                  Nearby location is unavailable. Start a new Nearby search to save this location.
+                </p>
+              ) : (
+                <Link
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-brand bg-white px-4 text-sm font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                  href={availabilityAlertHref}
+                >
+                  Create availability alert
+                </Link>
+              )}
+            </div>
 
             {isLoading && (
               <p

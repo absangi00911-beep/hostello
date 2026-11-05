@@ -1,10 +1,12 @@
 "use client";
 
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
+import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { calculateMonths } from "@/lib/utils";
 import { getPakistanCalendarDate } from "@hostello/shared";
 import { isStayWithinBounds } from "@/lib/hostel-date-selection";
+import { buildHostelAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
 
@@ -262,6 +264,12 @@ export function HostelBookingCard({
       : checkIn && checkOut
           ? "Choose another room"
           : "Choose dates";
+  const availabilityAlertHref = buildHostelAvailabilityAlertHref({
+    hostelId,
+    checkIn,
+    checkOut,
+    guests,
+  });
 
   useEffect(() => {
     if (bookingOutcome || !checkIn || !checkOut || checkOut <= checkIn) {
@@ -767,6 +775,12 @@ export function HostelBookingCard({
           No rooms are currently available to book.
         </p>
       )}
+      <Link
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-brand px-4 text-center text-sm font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+        href={availabilityAlertHref}
+      >
+        Alert me when these dates are available
+      </Link>
     </aside>
   );
 }

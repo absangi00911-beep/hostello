@@ -11,6 +11,9 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/verify-upstash", () => ({
   verifyUpstashRequest: vi.fn(),
 }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 vi.mock("@/lib/cron-utils", () => ({
   runCronJob: vi.fn(async (_name: string, handler: () => Promise<unknown>) => {
@@ -56,8 +59,8 @@ describe("POST /api/cron/cancel-abandoned-payments", () => {
 
   it("rechecks payment state before cancelling and releases holds only after the transition", async () => {
     vi.mocked(db.booking.findMany).mockResolvedValue([
-      { id: "booking-paid" },
-      { id: "booking-abandoned" },
+      { id: "booking-paid", hostelId: "hostel-1" },
+      { id: "booking-abandoned", hostelId: "hostel-1" },
     ] as Awaited<ReturnType<typeof db.booking.findMany>>);
     tx.booking.updateMany
       .mockResolvedValueOnce({ count: 0 })

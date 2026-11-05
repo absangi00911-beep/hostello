@@ -10,6 +10,9 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
@@ -19,7 +22,7 @@ import { DELETE, GET, POST } from "./route";
 const tx = {
   $queryRaw: vi.fn().mockResolvedValue([{ id: "hostel_1" }]),
   seatHold: { findFirst: vi.fn() },
-  blockedDate: { create: vi.fn() },
+  blockedDate: { create: vi.fn(), deleteMany: vi.fn() },
 };
 const context = { params: Promise.resolve({ id: "hostel_1" }) };
 const getRequest = () => new NextRequest("https://hostello.test/api/owner/hostels/hostel_1/blocked-dates");
@@ -50,6 +53,7 @@ beforeEach(() => {
     endDate: new Date("2099-10-12"),
     reason: "Repairs",
   });
+  tx.blockedDate.deleteMany.mockReset().mockResolvedValue({ count: 1 });
   vi.mocked(db.$transaction).mockImplementation(async (callback: any) => callback(tx));
 });
 
@@ -133,7 +137,7 @@ describe("owner blocked-date role boundary", () => {
     const response = await DELETE(deleteRequest(), context as any);
 
     expect(response.status).toBe(200);
-    expect(db.blockedDate.deleteMany).toHaveBeenCalledWith({
+    expect(tx.blockedDate.deleteMany).toHaveBeenCalledWith({
       where: {
         id: "blocked_1",
         hostelId: "hostel_1",
