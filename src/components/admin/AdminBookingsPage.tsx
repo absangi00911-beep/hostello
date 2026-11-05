@@ -7,8 +7,9 @@ import { readAdminError } from "./adminListings";
 import {
   ADMIN_BOOKING_STATUSES,
   adminBookingStatusLabel,
-  isCurrentAdminBookingsFilter,
+  isCurrentAdminBookingsRequest,
   parseAdminBookingsPage,
+  settleAdminBookingsPaginationRequest,
   type AdminBooking,
   type AdminBookingStatusFilter,
 } from "./adminBookings";
@@ -222,10 +223,12 @@ export function AdminBookingsPage() {
   const [moreError, setMoreError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const activeStatusRef = useRef(status);
+  const activeRequestGenerationRef = useRef(0);
 
   const handleStatusChange = useCallback((nextStatus: AdminBookingStatusFilter) => {
     if (nextStatus !== activeStatusRef.current) {
       activeStatusRef.current = nextStatus;
+      activeRequestGenerationRef.current += 1;
       setIsLoadingMore(false);
     }
     setStatus(nextStatus);
@@ -257,28 +260,39 @@ export function AdminBookingsPage() {
   const loadMore = useCallback(async () => {
     setIsLoadingMore(true);
     setMoreError(null);
-    try {
-      const result = await fetchBookings(status, page + 1);
-      if (!isCurrentAdminBookingsFilter(status, activeStatusRef.current)) return;
-      setBookings((current) => {
-        const seen = new Set(current.map((booking) => booking.id));
-        return [
-          ...current,
-          ...result.data.filter((booking) => !seen.has(booking.id)),
-        ];
-      });
-      setPage(result.page);
-      setHasMore(result.hasMore);
-    } catch (error) {
-      if (!isCurrentAdminBookingsFilter(status, activeStatusRef.current)) return;
-      setMoreError(
-        error instanceof Error ? error.message : "Could not load more bookings.",
+    const requestGeneration = activeRequestGenerationRef.current;
+    const isCurrent = () =>
+      isCurrentAdminBookingsRequest(
+        status,
+        activeStatusRef.current,
+        requestGeneration,
+        activeRequestGenerationRef.current,
       );
-    } finally {
-      if (isCurrentAdminBookingsFilter(status, activeStatusRef.current)) {
-        setIsLoadingMore(false);
-      }
-    }
+    await settleAdminBookingsPaginationRequest(
+      fetchBookings(status, page + 1),
+      isCurrent,
+      {
+        onSuccess: (result) => {
+          setBookings((current) => {
+            const seen = new Set(current.map((booking) => booking.id));
+            return [
+              ...current,
+              ...result.data.filter((booking) => !seen.has(booking.id)),
+            ];
+          });
+          setPage(result.page);
+          setHasMore(result.hasMore);
+        },
+        onError: (error) => {
+          setMoreError(
+            error instanceof Error
+              ? error.message
+              : "Could not load more bookings.",
+          );
+        },
+        onFinally: () => setIsLoadingMore(false),
+      },
+    );
   }, [page, status]);
 
   return (

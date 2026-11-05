@@ -7,9 +7,10 @@ import {
 import type { AdminBooking } from "./adminBookings";
 import { AdminBookingDetailContent } from "./AdminBookingDetailPage";
 import {
-  isCurrentAdminBookingsFilter,
+  isCurrentAdminBookingsRequest,
   parseAdminBooking,
   parseAdminBookingsPage,
+  settleAdminBookingsPaginationRequest,
 } from "./adminBookings";
 
 const booking = (overrides: Partial<AdminBooking> = {}): AdminBooking => ({
@@ -103,11 +104,17 @@ describe("AdminBookingsContent", () => {
     expect(markup).not.toContain("provider-tracker-secret");
   });
 
-  it("ignores a delayed load-more response after the selected status changes", async () => {
+  it("ignores load-more results and finalization after switching away and back", async () => {
     let activeStatus: "ALL" | "PENDING" = "ALL";
-    let bookings = [booking({ id: "pending-booking", status: "PENDING" })];
-    let page = 1;
-    let hasMore = true;
+    let activeGeneration = 0;
+    const requestStatus = activeStatus;
+    const requestGeneration = activeGeneration;
+    const state = {
+      bookings: [booking({ id: "current-booking" })],
+      page: 3,
+      hasMore: true,
+      isLoadingMore: true,
+    };
     let resolveOldPage!: (result: {
       data: AdminBooking[];
       page: number;
@@ -120,26 +127,86 @@ describe("AdminBookingsContent", () => {
     }>((resolve) => {
       resolveOldPage = resolve;
     });
-    const requestedStatus = activeStatus;
-
-    const loadingMore = oldPage.then((result) => {
-      if (!isCurrentAdminBookingsFilter(requestedStatus, activeStatus)) return;
-      bookings = [...bookings, ...result.data];
-      page = result.page;
-      hasMore = result.hasMore;
-    });
-
+    const isCurrent = () =>
+      isCurrentAdminBookingsRequest(
+        requestStatus,
+        activeStatus,
+        requestGeneration,
+        activeGeneration,
+      );
+    const loadingMore = settleAdminBookingsPaginationRequest(
+      oldPage,
+      isCurrent,
+      {
+        onSuccess: (result) => {
+          state.bookings = [...state.bookings, ...result.data];
+          state.page = result.page;
+          state.hasMore = result.hasMore;
+        },
+        onError: () => {},
+        onFinally: () => {
+          state.isLoadingMore = false;
+        },
+      },
+    );
     activeStatus = "PENDING";
+    activeGeneration += 1;
+    activeStatus = "ALL";
+    activeGeneration += 1;
     resolveOldPage({
       data: [booking({ id: "stale-all-booking" })],
-      page: 2,
+      page: 4,
       hasMore: false,
     });
     await loadingMore;
 
-    expect(bookings.map(({ id }) => id)).toEqual(["pending-booking"]);
-    expect(page).toBe(1);
-    expect(hasMore).toBe(true);
+    expect(state).toEqual({
+      bookings: [booking({ id: "current-booking" })],
+      page: 3,
+      hasMore: true,
+      isLoadingMore: true,
+    });
+  });
+
+  it("ignores load-more errors and finalization after switching away and back", async () => {
+    let activeStatus: "ALL" | "PENDING" = "ALL";
+    let activeGeneration = 0;
+    const requestStatus = activeStatus;
+    const requestGeneration = activeGeneration;
+    const state = { moreError: null as string | null, isLoadingMore: true };
+    let rejectOldPage!: (error: Error) => void;
+    const oldPage = new Promise<never>((_resolve, reject) => {
+      rejectOldPage = reject;
+    });
+    const isCurrent = () =>
+      isCurrentAdminBookingsRequest(
+        requestStatus,
+        activeStatus,
+        requestGeneration,
+        activeGeneration,
+      );
+    const loadingMore = settleAdminBookingsPaginationRequest(
+      oldPage,
+      isCurrent,
+      {
+        onSuccess: () => {},
+        onError: (error) => {
+          state.moreError =
+            error instanceof Error ? error.message : "Could not load more bookings.";
+        },
+        onFinally: () => {
+          state.isLoadingMore = false;
+        },
+      },
+    );
+    activeStatus = "PENDING";
+    activeGeneration += 1;
+    activeStatus = "ALL";
+    activeGeneration += 1;
+    rejectOldPage(new Error("Stale request failed"));
+    await loadingMore;
+
+    expect(state).toEqual({ moreError: null, isLoadingMore: true });
   });
 });
 

@@ -8,11 +8,34 @@ export const ADMIN_BOOKING_STATUSES = [
 export type AdminBookingStatus = (typeof ADMIN_BOOKING_STATUSES)[number];
 export type AdminBookingStatusFilter = AdminBookingStatus | "ALL";
 
-export function isCurrentAdminBookingsFilter(
+export function isCurrentAdminBookingsRequest(
   requestStatus: AdminBookingStatusFilter,
   activeStatus: AdminBookingStatusFilter,
+  requestGeneration: number,
+  activeGeneration: number,
 ): boolean {
-  return requestStatus === activeStatus;
+  return (
+    requestStatus === activeStatus && requestGeneration === activeGeneration
+  );
+}
+
+export async function settleAdminBookingsPaginationRequest<T>(
+  request: Promise<T>,
+  isCurrent: () => boolean,
+  handlers: {
+    onSuccess: (result: T) => void;
+    onError: (error: unknown) => void;
+    onFinally: () => void;
+  },
+): Promise<void> {
+  try {
+    const result = await request;
+    if (isCurrent()) handlers.onSuccess(result);
+  } catch (error) {
+    if (isCurrent()) handlers.onError(error);
+  } finally {
+    if (isCurrent()) handlers.onFinally();
+  }
 }
 
 export interface AdminBooking {
