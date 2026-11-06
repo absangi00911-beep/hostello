@@ -1,9 +1,10 @@
 # Hostello Project Structure
 
-**Last updated:** October 19, 2026
+**Last updated:** November 6, 2026
 **Verification source:** current workspace
-**Status:** API-only Next.js application; former pages and UI components have
-been removed for a future redesign.
+**Status:** First-party Next.js web application and API. Browser E2E tests are
+present; browser-runtime validation against disposable local services remains
+open.
 
 ---
 
@@ -15,14 +16,15 @@ been removed for a future redesign.
 - `src/proxy.ts` applies environment validation and API CSRF checks.
 - `packages/shared/` contains shared constants, schemas, types, and utilities.
 - `prisma/` contains the Prisma schema, client setup, seed code, migration
-  documentation, and 30 migration directories.
+  documentation, and 35 migration directories.
 - `scripts/` contains deployment, migration, cron, and maintenance scripts.
 - `docs/` and `.github/` contain operational guides and workflow
   documentation.
 
-There are currently 71 API route files, 0 page files, 0 UI component files,
-and 96 Vitest test files. The most recent source test run passed 657 tests.
-Playwright configuration and E2E files have been removed.
+The current workspace contains 80 API route files, 39 page files, 177
+component source files, 9 Playwright spec files, and 32 Prisma models. The
+latest recorded full Vitest run passed 1,512 tests with 10 skipped. E2E
+discovery passed; browser execution is not yet verified.
 
 ---
 
@@ -30,12 +32,12 @@ Playwright configuration and E2E files have been removed.
 
 | Path | Purpose |
 |---|---|
-| `package.json` / `package-lock.json` | Root dependencies and scripts. The `e2e` script remains, but the Playwright config and test files are gone. |
+| `package.json` / `package-lock.json` | Root dependencies and scripts, including Vitest and Playwright commands. |
 | `next.config.ts` | Next.js build, image, and security-header configuration. |
 | `tsconfig.json` | TypeScript configuration. |
 | `vitest.config.ts` | Vitest configuration and aliases. |
 | `eslint.config.mjs` | ESLint configuration. |
-| `tailwind.config.js`, `postcss.config.js`, `components.json` | Legacy UI tooling configuration; no app UI currently consumes it. |
+| `tailwind.config.js`, `postcss.config.js`, `components.json` | Styling and component tooling used by the first-party web UI. |
 | `prisma.config.ts` | Prisma configuration. |
 | `vercel.json`, `scripts/vercel-build.mjs` | Vercel custom build command. |
 | `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts` | Sentry initialization for Next.js runtimes. |
@@ -51,41 +53,41 @@ Playwright configuration and E2E files have been removed.
 | `README.md` | Project overview, setup, commands, and documentation index. |
 | `SYSTEM.md` | Architecture, data model, API surface, security, and current audit. |
 | `PROJECT_STRUCTURE.md` | This repository map. |
-| `WEB_APP_PROGRESS.md` | Current API-only status and historical UI implementation notes. |
+| `WEB_APP_PROGRESS.md` | Current implementation and verification summary, followed by historical progress snapshots. |
 | `DESIGN.md` | Historical third-party marketplace design analysis; not the current design system. |
 | `SENTRY_SETUP.md` | Sentry configuration and operational caveats. |
 | `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
-| `.github/VERCEL_SETUP.md` | GitHub Actions/Vercel setup and deployment behavior. |
-| `docs/API-MASTERY-GUIDE.md` | API learning guide and Hostello route examples. |
-| `docs/CI-CD-GUIDE.md` | Current CI/CD workflow behavior and deployment concepts. |
-| `docs/OPERATIONS-RUNBOOK.md`, `docs/LAUNCH_RUNBOOK.md`, `docs/LAUNCH-OPERATIONS-RUNBOOK.md` | Backend operations, launch, and recovery procedures. |
-| `docs/PRIVATE-STUDENT-VERIFICATION.md` | Private document storage setup and legacy-data notes. |
+| `.github/VERCEL_SETUP.md` | CI/CD and Vercel deployment setup. |
 | `docs/superpowers/` | Dated design specifications and implementation plans; consult their status before treating them as current. |
+
+The operational and API guides named in older documentation are not present
+at their former paths; see R-20 in `SYSTEM.md` rather than relying on stale
+links.
 
 ---
 
 ## Next.js Application (`src/app/`)
 
-The root app directory contains the required `layout.tsx` and API routes.
-There are no `page.tsx` files, visual components, or app stylesheets. Former
-product pages are no longer served; unsupported page URLs return not found.
+The root app directory contains the shared layout, product pages, and API
+routes.
 
 ### API Routes
 
-The 71 route files under `src/app/api/` cover:
+The 80 route files under `src/app/api/` cover:
 
 - Authentication, signup, verification, password reset, phone OTP, and account
   deletion.
 - Hostels, search, availability, favorites, roommate posts, and reports.
 - Bookings, payment initiation, callbacks, webhooks, refunds, and payouts.
 - Conversations, reviews, notifications, price alerts, and profile updates.
+- Date-aware availability-alert management and matching.
 - Owner analytics, subscriptions, and blocked dates.
 - Admin listings, search synchronization, verifications, payment events,
   roommate moderation, payouts, and refunds.
 - Cron jobs, health checks, uploads, contact, and reports.
 
 API contracts and authorization are implemented in the route handlers and
-their backend service modules; no first-party screen currently consumes them.
+their backend service modules. First-party screens consume these APIs.
 
 ---
 
@@ -125,16 +127,16 @@ Notable modules:
 
 | Path | Purpose |
 |---|---|
-| `prisma/schema.prisma` | Data model with 28 models. |
+| `prisma/schema.prisma` | Data model with 32 models. |
 | `prisma/client.ts` | Prisma client setup. |
 | `prisma/seed.ts` | Local seed script. |
 | `prisma/MIGRATIONS.md` | Migration discipline and migration ledger. |
 | `prisma/migrations/` | Versioned SQL migrations. |
 
 Schema areas include users and auth, hostels, rooms, bookings, reviews,
-favorites, conversations, price alerts, notifications, cron logs, blocked
-dates, subscriptions, student verification, roommate posts/reports, and
-payment/refund audit records.
+favorites, conversations, price and availability alerts, notifications, cron
+logs, blocked dates, subscriptions, student verification, roommate
+posts/reports, and payment/refund audit records.
 
 ---
 
@@ -157,8 +159,8 @@ payment/refund audit records.
 
 | Area | Current state |
 |---|---|
-| Unit/integration | 96 Vitest test files under `src/`; 657 tests passed in the most recent run. |
-| Browser E2E | Playwright config and E2E files were removed. The `e2e` npm script is stale and unsupported. |
+| Unit/integration | The latest recorded full Vitest run passed 1,512 tests and skipped 10. |
+| Browser E2E | 9 Playwright spec files are present. `npm run e2e -- --list` discovers tests; browser execution against disposable local services remains unverified. |
 
 Primary supported commands:
 
@@ -181,8 +183,8 @@ npm run build
 | `.github/workflows/audit.yml` | Scheduled and dependency-change audit. |
 | `.github/VERCEL_SETUP.md` | Vercel secrets and deployment setup. |
 
-The preview PR comment still links to removed UI pages. Use API routes and
-their required integrations for Preview verification.
+The preview PR comment includes an API smoke-test link. It does not exercise
+the first-party UI; browser flows require separate disposable E2E validation.
 
 ---
 

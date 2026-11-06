@@ -83,7 +83,7 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
 
 ## Existing migrations (do not touch)
 
-**Last audited:** November 5, 2026. The repository currently has 34 migration
+**Last audited:** November 6, 2026. The repository currently has 35 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -123,13 +123,16 @@ migration is committed.
 | 20261102000000 | backfill_hostel_cancellation_policy |
 | 20261105000000 | add_seat_holds |
 | 20261105100000 | add_late_payment_resolution |
+| 20261105210000 | add_availability_alerts |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL
 must never be edited; create a corrective migration instead.
 
 The seat-hold migration adds date-bounded inventory and refuses to backfill
-until active legacy bookings pass its mapping and capacity preflight. The latest
-migration adds immutable late-payment resolution evidence and refund-sweep
-indexing. Neither migration's applied status is implied by this ledger; verify
-each target database separately before release.
+until active legacy bookings pass its mapping and capacity preflight. The late
+payment migration adds immutable resolution evidence and refund-sweep
+indexing. The availability-alert migration adds date-aware alert state and
+transition notification identifiers. None of these entries implies that a
+migration was applied to a particular database; verify each target separately
+before release.

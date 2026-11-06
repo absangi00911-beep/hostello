@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 4.4 |
-| **Verified against code** | November 5, 2026 (repository snapshot plus seat-hold and payment-resilience changes) |
+| **Version** | 4.5 |
+| **Verified against code** | November 6, 2026 (repository snapshot, availability alerts, and current local checks) |
 | **Stage** | Pre-launch. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
 | **Document owner** | _To be assigned_ |
 
@@ -24,7 +24,7 @@ Statements fall into three kinds, and the document says which:
 | [`prisma/MIGRATIONS.md`](prisma/MIGRATIONS.md) | Migration ledger |
 | `scripts/check-docs.mjs` | Fails CI when the facts below or the environment-variable list drift from the code |
 
-The earlier design document pointed to runbooks under `docs/` (`OPERATIONS-RUNBOOK.md`, `LAUNCH-OPERATIONS-RUNBOOK.md`, `PRIVATE-STUDENT-VERIFICATION.md`, `CI-CD-GUIDE.md`) and to `DESIGN.md`. They were not in the archive this version was verified against. Confirm they exist and link them here once they do (R-20).
+The earlier design document pointed to operational guides at several root `docs/` paths. Those named runbooks/guides are still absent from the current workspace (R-20); `DESIGN.md` exists but is historical, not the current design system.
 
 ### Repository facts (generated)
 
@@ -50,12 +50,12 @@ HostelLo is a Pakistan-focused student hostel marketplace. Students search for h
 
 | Actor | What they do |
 |---|---|
-| Student | Search and compare hostels, check availability, book and pay, cancel, review completed stays, message owners, save favorites, set price alerts, post to the roommate finder |
+| Student | Search and compare hostels, check availability, book and pay, cancel, review completed stays, message owners, save favorites, set price and availability alerts, post to the roommate finder |
 | Owner | Create and edit listings and rooms, block dates, accept or decline paid booking requests, reply to reviews, message students, view analytics and earnings, buy the Pro plan |
 | Admin | Approve or suspend listings, verify student identities, moderate reviews and roommate posts, issue refunds, create payout batches, reconcile payment events, sync the search index |
 | System | QStash-triggered cron jobs, Safepay webhooks |
 
-**Current state.** The repository is a Next.js 16 application with API route handlers and a partially restored browser UI; marketplace and account flows are still being completed and are not release-cleared. Native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. Some auth and payment redirects may still target pages that are not implemented (R-09).
+**Current state.** The repository is a Next.js 16 application with API route handlers and first-party student marketplace, owner workspace, admin, messaging, notification, and availability-alert screens. Native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. The implementation is not cleared for live transaction volume: browser-runtime, sandbox, operational recovery, and external deployment gates remain open (R-04, R-06, R-09, R-16).
 
 **Out of scope for the MVP:** separate backend services, international expansion and multi-currency, native mobile apps, offline search, video reviews, Apple Pay and Google Pay until Safepay support is confirmed.
 
@@ -80,6 +80,7 @@ HostelLo is a Pakistan-focused student hostel marketplace. Students search for h
 | Listing images | At most 15 per hostel, 4 MB each, JPEG, PNG or WebP, signature-checked | shared config, `upload/route.ts` |
 | Reviews | Students only, only for a hostel where they have a `COMPLETED` booking, one per student per hostel, length-limited comment | `reviews/route.ts`, schema |
 | Roommate posts | Hidden once three different students report them | roommate routes |
+| Availability alerts | HOSTEL and SEARCH alerts match the full `[checkIn, checkOut)` stay and guest count against authoritative seat holds; in-app notifications are emitted once per unmatched-to-matched transition | `availability-alerts.ts`, `room-availability-service.ts` |
 | Pagination | Default page size 12, maximum 50, maximum page 10,000 | shared config |
 | Payout eligibility | Owner's booking is `CONFIRMED` or `COMPLETED`, `PAID`, check-out has passed, and it is in no payout batch | `payouts.ts` |
 
@@ -91,7 +92,7 @@ Cancellation policies (refund share of the amount paid, by time before check-in)
 | Standard | 7 days or more | 72 hours to 7 days | under 72 hours, or after check-in |
 | Strict | never | 14 days or more | under 14 days, or after check-in |
 
-Rules stored but **not** enforced: owner-defined `minStay` and `maxStay` on a hostel; the shared `MIN_BOOKING_MONTHS` and `MAX_BOOKING_MONTHS` (1 and 24); owner-blocked dates at booking time. See R-01 and R-02.
+Rules stored but **not** enforced: owner-defined `minStay` and `maxStay` on a hostel; the shared `MIN_BOOKING_MONTHS` and `MAX_BOOKING_MONTHS` (1 and 24). Owner-blocked dates are checked at booking time. See R-01 and R-02.
 
 ### 2.2 Non-functional requirements
 
@@ -123,8 +124,8 @@ No availability, latency, throughput or recovery targets were defined in the pre
 
 ```mermaid
 flowchart LR
-  client["Client: future web or mobile frontend"]
-  subgraph vercel["Vercel: Next.js 16 API"]
+  client["First-party web browser"]
+  subgraph vercel["Vercel: Next.js 16 web app and API"]
     proxy["proxy.ts: Origin check"]
     routes["Route handlers"]
     services["Service layer: bookings, payments, refunds, payouts"]
@@ -149,7 +150,7 @@ The application is intentionally one deployable unit: route handlers, business l
 
 | Layer | Implementation |
 |---|---|
-| Runtime | Next.js 16 App Router on Vercel; the root layout is kept only because the framework requires it |
+| Runtime | Next.js 16 App Router on Vercel; first-party pages and API handlers share one application |
 | Database | Neon PostgreSQL through Prisma 7 with `@prisma/adapter-pg` (node-postgres) |
 | Authentication | Auth.js (NextAuth v5 beta), JWT sessions in HTTP-only cookies; Credentials provider plus optional Google OAuth |
 | Search | Typesense, with a Prisma (`ILIKE`) fallback |
@@ -159,7 +160,7 @@ The application is intentionally one deployable unit: route handlers, business l
 | Email, SMS | Resend, Twilio |
 | Payments | Safepay (enabled). JazzCash and EasyPaisa code is present but disabled |
 | Observability | Sentry (data minimized) and structured JSON events from `src/lib/operational-logger.ts` with request correlation and HMAC pseudonyms |
-| Tests | Vitest |
+| Tests | Vitest; Playwright E2E specs are present, but browser-runtime flows remain unverified |
 
 ### 3.3 Request lifecycle
 
@@ -251,12 +252,12 @@ erDiagram
   USER ||--o| SUBSCRIPTION : has
 ```
 
-### 4.2 Models (28)
+### 4.2 Models (32)
 
 | Area | Models |
 |---|---|
 | Identity and auth | `User`, `Account`, `Session`, `VerificationToken`, `PasswordResetToken`, `PhoneVerificationToken`, `AccountDeletionJob` |
-| Listings and community | `Hostel`, `Room`, `BlockedDate`, `HostelVerificationReview`, `Review`, `Favorite`, `PriceAlert`, `RoommatePost`, `RoommateReport` |
+| Listings and community | `Hostel`, `Room`, `BlockedDate`, `HostelVerificationReview`, `Review`, `Favorite`, `PriceAlert`, `AvailabilityAlert`, `HostResponseSummary`, `RoommatePost`, `RoommateReport` |
 | Bookings and money | `Booking`, `SeatHold`, `LatePaymentResolution`, `RefundAuditEvent`, `SafepayWebhookEvent`, `SafepayWebhookReplayEvent`, `Payout`, `PayoutAuditEvent`, `Subscription` |
 | Messaging and notifications | `Conversation`, `ConversationParticipant`, `Message`, `Notification` |
 | Operations | `CronLog` |
@@ -650,21 +651,22 @@ Implemented controls are described in §§3, 6–8, and 12–14; open gaps are t
 
 ### 14.3 Release
 
-Production deploys on every push to `main`, after an optional approval and a Neon snapshot (§3.4). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are missing from the audited archive (R-20).
+Production deploys from `main` through the production workflow, with an environment approval gate and Neon snapshot step in code. The required-reviewer setting and snapshot credentials/variables are external controls and remain unverified (R-06). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are absent at their documented paths (R-20).
 
 ### 14.4 Testing and quality gates
 
-Verified on November 5, 2026, on Node 24:
+Verified on November 6, 2026, on Node 24:
 
-- Full Vitest suite: 218 files; 217 passed and 1 skipped; 1,406 tests passed and 7 guarded PostgreSQL cases skipped. All seven passed separately on an isolated loopback database: six production-path inventory/payment cases and one migration-constraint case.
-- `npm run test:scripts`: 23 passed. `npm run typecheck`, `npm run lint`, `npx prisma validate` and `npm run docs:check` passed.
+- Full Vitest suite: 234 files passed, 2 skipped; 1,512 tests passed and 10 skipped. Guarded PostgreSQL integration tests were not run in this verification.
+- `npm run test:scripts`: 23 passed. `npm run typecheck`, changed-file ESLint, `npx tsc --noEmit -p packages/shared/tsconfig.json`, `npx prisma validate`, and `npm run docs:check` passed. Full `npm run lint` passed before the post-commit booking-error fix; ESLint on both files changed by that fix passed afterward.
+- `npm run e2e -- --list`: Playwright tests discovered; no browser test was executed.
 - `npm audit --omit=dev` reported zero vulnerabilities on October 19; the full audit adds five high findings in a development-only dependency chain.
 
-What the tests cover: handlers and validation, booking, search and review services, CSRF and rate limits, payments, notifications, profile and shared business logic. The seven guarded PostgreSQL tests remain skipped in the regular suite unless an explicit disposable target is configured.
+What the tests cover: handlers and validation, booking, search and review services, CSRF and rate limits, payments, notifications, profile, availability alerts, and shared business logic. Guarded PostgreSQL tests require an explicitly configured disposable target.
 
-What they do not cover: CI does not yet provision PostgreSQL for the guarded concurrency tests, and nothing exercises the Safepay sandbox. Browser E2E coverage was removed with the UI and is deferred until a frontend exists.
+What they do not cover: the current regular run skips guarded PostgreSQL integration cases; the latest availability-alert concurrency spec was not run against PostgreSQL. Playwright test discovery is not browser-runtime validation. Safepay sandbox refunds/retries, QStash retry behavior, and a disposable-database backup/restore rehearsal remain unverified.
 
-**Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** a sandbox pay, confirm, cancel and refund round trip including a QStash retry, a rehearsed restore, and one alert fired end to end.
+**Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, alert transitions, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** browser E2E on disposable services, a sandbox pay/confirm/cancel/refund round trip including a QStash retry, a rehearsed restore, and an alert fired end to end.
 
 ---
 ## 15. Decisions
@@ -681,17 +683,18 @@ Rationales marked _(reconstructed)_ were inferred from the repository because th
 | A-4 | Store the verified webhook, then process it through QStash | Acknowledge fast, keep durable evidence, retry safely, allow audited replay | Two hops; needs a reconciliation path (§5.2) |
 | A-5 | Money as whole PKR integers; paisas only at the Safepay boundary | Avoids floating point; one conversion point | No sub-rupee amounts |
 | A-6 | Manual payouts with an encrypted destination snapshot and append-only audit | Controls risk while volume is low | Not scalable; no settlement reconciliation (R-05) |
-| A-7 | API-only until the redesign; native mobile retired | Decided October 16 and 19, 2026 | The backend still assumes a frontend (R-09) |
+| A-7 | First-party web application; native mobile retired | The approved completion plan restores the web marketplace and role workspaces in the same Next.js application; native mobile was retired October 16, 2026 | Separate external clients remain out of scope |
+| A-8 | PostgreSQL date-bounded seat holds are the inventory authority | A hold per guest seat over `[checkIn, checkOut)` supports exact stay availability and lets PostgreSQL reject overlapping reservations; hostel-scoped transaction locks coordinate inventory mutations and matching | Requires PostgreSQL-specific migrations and concurrency validation |
 
 ### 15.2 Open
 
 Each needs a decision from you before the related code is written.
 
-**D-1. Client topology.**
+**D-1. External client topology.**
 
-- **Option A, same-origin web frontend** (this app or the same registrable domain through rewrites). Keep cookie sessions and the Origin check; add a `WEB_APP_URL`, fix emitted links and redirects.
+- The first-party web application runs in this Next.js app and uses its same-origin API and cookie-session contract.
 - **Option B, separate clients** (a standalone web app and perhaps mobile later). Add a CORS allow-list, either cookies with an explicit cookie domain and SameSite plan or bearer tokens, exempt token requests from the Origin check, and split `API_BASE_URL` from `WEB_APP_URL`.
-- **Suggestion:** choose A if there will be one web frontend; choose B only when a second client type is planned. Either way, centralize emitted links in one module and publish an OpenAPI document.
+- Decide on a separate-client contract only if a second web or mobile client is approved. No CORS or bearer-token API contract is implied by the current first-party app.
 
 **D-2. Stay and billing rules.**
 
@@ -706,8 +709,6 @@ Each needs a decision from you before the related code is written.
 - Alternative: release the first month shortly after check-in and the rest monthly. Or use a provider-side split or escrow product if one is available to you.
 - Also decide the fee or commission model, who bears Safepay's processing fee, and what happens to unreleased months on a mid-stay cancellation.
 - Holding customer funds for months may carry regulatory obligations in Pakistan. Get advice from a qualified adviser before choosing.
-
-**D-4. Inventory model.** Replace the `Room.available` counter with date-aware seat holds enforced by PostgreSQL (Appendix A), or with per-month occupancy buckets. **Suggestion:** seat holds, because the database then enforces the invariant and a stay needs no completion step.
 
 **D-5. Verification gates and trust and safety.**
 
@@ -734,7 +735,7 @@ Each needs a decision from you before the related code is written.
 | R-06 | P0 | **Delivery pipeline.** **Status: fixed in code on October 21, 2026; console steps open.** Found: `npm ci` failed (`Missing: deepmerge-ts@8.0.2 from lock file`: an `overrides` entry pinned 8.0.0 while Prisma's config package wants exactly 8.0.2); `audit.yml` ran the full audit despite its name and failed on five development-only findings; CI ran Node 20 (end of life per Node's schedule since April 2026); the `shared` job exited 1 on every run because `packages/shared` had no `tsconfig.json`, so Preview deploys, which wait for it, never ran; the Preview comment linked to deleted pages; workflows had no `permissions:` block and set legacy `NEXTAUTH_*` names; the Vercel CLI was unpinned; production migrated and deployed with no approval and no snapshot. Fixed: lockfile and override, Node 24 pin, audit split, shared tsconfig, permissions, env names, CLI pin, approval-capable `production` environment, Neon snapshot step. **Open (console):** add required reviewers to the `production` environment; add the Neon secret and variables and set `NEON_SNAPSHOT_REQUIRED=true`; confirm the Vercel project's Node setting (`engines` overrides it) | `.github/workflows/*`, `package.json`, `package-lock.json`, `scripts/neon-snapshot.mjs` | Complete the console steps; confirm the first run on GitHub is green |
 | R-07 | P1 | **Unreliable background work.** **Status: partly fixed in code.** `runAfterResponse` ensures work is awaited by the serverless invocation; in-app notifications and payment-event notifications are durable with the state transaction; signup stores its verification token before responding; Resend calls time out after 10 seconds. There is still no email outbox, so a failed send or crashed invocation can lose an email, and the price-alert duplicate-send window remains. Outbox work is explicitly deferred until the payload-retention policy is decided | `src/lib/background.ts`, `src/lib/email.ts`, `webhook/route.ts`, route handlers | Decide retention, then add a durable outbox and close the price-alert duplicate window |
 | R-08 | P1 | **Notification race in `createBooking`.** **Status: fixed in code on October 24, 2026.** The pre-payment owner notification, which ran on the global client inside the transaction and referenced an uncommitted booking, was removed. An unpaid booking is invisible to the owner, so the webhook's notification after payment, now written in the payment transaction, is the only one | `booking-service.ts`, `webhook/route.ts` | None |
-| R-09 | P1 | **Frontend coupling and client contract.** Emitted links and redirects point to removed pages (`/reset-password`, `/login`, `/booking/{id}/confirmation`, `/bookings/{id}`, `/owner/bookings`, `/dashboard/hostels/...`, `/help`, `/privacy`, `/terms`, `/?payment=error`), so password reset and the post-payment return are dead ends today. One `AUTH_URL` serves five purposes; production requires `Origin` to equal the API's own origin; no CORS; Auth.js error and sign-in pages redirect to `/login`; `next.config.ts` carries a UI-era CSP. No OpenAPI, no versioning, no error-code catalogue, inconsistent envelopes | `forgot-password`, `verify-email`, `payment/callback`, `email-templates`, `proxy.ts`, `next.config.ts` | D-1 |
+| R-09 | P1 | **Client contract and end-to-end coverage.** First-party student, owner, and admin screens now exist in the same Next.js application. The repository has Playwright specs, but browser-runtime flows have not been verified against disposable local services. Do not infer that every emitted/auth/payment link is covered by this UI; perform an end-to-end link and role-flow audit before release. A separate-client CORS/bearer-token contract, OpenAPI, versioning, and a stable error catalogue are not established | app routes, `e2e/`, `proxy.ts`, `next.config.ts` | Run the disposable browser suite and audit emitted links; decide separately before adding an external client |
 | R-10 | P1 | **Account security and admin controls.** Credential login now uses a generic invalid-credentials response, performs a bcrypt cost-12 check for unknown accounts, and keys the account throttle by account-and-IP so one source cannot lock out all other users. Signup still answers 409 for existing emails; per-IP limits may collide with carrier NAT and campus networks _(verify with real traffic)_; no endpoint requires verification; no user suspension; no admin MFA or second approver; 30-day JWTs for all roles; admin booking and listing actions are only logged to stdout | `credentials-authorize.ts`, `login-limits.ts`, `signup/route.ts`, `auth/config.ts` | D-5 |
 | R-11 | P1 | **Uploads.** Without `hostelId`, any signed-in user can write to the public listing bucket; 5 uploads per 10 minutes means 15 photos take about 30 minutes; no resizing or EXIF stripping; 4 MB through a function body | `upload/route.ts` | Owner or Admin only; presigned direct uploads; resize step; raise limit |
 | R-12 | P1 | **Database integrity and capacity.** No CHECK constraints outside the payout audit table; free-string status columns; plaintext owner bank details on `User`; `Hostel.rooms` and `capacity` denormalized; duplicate indexes (`users.email`, `hostels.slug`); phone codes stored in plaintext; pool `max` unset (default 10 per instance) and one `DATABASE_URL` for runtime and migrations | `schema.prisma`, `db.ts`, `prisma.config.ts` | CHECKs and enums; pooled runtime URL with a pool cap, direct migration URL |
@@ -747,7 +748,7 @@ Each needs a decision from you before the related code is written.
 | R-19 | P1 | **The Pro plan never expires and cannot be renewed.** The webhook sets `plan = PRO` with a one-month `endDate`; no job or check reverts it, and the endpoint refuses a second purchase | `payment/webhook`, `owner/subscription` | Expiry job or check; renewal path |
 | R-20 | P1 | **Missing documents.** `docs/OPERATIONS-RUNBOOK.md`, `docs/LAUNCH-OPERATIONS-RUNBOOK.md`, `docs/PRIVATE-STUDENT-VERIFICATION.md`, `docs/CI-CD-GUIDE.md` and `DESIGN.md` were referenced but not in the audited archive | | Locate or write them |
 
-Deferred: browser E2E tests (until a frontend exists); enabling JazzCash or EasyPaisa (only if they become an explicit requirement and pass provider and security review). Development-only `braces` advisory: tracked under R-06.
+Deferred: browser-runtime validation against disposable services; enabling JazzCash or EasyPaisa (only if they become an explicit requirement and pass provider and security review). Development-only `braces` advisory: tracked under R-06.
 
 ---
 
@@ -766,9 +767,9 @@ Deferred: browser E2E tests (until a frontend exists); enabling JazzCash or Easy
 
 ---
 
-## Appendix A. Proposed seat-hold model (D-4)
+## Appendix A. PostgreSQL seat-hold inventory model (A-8)
 
-**Proposed**, not built. It replaces the `Room.available` counter and its `version` column with rows the database itself keeps from overlapping.
+The implemented inventory authority is date-bounded `SeatHold` rows. The migration adds a PostgreSQL exclusion constraint preventing overlapping holds for the same room and seat. `Room.available` and its optimistic-lock `version` remain legacy fields; they are not used to determine booking availability. The migration includes a fail-closed preflight for legacy bookings. Applied status must be checked separately for each database, and concurrency validation remains an explicit release check.
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS btree_gist;
