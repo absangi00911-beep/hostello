@@ -27,12 +27,13 @@ The following checks passed in the current workspace:
 | HOSTEL and SEARCH availability-alert Playwright flows | 2 passed against the local app with safe test authentication |
 | `search-page.spec.ts`, `notifications.spec.ts`, and `role-redirects.spec.ts` | 50 passed using `.env.e2e` and loopback-only Typesense settings |
 | `hostel-detail-entry.spec.ts` | Full spec: 19 passed, 2 skipped against the guarded disposable fixture |
+| Owner/admin workflow Playwright specs | 6 passed against `.env.e2e`: owner listing/room and booking workflows, cross-owner denial, admin listing-review persistence, and manual-refund UI/request behavior with the confirmation API mocked |
 
 ## Remaining release gates
 
 These are not verified and must not be presented as complete:
 
-1. **Remaining browser runtime:** the hostel-detail spec now passes in full and seeds/cleans up its own listing fixture. Owner room/booking workflows and admin workflows remain unverified. The other three Playwright specs listed above passed, but search responses are mocked and role redirects do not exercise owner/admin workflows.
+1. **Remaining browser runtime:** owner/admin workflows now pass locally. The admin payment browser test stubs the manual-confirm endpoint, so it verifies the UI and outgoing request—not backend refund persistence or audit creation. Admin listing review persisted successfully; its best-effort Typesense indexing request was restricted to loopback and returned 401 because no local Typesense key was configured. Search responses in the other passing specs remain mocked.
 2. **Payment and queue sandbox:** validate Safepay refund/retry and QStash retry behavior using sandbox configuration only; no live provider calls are authorized.
 3. **Recovery:** rehearse database backup/restore on a disposable target and record the result.
 4. **External owner controls:** confirm GitHub production-environment reviewers and required checks, Neon snapshot secret/variables and required flag, Vercel Node configuration, and a green remote CI run. These console states were not inspected.
@@ -46,3 +47,5 @@ These are not verified and must not be presented as complete:
 - The older dated progress entries, audit reports, and design snapshots are retained as history; do not treat their counts or statuses as current.
 
 No shared or production database, payment/queue provider, or deployment service was contacted. A first E2E attempt inherited the remote Typesense setting from `.env.local` and failed during DNS resolution; successful runs explicitly overrode Typesense to loopback.
+
+An exploratory manual-refund E2E run wrote two test audit events to the disposable `.env.e2e` database. The audit ledger is append-only, so those events cannot be deleted without bypassing its integrity trigger; all associated user, hostel, and booking fixtures were removed. The verified browser test now mocks the confirmation endpoint and creates no additional audit rows.
