@@ -68,3 +68,18 @@ Verification:
 - `git diff --check` reports apparent trailing whitespace on added lines in `src/app/api/hostels/[param]/route.ts`; a byte-level check of its 10 added lines found **0 actual trailing spaces/tabs** (CRLF line endings). Line endings were left unchanged.
 
 The PostgreSQL integration spec was explicitly excluded from the Vitest run. Neither it nor browser execution was attempted because a disposable loopback database and safe test authentication were not verified. No database connection, migration, external provider, deployment, or push was attempted.
+
+## Independent round-2 review and post-commit failure fix
+
+The independent re-review found no additional issues in per-hostel lock ordering or full-stay SEARCH filtering. It identified one Medium failure-path issue: if alert reevaluation failed after the booking transaction committed, `createBooking` propagated the error and the route could respond with HTTP 500 even though the booking and seat holds existed. A client retry could then submit a second booking.
+
+The booking service now catches only the post-commit alert reevaluation failure, emits `booking.availability_alerts.reevaluation_failed` with safe error fields, and returns the already committed booking. A regression test reproduces a `P2034` reevaluation failure and verifies the committed booking is returned and the operational error is recorded. The test failed before the service change and passed afterward.
+
+The reviewer confirmed the fix and found no other actionable issues in the round-2 diff. Final verification after this change:
+
+- `npm test -- --run` — **234 files passed, 2 skipped; 1,512 tests passed, 10 skipped**.
+- `npm run typecheck` — passed.
+- `npx eslint src/lib/booking-service.ts src/lib/booking-service.test.ts` — passed.
+- `git diff --check` — no whitespace errors in the scoped source/test diff.
+
+PostgreSQL concurrency and browser flows remain unverified. The alert-evaluation failure is surfaced in operational logs but is not durably retried; a later inventory transition can trigger another evaluation. Treat isolated PostgreSQL and browser runtime validation as Task 12 evidence gaps, not as verified behavior.
