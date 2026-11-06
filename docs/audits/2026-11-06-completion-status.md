@@ -26,12 +26,13 @@ The following checks passed in the current workspace:
 | Guarded `availability-alerts.postgres.integration.test.ts` | 3 passed against the disposable loopback `hostello_alerts_test` database |
 | HOSTEL and SEARCH availability-alert Playwright flows | 2 passed against the local app with safe test authentication |
 | `search-page.spec.ts`, `notifications.spec.ts`, and `role-redirects.spec.ts` | 50 passed using `.env.e2e` and loopback-only Typesense settings |
+| `hostel-detail-entry.spec.ts` | Full spec: 7 passed, 12 failed, 2 skipped; exact-room booking and unavailable-room retry flows passed |
 
 ## Remaining release gates
 
 These are not verified and must not be presented as complete:
 
-1. **Remaining browser runtime:** hostel detail and booking flows, owner room/booking workflows, and admin workflows are not verified. The three Playwright specs listed above passed, but search responses are mocked and role redirects do not exercise owner/admin workflows. The hostel-detail spec expects a seeded hostel fixture that is absent from the current E2E database.
+1. **Remaining browser runtime:** the hostel-detail spec now seeds and cleans up its own listing fixture. Its exact-room booking and unavailable-room retry flows passed, but the full spec is not green (7 passed, 12 failed, 2 skipped). Owner room/booking workflows and admin workflows remain unverified. The other three Playwright specs listed above passed, but search responses are mocked and role redirects do not exercise owner/admin workflows.
 2. **Payment and queue sandbox:** validate Safepay refund/retry and QStash retry behavior using sandbox configuration only; no live provider calls are authorized.
 3. **Recovery:** rehearse database backup/restore on a disposable target and record the result.
 4. **External owner controls:** confirm GitHub production-environment reviewers and required checks, Neon snapshot secret/variables and required flag, Vercel Node configuration, and a green remote CI run. These console states were not inspected.

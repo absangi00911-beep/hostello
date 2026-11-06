@@ -1,6 +1,174 @@
 import { expect, test, type Page } from "@playwright/test";
+import { Pool } from "pg";
 
 const hostelId = "cmvp8pemp000ogwvvh5cnpm6g";
+const ownerId = "e2e-hostel-detail-owner";
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+
+function assertDisposableDatabase(databaseUrl: string) {
+  const parsed = new URL(databaseUrl);
+  const databaseName = decodeURIComponent(parsed.pathname.slice(1));
+  if (
+    !["localhost", "127.0.0.1", "::1", "[::1]"].includes(parsed.hostname) ||
+    !databaseName.endsWith("_test")
+  ) {
+    throw new Error(
+      "Hostel detail E2E requires a loopback Postgres database with a _test name.",
+    );
+  }
+}
+
+test.skip(
+  !hasDatabase,
+  "Set DATABASE_URL to a disposable loopback Postgres database ending in _test.",
+);
+
+let pool: Pool;
+
+test.beforeAll(async () => {
+  const databaseUrl = process.env.DATABASE_URL as string;
+  assertDisposableDatabase(databaseUrl);
+  pool = new Pool({ connectionString: databaseUrl });
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      `INSERT INTO users (id, email, name, role, "updatedAt")
+       VALUES ($1, $2, 'E2E Hostel Detail Owner', 'OWNER', now())
+       ON CONFLICT (id) DO UPDATE
+         SET email = EXCLUDED.email, name = EXCLUDED.name, role = EXCLUDED.role`,
+      [ownerId, `${ownerId}@example.test`],
+    );
+    await client.query(
+      `INSERT INTO hostels (
+         id, name, slug, description, status, city, area, address,
+         latitude, longitude, "pricePerMonth", rooms, capacity, gender,
+         amenities, rules, images, "coverImage", verified, featured,
+         "cancellationPolicy", "ownerId", "createdAt", "updatedAt"
+       ) VALUES (
+         $1, 'Baloch Scholars Hostel', 'e2e-baloch-scholars-hostel',
+         'Student accommodation near the University of Balochistan.',
+         'ACTIVE', 'Quetta', 'Sariab Road',
+         'Near UoB Gate, Sariab Road, Quetta', 30.1798, 67.0099,
+         5800, 20, 60, 'MALE',
+         ARRAY['wifi', 'meals', 'study-room', 'generator', 'water-cooler', 'cctv'],
+         ARRAY['Gate closes at 10pm', 'Keep common areas tidy'],
+         ARRAY[
+           'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80',
+           'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
+           'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'
+         ],
+         'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80',
+         false, false, 'STANDARD', $2, now(), now()
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         name = EXCLUDED.name,
+         slug = EXCLUDED.slug,
+         description = EXCLUDED.description,
+         status = EXCLUDED.status,
+         city = EXCLUDED.city,
+         area = EXCLUDED.area,
+         address = EXCLUDED.address,
+         latitude = EXCLUDED.latitude,
+         longitude = EXCLUDED.longitude,
+         "pricePerMonth" = EXCLUDED."pricePerMonth",
+         rooms = EXCLUDED.rooms,
+         capacity = EXCLUDED.capacity,
+         gender = EXCLUDED.gender,
+         amenities = EXCLUDED.amenities,
+         rules = EXCLUDED.rules,
+         images = EXCLUDED.images,
+         "coverImage" = EXCLUDED."coverImage",
+         verified = EXCLUDED.verified,
+         featured = EXCLUDED.featured,
+         "cancellationPolicy" = EXCLUDED."cancellationPolicy",
+         "ownerId" = EXCLUDED."ownerId",
+         "updatedAt" = now()`,
+      [hostelId, ownerId],
+    );
+
+    for (const room of [
+      {
+        id: "e2e-hostel-detail-room-double",
+        name: "Standard Double",
+        description: "A shared room with two beds and study space.",
+        pricePerMonth: 5800,
+        capacity: 2,
+        available: 2,
+        images: [],
+        facilities: ["Two single beds", "Shared bathroom", "Study desks"],
+      },
+      {
+        id: "e2e-hostel-detail-room-triple",
+        name: "Triple Study Room",
+        description: "A three-bed room with individual study space.",
+        pricePerMonth: 5200,
+        capacity: 3,
+        available: 3,
+        images: [
+          "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80",
+        ],
+        facilities: ["Three beds", "Individual study desks", "Shared bathroom"],
+      },
+      {
+        id: "e2e-hostel-detail-room-single",
+        name: "Single Room",
+        description: "A private room with a dedicated study space.",
+        pricePerMonth: 7500,
+        capacity: 1,
+        available: 1,
+        images: [],
+        facilities: ["Private room", "Study space", "Lockable door"],
+      },
+    ]) {
+      await client.query(
+        `INSERT INTO rooms (
+           id, "hostelId", name, description, "pricePerMonth",
+           capacity, available, images, facilities, "createdAt", "updatedAt"
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
+         ON CONFLICT (id) DO UPDATE SET
+           "hostelId" = EXCLUDED."hostelId",
+           name = EXCLUDED.name,
+           description = EXCLUDED.description,
+           "pricePerMonth" = EXCLUDED."pricePerMonth",
+           capacity = EXCLUDED.capacity,
+           available = EXCLUDED.available,
+           images = EXCLUDED.images,
+           facilities = EXCLUDED.facilities,
+           "updatedAt" = now()`,
+        [
+          room.id,
+          hostelId,
+          room.name,
+          room.description,
+          room.pricePerMonth,
+          room.capacity,
+          room.available,
+          room.images,
+          room.facilities,
+        ],
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+});
+
+test.afterAll(async () => {
+  if (!pool) return;
+  try {
+    await pool.query("DELETE FROM hostels WHERE id = $1", [hostelId]);
+    await pool.query("DELETE FROM users WHERE id = $1", [ownerId]);
+  } finally {
+    await pool.end();
+  }
+});
 
 async function mockHostelSearch(page: Page) {
   await page.route("**/api/hostels**", (route) =>
@@ -37,7 +205,7 @@ function dateAtMonthOffset(offset: number): string {
 async function openExactRoomReview(page: Page) {
   const checkIn = dateAtMonthOffset(3);
   const checkOut = dateAtMonthOffset(4);
-  const roomSelect = page.getByLabel("Room");
+  const roomSelect = page.getByRole("combobox", { name: /^Room/ });
   await roomSelect.selectOption({ index: 1 });
   const roomId = await roomSelect.inputValue();
   const availabilityRequests: URL[] = [];
@@ -378,7 +546,7 @@ test("search to detail reviews an exact room stay before requesting a pending bo
   await page.goto("/search?city=Lahore");
   await page.getByRole("link", { name: /Garden View Hostel/ }).click();
   await expect(
-    page.getByRole("heading", { name: "Garden View Hostel" }),
+    page.getByRole("heading", { name: "Baloch Scholars Hostel" }),
   ).toBeVisible();
   const { checkIn, checkOut, roomId } = await openExactRoomReview(page);
   const bookingRequests: unknown[] = [];
@@ -422,7 +590,7 @@ test("an unavailable-room conflict clears the room and offers a retry path", asy
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto(`/hostels/${hostelId}`);
-  const roomId = await page.getByLabel("Room").inputValue();
+  const roomId = await page.getByRole("combobox", { name: /^Room/ }).inputValue();
   await page.route("**/api/hostels/*/availability/exact?*", async (route) => {
     await route.fulfill({
       status: 200,
@@ -448,7 +616,7 @@ test("an unavailable-room conflict clears the room and offers a retry path", asy
       "This room is no longer available for those dates. Change dates or choose another room.",
     ),
   ).toBeVisible();
-  await expect(page.getByLabel("Room")).toHaveValue("");
+  await expect(page.getByRole("combobox", { name: /^Room/ })).toHaveValue("");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
 });
 
