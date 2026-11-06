@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const localBaseURL = "http://127.0.0.1:3100";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -7,7 +9,7 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   reporter: "list",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3100",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? localBaseURL,
     trace: "retain-on-failure",
   },
   projects: [
@@ -21,6 +23,10 @@ export default defineConfig({
     : {
         command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
         url: "http://127.0.0.1:3100",
+        env: {
+          AUTH_URL: localBaseURL,
+          NEXT_PUBLIC_APP_URL: localBaseURL,
+        },
         wait: { stdout: /Ready in/ },
         reuseExistingServer: false,
         stdout: "pipe",
