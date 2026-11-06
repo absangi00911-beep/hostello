@@ -6,6 +6,8 @@ import {
   isEnabledPaymentMethod,
   type BookingInput,
 } from "@hostello/shared";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent } from "@/lib/operational-logger";
 import {
   createSeatHolds,
   getRoomStayAvailability,
@@ -168,7 +170,16 @@ export async function createBooking(
 
       return booking;
     }, { isolationLevel: "ReadCommitted" });
-    await reevaluateAvailabilityAlertsForHostel(input.hostelId);
+    try {
+      await reevaluateAvailabilityAlertsForHostel(input.hostelId);
+    } catch (error) {
+      const summary = getSafeErrorSummary(error);
+      logOperationalEvent("error", "booking.availability_alerts.reevaluation_failed", {
+        error_name: summary.name,
+        ...(summary.code ? { error_code: summary.code } : {}),
+        ...(summary.status ? { error_status: summary.status } : {}),
+      });
+    }
     return booking;
   } catch (error) {
     if (error instanceof BookingServiceError) throw error;

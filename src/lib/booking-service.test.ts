@@ -6,9 +6,13 @@ vi.mock("@/lib/db", () => ({
 vi.mock("@/lib/availability-alerts", () => ({
   reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
 }));
+vi.mock("@/lib/operational-logger", () => ({
+  logOperationalEvent: vi.fn(),
+}));
 
 import { db } from "@/lib/db";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import { logOperationalEvent } from "@/lib/operational-logger";
 import { BookingServiceError, createBooking } from "./booking-service";
 
 const userId = "usr_0000000000000000000001";
@@ -153,6 +157,30 @@ describe("createBooking", () => {
     await createBooking(userId, bookingInput());
 
     expect(reevaluateAvailabilityAlertsForHostel).toHaveBeenCalledWith(hostelId);
+  });
+
+  it("returns the committed booking when alert reevaluation fails", async () => {
+    const tx = transaction();
+    let committed = false;
+    vi.mocked(db.$transaction).mockImplementation(async (callback: any) => {
+      const result = await callback(tx);
+      committed = true;
+      return result;
+    });
+    vi.mocked(reevaluateAvailabilityAlertsForHostel).mockRejectedValueOnce(
+      Object.assign(new Error("private database detail"), { code: "P2034" }),
+    );
+
+    await expect(createBooking(userId, bookingInput())).resolves.toMatchObject({
+      id: "booking_1",
+    });
+
+    expect(committed).toBe(true);
+    expect(logOperationalEvent).toHaveBeenCalledWith(
+      "error",
+      "booking.availability_alerts.reevaluation_failed",
+      { error_name: "Error", error_code: "P2034" },
+    );
   });
 
   it("returns an actionable conflict when the selected room no longer fits the guests", async () => {
