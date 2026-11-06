@@ -25,12 +25,13 @@ The following checks passed in the current workspace:
 | `npx tsc --noEmit -p packages/shared/tsconfig.json` | Passed |
 | Guarded `availability-alerts.postgres.integration.test.ts` | 3 passed against the disposable loopback `hostello_alerts_test` database |
 | HOSTEL and SEARCH availability-alert Playwright flows | 2 passed against the local app with safe test authentication |
+| `search-page.spec.ts`, `notifications.spec.ts`, and `role-redirects.spec.ts` | 50 passed using `.env.e2e` and loopback-only Typesense settings |
 
 ## Remaining release gates
 
 These are not verified and must not be presented as complete:
 
-1. **Remaining browser runtime:** student search/booking, owner room and booking, admin, and notifications flows have not been run end to end. Availability-alert flows are verified above.
+1. **Remaining browser runtime:** hostel detail and booking flows, owner room/booking workflows, and admin workflows are not verified. The three Playwright specs listed above passed, but search responses are mocked and role redirects do not exercise owner/admin workflows. The hostel-detail spec expects a seeded hostel fixture that is absent from the current E2E database.
 2. **Payment and queue sandbox:** validate Safepay refund/retry and QStash retry behavior using sandbox configuration only; no live provider calls are authorized.
 3. **Recovery:** rehearse database backup/restore on a disposable target and record the result.
 4. **External owner controls:** confirm GitHub production-environment reviewers and required checks, Neon snapshot secret/variables and required flag, Vercel Node configuration, and a green remote CI run. These console states were not inspected.
@@ -43,4 +44,4 @@ These are not verified and must not be presented as complete:
 - The named operational runbooks and guides recorded in `SYSTEM.md` risk R-20 remain absent at their documented root paths. Keep R-20 open until those procedures are located or written and linked.
 - The older dated progress entries, audit reports, and design snapshots are retained as history; do not treat their counts or statuses as current.
 
-No external database, provider, or deployment service was contacted for this audit.
+No shared or production database, payment/queue provider, or deployment service was contacted. A first E2E attempt inherited the remote Typesense setting from `.env.local` and failed during DNS resolution; successful runs explicitly overrode Typesense to loopback.

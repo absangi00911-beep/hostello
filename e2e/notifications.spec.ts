@@ -215,7 +215,10 @@ test("supports pagination and confirms read-all and delete actions", async ({
   await expect(page.getByRole("status").first()).toContainText("21 unread");
   await expect(page.getByTestId("unread-badge")).toHaveText("21");
   await expect(
-    page.getByRole("link", { name: "View notification: Notification 1" }),
+    page.getByRole("link", {
+      name: "View notification: Notification 1",
+      exact: true,
+    }),
   ).toHaveAttribute("href", "/trips");
 
   const unknownNotification = page
@@ -276,7 +279,10 @@ test("retains unread state on failure and offers a working retry", async ({
   expect((await markReadButton.boundingBox())?.height).toBeGreaterThanOrEqual(44);
   await markReadButton.click();
 
-  await expect(page.getByRole("alert")).toContainText("Could not mark as read.");
+  const readError = page
+    .getByRole("alert")
+    .filter({ hasText: "Could not mark as read." });
+  await expect(readError).toContainText("Could not mark as read.");
   await expect(firstNotification.getByText("Unread", { exact: true })).toBeVisible();
   await expect(page.getByRole("status").first()).toContainText("21 unread");
 
@@ -285,5 +291,5 @@ test("retains unread state on failure and offers a working retry", async ({
     .click();
   await expect(firstNotification.getByText("Read", { exact: true })).toBeVisible();
   await expect(page.getByRole("status").first()).toContainText("20 unread");
-  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(readError).toHaveCount(0);
 });

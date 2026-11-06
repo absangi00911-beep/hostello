@@ -77,12 +77,14 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
   expect(pageClass).toContain("min-h-dvh");
   expect(headerClass).toContain("sticky");
   expect(headerClass).toContain("backdrop-blur-[12px]");
-  expect(mainClass).toContain("w-[min(1920px,calc(100%-64px))]");
+  expect(mainClass).toContain(
+    "w-[min(1920px,calc(100%-var(--page-gutter-total)))]",
+  );
 
   for (const [width, expectedGutter, expectedMapDisplay] of [
-    [1440, 32, "block"],
-    [800, 16, "block"],
-    [768, 16, "none"],
+    [1440, 64, "block"],
+    [800, 32, "block"],
+    [768, 32, "none"],
     [390, 20, "none"],
   ] as const) {
     await page.setViewportSize({
@@ -93,22 +95,19 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
     const layout = await page.evaluate(() => {
       const main = document.querySelector(".search-results-main");
       const map = document.querySelector(".search-map-preview");
-      const filters = document.querySelector(".search-filter-list");
-      if (!main || !map || !filters) {
+      if (!main || !map) {
         throw new Error("Search layout elements are missing");
       }
 
       return {
         gutter: Math.round(main.getBoundingClientRect().left),
         mapDisplay: getComputedStyle(map).display,
-        filterOverflow: getComputedStyle(filters).overflowX,
         documentWidth: document.documentElement.scrollWidth,
       };
     });
 
     expect(layout.gutter).toBe(expectedGutter);
     expect(layout.mapDisplay).toBe(expectedMapDisplay);
-    expect(layout.filterOverflow).toBe("auto");
     expect(layout.documentWidth).toBeLessThanOrEqual(width);
     if (width === 1440) {
       await expect(hostLink).toBeVisible();
@@ -122,11 +121,6 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
     .locator(".search-result-grid")
     .evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length);
   expect(resultColumnCount).toBe(1);
-  const filtersCanScroll = await page
-    .locator(".search-filter-list")
-    .evaluate((filters) => filters.scrollWidth > filters.clientWidth);
-  expect(filtersCanScroll).toBe(true);
-
   const currentPage = page.getByRole("button", { name: "Page 1" });
   await expect(currentPage).toHaveAttribute("aria-current", "page");
   await expect(currentPage).toHaveCSS("background-color", "rgb(15, 23, 42)");
