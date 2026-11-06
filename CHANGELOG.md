@@ -9,7 +9,7 @@ B-008: date-aware availability alerts and completion verification.
 - **Availability alerts:** students can create and manage HOSTEL and SEARCH alerts for a date-bounded stay. Matching uses the authoritative seat-hold availability, per-hostel transaction locks, and transition-based in-app notifications. Search destinations preserve supported filters and check availability across the full stay.
 - **Booking reliability:** an alert reevaluation error after the booking transaction commits is logged without turning the successful booking into an apparent failure. The booking response returns the committed record.
 - **Migration:** `20261105210000_add_availability_alerts` adds the alert model and transition identifier. Its applied status must be confirmed separately for each database; no shared or production database was migrated for this work.
-- **Verification:** 1,512 Vitest tests passed and 10 were skipped; application typecheck, lint, 23 script tests, docs validation, Prisma validation, shared-package typecheck, and Playwright test discovery passed.
+- **Verification:** 1,512 Vitest tests passed and 10 were skipped; application typecheck, full lint, production build, 23 script tests, docs validation, Prisma validation, shared-package typecheck, and Playwright test discovery passed. The build emitted a non-blocking Sentry recommendation to add a global error handler.
 - **Still unverified:** Task 11 PostgreSQL concurrency and browser-runtime flows, Safepay sandbox refunds/retries, QStash retry behavior, and database backup/restore. No live provider calls, deployment, or shared/production migration was performed.
 
 ## Unreleased (November 5, 2026)

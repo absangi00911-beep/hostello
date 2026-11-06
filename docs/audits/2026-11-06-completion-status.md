@@ -17,7 +17,8 @@ The following checks passed in the current workspace:
 |---|---|
 | `npm test -- --run` | 234 files passed, 2 skipped; 1,512 tests passed, 10 skipped |
 | `npm run typecheck` | Passed |
-| `npm run lint` | Passed before the post-commit booking-error fix; ESLint on both files changed by that fix passed afterward |
+| `npm run lint` | Passed |
+| `npm run build` | Passed; Next emitted a non-blocking Sentry recommendation to add a global error handler |
 | `npm run test:scripts` | 23 passed |
 | `npm run docs:check` | Passed after documentation updates: 80 routes, 9 cron jobs, 65 environment variables, 41 linked Markdown files |
 | `npx prisma validate` | Passed |

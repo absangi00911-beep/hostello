@@ -8,11 +8,13 @@ page files, 80 API route files, 177 component source files, and 9 Playwright
 specs.
 
 **Latest recorded verification:** 1,512 Vitest tests passed and 10 were
-skipped; application typecheck, lint, script tests, docs validation, Prisma
-schema validation, and shared-package typecheck passed. Playwright test
-discovery passed, but browser-runtime E2E, Task 11 PostgreSQL concurrency,
-Safepay sandbox, QStash retry, and database backup/restore checks remain
-unverified. Do not treat this summary as evidence of production readiness.
+skipped; application typecheck, full lint, production build, script tests,
+docs validation, Prisma schema validation, and shared-package typecheck
+passed. The build emitted a non-blocking Sentry recommendation to add a global
+error handler. Playwright test discovery passed, but browser-runtime E2E,
+Task 11 PostgreSQL concurrency, Safepay sandbox, QStash retry, and database
+backup/restore checks remain unverified. Do not treat this summary as evidence
+of production readiness.
 
 The dated entries and sections below are historical snapshots, not a current
 implementation inventory.

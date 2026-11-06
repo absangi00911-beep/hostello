@@ -658,7 +658,7 @@ Production deploys from `main` through the production workflow, with an environm
 Verified on November 6, 2026, on Node 24:
 
 - Full Vitest suite: 234 files passed, 2 skipped; 1,512 tests passed and 10 skipped. Guarded PostgreSQL integration tests were not run in this verification.
-- `npm run test:scripts`: 23 passed. `npm run typecheck`, changed-file ESLint, `npx tsc --noEmit -p packages/shared/tsconfig.json`, `npx prisma validate`, and `npm run docs:check` passed. Full `npm run lint` passed before the post-commit booking-error fix; ESLint on both files changed by that fix passed afterward.
+- `npm run test:scripts`: 23 passed. `npm run typecheck`, full `npm run lint`, `npm run build`, `npx tsc --noEmit -p packages/shared/tsconfig.json`, `npx prisma validate`, and `npm run docs:check` passed after the booking-error fix. The production build emitted a non-blocking Sentry recommendation to add a global error handler.
 - `npm run e2e -- --list`: Playwright tests discovered; no browser test was executed.
 - `npm audit --omit=dev` reported zero vulnerabilities on October 19; the full audit adds five high findings in a development-only dependency chain.
 
