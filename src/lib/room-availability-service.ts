@@ -38,7 +38,7 @@ export async function lockAvailabilityInventory(
     .sort();
   for (const hostelId of ids) {
     await client.$queryRaw(
-      Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${hostelId}, ${AVAILABILITY_LOCK_NAMESPACE}))`,
+      Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${hostelId}, ${AVAILABILITY_LOCK_NAMESPACE}))::text`,
     );
   }
 }

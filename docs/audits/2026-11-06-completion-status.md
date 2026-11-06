@@ -5,7 +5,7 @@
 
 ## Status
 
-The approved Tasks 1–11 have implementation and review records. Task 11's independent follow-up review found no remaining actionable issues after the post-commit booking-error fix (`072ea3b`); its review and verification record is in the ignored session ledger at `.superpowers/sdd/2026-11-04-hostello-completion/task-11-report.md`. The alert model and migration exist, but this audit does not claim that migration is applied to any shared database or that PostgreSQL concurrency behavior was verified for Task 11.
+The approved Tasks 1–11 have implementation and review records. Task 11's independent follow-up review found no remaining actionable issues after the post-commit booking-error fix (`072ea3b`); its review and verification record is in the ignored session ledger at `.superpowers/sdd/2026-11-04-hostello-completion/task-11-report.md`. The alert migration was applied to a disposable loopback test database for the guarded integration run only; no shared database was changed.
 
 The November 5, 2026 gap report predates Task 11 completion and should be treated as a historical snapshot, not as the current implementation inventory. The current implementation counts and limitations are summarized in [PROJECT_STRUCTURE.md](../../PROJECT_STRUCTURE.md), [WEB_APP_PROGRESS.md](../../WEB_APP_PROGRESS.md), [SYSTEM.md](../../SYSTEM.md), and [CHANGELOG.md](../../CHANGELOG.md).
 
@@ -20,21 +20,21 @@ The following checks passed in the current workspace:
 | `npm run lint` | Passed |
 | `npm run build` | Passed; Next emitted a non-blocking Sentry recommendation to add a global error handler |
 | `npm run test:scripts` | 23 passed |
-| `npm run docs:check` | Passed after documentation updates: 80 routes, 9 cron jobs, 65 environment variables, 41 linked Markdown files |
+| `npm run docs:check` | Passed after documentation updates: 80 routes, 9 cron jobs, 65 environment variables, 42 linked Markdown files |
 | `npx prisma validate` | Passed |
 | `npx tsc --noEmit -p packages/shared/tsconfig.json` | Passed |
-| `npm run e2e -- --list` | Playwright specs discovered; browser flows were not executed |
+| Guarded `availability-alerts.postgres.integration.test.ts` | 3 passed against the disposable loopback `hostello_alerts_test` database |
+| HOSTEL and SEARCH availability-alert Playwright flows | 2 passed against the local app with safe test authentication |
 
 ## Remaining release gates
 
 These are not verified and must not be presented as complete:
 
-1. **Disposable PostgreSQL:** run the guarded Task 11 concurrency/idempotency test and any other required database integration cases against an explicitly disposable loopback database. Do not use shared or production database URLs.
-2. **Browser runtime:** run student search/booking, owner room and booking, admin, notifications, and both availability-alert flows against disposable local services and safe test authentication. Discovery alone does not establish runtime behavior.
-3. **Payment and queue sandbox:** validate Safepay refund/retry and QStash retry behavior using sandbox configuration only; no live provider calls are authorized.
-4. **Recovery:** rehearse database backup/restore on a disposable target and record the result.
-5. **External owner controls:** confirm GitHub production-environment reviewers and required checks, Neon snapshot secret/variables and required flag, Vercel Node configuration, and a green remote CI run. These console states were not inspected.
-6. **Money and production approval:** obtain qualified review of Pakistan payout/custody obligations and explicit production approval before real transaction volume. No deployment, push, production migration, or payout-policy change was performed.
+1. **Remaining browser runtime:** student search/booking, owner room and booking, admin, and notifications flows have not been run end to end. Availability-alert flows are verified above.
+2. **Payment and queue sandbox:** validate Safepay refund/retry and QStash retry behavior using sandbox configuration only; no live provider calls are authorized.
+3. **Recovery:** rehearse database backup/restore on a disposable target and record the result.
+4. **External owner controls:** confirm GitHub production-environment reviewers and required checks, Neon snapshot secret/variables and required flag, Vercel Node configuration, and a green remote CI run. These console states were not inspected.
+5. **Money and production approval:** obtain qualified review of Pakistan payout/custody obligations and explicit production approval before real transaction volume. No deployment, push, production migration, or payout-policy change was performed.
 
 ## Documentation findings
 

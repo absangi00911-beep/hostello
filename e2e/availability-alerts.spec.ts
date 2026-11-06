@@ -204,8 +204,15 @@ test("creates, pauses, edits, and deletes a HOSTEL alert", async ({ page }) => {
   await expect(page.getByText("Alert updated.")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await alert.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByRole("heading", { name: "Availability alerts" })).toBeVisible();
-  await expect(page.getByText("You don’t have any availability alerts.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Availability alerts", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "You don’t have any availability alerts.",
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 
 test("creates, pauses, edits, and deletes a SEARCH alert", async ({ page }) => {
@@ -225,6 +232,13 @@ test("creates, pauses, edits, and deletes a SEARCH alert", async ({ page }) => {
   await expect(page.getByText("Alert updated.")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await alert.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByRole("heading", { name: "Availability alerts" })).toBeVisible();
-  await expect(page.getByText("You don’t have any availability alerts.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Availability alerts", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "You don’t have any availability alerts.",
+      exact: true,
+    }),
+  ).toBeVisible();
 });
