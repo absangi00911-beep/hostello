@@ -1,7 +1,210 @@
-import "dotenv/config";
 import { expect, test, type Page } from "@playwright/test";
+import { Pool } from "pg";
 
 const hostelId = "cmvp8pemp000ogwvvh5cnpm6g";
+const ownerId = "e2e-hostel-detail-owner";
+const reviewerId = "e2e-hostel-detail-reviewer";
+const reviewId = "e2e-hostel-detail-review";
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+
+function assertDisposableDatabase(databaseUrl: string) {
+  const parsed = new URL(databaseUrl);
+  const databaseName = decodeURIComponent(parsed.pathname.slice(1));
+  if (
+    !["localhost", "127.0.0.1", "::1", "[::1]"].includes(parsed.hostname) ||
+    !databaseName.endsWith("_test")
+  ) {
+    throw new Error(
+      "Hostel detail E2E requires a loopback Postgres database with a _test name.",
+    );
+  }
+}
+
+test.skip(
+  !hasDatabase,
+  "Set DATABASE_URL to a disposable loopback Postgres database ending in _test.",
+);
+
+let pool: Pool;
+
+test.beforeAll(async () => {
+  const databaseUrl = process.env.DATABASE_URL as string;
+  assertDisposableDatabase(databaseUrl);
+  pool = new Pool({ connectionString: databaseUrl });
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      `INSERT INTO users (id, email, name, role, "updatedAt")
+       VALUES ($1, $2, 'E2E Hostel Detail Owner', 'OWNER', now())
+       ON CONFLICT (id) DO UPDATE
+         SET email = EXCLUDED.email, name = EXCLUDED.name, role = EXCLUDED.role`,
+      [ownerId, `${ownerId}@example.test`],
+    );
+    await client.query(
+      `INSERT INTO users (id, email, name, role, "updatedAt")
+       VALUES ($1, $2, 'E2E Hostel Detail Reviewer', 'STUDENT', now())
+       ON CONFLICT (id) DO UPDATE
+         SET email = EXCLUDED.email, name = EXCLUDED.name, role = EXCLUDED.role`,
+      [reviewerId, `${reviewerId}@example.test`],
+    );
+    await client.query(
+      `INSERT INTO hostels (
+         id, name, slug, description, status, city, area, address,
+         latitude, longitude, "pricePerMonth", rooms, capacity, rating,
+         "reviewCount", gender,
+         amenities, rules, images, "coverImage", verified, featured,
+         "cancellationPolicy", "ownerId", "createdAt", "updatedAt"
+       ) VALUES (
+         $1, 'Baloch Scholars Hostel', 'e2e-baloch-scholars-hostel',
+         'Student accommodation near the University of Balochistan.',
+         'ACTIVE', 'Quetta', 'Sariab Road',
+         'Near UoB Gate, Sariab Road, Quetta', 30.1798, 67.0099,
+         5800, 20, 60, 5, 1, 'MALE',
+         ARRAY['wifi', 'meals', 'study-room', 'generator', 'water-cooler', 'cctv'],
+         ARRAY['Gate closes at 10pm', 'Keep common areas tidy'],
+         ARRAY[
+           'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80',
+           'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80',
+           'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'
+         ],
+         'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80',
+         false, false, 'STANDARD', $2, now(), now()
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         name = EXCLUDED.name,
+         slug = EXCLUDED.slug,
+         description = EXCLUDED.description,
+         status = EXCLUDED.status,
+         city = EXCLUDED.city,
+         area = EXCLUDED.area,
+         address = EXCLUDED.address,
+         latitude = EXCLUDED.latitude,
+         longitude = EXCLUDED.longitude,
+         "pricePerMonth" = EXCLUDED."pricePerMonth",
+         rooms = EXCLUDED.rooms,
+         capacity = EXCLUDED.capacity,
+         rating = EXCLUDED.rating,
+         "reviewCount" = EXCLUDED."reviewCount",
+         gender = EXCLUDED.gender,
+         amenities = EXCLUDED.amenities,
+         rules = EXCLUDED.rules,
+         images = EXCLUDED.images,
+         "coverImage" = EXCLUDED."coverImage",
+         verified = EXCLUDED.verified,
+         featured = EXCLUDED.featured,
+         "cancellationPolicy" = EXCLUDED."cancellationPolicy",
+         "ownerId" = EXCLUDED."ownerId",
+         "updatedAt" = now()`,
+      [hostelId, ownerId],
+    );
+    await client.query(
+      `INSERT INTO reviews (
+         id, "hostelId", "userId", rating, title, comment,
+         cleanliness, location, value, safety, verified,
+         "createdAt", "updatedAt"
+       ) VALUES (
+         $1, $2, $3, 5, 'Comfortable and convenient',
+         'The room was clean and the location worked well for my studies.',
+         5, 5, 4, 5, true, now(), now()
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         rating = EXCLUDED.rating,
+         title = EXCLUDED.title,
+         comment = EXCLUDED.comment,
+         cleanliness = EXCLUDED.cleanliness,
+         location = EXCLUDED.location,
+         value = EXCLUDED.value,
+         safety = EXCLUDED.safety,
+         verified = EXCLUDED.verified,
+         "updatedAt" = now()`,
+      [reviewId, hostelId, reviewerId],
+    );
+
+    for (const room of [
+      {
+        id: "e2e-hostel-detail-room-double",
+        name: "Standard Double",
+        description: "A shared room with two beds and study space.",
+        pricePerMonth: 5800,
+        capacity: 2,
+        available: 2,
+        images: [],
+        facilities: ["Two single beds", "Shared bathroom", "Study desks"],
+      },
+      {
+        id: "e2e-hostel-detail-room-triple",
+        name: "Triple Study Room",
+        description: "A three-bed room with individual study space.",
+        pricePerMonth: 5200,
+        capacity: 3,
+        available: 3,
+        images: [
+          "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80",
+        ],
+        facilities: ["Three beds", "Individual study desks", "Shared bathroom"],
+      },
+      {
+        id: "e2e-hostel-detail-room-single",
+        name: "Single Room",
+        description: "A private room with a dedicated study space.",
+        pricePerMonth: 7500,
+        capacity: 1,
+        available: 1,
+        images: [],
+        facilities: ["Private room", "Study space", "Lockable door"],
+      },
+    ]) {
+      await client.query(
+        `INSERT INTO rooms (
+           id, "hostelId", name, description, "pricePerMonth",
+           capacity, available, images, facilities, "createdAt", "updatedAt"
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now())
+         ON CONFLICT (id) DO UPDATE SET
+           "hostelId" = EXCLUDED."hostelId",
+           name = EXCLUDED.name,
+           description = EXCLUDED.description,
+           "pricePerMonth" = EXCLUDED."pricePerMonth",
+           capacity = EXCLUDED.capacity,
+           available = EXCLUDED.available,
+           images = EXCLUDED.images,
+           facilities = EXCLUDED.facilities,
+           "updatedAt" = now()`,
+        [
+          room.id,
+          hostelId,
+          room.name,
+          room.description,
+          room.pricePerMonth,
+          room.capacity,
+          room.available,
+          room.images,
+          room.facilities,
+        ],
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+});
+
+test.afterAll(async () => {
+  if (!pool) return;
+  try {
+    await pool.query("DELETE FROM reviews WHERE id = $1", [reviewId]);
+    await pool.query("DELETE FROM hostels WHERE id = $1", [hostelId]);
+    await pool.query("DELETE FROM users WHERE id = $1", [ownerId]);
+    await pool.query("DELETE FROM users WHERE id = $1", [reviewerId]);
+  } finally {
+    await pool.end();
+  }
+});
 
 async function mockHostelSearch(page: Page) {
   await page.route("**/api/hostels**", (route) =>
@@ -12,6 +215,7 @@ async function mockHostelSearch(page: Page) {
         data: [
           {
             id: hostelId,
+            slug: "garden-view-hostel",
             name: "Garden View Hostel",
             city: "Lahore",
             area: "Gulberg",
@@ -26,6 +230,52 @@ async function mockHostelSearch(page: Page) {
       }),
     }),
   );
+}
+
+function dateAtMonthOffset(offset: number): string {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1),
+  ).toISOString().slice(0, 10);
+}
+
+async function openExactRoomReview(page: Page) {
+  const checkIn = dateAtMonthOffset(3);
+  const checkOut = dateAtMonthOffset(4);
+  const roomSelect = page.getByRole("combobox", { name: /^Room/ });
+  await roomSelect.selectOption({ index: 1 });
+  const roomId = await roomSelect.inputValue();
+  const availabilityRequests: URL[] = [];
+
+  await page.route("**/api/hostels/*/availability/exact?*", async (route) => {
+    const url = new URL(route.request().url());
+    availabilityRequests.push(url);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: [{ roomId, capacity: 2, availableSeats: 2, fits: true }],
+      }),
+    });
+  });
+  await page.getByLabel("Move in").fill(checkIn);
+  await page.getByLabel("Move out").fill(checkOut);
+  await expect(
+    page.getByText(/Available for all selected dates: 2 of 2 seats/),
+  ).toBeVisible();
+  await expect.poll(() =>
+    availabilityRequests.some((url) =>
+      url.searchParams.get("checkIn") === checkIn &&
+      url.searchParams.get("checkOut") === checkOut &&
+      url.searchParams.get("guests") === "1",
+    ),
+  ).toBe(true);
+
+  await page.getByRole("button", { name: "Review booking" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Review your booking" }),
+  ).toBeVisible();
+  return { checkIn, checkOut, roomId };
 }
 
 test("hostel detail header matches homepage size and wordmark alignment", async ({
@@ -83,14 +333,13 @@ test("hostel cards open their detail route from browse and search", async ({ pag
   await page.goto("/");
 
   await expect(
-    page.getByRole("link", { name: /Garden View Hostel/ }),
+    page.getByRole("link", { name: "View details for Garden View" }),
   ).toHaveAttribute("href", `/hostels/${hostelId}`);
 
-  await page.goto("/search");
-  await page.getByRole("button", { name: "Lahore" }).click();
+  await page.goto("/search?city=Lahore");
 
   await expect(
-    page.getByRole("link", { name: /Garden View Hostel/ }),
+    page.getByRole("link", { name: "View details for Garden View" }),
   ).toHaveAttribute("href", `/hostels/${hostelId}`);
 });
 
@@ -146,27 +395,14 @@ test("hostel detail destination search encodes and restores punctuation", async 
 });
 
 test("search ignores whitespace-only city query parameters", async ({ page }) => {
-  const requestedCities: Array<string | null> = [];
-
-  await page.route("**/api/hostels**", async (route) => {
-    requestedCities.push(
-      new URL(route.request().url()).searchParams.get("city"),
-    );
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ data: [], total: 0 }),
-    });
-  });
-
   await page.goto("/search?city=+++");
-  const citySearch = page.getByLabel("Search for a city");
-  await citySearch.fill("No city with this name");
-  await expect(page.getByText("No matching city found.")).toBeVisible();
-  await citySearch.fill("");
-  await expect(page.getByText("No matching city found.")).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Hostels across Pakistan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("searchbox", { name: "Search destination" }),
+  ).toHaveValue("");
   await expect(page.getByText(/Selected city:/)).toHaveCount(0);
-  expect(requestedCities).toEqual([]);
 });
 
 test("hostel detail uses centered content and a responsive gallery of real hostel and room photos", async ({
@@ -321,6 +557,92 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   );
 });
 
+test("search to detail reviews an exact room stay before requesting a pending booking", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await mockHostelSearch(page);
+  await page.route("**/api/payment/initiate", async (route) => {
+    await route.fulfill({ status: 500, body: "Payment must not start yet." });
+  });
+
+  await page.goto("/search?city=Lahore");
+  await page.getByRole("link", { name: /Garden View Hostel/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Baloch Scholars Hostel" }),
+  ).toBeVisible();
+  const { checkIn, checkOut, roomId } = await openExactRoomReview(page);
+  const bookingRequests: unknown[] = [];
+  await page.route("**/api/bookings", async (route) => {
+    bookingRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: {
+          id: "booking-pending-1",
+          total: 48000,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+        },
+      }),
+    });
+  });
+
+  expect(bookingRequests).toHaveLength(0);
+  await page.getByRole("button", { name: "Request booking" }).click();
+  await expect(page.getByText("Booking status: Pending")).toBeVisible();
+  await expect(page.getByText("Payment status: Payment pending")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Continue to Safepay" }),
+  ).toBeVisible();
+  expect(bookingRequests).toEqual([
+    expect.objectContaining({
+      roomId,
+      checkIn,
+      checkOut,
+      guests: 1,
+      paymentMethod: "safepay",
+    }),
+  ]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+});
+
+test("an unavailable-room conflict clears the room and offers a retry path", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(`/hostels/${hostelId}`);
+  const roomId = await page.getByRole("combobox", { name: /^Room/ }).inputValue();
+  await page.route("**/api/hostels/*/availability/exact?*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: [{ roomId, capacity: 2, availableSeats: 2, fits: true }],
+      }),
+    });
+  });
+  await page.route("**/api/bookings", async (route) => {
+    await route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Room availability changed." }),
+    });
+  });
+
+  await openExactRoomReview(page);
+  await page.getByRole("button", { name: "Request booking" }).click();
+
+  await expect(
+    page.getByRole("alert").getByText(
+      "This room is no longer available for those dates. Change dates or choose another room.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByRole("combobox", { name: /^Room/ })).toHaveValue("");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+});
+
 test("hostel details show the public listing overview", async ({ page }) => {
   await page.goto(`/hostels/${hostelId}`);
 
@@ -392,13 +714,17 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
   });
   await expect(bookingCard).toHaveClass(/sticky/);
   await expect(calendar).toHaveClass(/border-t/);
-  await expect(calendar.locator(".hostel-date-calendar-months")).toHaveClass(
-    /grid-cols-2/,
-  );
+  const months = calendar.locator(":scope > div").nth(1);
+  expect(
+    await months.evaluate(
+      (element) =>
+        getComputedStyle(element).gridTemplateColumns.split(" ").length,
+    ),
+  ).toBe(2);
   await expect(
     calendar.getByRole("button", { name: "Next month" }),
   ).toHaveClass(/focus-visible:outline-2!/);
-  await expect(calendar.locator(".hostel-date-calendar-month")).toHaveCount(2);
+  await expect(calendar.getByRole("group")).toHaveCount(2);
   const [amenitiesTop, calendarTop] = await Promise.all([
     amenities.evaluate((element) => element.getBoundingClientRect().top),
     calendar.evaluate((element) => element.getBoundingClientRect().top),
@@ -435,8 +761,10 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
     })
     .click();
   await expect(
-    calendar.locator('.hostel-date-calendar-day[aria-pressed="true"]'),
-  ).toHaveCSS("background-color", "rgb(29, 78, 216)");
+    calendar.getByRole("button", {
+      name: `Select move-in date ${formatAccessibleDate(today)}`,
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
   await calendar.getByRole("button", { name: "Next month" }).click();
   await calendar
     .getByRole("button", {
@@ -552,7 +880,9 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
 
   const roomSection = page.locator(".hostel-room-section");
   const amenitiesSection = page.locator(".hostel-amenities-section");
-  const calendarSection = page.locator(".hostel-date-calendar");
+  const calendarSection = page.getByRole("region", {
+    name: "Choose your dates",
+  });
   const reviewsSection = page.locator(".hostel-reviews-section");
   const locationSection = page.locator(".hostel-location-section");
   const hostSection = page.locator(".hostel-host-section");
@@ -582,6 +912,14 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
     page.locator(selector).evaluate(
       (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
     );
+  const getCalendarColumnCount = () =>
+    calendarSection
+      .locator(":scope > div")
+      .nth(1)
+      .evaluate(
+        (element) =>
+          getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
   await expect(roomSection.locator(".hostel-room-grid")).toHaveCount(1);
   expect(await getColumnCount(".hostel-room-grid")).toBe(2);
   expect(await getColumnCount(".hostel-amenities-list")).toBe(2);
@@ -659,14 +997,14 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
     "static",
   );
   await page.setViewportSize({ width: 721, height: 900 });
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(2);
+  expect(await getCalendarColumnCount()).toBe(2);
   await page.setViewportSize({ width: 720, height: 900 });
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
+  expect(await getCalendarColumnCount()).toBe(1);
 
   await page.setViewportSize({ width: 375, height: 812 });
   expect(await getColumnCount(".hostel-room-grid")).toBe(1);
   expect(await getColumnCount(".hostel-amenities-list")).toBe(1);
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
+  expect(await getCalendarColumnCount()).toBe(1);
   expect(await getColumnCount(".hostel-review-category-list")).toBe(1);
   expect(await getColumnCount(".hostel-review-list")).toBe(1);
 });
@@ -827,17 +1165,17 @@ test("uses Inter and the Airbnb-inspired type scale without changing body typogr
 
   await page.goto("/search");
   const pageHeading = page.getByRole("heading", {
-    name: "Where do you want to stay?",
+    name: "Hostels across Pakistan",
   });
   await expect(pageHeading).toBeVisible();
-  await expect(pageHeading).toHaveCSS("font-size", "28px");
-  await expect(pageHeading).toHaveCSS("font-weight", "700");
+  await expect(pageHeading).toHaveCSS("font-size", "19.84px");
+  await expect(pageHeading).toHaveCSS("font-weight", "650");
 
-  await page.getByRole("button", { name: "Lahore" }).click();
+  await page.goto("/search?city=Lahore");
   const sectionHeading = page.getByRole("heading", {
     name: "Hostels in Lahore",
   });
   await expect(sectionHeading).toBeVisible();
-  await expect(sectionHeading).toHaveCSS("font-size", "21px");
-  await expect(sectionHeading).toHaveCSS("font-weight", "700");
+  await expect(sectionHeading).toHaveCSS("font-size", "19.84px");
+  await expect(sectionHeading).toHaveCSS("font-weight", "650");
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { LoginDialogProvider } from "@/components/auth/LoginDialogProvider";
+import { getConfiguredSignInMethods } from "@/lib/auth/sign-in-methods";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,13 +25,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const signInMethods = getConfiguredSignInMethods();
+
   return (
     <html className={inter.variable} lang="en">
       <body className="min-h-screen bg-canvas text-ink">
         <LoginDialogProvider
-          googleEnabled={Boolean(
-            process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,
-          )}
+          emailCodeEnabled={signInMethods.emailCode}
+          googleEnabled={signInMethods.google}
         >
           {children}
           <SiteFooter />

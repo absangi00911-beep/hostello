@@ -9,6 +9,8 @@ import {
   fieldClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
   RETRY_REASON_MAX,
@@ -38,6 +40,7 @@ const dangerButtonClassName =
 export interface RetryActionResult {
   /** Error to show on the card; null when the retry was queued. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type RetryAction = (
@@ -164,6 +167,7 @@ function EventCard({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
   const blocked = retryBlockedReason(event);
   const amount = formatEventAmount(event.amountMinorUnits, event.currency);
 
@@ -172,7 +176,10 @@ function EventCard({
     setError(null);
     const result = await onRetry(event, input);
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
     else setConfirming(false);
   }
 
@@ -245,7 +252,9 @@ function EventCard({
           </ul>
         </div>
       ) : null}
-      {blocked ? (
+      {uncertain ? (
+        <AdminUncertainActionNotice />
+      ) : blocked ? (
         <p className="m-0 text-[0.85rem] text-[#583c13]">{blocked}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -503,9 +512,12 @@ export function AdminPaymentEventsPage() {
         setNotice({ tone: "error", text: message });
         setRetryCount((count) => count + 1);
       }
-      return { error: message };
+      return {
+        error: message,
+        uncertain: isUncertainAdminActionStatus(response.status),
+      };
     } catch {
-      return { error: fallback };
+      return { error: fallback, uncertain: true };
     }
   }, []);
 

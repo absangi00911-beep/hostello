@@ -6,15 +6,24 @@ vi.mock("@/lib/db", () => ({
   db: {
     hostel: { findFirst: vi.fn() },
     blockedDate: { findMany: vi.fn(), count: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
+    $transaction: vi.fn(),
   },
 }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { DELETE, GET, POST } from "./route";
 
+const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([{ id: "hostel_1" }]),
+  seatHold: { findFirst: vi.fn() },
+  blockedDate: { create: vi.fn(), deleteMany: vi.fn() },
+};
 const context = { params: Promise.resolve({ id: "hostel_1" }) };
 const getRequest = () => new NextRequest("https://hostello.test/api/owner/hostels/hostel_1/blocked-dates");
 const pagedGetRequest = (page: number, limit: number) => new NextRequest(
@@ -37,6 +46,15 @@ beforeEach(() => {
   vi.mocked(db.hostel.findFirst).mockResolvedValue({ id: "hostel_1" } as any);
   vi.mocked(db.blockedDate.count).mockResolvedValue(0);
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 59, resetAt: Date.now() + 3_600_000 });
+  tx.seatHold.findFirst.mockReset().mockResolvedValue(null);
+  tx.blockedDate.create.mockReset().mockResolvedValue({
+    id: "blocked_1",
+    startDate: new Date("2099-10-10"),
+    endDate: new Date("2099-10-12"),
+    reason: "Repairs",
+  });
+  tx.blockedDate.deleteMany.mockReset().mockResolvedValue({ count: 1 });
+  vi.mocked(db.$transaction).mockImplementation(async (callback: any) => callback(tx));
 });
 
 describe("owner blocked-date role boundary", () => {
@@ -77,32 +95,49 @@ describe("owner blocked-date role boundary", () => {
     });
   });
 
-  it("rechecks current hostel ownership in the blocked-date create relation", async () => {
-    vi.mocked(db.blockedDate.create).mockResolvedValue({
-      id: "blocked_1",
-      startDate: new Date("2026-10-10"),
-      endDate: new Date("2026-10-12"),
-      reason: "Repairs",
-    } as any);
+  it("locks inventory and checks holds using the inclusive owner-block end date", async () => {
+    const request = new NextRequest("https://hostello.test/api/owner/hostels/hostel_1/blocked-dates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startDate: "2099-10-10", endDate: "2099-10-12", reason: "Repairs" }),
+    });
 
-    const response = await POST(postRequest(), context as any);
+    const response = await POST(request, context as any);
 
     expect(response.status).toBe(201);
-    expect(db.blockedDate.create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(db.$transaction).toHaveBeenCalledOnce();
+    expect(tx.seatHold.findFirst).toHaveBeenCalledWith({
+      where: {
+        room: { is: { hostelId: "hostel_1" } },
+        checkIn: { lt: new Date("2099-10-13T00:00:00.000Z") },
+        checkOut: { gt: new Date("2099-10-10T00:00:00.000Z") },
+      },
+      select: { id: true },
+    });
+    expect(tx.blockedDate.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         hostel: { connect: { id: "hostel_1", ownerId: "owner_1" } },
-        startDate: new Date("2026-10-10"),
-        endDate: new Date("2026-10-12"),
+        startDate: new Date("2099-10-10T00:00:00.000Z"),
+        endDate: new Date("2099-10-12T00:00:00.000Z"),
         reason: "Repairs",
       }),
     }));
+  });
+
+  it("returns HTTP 409 instead of blocking an active held stay", async () => {
+    tx.seatHold.findFirst.mockResolvedValueOnce({ id: "hold_1" });
+
+    const response = await POST(postRequest(), context as any);
+
+    expect(response.status).toBe(409);
+    expect(tx.blockedDate.create).not.toHaveBeenCalled();
   });
 
   it("scopes blocked-date deletion to the current owner relation", async () => {
     const response = await DELETE(deleteRequest(), context as any);
 
     expect(response.status).toBe(200);
-    expect(db.blockedDate.deleteMany).toHaveBeenCalledWith({
+    expect(tx.blockedDate.deleteMany).toHaveBeenCalledWith({
       where: {
         id: "blocked_1",
         hostelId: "hostel_1",

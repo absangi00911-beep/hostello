@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,6 +51,7 @@ function getAuthErrorMessage(error?: string): string | null {
 export default function LoginDialog({
   callbackUrl,
   error,
+  emailCodeEnabled,
   googleEnabled,
   onClose,
   open = true,
@@ -58,6 +59,7 @@ export default function LoginDialog({
 }: {
   callbackUrl: string;
   error?: string;
+  emailCodeEnabled: boolean;
   googleEnabled: boolean;
   onClose?: () => void;
   open?: boolean;
@@ -68,8 +70,23 @@ export default function LoginDialog({
   const [otpCode, setOtpCode] = useState("");
   const [name, setName] = useState("");
   const [grant, setGrant] = useState("");
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const inputRefs = {
+    email: emailInputRef,
+    password: passwordInputRef,
+    otp: otpInputRef,
+    name: nameInputRef,
+  };
+  const [invalidField, setInvalidField] = useState<
+    keyof typeof inputRefs | null
+  >(null);
   const [step, setStep] = useState<"email" | "otp" | "name">("email");
-  const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
+  const [loginMethod, setLoginMethod] = useState<"otp" | "password">(
+    "password",
+  );
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(
     getAuthErrorMessage(error),
@@ -77,6 +94,24 @@ export default function LoginDialog({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleRedirecting, setIsGoogleRedirecting] = useState(false);
+
+  function clearValidationError() {
+    setInvalidField(null);
+    setErrorMessage(null);
+  }
+
+  function clearFieldError(field: keyof typeof inputRefs) {
+    if (invalidField === field) clearValidationError();
+  }
+
+  function reportValidationError(
+    field: keyof typeof inputRefs,
+    message: string,
+  ) {
+    setInvalidField(field);
+    setErrorMessage(message);
+    inputRefs[field].current?.focus();
+  }
 
   function handleOpenChange(open: boolean) {
     if (!open) {
@@ -89,7 +124,7 @@ export default function LoginDialog({
   }
 
   async function handleGoogleSignIn() {
-    setErrorMessage(null);
+    clearValidationError();
     setIsGoogleRedirecting(true);
     try {
       await signIn("google", { redirectTo: callbackUrl });
@@ -104,15 +139,15 @@ export default function LoginDialog({
     const nextEmail = email.trim();
 
     if (!nextEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setErrorMessage("Enter a valid email address to continue.");
+      reportValidationError("email", "Enter a valid email address to continue.");
       return;
     }
     if (!password) {
-      setErrorMessage("Enter your password to continue.");
+      reportValidationError("password", "Enter your password to continue.");
       return;
     }
 
-    setErrorMessage(null);
+    clearValidationError();
     setStatusMessage(null);
     setIsSubmitting(true);
 
@@ -144,11 +179,11 @@ export default function LoginDialog({
     const nextEmail = email.trim();
 
     if (!nextEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setErrorMessage("Enter a valid email address to continue.");
+      reportValidationError("email", "Enter a valid email address to continue.");
       return;
     }
 
-    setErrorMessage(null);
+    clearValidationError();
     setStatusMessage(null);
     setIsSubmitting(true);
 
@@ -207,11 +242,11 @@ export default function LoginDialog({
     const cleaned = otpCode.replace(/\D/g, "").slice(0, 6);
 
     if (cleaned.length !== 6) {
-      setErrorMessage("Enter the 6-digit code sent to your email.");
+      reportValidationError("otp", "Enter the 6-digit code sent to your email.");
       return;
     }
 
-    setErrorMessage(null);
+    clearValidationError();
     setStatusMessage(null);
     setIsSubmitting(true);
 
@@ -254,11 +289,11 @@ export default function LoginDialog({
     event.preventDefault();
     const displayName = name.trim();
     if (displayName.length < 2 || displayName.length > 80) {
-      setErrorMessage("Enter a name between 2 and 80 characters.");
+      reportValidationError("name", "Enter a name between 2 and 80 characters.");
       return;
     }
 
-    setErrorMessage(null);
+    clearValidationError();
     setIsSubmitting(true);
     try {
       await completeLogin(grant, displayName);
@@ -270,7 +305,7 @@ export default function LoginDialog({
   }
 
   async function handleResendCode() {
-    setErrorMessage(null);
+    clearValidationError();
     setStatusMessage(null);
     setIsSubmitting(true);
     try {
@@ -303,11 +338,15 @@ export default function LoginDialog({
         <Dialog.Content
           aria-describedby="login-dialog-description"
           className="fixed left-1/2 top-1/2 z-[1001] h-fit w-[min(calc(100vw_-_32px),440px)] max-h-[calc(100svh_-_48px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[20px] bg-white px-8 pt-[34px] pb-[30px] text-ink shadow-[0_20px_60px_rgb(0_0_0_/_22%)] outline-none! [@media(max-width:480px)]:max-h-[calc(100svh_-_24px)] [@media(max-width:480px)]:px-[22px] [@media(max-width:480px)]:pt-[30px] [@media(max-width:480px)]:pb-6 [@media(max-height:520px)]:top-[12px] [@media(max-height:520px)]:bottom-[12px] [@media(max-height:520px)]:my-auto [@media(max-height:520px)]:max-h-[calc(100svh_-_24px)] [@media(max-height:520px)]:translate-y-0"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            emailInputRef.current?.focus();
+          }}
         >
           <Dialog.Close asChild>
             <button
               aria-label="Close login dialog"
-              className="absolute right-4 top-4 grid size-9 cursor-pointer place-items-center rounded-full bg-transparent text-ink hover:bg-surface-muted"
+              className="absolute right-4 top-4 grid size-11 cursor-pointer place-items-center rounded-full bg-transparent text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
               type="button"
             >
               <X aria-hidden="true" size={18} />
@@ -358,6 +397,7 @@ export default function LoginDialog({
           )}
           {errorMessage && (
             <p
+              id="login-dialog-error"
               className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-[#c13515]"
               role="alert"
             >
@@ -378,12 +418,20 @@ export default function LoginDialog({
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>Email</span>
                 <input
+                  aria-describedby={
+                    invalidField === "email" ? "login-dialog-error" : undefined
+                  }
+                  aria-invalid={invalidField === "email" || undefined}
                   autoComplete="email"
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
-                  onChange={(event) => setEmail(event.currentTarget.value)}
+                  onChange={(event) => {
+                    setEmail(event.currentTarget.value);
+                    clearFieldError("email");
+                  }}
                   required
+                  ref={emailInputRef}
                   type="email"
                   value={email}
                 />
@@ -396,31 +444,26 @@ export default function LoginDialog({
               >
                 {isSubmitting ? "Sending code…" : "Continue"}
               </button>
-              <button
-                className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.85rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
-                disabled={isSubmitting || isGoogleRedirecting}
-                onClick={() => {
-                  setLoginMethod("password");
-                  setPassword("");
-                  setErrorMessage(null);
-                  setStatusMessage(null);
-                }}
-                type="button"
-              >
-                Use password
-              </button>
             </form>
           ) : step === "email" ? (
             <form className="grid gap-[14px]" noValidate onSubmit={handlePasswordSignIn}>
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>Email</span>
                 <input
+                  aria-describedby={
+                    invalidField === "email" ? "login-dialog-error" : undefined
+                  }
+                  aria-invalid={invalidField === "email" || undefined}
                   autoComplete="email"
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
-                  onChange={(event) => setEmail(event.currentTarget.value)}
+                  onChange={(event) => {
+                    setEmail(event.currentTarget.value);
+                    clearFieldError("email");
+                  }}
                   required
+                  ref={emailInputRef}
                   type="email"
                   value={email}
                 />
@@ -428,17 +471,27 @@ export default function LoginDialog({
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>Password</span>
                 <input
+                  aria-describedby={
+                    invalidField === "password"
+                      ? "login-dialog-error"
+                      : undefined
+                  }
+                  aria-invalid={invalidField === "password" || undefined}
                   autoComplete="current-password"
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="password"
-                  onChange={(event) => setPassword(event.currentTarget.value)}
+                  onChange={(event) => {
+                    setPassword(event.currentTarget.value);
+                    clearFieldError("password");
+                  }}
                   required
+                  ref={passwordInputRef}
                   type="password"
                   value={password}
                 />
               </label>
               <Link
-                className="justify-self-end text-[0.85rem] font-semibold text-brand hover:underline"
+                className="inline-flex min-h-11 items-center justify-self-end rounded-[8px] px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                 href="/forgot-password"
               >
                 Forgot password?
@@ -450,38 +503,46 @@ export default function LoginDialog({
               >
                 {isSubmitting ? "Logging in…" : "Log in"}
               </button>
-              <button
-                className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.85rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
-                disabled={isSubmitting || isGoogleRedirecting}
-                onClick={() => {
-                  setLoginMethod("otp");
-                  setPassword("");
-                  setErrorMessage(null);
-                  setStatusMessage(null);
-                }}
-                type="button"
-              >
-                Use one-time code
-              </button>
+              {emailCodeEnabled && (
+                <button
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  disabled={isSubmitting || isGoogleRedirecting}
+                  onClick={() => {
+                    setLoginMethod("otp");
+                    setPassword("");
+                    clearValidationError();
+                    setStatusMessage(null);
+                  }}
+                  type="button"
+                >
+                  Use one-time code
+                </button>
+              )}
             </form>
           ) : step === "otp" ? (
             <form className="grid gap-[14px]" onSubmit={verifyOtp}>
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>6-digit code</span>
                 <input
+                  aria-describedby={
+                    invalidField === "otp" ? "login-dialog-error" : undefined
+                  }
+                  aria-invalid={invalidField === "otp" || undefined}
                   autoComplete="one-time-code"
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   inputMode="numeric"
                   maxLength={6}
                   name="otp"
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setOtpCode(
                       event.currentTarget.value.replace(/\D/g, "").slice(0, 6),
-                    )
-                  }
+                    );
+                    clearFieldError("otp");
+                  }}
                   pattern="[0-9]*"
                   placeholder="123456"
+                  ref={otpInputRef}
                   type="text"
                   value={otpCode}
                 />
@@ -495,21 +556,35 @@ export default function LoginDialog({
                 {isSubmitting ? "Verifying…" : "Continue"}
               </button>
 
-              <div className="mt-1 flex justify-between gap-3">
+              <div className="mt-1 flex flex-wrap justify-between gap-3">
                 <button
-                  className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.8rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   onClick={() => setStep("email")}
                   type="button"
                 >
                   Use another email
                 </button>
                 <button
-                  className="inline-flex min-h-[18px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent text-[0.8rem] font-semibold text-brand hover:underline disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   onClick={handleResendCode}
                   disabled={isSubmitting || isGoogleRedirecting}
                   type="button"
                 >
                   Resend code
+                </button>
+                <button
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  disabled={isSubmitting || isGoogleRedirecting}
+                  onClick={() => {
+                    setLoginMethod("password");
+                    setStep("email");
+                    setOtpCode("");
+                    clearValidationError();
+                    setStatusMessage(null);
+                  }}
+                  type="button"
+                >
+                  Use password
                 </button>
               </div>
             </form>
@@ -518,14 +593,22 @@ export default function LoginDialog({
               <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
                 <span>Name</span>
                 <input
+                  aria-describedby={
+                    invalidField === "name" ? "login-dialog-error" : undefined
+                  }
+                  aria-invalid={invalidField === "name" || undefined}
                   autoComplete="name"
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   maxLength={80}
                   minLength={2}
                   name="name"
-                  onChange={(event) => setName(event.currentTarget.value)}
+                  onChange={(event) => {
+                    setName(event.currentTarget.value);
+                    clearFieldError("name");
+                  }}
                   required
+                  ref={nameInputRef}
                   type="text"
                   value={name}
                 />
@@ -562,6 +645,17 @@ export default function LoginDialog({
                   : "Continue with Google"}
               </button>
             </>
+          )}
+          {step === "email" && (
+            <p className="mt-4 mb-0 text-center text-[0.875rem] text-muted">
+              New to HostelLo?{" "}
+              <Link
+                className="inline-flex min-h-11 items-center rounded-[8px] px-2 font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                href="/signup"
+              >
+                Create account
+              </Link>
+            </p>
           )}
         </Dialog.Content>
       </Dialog.Portal>

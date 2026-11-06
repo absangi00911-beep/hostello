@@ -2,7 +2,25 @@
 
 Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
 
-## Unreleased (November 4, 2026)
+## Unreleased (November 6, 2026)
+
+B-008: date-aware availability alerts and completion verification.
+
+- **Availability alerts:** students can create and manage HOSTEL and SEARCH alerts for a date-bounded stay. Matching uses the authoritative seat-hold availability, per-hostel transaction locks, and transition-based in-app notifications. Search destinations preserve supported filters and check availability across the full stay.
+- **Booking reliability:** an alert reevaluation error after the booking transaction commits is logged without turning the successful booking into an apparent failure. The booking response returns the committed record.
+- **Migration:** `20261105210000_add_availability_alerts` adds the alert model and transition identifier. Its applied status must be confirmed separately for each database; no shared or production database was migrated for this work.
+- **Verification:** 1,512 Vitest tests passed and 10 were skipped; application typecheck, full lint, production build, 23 script tests, docs validation, Prisma validation, shared-package typecheck, and Playwright test discovery passed. The build emitted a non-blocking Sentry recommendation to add a global error handler.
+- **Still unverified:** Task 11 PostgreSQL concurrency and browser-runtime flows, Safepay sandbox refunds/retries, QStash retry behavior, and database backup/restore. No live provider calls, deployment, or shared/production migration was performed.
+
+## Unreleased (November 5, 2026)
+
+B-007: late-payment recovery and bounded retry improvements.
+
+- **Payments:** late successful payments now atomically reinstate a cancelled booking only when the full stay can be reacquired; otherwise the booking records a full-refund obligation and uses the existing audited refund path. Immutable resolution evidence and a bounded refund sweeper make these outcomes traceable and retryable.
+- **Authentication and email:** unknown-account credential checks use bcrypt cost 12 and generic login failures; the account throttle is scoped to account-and-IP. Resend requests now abort after 10 seconds.
+- **Migration:** `20261105100000_add_late_payment_resolution` adds the append-only resolution ledger and refund-sweep index. It was applied only to temporary schemas in an isolated disposable loopback test database; no shared or production database was migrated.
+- **Verification:** 1,406 Vitest tests passed (7 guarded PostgreSQL cases skipped in the regular run and passed separately on the isolated loopback database); typecheck, lint, Prisma validation, docs check, and 23 script tests passed.
+- **Deferred by owner:** the email outbox, price-alert duplicate-send fix, and provider sandbox validation remain open; outbox work awaits a retention policy. No provider calls were made.
 
 B-006: constant-time secret checks and a stale refund comment (R-04, findings 1, E-1 and E-2 of the A-001b3 payments audit).
 

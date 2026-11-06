@@ -85,7 +85,8 @@ describe("AdminPayoutsContent", () => {
     expect(markup).toContain("bilal@example.com");
     expect(markup).toContain("Awaiting transfer");
     expect(markup).toContain("Standard Chartered");
-    expect(markup).toContain("PK36SCBL0000001123456702");
+    expect(markup).toContain("Show account number");
+    expect(markup).not.toContain("PK36SCBL0000001123456702");
     expect(markup).toContain("Generate payout batch");
     expect(markup).toContain("Mark as paid");
     expect(markup).toContain("Void batch");

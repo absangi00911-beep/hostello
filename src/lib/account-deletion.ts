@@ -5,6 +5,8 @@ import { getEligiblePayoutBookingWhere } from "@/lib/payouts";
 import { deleteVerificationDocument, isVerificationObjectKey } from "@/lib/verification-storage";
 import { removeHostelIndex } from "@/lib/typesense-sync";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
 
 export const ACCOUNT_DELETION_BATCH_SIZE = 100;
 const STALE_CLAIM_MS = 15 * 60 * 1000;
@@ -18,6 +20,7 @@ const PHASES = [
   "PARTICIPANTS",
   "FAVORITES",
   "PRICE_ALERTS",
+  "AVAILABILITY_ALERTS",
   "ROOMMATE_REPORTS",
   "ROOMMATE_POSTS",
   "REVIEWS",
@@ -62,7 +65,7 @@ export type AccountDeletionStartResult =
 
 /** Create one deletion job and revoke sessions before any background cleanup begins. */
 export async function enqueueAccountDeletion(userId: string): Promise<AccountDeletionStartResult> {
-  return db.$transaction(async (tx) => {
+  const result = await db.$transaction<AccountDeletionStartResult>(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: {
@@ -76,6 +79,14 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
     });
     if (!user) return { kind: "not_found" };
     if (user.deletionRequestedAt) return { kind: "already_queued" };
+
+    const activeHostels = await tx.hostel.findMany({
+      where: { ownerId: userId, status: "ACTIVE" },
+      select: { id: true },
+      take: 100,
+      orderBy: { id: "asc" },
+    });
+    await lockAvailabilityInventory(tx, activeHostels.map(({ id }) => id));
 
     const activeBooking = await tx.booking.findFirst({
       where: {
@@ -117,7 +128,7 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
     });
     if (unresolvedRefund) return { kind: "blocked", reason: "refund_reconciliation" };
 
-    const [payout, financialBooking, subscription, activeHostels] = await Promise.all([
+    const [payout, financialBooking, subscription] = await Promise.all([
       tx.payout.findFirst({ where: { ownerId: userId }, select: { id: true } }),
       tx.booking.findFirst({
         where: {
@@ -127,9 +138,8 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
           ],
         },
         select: { id: true },
-      }),
+    }),
     tx.subscription.findFirst({ where: { userId }, select: { id: true } }),
-      tx.hostel.findMany({ where: { ownerId: userId, status: "ACTIVE" }, select: { id: true }, take: 100 }),
     ]);
 
     const subjectHash = createHash("sha256").update(userId).digest("hex");
@@ -164,7 +174,6 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
       where: { ownerId: userId, status: "ACTIVE" },
       data: { status: "SUSPENDED" },
     });
-
     return {
       kind: "queued",
       email: user.email,
@@ -173,6 +182,14 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
       tokenVersion: updatedUser.tokenVersion,
     };
   });
+  if (result.kind === "queued") {
+    for (const hostelId of result.activeHostelIds) {
+      await reevaluateAvailabilityAlertsForHostel(hostelId, {
+        includeAllSearchAlerts: true,
+      });
+    }
+  }
+  return result;
 }
 
 export async function removeDeletedOwnerHostelsFromSearch(hostelIds: string[]) {
@@ -360,6 +377,8 @@ async function fetchPhaseBatch(tx: DeletionTx, phase: DeletionPhase, userId: str
       return { ids: (await tx.favorite.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "PRICE_ALERTS":
       return { ids: (await tx.priceAlert.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
+    case "AVAILABILITY_ALERTS":
+      return { ids: (await tx.availabilityAlert.findMany({ where: { userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "ROOMMATE_REPORTS":
       return { ids: (await tx.roommateReport.findMany({ where: { reporterId: userId }, orderBy: { id: "asc" }, take: ACCOUNT_DELETION_BATCH_SIZE, select: { id: true } })).map((row) => row.id) };
     case "ROOMMATE_POSTS":
@@ -428,6 +447,7 @@ async function deletePhaseBatch(
     case "PARTICIPANTS": await tx.conversationParticipant.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "FAVORITES": await tx.favorite.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "PRICE_ALERTS": await tx.priceAlert.deleteMany({ where: { id: { in: ids }, userId } }); return;
+    case "AVAILABILITY_ALERTS": await tx.availabilityAlert.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "ROOMMATE_REPORTS": await tx.roommateReport.deleteMany({ where: { id: { in: ids }, reporterId: userId } }); return;
     case "ROOMMATE_POSTS": await tx.roommatePost.deleteMany({ where: { id: { in: ids }, userId } }); return;
     case "REVIEWS": {
@@ -497,6 +517,7 @@ async function processHostelBatch(jobId: string, userId: string | null): Promise
   await removeDeletedOwnerHostelsFromSearch(ids);
   const lastId = ids[ids.length - 1];
   await db.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx, ids);
     await tx.hostel.updateMany({ where: { id: { in: ids }, ownerId: userId }, data: { status: "SUSPENDED" } });
     const emptyHostels = await tx.hostel.findMany({
       where: { id: { in: ids }, ownerId: userId, bookings: { none: {} } },
@@ -509,6 +530,11 @@ async function processHostelBatch(jobId: string, userId: string | null): Promise
     }
     await tx.accountDeletionJob.update({ where: { id: jobId }, data: { cursor: lastId, status: "PENDING" } });
   });
+  for (const id of ids) {
+    await reevaluateAvailabilityAlertsForHostel(id, {
+      includeAllSearchAlerts: true,
+    });
+  }
   return "batch";
 }
 

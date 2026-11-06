@@ -22,6 +22,7 @@ describe("sendEmail", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("reports failure in production when the Resend key is missing", async () => {
@@ -65,5 +66,21 @@ describe("sendEmail", () => {
 
     expect(result).toEqual({ success: true, id: "email-1" });
     expect(sendMock).toHaveBeenCalledOnce();
+  });
+
+  it("aborts a Resend request that exceeds the provider timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("RESEND_API_KEY", "re_live_key_123");
+    sendMock.mockImplementation((_payload, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener("abort", () => reject(new Error("request aborted")));
+    }));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = sendEmail(message);
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await expect(result).resolves.toMatchObject({ success: false });
+    expect(sendMock.mock.calls[0][1].signal.aborted).toBe(true);
   });
 });

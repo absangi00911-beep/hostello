@@ -104,12 +104,27 @@ describe("GET /api/hostels", () => {
   it("rejects invalid move-in dates and guest counts", async () => {
     const invalidDate = await GET(request("?moveInDate=2030-02-30&guests=2"));
     const invalidGuests = await GET(request("?moveInDate=2030-06-15&guests=9"));
+    const invalidStay = await GET(request("?checkIn=2030-06-15&checkOut=2030-06-15&guests=2"));
     const guestsWithoutDate = await GET(request("?guests=2"));
 
     expect(invalidDate.status).toBe(400);
     expect(invalidGuests.status).toBe(400);
+    expect(invalidStay.status).toBe(400);
     expect(guestsWithoutDate.status).toBe(400);
     expect(searchHostelsWithFallback).not.toHaveBeenCalled();
+  });
+
+  it("passes the complete saved stay through to exact availability search", async () => {
+    await GET(request("?checkIn=2030-06-15&checkOut=2030-06-20&guests=3"));
+
+    expect(searchHostelsWithFallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        moveInDate: new Date("2030-06-15T00:00:00.000Z"),
+        checkOut: new Date("2030-06-20T00:00:00.000Z"),
+        guests: 3,
+      }),
+      expect.anything(),
+    );
   });
 
   it("passes a valid move-in date and guest count to search", async () => {

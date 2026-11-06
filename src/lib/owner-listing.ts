@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { StoredListing } from "@/components/owner/listingForm";
+import type { StoredListing } from "@/components/owner/listing-form";
 
 export interface OwnerListingForEdit extends StoredListing {
   id: string;

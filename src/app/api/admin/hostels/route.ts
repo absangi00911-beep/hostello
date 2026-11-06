@@ -11,6 +11,8 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
 
 const schema = z.object({
   hostelId: z.string().cuid(),
@@ -108,6 +110,7 @@ export async function PATCH(req: NextRequest) {
 
     const changed = action === "verify"
       ? await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx, hostelId);
           const result = await tx.hostel.updateMany({
             where: { id: hostelId, status: "PENDING_REVIEW" },
             data,
@@ -126,16 +129,25 @@ export async function PATCH(req: NextRequest) {
           });
           return true;
         })
-      : (await db.hostel.updateMany({
-          where: { id: hostelId, status: hostel.status },
-          data,
-        })).count === 1;
+      : await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx, hostelId);
+          const result = await tx.hostel.updateMany({
+            where: { id: hostelId, status: hostel.status },
+            data,
+          });
+          if (result.count !== 1) return false;
+          return true;
+        });
     if (!changed) {
       return NextResponse.json(
         { error: "This listing has already changed. Refresh the moderation queue and try again." },
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(hostelId, {
+      includeAllSearchAlerts: true,
+    });
 
     // -- Typesense sync --
     if (action === "verify" || action === "activate") {

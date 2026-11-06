@@ -150,6 +150,7 @@ export default function ProductHome({
   );
   const [favoriteError, setFavoriteError] = useState<string | null>(null);
   const [favoriteReload, setFavoriteReload] = useState(0);
+  const [searchReload, setSearchReload] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -197,7 +198,7 @@ export default function ProductHome({
 
     void loadHostels();
     return () => controller.abort();
-  }, [category]);
+  }, [category, searchReload]);
 
   useEffect(() => {
     if (accountUser?.role !== "STUDENT") {
@@ -336,9 +337,16 @@ export default function ProductHome({
               </div>
             )}
             {searchError && (
-              <p className="m-0 py-8 text-[0.92rem] text-muted" role="alert">
-                {searchError}
-              </p>
+              <div className="m-0 py-8 text-[0.92rem] text-muted" role="alert">
+                <p className="m-0">{searchError}</p>
+                <button
+                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
+                  onClick={() => setSearchReload((current) => current + 1)}
+                  type="button"
+                >
+                  Try again
+                </button>
+              </div>
             )}
             {favoriteError && accountUser?.role === "STUDENT" && (
               <p className="mt-2 mb-0 text-[0.78rem] leading-[1.4] text-[#a12622]" role="alert">

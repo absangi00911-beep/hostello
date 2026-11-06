@@ -13,6 +13,7 @@ import { PLANS } from "@/config/plans";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedText } from "@/lib/bounded-json";
 import { createOperationalLogContext, logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
+import { resolveLatePayment } from "@/lib/late-payment-resolution";
 
 const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
 const MAX_ORDER_ID_LENGTH = 128;
@@ -282,7 +283,7 @@ async function handleSubscriptionPayment(
   return NextResponse.json({ received: true });
 }
 
-async function processSafepayWebhook(event: SafepayEvent) {
+async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: string) {
   const logContext = createOperationalLogContext();
   try {
     if (event.type !== "payment.succeeded" && event.type !== "payment.failed") {
@@ -409,7 +410,31 @@ async function processSafepayWebhook(event: SafepayEvent) {
       return NextResponse.json({ error: "Additional payment requires reconciliation." }, { status: 409 });
     }
 
-    if (booking.paymentStatus !== "PENDING" || !["PENDING", "CANCELLED"].includes(booking.status)) {
+    if (
+      booking.status === "CANCELLED" &&
+      ["PENDING", "FAILED"].includes(booking.paymentStatus)
+    ) {
+      const resolution = await resolveLatePayment({
+        bookingId: booking.id,
+        sourceWebhookEventId,
+        providerTracker: tracker,
+        amountMinorUnits: event.data?.amount as number,
+        currency: event.data?.currency as string,
+      });
+      if (resolution.outcome === "RECONCILIATION_REQUIRED") {
+        logOperationalEvent("error", "payment.reconciliation_required", {
+          booking_id: booking.id,
+          reason: "late_payment_state_changed",
+        }, logContext);
+        return NextResponse.json({ error: "Payment requires booking reconciliation." }, { status: 409 });
+      }
+      return NextResponse.json({ received: true, latePaymentOutcome: resolution.outcome });
+    }
+
+    const canAcceptPayment = booking.status === "PENDING" &&
+      (booking.paymentStatus === "PENDING" ||
+        (booking.paymentStatus === "FAILED" && booking.transactionId === tracker));
+    if (!canAcceptPayment) {
       logOperationalEvent("error", "payment.reconciliation_required", {
         booking_id: booking.id,
         reason: "booking_not_eligible",
@@ -417,46 +442,43 @@ async function processSafepayWebhook(event: SafepayEvent) {
       return NextResponse.json({ error: "Payment requires booking reconciliation." }, { status: 409 });
     }
 
-    const wasCancelled = booking.status === "CANCELLED";
     const responseDueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     // The in-app notifications are written in the same transaction as the PAID
-    // transition, so they exist if and only if the transition was applied. If
-    // the transaction fails, the booking stays unpaid and QStash retries the
-    // event. A cancelled booking gets no notifications (it needs a refund).
-    const notificationRows = wasCancelled
-      ? []
-      : [
-          {
-            userId: booking.hostel.owner.id,
-            type: "BOOKING_REQUEST" as const,
-            title: "New paid booking request",
-            message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
-            bookingId: booking.id,
-          },
-          {
-            userId: booking.userId,
-            type: "BOOKING_REQUEST" as const,
-            title: "Payment received — awaiting owner",
-            message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
-            bookingId: booking.id,
-            hostelId: booking.hostelId,
-          },
-        ];
-    const result = await db.$transaction(async (tx) => {
+    // transition, so they exist if and only if the transition was applied.
+    const notificationRows = [
+      {
+        userId: booking.hostel.owner.id,
+        type: "BOOKING_REQUEST" as const,
+        title: "New paid booking request",
+        message: `${booking.user.name} is waiting for your response to a booking request at ${booking.hostel.name}.`,
+        bookingId: booking.id,
+      },
+      {
+        userId: booking.userId,
+        type: "BOOKING_REQUEST" as const,
+        title: "Payment received — awaiting owner",
+        message: `Your booking request for ${booking.hostel.name} was sent to the owner. They have 24 hours to respond.`,
+        bookingId: booking.id,
+        hostelId: booking.hostelId,
+      },
+    ];
+    const applyLivePayment = (
+      expectedPaymentStatus: typeof booking.paymentStatus,
+      expectedTransactionId = booking.transactionId,
+    ) => db.$transaction(async (tx) => {
       const updated = await tx.booking.updateMany({
         where: {
           id: orderId,
           paymentMethod: booking.paymentMethod,
-          paymentStatus: "PENDING",
-          status: booking.status,
-          transactionId: booking.transactionId,
+          paymentStatus: expectedPaymentStatus,
+          status: "PENDING",
+          transactionId: expectedTransactionId,
         },
         data: {
           paymentStatus: "PAID",
           transactionId: tracker,
-          ...(!wasCancelled
-            ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
-            : {}),
+          ownerResponseDueAt: responseDueAt,
+          ownerResponseReminderSentAt: null,
         },
       });
       if (updated.count > 0 && notificationRows.length > 0) {
@@ -465,26 +487,57 @@ async function processSafepayWebhook(event: SafepayEvent) {
       return updated;
     });
 
-    if (result.count === 0) {
-      const latest = await db.booking.findUnique({
+    let transitioned = (await applyLivePayment(booking.paymentStatus)).count === 1;
+    if (!transitioned) {
+      let latest = await db.booking.findUnique({
         where: { id: orderId },
-        select: { paymentMethod: true, paymentStatus: true, transactionId: true },
+        select: { status: true, paymentMethod: true, paymentStatus: true, transactionId: true },
       });
       if (latest && isSafepayBookingMethod(latest.paymentMethod) && latest.paymentStatus === "PAID" && latest.transactionId === tracker) {
         return NextResponse.json({ received: true });
       }
-      logOperationalEvent("warn", "payment.webhook.concurrent_state_change", {
-        booking_id: booking.id,
-      }, logContext);
-      return NextResponse.json({ error: "Booking changed during payment confirmation." }, { status: 409 });
-    }
+      if (
+        latest?.status === "PENDING" &&
+        latest.paymentStatus === "FAILED" &&
+        latest.transactionId === tracker
+      ) {
+        transitioned = (await applyLivePayment("FAILED", tracker)).count === 1;
+        if (!transitioned) {
+          latest = await db.booking.findUnique({
+            where: { id: orderId },
+            select: { status: true, paymentMethod: true, paymentStatus: true, transactionId: true },
+          });
+          if (latest && isSafepayBookingMethod(latest.paymentMethod) && latest.paymentStatus === "PAID" && latest.transactionId === tracker) {
+            return NextResponse.json({ received: true });
+          }
+        }
+      }
 
-    if (wasCancelled) {
-      logOperationalEvent("error", "payment.reconciliation_required", {
-        booking_id: booking.id,
-        reason: "payment_after_cancellation",
-      }, logContext);
-      return NextResponse.json({ received: true, reconciliationRequired: true });
+      if (
+        !transitioned &&
+        latest?.status === "CANCELLED" &&
+        ["PENDING", "FAILED"].includes(latest.paymentStatus) &&
+        isSafepayBookingMethod(latest.paymentMethod) &&
+        (!latest.transactionId || latest.transactionId === tracker)
+      ) {
+        const resolution = await resolveLatePayment({
+          bookingId: orderId,
+          sourceWebhookEventId,
+          providerTracker: tracker,
+          amountMinorUnits: event.data?.amount as number,
+          currency: event.data?.currency as string,
+        });
+        if (resolution.outcome !== "RECONCILIATION_REQUIRED") {
+          return NextResponse.json({ received: true, latePaymentOutcome: resolution.outcome });
+        }
+      }
+
+      if (!transitioned) {
+        logOperationalEvent("warn", "payment.webhook.concurrent_state_change", {
+          booking_id: booking.id,
+        }, logContext);
+        return NextResponse.json({ error: "Booking changed during payment confirmation." }, { status: 409 });
+      }
     }
 
     logOperationalEvent("info", "booking.payment_confirmed", {
@@ -582,7 +635,7 @@ async function processQueuedSafepayEvent(req: NextRequest) {
     }
     claimToken = claimed.claimToken;
 
-    const response = await processSafepayWebhook(claimed.event);
+    const response = await processSafepayWebhook(claimed.event, eventId);
     const ignored = claimed.event.type !== "payment.succeeded" && claimed.event.type !== "payment.failed";
     await finishSafepayEvent(eventId, claimToken, response, ignored);
     if (response.status >= 500) {
@@ -687,7 +740,7 @@ async function receiveSafepayWebhook(req: NextRequest) {
       return NextResponse.json({ error: "Webhook event is already processing." }, { status: 503 });
     }
     claimToken = claimed.claimToken;
-    const response = await processSafepayWebhook(claimed.event);
+    const response = await processSafepayWebhook(claimed.event, reservation.id);
     const ignored = claimed.event.type !== "payment.succeeded" && claimed.event.type !== "payment.failed";
     return await finishSafepayEvent(reservation.id, claimed.claimToken, response, ignored);
   } catch (err) {

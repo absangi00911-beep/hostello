@@ -1,28 +1,31 @@
 // Path: src/lib/payment-methods.ts
+import { isEnabledPaymentMethod } from "@hostello/shared";
 
-export const PAYMENT_METHODS = [
+const PAYMENT_METHOD_CATALOG = [
   {
     value: "safepay",
     label: "Card",
     emoji: "💳",
-    enabled: true,
     hint: "Powered by Safepay",
   },
   {
     value: "jazzcash",
     label: "JazzCash",
     emoji: "📱",
-    enabled: false,
     hint: "Mobile wallet",
   },
   {
     value: "easypaisa",
     label: "EasyPaisa",
     emoji: "📱",
-    enabled: false,
     hint: "Mobile wallet",
   },
 ] as const;
+
+export const PAYMENT_METHODS = PAYMENT_METHOD_CATALOG.map((method) => ({
+  ...method,
+  enabled: isEnabledPaymentMethod(method.value),
+}));
 
 export type PaymentMethodValue = (typeof PAYMENT_METHODS)[number]["value"];
 

@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Version** | 4.2 |
-| **Verified against code** | October 24, 2026 (repository snapshot `HostelLo.zip` plus the Phase 0 and Phase 1 changes) |
-| **Stage** | Pre-launch, backend only. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
+| **Version** | 4.5 |
+| **Verified against code** | November 6, 2026 (repository snapshot, availability alerts, and current local checks) |
+| **Stage** | Pre-launch. Not cleared for real transaction volume; see the [risk register](#16-risk-register). |
 | **Document owner** | _To be assigned_ |
 
 ## How to read this document
@@ -19,12 +19,12 @@ Statements fall into three kinds, and the document says which:
 |---|---|
 | `SYSTEM.md` (this file) | What the system is, why it is built this way, how its lifecycles work, what is known to be wrong |
 | [`CHANGELOG.md`](CHANGELOG.md) | Revision history and archived verification notes |
-| [`docs/SECURITY-CONTROLS.md`](docs/SECURITY-CONTROLS.md) | Inventory of implemented security controls, rate limits and open verification items |
-| [`docs/ENGINEERING-PRINCIPLES.md`](docs/ENGINEERING-PRINCIPLES.md) | Design guardrails the team follows |
+| [§13 Security](#13-security) and [§16 Risk register](#16-risk-register) | Implemented controls and open security gaps |
+| [`docs/team/00-shared.md`](docs/team/00-shared.md) | Shared team instructions and product guardrails |
 | [`prisma/MIGRATIONS.md`](prisma/MIGRATIONS.md) | Migration ledger |
 | `scripts/check-docs.mjs` | Fails CI when the facts below or the environment-variable list drift from the code |
 
-The earlier design document pointed to runbooks under `docs/` (`OPERATIONS-RUNBOOK.md`, `LAUNCH-OPERATIONS-RUNBOOK.md`, `PRIVATE-STUDENT-VERIFICATION.md`, `CI-CD-GUIDE.md`) and to `DESIGN.md`. They were not in the archive this version was verified against. Confirm they exist and link them here once they do (R-20).
+The earlier design document pointed to operational guides at several root `docs/` paths. Those named runbooks/guides are still absent from the current workspace (R-20); `DESIGN.md` exists but is historical, not the current design system.
 
 ### Repository facts (generated)
 
@@ -33,13 +33,13 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 <!-- docs-check:begin -->
 | Fact | Value |
 |---|---:|
-| Page files (`src/app/**/page.tsx`) | 36 |
-| API route handler files | 74 |
-| Prisma models | 29 |
-| Prisma migrations | 32 |
-| Vitest test files | 202 |
-| Cron jobs in the schedule registry | 7 |
-| Cron route handlers | 7 |
+| Page files (`src/app/**/page.tsx`) | 39 |
+| API route handler files | 80 |
+| Prisma models | 32 |
+| Prisma migrations | 35 |
+| Vitest test files | 232 |
+| Cron jobs in the schedule registry | 9 |
+| Cron route handlers | 9 |
 <!-- docs-check:end -->
 
 ---
@@ -50,12 +50,12 @@ HostelLo is a Pakistan-focused student hostel marketplace. Students search for h
 
 | Actor | What they do |
 |---|---|
-| Student | Search and compare hostels, check availability, book and pay, cancel, review completed stays, message owners, save favorites, set price alerts, post to the roommate finder |
+| Student | Search and compare hostels, check availability, book and pay, cancel, review completed stays, message owners, save favorites, set price and availability alerts, post to the roommate finder |
 | Owner | Create and edit listings and rooms, block dates, accept or decline paid booking requests, reply to reviews, message students, view analytics and earnings, buy the Pro plan |
 | Admin | Approve or suspend listings, verify student identities, moderate reviews and roommate posts, issue refunds, create payout batches, reconcile payment events, sync the search index |
 | System | QStash-triggered cron jobs, Safepay webhooks |
 
-**Current state.** The repository is an API-only Next.js 16 application: route handlers under `src/app/api` and the root layout the framework requires, with no pages or UI components. The web UI was removed on October 19, 2026 for a redesign, and native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. The backend still emits some links and redirects to pages that no longer exist (R-09).
+**Current state.** The repository is a Next.js 16 application with API route handlers and first-party student marketplace, owner workspace, admin, messaging, notification, and availability-alert screens. Native mobile support (bearer-token bridge, push notifications, mobile checkout redirects) was retired on October 16, 2026. The implementation is not cleared for live transaction volume: browser-runtime, sandbox, operational recovery, and external deployment gates remain open (R-04, R-06, R-09, R-16).
 
 **Out of scope for the MVP:** separate backend services, international expansion and multi-currency, native mobile apps, offline search, video reviews, Apple Pay and Google Pay until Safepay support is confirmed.
 
@@ -80,6 +80,7 @@ HostelLo is a Pakistan-focused student hostel marketplace. Students search for h
 | Listing images | At most 15 per hostel, 4 MB each, JPEG, PNG or WebP, signature-checked | shared config, `upload/route.ts` |
 | Reviews | Students only, only for a hostel where they have a `COMPLETED` booking, one per student per hostel, length-limited comment | `reviews/route.ts`, schema |
 | Roommate posts | Hidden once three different students report them | roommate routes |
+| Availability alerts | HOSTEL and SEARCH alerts match the full `[checkIn, checkOut)` stay and guest count against authoritative seat holds; in-app notifications are emitted once per unmatched-to-matched transition | `availability-alerts.ts`, `room-availability-service.ts` |
 | Pagination | Default page size 12, maximum 50, maximum page 10,000 | shared config |
 | Payout eligibility | Owner's booking is `CONFIRMED` or `COMPLETED`, `PAID`, check-out has passed, and it is in no payout batch | `payouts.ts` |
 
@@ -91,7 +92,7 @@ Cancellation policies (refund share of the amount paid, by time before check-in)
 | Standard | 7 days or more | 72 hours to 7 days | under 72 hours, or after check-in |
 | Strict | never | 14 days or more | under 14 days, or after check-in |
 
-Rules stored but **not** enforced: owner-defined `minStay` and `maxStay` on a hostel; the shared `MIN_BOOKING_MONTHS` and `MAX_BOOKING_MONTHS` (1 and 24); owner-blocked dates at booking time. See R-01 and R-02.
+Rules stored but **not** enforced: owner-defined `minStay` and `maxStay` on a hostel; the shared `MIN_BOOKING_MONTHS` and `MAX_BOOKING_MONTHS` (1 and 24). Owner-blocked dates are checked at booking time. See R-01 and R-02.
 
 ### 2.2 Non-functional requirements
 
@@ -123,8 +124,8 @@ No availability, latency, throughput or recovery targets were defined in the pre
 
 ```mermaid
 flowchart LR
-  client["Client: future web or mobile frontend"]
-  subgraph vercel["Vercel: Next.js 16 API"]
+  client["First-party web browser"]
+  subgraph vercel["Vercel: Next.js 16 web app and API"]
     proxy["proxy.ts: Origin check"]
     routes["Route handlers"]
     services["Service layer: bookings, payments, refunds, payouts"]
@@ -149,7 +150,7 @@ The application is intentionally one deployable unit: route handlers, business l
 
 | Layer | Implementation |
 |---|---|
-| Runtime | Next.js 16 App Router on Vercel; the root layout is kept only because the framework requires it |
+| Runtime | Next.js 16 App Router on Vercel; first-party pages and API handlers share one application |
 | Database | Neon PostgreSQL through Prisma 7 with `@prisma/adapter-pg` (node-postgres) |
 | Authentication | Auth.js (NextAuth v5 beta), JWT sessions in HTTP-only cookies; Credentials provider plus optional Google OAuth |
 | Search | Typesense, with a Prisma (`ILIKE`) fallback |
@@ -159,7 +160,7 @@ The application is intentionally one deployable unit: route handlers, business l
 | Email, SMS | Resend, Twilio |
 | Payments | Safepay (enabled). JazzCash and EasyPaisa code is present but disabled |
 | Observability | Sentry (data minimized) and structured JSON events from `src/lib/operational-logger.ts` with request correlation and HMAC pseudonyms |
-| Tests | Vitest |
+| Tests | Vitest; Playwright E2E specs are present, but browser-runtime flows remain unverified |
 
 ### 3.3 Request lifecycle
 
@@ -251,19 +252,19 @@ erDiagram
   USER ||--o| SUBSCRIPTION : has
 ```
 
-### 4.2 Models (28)
+### 4.2 Models (32)
 
 | Area | Models |
 |---|---|
 | Identity and auth | `User`, `Account`, `Session`, `VerificationToken`, `PasswordResetToken`, `PhoneVerificationToken`, `AccountDeletionJob` |
-| Listings and community | `Hostel`, `Room`, `BlockedDate`, `HostelVerificationReview`, `Review`, `Favorite`, `PriceAlert`, `RoommatePost`, `RoommateReport` |
-| Bookings and money | `Booking`, `RefundAuditEvent`, `SafepayWebhookEvent`, `SafepayWebhookReplayEvent`, `Payout`, `PayoutAuditEvent`, `Subscription` |
+| Listings and community | `Hostel`, `Room`, `BlockedDate`, `HostelVerificationReview`, `Review`, `Favorite`, `PriceAlert`, `AvailabilityAlert`, `HostResponseSummary`, `RoommatePost`, `RoommateReport` |
+| Bookings and money | `Booking`, `SeatHold`, `LatePaymentResolution`, `RefundAuditEvent`, `SafepayWebhookEvent`, `SafepayWebhookReplayEvent`, `Payout`, `PayoutAuditEvent`, `Subscription` |
 | Messaging and notifications | `Conversation`, `ConversationParticipant`, `Message`, `Notification` |
 | Operations | `CronLog` |
 
 Money is stored as integer PKR and converted to paisas only at the Safepay boundary. Review counts and ratings are denormalized on `Hostel` and maintained transactionally, with repair scripts available. `Account`, `Session` and `VerificationToken` are Auth.js adapter tables; sessions use JWTs, so `Session` rows are not the source of truth.
 
-`Room.available` is a seat counter with an optimistic-lock `version`. It is the center of R-01.
+`Room.available` and its optimistic-lock `version` remain legacy fields; date-bounded `SeatHold` rows are the booking inventory authority. The legacy counter is no longer used for booking availability (R-01).
 
 ### 4.3 Invariants and where they are enforced
 
@@ -271,6 +272,7 @@ Money is stored as integer PKR and converted to paisas only at the Safepay bound
 |---|---|---|
 | One Safepay tracker maps to one booking | Database unique constraint on `Booking.transactionId` | |
 | Webhook delivery is idempotent | Unique body hash on `SafepayWebhookEvent` | |
+| Late-payment outcomes are traceable | Unique source webhook and tracker on immutable `LatePaymentResolution` rows | |
 | One review per student per hostel | Database unique constraint | |
 | Payout audit events cannot change | Database triggers reject update, delete and truncate; CHECK constraints on the table | |
 | A booking joins at most one payout and cannot be cancelled after a batch claims it | Conditional updates with `payoutId: null` in the write predicate | Application only |
@@ -287,13 +289,13 @@ Money is stored as integer PKR and converted to paisas only at the Safepay bound
 | Public listing data | Hostel name, location, prices, amenities, ratings, images | Postgres, Typesense, R2 public bucket | Active listings only are returned publicly; image URLs allow-listed | While listed |
 | Account identity | Name, email, phone, role | Postgres `User` | Auth required; never in logs (pseudonymized) | Until account deletion |
 | Credentials | Password hash (bcrypt, cost 12, 72-byte cap), reset and verification tokens (SHA-256 digests), phone one-time codes (stored in plaintext, 10-minute expiry, 5 attempts) | Postgres | Short-lived, single-use; expired tokens removed daily | Short |
-| Financial | Booking amounts, Safepay tracker IDs, refund and payout records | Postgres | Append-only audit tables; payout destination snapshots encrypted with AES-256-GCM | Kept after account deletion with the account anonymized |
+| Financial | Booking amounts, Safepay tracker IDs, late-payment, refund and payout records | Postgres | Immutable late-payment and refund audit records; payout destination snapshots encrypted with AES-256-GCM | Kept after account deletion with the account anonymized |
 | Owner bank details | Account title, number, bank name | Postgres `User` (plaintext) and `Payout` (encrypted snapshot) | Admin-only reads; snapshot encrypted, the source columns are not (R-12) | Until the owner edits or deletes them |
 | Student identity documents | ID image for student verification | Private R2 bucket | Separate bucket and token; copy-on-submit to immutable keys; admins stream through an authenticated no-store route | Abandoned uploads removed hourly; **retention after review is undefined** |
 | Messages and reviews | Conversation text, review text | Postgres | Participant-only reads | Deleted with the account |
 | Operational logs | Structured events, Sentry events | Vercel and Sentry _(operational)_ | Allow-listed fields, HMAC pseudonyms, SDK payload collection disabled | Provider defaults; **set explicitly** |
 
-**Decision needed (D-6):** retention periods for student documents, rejected verification records, messages, and logs; and whether owner bank details should be encrypted at rest on `User`.
+**Decision needed (D-6):** retention periods for student documents, rejected verification records, messages, logs, and any future email-outbox payloads; and whether owner bank details should be encrypted at rest on `User`. Email-outbox work is deferred until retention is decided.
 
 ---
 ## 5. Lifecycles and state machines
@@ -310,23 +312,24 @@ stateDiagram-v2
   PENDING --> CANCELLED: student cancels
   CONFIRMED --> CANCELLED: student or admin cancels, policy refund
   CONFIRMED --> COMPLETED: check-out passed, daily job
+  CANCELLED --> PENDING: late payment; full stay atomically reacquired
   CANCELLED --> [*]
   COMPLETED --> [*]
 ```
 
 Every transition is a conditional update that names the state it expects, so two concurrent actions cannot both succeed. Notifications and emails follow the transition.
 
-| Transition | Seats returned to `Room.available`? |
+| Transition | Seat holds released? |
 |---|---|
 | Owner declines | Yes |
 | Owner silent for 24 hours (cron) | Yes |
 | Unpaid after 30 minutes (cron) | Yes |
 | Student or admin cancels | Only if check-in is still in the future |
-| Stay completes (cron) | **No** (R-01) |
+| Stay completes (cron) | **No**; the stay's date range expires naturally |
 
 ### 5.2 Payment and webhook
 
-Payment status is `PENDING`, `PAID`, `FAILED`, `PARTIALLY_REFUNDED` or `REFUNDED`. A failed payment can be retried; a retry creates a new Safepay tracker. A successful payment after the booking was already cancelled leaves it `CANCELLED` and `PAID` for manual refund review.
+Payment status is `PENDING`, `PAID`, `FAILED`, `PARTIALLY_REFUNDED` or `REFUNDED`. A failed payment can be retried; a retry creates a new Safepay tracker. A successful payment after cancellation is recorded as a late-payment resolution: the booking is reinstated only if all required seats can be acquired for the full stay in the same transaction; otherwise the booking remains cancelled and a full refund is requested through the audited refund flow. Provider uncertainty remains in the existing health and admin reconciliation paths.
 
 ```mermaid
 sequenceDiagram
@@ -373,7 +376,7 @@ stateDiagram-v2
   RETRYABLE --> QUEUED: admin re-queues after checking Safepay
 ```
 
-A claim that has been `PROCESSING` for more than five minutes is treated as stale and can be reclaimed. `RECONCILIATION_REQUIRED` events are never replayed automatically; an admin resolves them in Safepay. Re-queues are recorded in `SafepayWebhookReplayEvent`.
+A claim that has been `PROCESSING` for more than five minutes is treated as stale and can be reclaimed. `RECONCILIATION_REQUIRED` events are never replayed automatically; an admin resolves them in Safepay. Re-queues are recorded in `SafepayWebhookReplayEvent`. Late-payment resolutions and refund audit events are append-only in the database.
 
 ### 5.3 Refund
 
@@ -387,7 +390,7 @@ stateDiagram-v2
   UNCERTAIN --> REFUNDED: admin records manual refund after checking Safepay
 ```
 
-Automatic refunds start from owner decline, owner timeout and student cancellation of a paid booking. An admin can also trigger a refund for a cancelled, paid booking through `PATCH /api/admin/bookings/[id]/refund`. A full refund counts as confirmed only when Safepay returns the tracker state `TRACKER_REFUNDED`. Each attempt, provider outcome and manual confirmation is an append-only `RefundAuditEvent`. No scheduled job retries a booking that is `CANCELLED` and `PAID` with refund state `NONE` after a crash between commit and refund (R-04).
+Automatic refunds start from owner decline, owner timeout, student cancellation of a paid booking, and late payment when the full stay cannot be reacquired. An admin can also trigger a refund for a cancelled, paid booking through `PATCH /api/admin/bookings/[id]/refund`. A full refund counts as confirmed only when Safepay returns the tracker state `TRACKER_REFUNDED`. Each attempt, provider outcome and manual confirmation is an append-only `RefundAuditEvent`. The `sweep-cancelled-refunds` job retries eligible cancelled/paid bookings through the same compare-and-set claim; `PROCESSING` and `UNCERTAIN` refunds remain in the existing reconciliation flow.
 
 ### 5.4 Payout
 
@@ -440,7 +443,8 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Student verification | `/api/user/verify-student`, `/api/user/verify-student/upload` | Student |
 | Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/nearby` (POST nearby search; 25 km radius), `/api/hostels/mine` | Public / Owner |
 | | `/api/hostels/[param]` (GET returns owner contact details, Admin; PATCH edits the listing, Owner) | Admin / Owner |
-| | `/api/hostels/[param]/availability`, `/api/hostels/[param]/view` (view counter) | Public |
+| | `/api/hostels/[param]/public` (public-safe detail projection) | Public |
+| | `/api/hostels/[param]/availability` (informational 12-month calendar), `/api/hostels/[param]/availability/exact` (room seats for a requested stay), `/api/hostels/[param]/view` (view counter) | Public |
 | | `/api/hostels/[param]/favorite`, `/api/hostels/[param]/roommates` | Student |
 | | `/api/favorites` | Signed in |
 | Roommates | `/api/roommates/[id]` (author deletes own post), `/api/roommates/[id]/report` (Student) | Signed in / Student |
@@ -453,6 +457,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Messaging | `/api/conversations` (start with an active hostel, Student), `/api/conversations/[id]` | Participant |
 | Notifications | `/api/notifications`, `/api/notifications/[id]` | Signed in |
 | Price alerts and email preferences | `/api/price-alerts`, `/api/price-alerts/[id]` (Signed in); `/api/alerts/unsubscribe`, `/api/email/unsubscribe` (signed token) | Signed in / Public |
+| Availability alerts | `/api/availability-alerts` (paginated list and create), `/api/availability-alerts/[id]` (edit, pause/resume, delete) | Student |
 | Owner tools | `/api/owner/analytics`, `/api/owner/earnings` (earnings and bank details), `/api/owner/hostels/[id]/blocked-dates`, `/api/owner/subscription` | Owner |
 | Admin: listings and search | `/api/admin/listings`, `/api/admin/listings/stats`, `/api/admin/hostels` (verify, activate, suspend), `/api/admin/search/sync` | Admin |
 | Admin: people and community | `/api/admin/verifications`, `/api/admin/verifications/analytics`, `/api/admin/verifications/[userId]/document`, `/api/admin/roommate-reports`, `/api/admin/roommate-reports/[postId]` | Admin |
@@ -460,7 +465,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Uploads | `/api/upload` (listing images; Owner or Admin when `hostelId` is given, otherwise any signed-in user, R-11) | Signed in |
 | Support | `/api/contact`, `/api/report` | Signed in |
 | Health | `/api/health/crons`, `/api/health/payments` | Admin |
-| Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions` | QStash |
+| Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-availability-alerts`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions`, `/api/cron/sweep-cancelled-refunds` | QStash |
 
 ---
 
@@ -470,7 +475,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 
 **Sessions.** JWT in an HTTP-only cookie. The JWT callback checks `tokenVersion` on every session read, against a Redis cache with a 5-minute TTL and a database fallback. A stale or malformed token yields no session. Password change and reset increment `tokenVersion`; any role change must do the same and invalidate the cache entry. No explicit session lifetime is configured, so the Auth.js default (30 days) applies.
 
-**Sign-in throttling.** Two independent buckets: 10 attempts per 15 minutes per trusted client IP, and 5 per 15 minutes per account (keyed by HMAC of the email). Both count every attempt, before the password is checked (R-10).
+**Sign-in throttling.** Two independent buckets: 10 attempts per 15 minutes per trusted client IP, and 5 per 15 minutes per account-and-IP pair (keyed by HMAC), preventing a remote client from locking out an account across all IPs. Unknown accounts perform a bcrypt cost-12 check and invalid credentials share a generic rejection (R-10).
 
 **Verification.**
 
@@ -501,8 +506,9 @@ Authorization happens at the data boundary, not in the proxy. Handlers check the
 - `POST /api/payment/initiate` creates a Safepay v3 tracker and a hosted checkout link. The tracker is stored in `Booking.transactionId`; a retry while the payment is pending reuses it. Amounts are whole PKR in the database and paisas at the Safepay boundary.
 - The webhook is the source of truth. It accepts `payment.succeeded` and `payment.failed`, verifies HMAC-SHA512 over the raw body and the merchant key, and during key rotation accepts a configured previous secret until an expiry of at most 72 hours.
 - Ingress stores sanitized evidence (the merchant key is redacted; a body hash makes redelivery idempotent) and publishes to QStash. The worker checks order, tracker, provider, terminal state (`TRACKER_ENDED` for success), currency and exact amount, then applies a conditional booking transition.
-- Conditional updates bind provider and tracker, so duplicates cannot settle twice and a delayed success cannot revive a cancelled booking.
-- **Expect late payments.** With a 30-minute hold, a student who pays after the cancellation job ran produces a `CANCELLED` and `PAID` booking that needs manual refund review. A bank or 3-D Secure delay makes this common, not rare.
+- Conditional updates bind provider and tracker, so duplicates cannot settle twice and a delayed success cannot revive a cancelled booking without the late-payment policy.
+- A late success is stored in immutable `LatePaymentResolution` evidence. The system atomically reacquires the full stay and reinstates the booking when possible; otherwise it keeps the booking cancelled and requests a full audited refund. Conflicting or invalid provider evidence remains in the admin and health reconciliation paths.
+- `sweep-cancelled-refunds` retries eligible cancelled/paid positive-refund records after a crash between the booking transition and refund dispatch.
 - Checkout requests to Safepay time out after 10 seconds and refund requests after 15. A timeout surfaces as a failed payment setup, and the student can retry.
 
 ### 8.2 Refunds
@@ -530,13 +536,15 @@ Both are disabled. The callback route still ships: JazzCash callbacks fail close
 ---
 ## 9. Background jobs
 
-Seven jobs run on QStash schedules. The schedule, endpoint and health-freshness threshold are defined once in `src/lib/cron-schedules.ts`, which both the registration script (`npm run schedule-cron`) and the health endpoint read.
+Nine jobs run on QStash schedules. The schedule, endpoint and health-freshness threshold are defined once in `src/lib/cron-schedules.ts`, which both the registration script (`npm run schedule-cron`) and the health endpoint read.
 
 | Job | Schedule (UTC) | What it does | Alert if older than |
 |---|---|---|---|
 | `cancel-abandoned-payments` | every 5 minutes | Cancels bookings whose payment has been pending more than 30 minutes and returns their seats | 10 minutes |
+| `sweep-cancelled-refunds` | every 5 minutes | Retries eligible positive refunds for cancelled paid bookings through the existing refund claim | 10 minutes |
 | `expire-unanswered-bookings` | every 15 minutes | Reminds owners before the deadline; cancels and refunds paid bookings the owner has not answered within 24 hours | 30 minutes |
 | `check-price-alerts` | every 6 hours | Emails users when an active hostel's price drops to their target | 8 hours |
+| `expire-availability-alerts` | every 5 minutes | Expires active date-bound alerts when their check-in date begins | 10 minutes |
 | `cleanup-tokens` | daily at 01:00 | Deletes expired password-reset, verification and phone tokens | 26 hours |
 | `cleanup-verification-uploads` | hourly | Deletes abandoned temporary uploads from the private verification bucket | 2 hours |
 | `mark-completed-stays` | daily at 00:00 | Moves `CONFIRMED` and `PAID` bookings past check-out to `COMPLETED`; completion notifications are written in the same transaction | 26 hours |
@@ -544,7 +552,7 @@ Seven jobs run on QStash schedules. The schedule, endpoint and health-freshness 
 
 **Security.** `verifyUpstashRequest` validates the QStash JWT (signature, endpoint URL, body hash) with the official receiver, using the current and next signing keys so keys can rotate. A `CRON_SECRET` bearer token is also accepted for manual runs and legacy schedulers.
 
-**Semantics.** Jobs process batches of 100 and use conditional updates, so a repeated run is safe. Each run writes a `CronLog` row before responding, and `GET /api/health/crons` reports freshness against the thresholds above. There is no durable general-purpose queue or outbox. In the price-alert job a crash between the email provider accepting a message and the database recording it can send a duplicate (R-07).
+**Semantics.** Jobs process batches of 100 and use conditional updates, so a repeated run is safe. Each run writes a `CronLog` row before responding, and `GET /api/health/crons` reports freshness against the thresholds above. There is no durable general-purpose email outbox: outbox work is deferred until a retention policy is chosen. In the price-alert job a crash between the email provider accepting a message and the database recording it can send a duplicate (R-07).
 
 Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`, `scripts/setup-typesense.ts`, `scripts/verify-typesense-fallback.ts`.
 
@@ -554,13 +562,14 @@ Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`
 
 | Channel | Provider | Used for |
 |---|---|---|
-| In-app | `Notification` table, read through `/api/notifications` | Booking requested, confirmed, cancelled, completed, refunded; message received; review received; listing approved or rejected; student verification decided; price alert |
+| In-app | `Notification` table, read through `/api/notifications` | Booking requested, confirmed, cancelled, completed, refunded; message received; review received; listing approved or rejected; student verification decided; price and availability alerts |
 | Email | Resend | Verification and welcome, password reset, booking lifecycle, refunds, price alerts, admin moderation, support and report mail. Price-alert and global preferences can be changed through signed unsubscribe links |
 | SMS | Twilio | Phone verification codes only. Without credentials the code is logged in development |
 
 **Delivery guarantees.**
 
 - **In-app notifications** are database rows. They are awaited, and for payment events (booking paid, Pro activated) they are written in the same transaction as the state change, so they exist if and only if the change was applied. If that transaction fails, the booking stays unpaid and QStash retries the event.
+- Availability alerts are student-only, date-range-aware `HOSTEL` or `SEARCH` rules. They use the room seat-hold availability authority, re-evaluate after inventory and listing transitions, and atomically record the match transition with one English in-app notification. Each notification links only to the student's alert manager; criteria and dates can be edited, alerts paused/resumed, and expired alerts deleted or replaced.
 - **Emails** run after the response through `runAfterResponse`. This stops the platform from cutting them off, but they are still best effort: nothing retries a send that fails or an invocation that crashes. A durable outbox is the remaining step (R-07).
 - The Safepay worker awaits its two emails before acknowledging; the completion job writes its notifications transactionally.
 - In production, `sendEmail` returns a failure, and logs an error, when the Resend key is missing or a placeholder. Startup validation also rejects a malformed key (R-14).
@@ -581,7 +590,7 @@ Helper scripts: `scripts/schedule-cron-jobs.ts`, `scripts/check-price-alerts.ts`
 
 Known problems (R-13): `city` and amenity values are interpolated into Typesense `filter_by` without quoting or escaping; every zero-hit query runs `ILIKE` scans over five columns with no trigram index; and there is no university search despite hostels having coordinates and the shared package carrying a university list. Nearby search is available, but students still cannot search by campus. For a student marketplace, "near my campus" is the primary query, so treat this as a product gap and not only a technical one.
 
-`GET /api/hostels/[param]/availability` returns a 12-month calendar. It is hostel-wide and date-based, computed from raw bookings and blocked dates on every request without caching, and disagrees with the room-level counter that gates booking (R-01).
+`GET /api/hostels/[param]/availability` returns an informational 12-month hostel-wide calendar. `GET /api/hostels/[param]/availability/exact` requires `checkIn`, `checkOut`, and `guests`, then returns per-room capacity, seats available across the full half-open stay, and fit status from seat holds. Booking writes use the same seat-hold authority. Owner blocks are inclusive and cannot overlap active holds; the monthly aggregate is not a booking decision.
 
 ---
 
@@ -592,13 +601,13 @@ Known problems (R-13): `city` and amenity values are interpolated into Typesense
 | Public listing bucket | Hostel and room images | Up to 15 images per hostel, 4 MB each, JPEG, PNG or WebP, content signature checked. Submitted image URLs must match the configured public base URL. Objects are served with immutable long-lived cache headers |
 | Private verification bucket | Student ID documents | Student-only upload through the app, 4 MiB cap, metadata and signature checks, copied on submit to immutable review keys. Admins read through an authenticated no-store route. Separate bucket-scoped token. Abandoned temporary uploads removed hourly |
 
-Uploads pass through the API function and so share Vercel's 4.5 MB request-body limit. Images are stored as uploaded, with no resizing, thumbnails or EXIF stripping. See R-11 for upload scope and throttling, and the private-bucket setup note under open items in `docs/SECURITY-CONTROLS.md` (legacy student documents may still sit in the public bucket).
+Uploads pass through the API function and so share Vercel's 4.5 MB request-body limit. Images are stored as uploaded, with no resizing, thumbnails or EXIF stripping. See [R-11 in §16](#16-risk-register) for upload scope and throttling; legacy student documents may still sit in the public bucket.
 
 ---
 
 ## 13. Security
 
-Implemented controls are inventoried in [`docs/SECURITY-CONTROLS.md`](docs/SECURITY-CONTROLS.md). The principles behind them are in [`docs/ENGINEERING-PRINCIPLES.md`](docs/ENGINEERING-PRINCIPLES.md).
+Implemented controls are described in §§3, 6–8, and 12–14; open gaps are tracked in [§16](#16-risk-register). Shared team guardrails are in [`docs/team/00-shared.md`](docs/team/00-shared.md).
 
 ### 13.1 Threat model
 
@@ -642,21 +651,22 @@ Implemented controls are inventoried in [`docs/SECURITY-CONTROLS.md`](docs/SECUR
 
 ### 14.3 Release
 
-Production deploys on every push to `main`, after an optional approval and a Neon snapshot (§3.4). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are missing from the audited archive (R-20).
+Production deploys from `main` through the production workflow, with an environment approval gate and Neon snapshot step in code. The required-reviewer setting and snapshot credentials/variables are external controls and remain unverified (R-06). Application rollback is a redeploy of an earlier Vercel build _(operational; confirm in the runbook)_; database changes are forward-only, which is why expand-and-contract matters. The runbooks that should describe rollback, restore, reconciliation and alert response are absent at their documented paths (R-20).
 
 ### 14.4 Testing and quality gates
 
-Verified on October 24, 2026, on Node 22 and Node 24:
+Verified on November 6, 2026, on Node 24:
 
-- 100 Vitest files with 686 tests, all passing, plus 6 `node:test` script tests (`npm run test:scripts`).
-- `tsc --noEmit` passes. ESLint reports 0 errors and 1 warning.
+- Full Vitest suite: 234 files passed, 2 skipped; 1,512 tests passed and 10 skipped. Guarded PostgreSQL integration tests were not run in this verification.
+- `npm run test:scripts`: 23 passed. `npm run typecheck`, full `npm run lint`, `npm run build`, `npx tsc --noEmit -p packages/shared/tsconfig.json`, `npx prisma validate`, and `npm run docs:check` passed after the booking-error fix. The production build emitted a non-blocking Sentry recommendation to add a global error handler.
+- `npm run e2e -- --list`: Playwright tests discovered; no browser test was executed.
 - `npm audit --omit=dev` reported zero vulnerabilities on October 19; the full audit adds five high findings in a development-only dependency chain.
 
-What the tests cover: handlers and validation, booking, search and review services, CSRF and rate limits, payments, notifications, profile and shared business logic.
+What the tests cover: handlers and validation, booking, search and review services, CSRF and rate limits, payments, notifications, profile, availability alerts, and shared business logic. Guarded PostgreSQL tests require an explicitly configured disposable target.
 
-What they do not cover: **none of the 100 files talks to a real database** (65 mock `@/lib/db`, and CI points `DATABASE_URL` at a placeholder), so concurrency claims such as "the conditional update wins the race" are asserted against mocks (R-15). Nothing exercises the Safepay sandbox. Browser E2E coverage was removed with the UI and is deferred until a frontend exists.
+What they do not cover: the current regular run skips guarded PostgreSQL integration cases; the latest availability-alert concurrency spec was not run against PostgreSQL. Playwright test discovery is not browser-runtime validation. Safepay sandbox refunds/retries, QStash retry behavior, and a disposable-database backup/restore rehearsal remain unverified.
 
-**Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** a sandbox pay, confirm, cancel and refund round trip including a QStash retry, a rehearsed restore, and one alert fired end to end.
+**Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, alert transitions, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** browser E2E on disposable services, a sandbox pay/confirm/cancel/refund round trip including a QStash retry, a rehearsed restore, and an alert fired end to end.
 
 ---
 ## 15. Decisions
@@ -673,17 +683,18 @@ Rationales marked _(reconstructed)_ were inferred from the repository because th
 | A-4 | Store the verified webhook, then process it through QStash | Acknowledge fast, keep durable evidence, retry safely, allow audited replay | Two hops; needs a reconciliation path (§5.2) |
 | A-5 | Money as whole PKR integers; paisas only at the Safepay boundary | Avoids floating point; one conversion point | No sub-rupee amounts |
 | A-6 | Manual payouts with an encrypted destination snapshot and append-only audit | Controls risk while volume is low | Not scalable; no settlement reconciliation (R-05) |
-| A-7 | API-only until the redesign; native mobile retired | Decided October 16 and 19, 2026 | The backend still assumes a frontend (R-09) |
+| A-7 | First-party web application; native mobile retired | The approved completion plan restores the web marketplace and role workspaces in the same Next.js application; native mobile was retired October 16, 2026 | Separate external clients remain out of scope |
+| A-8 | PostgreSQL date-bounded seat holds are the inventory authority | A hold per guest seat over `[checkIn, checkOut)` supports exact stay availability and lets PostgreSQL reject overlapping reservations; hostel-scoped transaction locks coordinate inventory mutations and matching | Requires PostgreSQL-specific migrations and concurrency validation |
 
 ### 15.2 Open
 
 Each needs a decision from you before the related code is written.
 
-**D-1. Client topology.**
+**D-1. External client topology.**
 
-- **Option A, same-origin web frontend** (this app or the same registrable domain through rewrites). Keep cookie sessions and the Origin check; add a `WEB_APP_URL`, fix emitted links and redirects.
+- The first-party web application runs in this Next.js app and uses its same-origin API and cookie-session contract.
 - **Option B, separate clients** (a standalone web app and perhaps mobile later). Add a CORS allow-list, either cookies with an explicit cookie domain and SameSite plan or bearer tokens, exempt token requests from the Origin check, and split `API_BASE_URL` from `WEB_APP_URL`.
-- **Suggestion:** choose A if there will be one web frontend; choose B only when a second client type is planned. Either way, centralize emitted links in one module and publish an OpenAPI document.
+- Decide on a separate-client contract only if a second web or mobile client is approved. No CORS or bearer-token API contract is implied by the current first-party app.
 
 **D-2. Stay and billing rules.**
 
@@ -698,8 +709,6 @@ Each needs a decision from you before the related code is written.
 - Alternative: release the first month shortly after check-in and the rest monthly. Or use a provider-side split or escrow product if one is available to you.
 - Also decide the fee or commission model, who bears Safepay's processing fee, and what happens to unreleased months on a mid-stay cancellation.
 - Holding customer funds for months may carry regulatory obligations in Pakistan. Get advice from a qualified adviser before choosing.
-
-**D-4. Inventory model.** Replace the `Room.available` counter with date-aware seat holds enforced by PostgreSQL (Appendix A), or with per-month occupancy buckets. **Suggestion:** seat holds, because the database then enforces the invariant and a stay needs no completion step.
 
 **D-5. Verification gates and trust and safety.**
 
@@ -718,28 +727,28 @@ Each needs a decision from you before the related code is written.
 
 | ID | Sev | Finding | Evidence | Next step |
 |---|---|---|---|---|
-| R-01 | P0 | **Seat inventory is wrong.** `Room.available` is decremented at booking and restored only by decline, expiry, abandonment, and cancellation before check-in. Completion never restores it, and mid-stay cancellation skips the restore, so each completed stay consumes seats permanently. It is not date-aware (a booking for next semester takes seats now), ignores `BlockedDate`, and the public availability endpoint computes a different number | `booking-service.ts`; `bookings/[id]/route.ts`; `cron/mark-completed-stays`; `hostels/[param]/availability` | D-4, Appendix A, concurrency tests |
-| R-02 | P0 | **Stay rules unenforced.** `minStay`/`maxStay` never read; no maximum duration (a ten-year stay validates); `calculateMonths` ignores the day of month (Jan 1 to Feb 28 bills 1 month, Jan 1 to Mar 1 bills 2); booking accepts `jazzcash` and `easypaisa` that payment then rejects, holding seats 30 minutes; "today" uses server-local time (UTC), a day behind Pakistan for five hours a day | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment/initiate` | D-2 |
+| R-01 | P0 | **Seat-hold authority and PostgreSQL race verification implemented.** Booking writes and exact-range reads now use one hold per guest seat over `[checkIn, checkOut)`, and blocks/capacity edits share listing/room locks. `Room.available` remains a legacy field and is no longer booking authority. The six Task 5 guarded PostgreSQL cases (five production-path inventory tests and one migration-constraint test) passed on an isolated loopback database on 2026-11-05; the normal suite skips them unless an explicit disposable target is configured | `booking-service.ts`; `room-availability-service.ts`; `bookings/[id]/route.ts`; `hostels/[param]/availability/exact`; `prisma/seat-holds.integration.test.ts` | Continue to run the guarded race suite against an explicitly configured disposable local database |
+| R-02 | P0 | **Stay rules partially unenforced.** `minStay`/`maxStay` are not checked and there is no maximum duration; `calculateMonths` still ignores the day of month. Booking validation and the booking service reject disabled payment methods using the shared enabled-method list, so unavailable wallets cannot create a hold. Date-only inputs use strict calendar dates and the Pakistan-local “today” boundary | `booking-service.ts`; shared `validations`, `utils/dates.ts`; `payment-methods.ts` | D-2 |
 | R-03 | P0 | **Payout timing and custody undecided.** Owners are paid after the whole prepaid stay ends | `payouts.ts` | D-3 |
-| R-04 | P0 | **Safepay and refund reconciliation** (partly implemented: durable evidence, audit events, admin queue, audited retries; the automatic refund claim is a compare-and-set on `total`, `cancellationRefundAmount` and `refundedAmount`, so a stale read cannot send a second partial refund. B-001, November 4, 2026, PR pending; the webhook `merchant_api_key` check and the `x-cron-health-secret` check on `health/payments` use a length-safe `timingSafeEqual`, and `processRefund` is documented as called by the owner-timeout cron and the booking decline and cancel paths as well as the admin route, B-006, November 4, 2026). Open: sandbox validation of merchant setup and refund call, legacy in-flight sessions, QStash retry exercise, a sweeper for `CANCELLED` + `PAID` + refund `NONE`, automatic handling of late payments (reinstate if the seat is free, else refund) | `payment/webhook`, `refunds.ts` | Sandbox round trip; sweeper job |
+| R-04 | P0 | **Safepay and refund reconciliation** (partly implemented: durable evidence, append-only audit events, admin queue, audited retries, and compare-and-set refunds. Late payments now produce immutable evidence and either reinstate only after full-stay seat reacquisition or request a full audited refund. A scheduled sweeper retries eligible cancelled/paid positive refunds. Open: sandbox validation of merchant setup/refund, legacy in-flight sessions, QStash retry exercise, and operational validation of the new sweeper) | `payment/webhook`, `late-payment-resolution.ts`, `refund-sweeper.ts`, `refunds.ts` | Sandbox round trip; exercise QStash retries and refund sweep |
 | R-05 | P0 | **Payout accounting.** No double-entry ledger, fee accounting, reversal or settlement reconciliation; batches created before the snapshot change have no destination snapshot | `payouts.ts`, schema | Approved accounting model (D-3) |
 | R-06 | P0 | **Delivery pipeline.** **Status: fixed in code on October 21, 2026; console steps open.** Found: `npm ci` failed (`Missing: deepmerge-ts@8.0.2 from lock file`: an `overrides` entry pinned 8.0.0 while Prisma's config package wants exactly 8.0.2); `audit.yml` ran the full audit despite its name and failed on five development-only findings; CI ran Node 20 (end of life per Node's schedule since April 2026); the `shared` job exited 1 on every run because `packages/shared` had no `tsconfig.json`, so Preview deploys, which wait for it, never ran; the Preview comment linked to deleted pages; workflows had no `permissions:` block and set legacy `NEXTAUTH_*` names; the Vercel CLI was unpinned; production migrated and deployed with no approval and no snapshot. Fixed: lockfile and override, Node 24 pin, audit split, shared tsconfig, permissions, env names, CLI pin, approval-capable `production` environment, Neon snapshot step. **Open (console):** add required reviewers to the `production` environment; add the Neon secret and variables and set `NEON_SNAPSHOT_REQUIRED=true`; confirm the Vercel project's Node setting (`engines` overrides it) | `.github/workflows/*`, `package.json`, `package-lock.json`, `scripts/neon-snapshot.mjs` | Complete the console steps; confirm the first run on GitHub is green |
-| R-07 | P1 | **Unreliable background work.** **Status: mostly fixed in code on October 24, 2026.** Found: no use of `after()` or `waitUntil` and roughly two dozen unawaited sends, so work started after the response could be cut off on serverless. Fixed: every email and search-index update now runs through `runAfterResponse` (Next's `after()`); in-app notifications are awaited, and payment-event notifications are written in the same transaction as the state change; signup stores its verification token before responding. **Open:** there is no outbox, so a failed send or a crashed invocation still loses the email; the price-alert duplicate-send window is unchanged | `src/lib/background.ts`, `webhook/route.ts`, `refunds.ts`, route handlers | Outbox table drained by QStash |
+| R-07 | P1 | **Unreliable background work.** **Status: partly fixed in code.** `runAfterResponse` ensures work is awaited by the serverless invocation; in-app notifications and payment-event notifications are durable with the state transaction; signup stores its verification token before responding; Resend calls time out after 10 seconds. There is still no email outbox, so a failed send or crashed invocation can lose an email, and the price-alert duplicate-send window remains. Outbox work is explicitly deferred until the payload-retention policy is decided | `src/lib/background.ts`, `src/lib/email.ts`, `webhook/route.ts`, route handlers | Decide retention, then add a durable outbox and close the price-alert duplicate window |
 | R-08 | P1 | **Notification race in `createBooking`.** **Status: fixed in code on October 24, 2026.** The pre-payment owner notification, which ran on the global client inside the transaction and referenced an uncommitted booking, was removed. An unpaid booking is invisible to the owner, so the webhook's notification after payment, now written in the payment transaction, is the only one | `booking-service.ts`, `webhook/route.ts` | None |
-| R-09 | P1 | **Frontend coupling and client contract.** Emitted links and redirects point to removed pages (`/reset-password`, `/login`, `/booking/{id}/confirmation`, `/bookings/{id}`, `/owner/bookings`, `/dashboard/hostels/...`, `/help`, `/privacy`, `/terms`, `/?payment=error`), so password reset and the post-payment return are dead ends today. One `AUTH_URL` serves five purposes; production requires `Origin` to equal the API's own origin; no CORS; Auth.js error and sign-in pages redirect to `/login`; `next.config.ts` carries a UI-era CSP. No OpenAPI, no versioning, no error-code catalogue, inconsistent envelopes | `forgot-password`, `verify-email`, `payment/callback`, `email-templates`, `proxy.ts`, `next.config.ts` | D-1 |
-| R-10 | P1 | **Account security and admin controls.** The per-account login bucket lets anyone lock out a known email (including an admin); login returns early when the email is unknown (timing) and signup answers 409 for existing emails; per-IP limits may collide with carrier NAT and campus networks _(verify with real traffic)_; no endpoint requires verification; no user suspension; no admin MFA or second approver; 30-day JWTs for all roles; admin booking and listing actions are only logged to stdout | `credentials-authorize.ts`, `login-limits.ts`, `signup/route.ts`, `auth/config.ts` | D-5 |
+| R-09 | P1 | **Client contract and end-to-end coverage.** First-party student, owner, and admin screens now exist in the same Next.js application. The repository has Playwright specs, but browser-runtime flows have not been verified against disposable local services. Do not infer that every emitted/auth/payment link is covered by this UI; perform an end-to-end link and role-flow audit before release. A separate-client CORS/bearer-token contract, OpenAPI, versioning, and a stable error catalogue are not established | app routes, `e2e/`, `proxy.ts`, `next.config.ts` | Run the disposable browser suite and audit emitted links; decide separately before adding an external client |
+| R-10 | P1 | **Account security and admin controls.** Credential login now uses a generic invalid-credentials response, performs a bcrypt cost-12 check for unknown accounts, and keys the account throttle by account-and-IP so one source cannot lock out all other users. Signup still answers 409 for existing emails; per-IP limits may collide with carrier NAT and campus networks _(verify with real traffic)_; no endpoint requires verification; no user suspension; no admin MFA or second approver; 30-day JWTs for all roles; admin booking and listing actions are only logged to stdout | `credentials-authorize.ts`, `login-limits.ts`, `signup/route.ts`, `auth/config.ts` | D-5 |
 | R-11 | P1 | **Uploads.** Without `hostelId`, any signed-in user can write to the public listing bucket; 5 uploads per 10 minutes means 15 photos take about 30 minutes; no resizing or EXIF stripping; 4 MB through a function body | `upload/route.ts` | Owner or Admin only; presigned direct uploads; resize step; raise limit |
 | R-12 | P1 | **Database integrity and capacity.** No CHECK constraints outside the payout audit table; free-string status columns; plaintext owner bank details on `User`; `Hostel.rooms` and `capacity` denormalized; duplicate indexes (`users.email`, `hostels.slug`); phone codes stored in plaintext; pool `max` unset (default 10 per instance) and one `DATABASE_URL` for runtime and migrations | `schema.prisma`, `db.ts`, `prisma.config.ts` | CHECKs and enums; pooled runtime URL with a pool cap, direct migration URL |
 | R-13 | P1 | **Search.** Unquoted, unescaped `filter_by` values; zero-hit queries run `ILIKE` scans without trigram indexes; no university or distance search; availability endpoint uncached | `typesense.ts`, `hostel-search.ts` | Quote and validate filters; trigram index; geo and campus filters; cache availability |
-| R-14 | P1 | **Configuration safety.** **Status: fixed in code (E2E bypass October 21, rest October 24, 2026).** Fixed: the `HOSTELLO_E2E` bypass was removed; production now requires an explicit `NEXT_PUBLIC_SAFEPAY_ENV` (`production` or `sandbox`) and rejects a placeholder or malformed `RESEND_API_KEY`; missing `PAYOUT_DESTINATION_ENCRYPTION_KEY` or Twilio settings warn at startup; `sendEmail` reports failure in production instead of success when it cannot send; Safepay checkout and Twilio calls time out after 10 seconds. **Open:** Resend's SDK calls have no explicit timeout | `env-validation.ts`, `email.ts`, `safepay.ts`, `sms.ts` | Wrap Resend calls with a timeout |
-| R-15 | P1 | **Tests cannot back the concurrency claims.** No test uses a real database | §14.4 | Postgres service container in CI |
+| R-14 | P1 | **Configuration safety.** **Status: fixed in code (E2E bypass October 21; remaining configuration and timeout controls October 24 and November 5, 2026).** Production requires explicit Safepay environment configuration and rejects placeholder or malformed Resend keys; missing payout-encryption or Twilio settings warn at startup; `sendEmail` reports failure in production instead of success when it cannot send; Safepay checkout, Twilio, and Resend calls time out. Provider sandbox validation remains open under R-04 | `env-validation.ts`, `email.ts`, `safepay.ts`, `sms.ts` | Complete sandbox validation |
+| R-15 | P1 | **Database concurrency coverage is not yet a CI gate.** Seven guarded PostgreSQL integration cases (six production-path inventory/payment tests and one migration-constraint test) passed against an isolated loopback database on 2026-11-05, but the normal suite skips them and CI does not provision PostgreSQL | §14.4 | Add a disposable Postgres service to CI and run the guarded tests |
 | R-16 | P1 | **Recovery readiness** _(operational)_. Confirm Neon retention and restore options, set RPO and RTO, rehearse a restore on a disposable branch | | Restore drill |
 | R-17 | P1 | **Alerting and observability.** Hosted alerts for payment health, reconciliation, search degradation, notification delivery and cron failure are not configured; health endpoints need an admin session; Sentry tracing at 100% sampling | §14.1 | Configure and exercise alerts; add an unauthenticated liveness check |
 | R-18 | P2 | **Dead code and dependencies.** About 30 of 53 runtime dependencies are never imported (Radix, three.js, GSAP, Framer Motion, Leaflet, react-query, zustand and others); JazzCash and EasyPaisa code and a live callback route; committed generated Prisma client; Playwright script and `.env.e2e.example`; `next-auth` pinned to a beta; `roommmatePosts` typo; CRLF line endings without an eol policy; no Dependabot, CODEOWNERS or PR template | `package.json`, repo | Prune; add `.gitattributes` and Dependabot |
 | R-19 | P1 | **The Pro plan never expires and cannot be renewed.** The webhook sets `plan = PRO` with a one-month `endDate`; no job or check reverts it, and the endpoint refuses a second purchase | `payment/webhook`, `owner/subscription` | Expiry job or check; renewal path |
 | R-20 | P1 | **Missing documents.** `docs/OPERATIONS-RUNBOOK.md`, `docs/LAUNCH-OPERATIONS-RUNBOOK.md`, `docs/PRIVATE-STUDENT-VERIFICATION.md`, `docs/CI-CD-GUIDE.md` and `DESIGN.md` were referenced but not in the audited archive | | Locate or write them |
 
-Deferred: browser E2E tests (until a frontend exists); enabling JazzCash or EasyPaisa (only if they become an explicit requirement and pass provider and security review). Development-only `braces` advisory: tracked under R-06.
+Deferred: browser-runtime validation against disposable services; enabling JazzCash or EasyPaisa (only if they become an explicit requirement and pass provider and security review). Development-only `braces` advisory: tracked under R-06.
 
 ---
 
@@ -758,9 +767,9 @@ Deferred: browser E2E tests (until a frontend exists); enabling JazzCash or Easy
 
 ---
 
-## Appendix A. Proposed seat-hold model (D-4)
+## Appendix A. PostgreSQL seat-hold inventory model (A-8)
 
-**Proposed**, not built. It replaces the `Room.available` counter and its `version` column with rows the database itself keeps from overlapping.
+The implemented inventory authority is date-bounded `SeatHold` rows. The migration adds a PostgreSQL exclusion constraint preventing overlapping holds for the same room and seat. `Room.available` and its optimistic-lock `version` remain legacy fields; they are not used to determine booking availability. The migration includes a fail-closed preflight for legacy bookings. Applied status must be checked separately for each database, and concurrency validation remains an explicit release check.
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS btree_gist;

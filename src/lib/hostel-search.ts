@@ -10,6 +10,10 @@ import {
   NEARBY_SEARCH_RADIUS_KM,
   type NearbyCoordinates,
 } from "@/lib/nearby-search";
+import {
+  getAvailableHostelIdsForStay,
+  lockAvailabilityInventory,
+} from "@/lib/room-availability-service";
 
 export interface SearchParams {
   q?: string;
@@ -20,12 +24,18 @@ export interface SearchParams {
   amenities?: string[];
   verified?: boolean;
   moveInDate?: Date;
+  checkOut?: Date;
   guests?: number;
   nearby?: NearbyCoordinates;
   sort?: "price_asc" | "price_desc" | "rating" | "newest";
   page: number;
   limit: number;
 }
+
+export type PublicSearchFilters = Pick<
+  SearchParams,
+  "q" | "city" | "gender" | "minPrice" | "maxPrice" | "amenities" | "verified" | "nearby"
+>;
 
 export interface SearchResult {
   hostelIds: string[];
@@ -114,6 +124,15 @@ function buildNearbyWhereClause(params: SearchParams): Prisma.HostelWhereInput {
   return where;
 }
 
+export function buildPublicSearchWhereClause(
+  filters: PublicSearchFilters,
+): Prisma.HostelWhereInput {
+  const params = { ...filters, page: 1, limit: 1 } satisfies SearchParams;
+  return filters.nearby
+    ? buildNearbyWhereClause(params)
+    : buildWhereClause(params);
+}
+
 function isWithinNearbyRadius(
   hostel: { latitude: number | null; longitude: number | null },
   location: NearbyCoordinates,
@@ -157,6 +176,46 @@ function isAvailableOnMoveInDate(
   );
 }
 
+async function searchHostelsWithExactStay(params: SearchParams): Promise<SearchResult> {
+  const where = params.nearby
+    ? buildNearbyWhereClause(params)
+    : buildWhereClause(params);
+  const candidateHostels = await db.hostel.findMany({
+    where,
+    select: { id: true, latitude: true, longitude: true },
+    orderBy: buildOrderByClause(params.sort),
+  });
+  const candidateIds = candidateHostels
+    .filter((hostel) => !params.nearby || isWithinNearbyRadius(hostel, params.nearby))
+    .map((hostel) => hostel.id);
+  if (candidateIds.length === 0) return paginateHostels([], params.page, params.limit);
+
+  return db.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx, candidateIds);
+    const currentHostels = await tx.hostel.findMany({
+      where: {
+        AND: [where, { id: { in: candidateIds } }],
+      },
+      select: { id: true, latitude: true, longitude: true },
+      orderBy: buildOrderByClause(params.sort),
+    });
+    const currentCandidates = currentHostels.filter(
+      (hostel) => !params.nearby || isWithinNearbyRadius(hostel, params.nearby),
+    );
+    const availableHostels = await getAvailableHostelIdsForStay(tx, {
+      hostelIds: currentCandidates.map((hostel) => hostel.id),
+      checkIn: params.moveInDate!,
+      checkOut: params.checkOut!,
+      guests: params.guests ?? 1,
+    });
+    return paginateHostels(
+      currentCandidates.filter((hostel) => availableHostels.has(hostel.id)),
+      params.page,
+      params.limit,
+    );
+  }, { isolationLevel: "ReadCommitted" });
+}
+
 /**
  * Search for hostels using Typesense with automatic fallback to Prisma
  * if Typesense is unavailable.
@@ -169,6 +228,10 @@ export async function searchHostelsWithFallback(
   logContext?: OperationalLogContext,
 ): Promise<SearchResult> {
   const { q, city, gender, minPrice, maxPrice, amenities, verified, sort, page, limit } = params;
+
+  if (params.moveInDate && params.checkOut) {
+    return searchHostelsWithExactStay(params);
+  }
 
   if (params.nearby) {
     const where = buildNearbyWhereClause(params);

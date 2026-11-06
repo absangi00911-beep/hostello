@@ -1,10 +1,50 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   OwnerBookingsContent,
   type OwnerBookingsContentProps,
+  OwnerBookingsPage,
 } from "./OwnerBookingsPage";
 import type { OwnerBooking } from "./ownerBookings";
+
+const hookHarness = vi.hoisted(() => ({
+  active: false,
+  cursor: 0,
+  states: [] as unknown[],
+}));
+const fetchMock = vi.hoisted(() => vi.fn());
+
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  const useState = ((initial: unknown) => {
+    if (!hookHarness.active) return actual.useState(initial as never);
+
+    const index = hookHarness.cursor++;
+    if (index >= hookHarness.states.length) {
+      hookHarness.states[index] =
+        typeof initial === "function" ? (initial as () => unknown)() : initial;
+    }
+
+    return [
+      hookHarness.states[index],
+      (next: unknown) => {
+        hookHarness.states[index] =
+          typeof next === "function"
+            ? (next as (previous: unknown) => unknown)(hookHarness.states[index])
+            : next;
+      },
+    ];
+  }) as typeof actual.useState;
+
+  return {
+    ...actual,
+    useState,
+    useEffect: (...args: Parameters<typeof actual.useEffect>) => {
+      if (!hookHarness.active) actual.useEffect(...args);
+    },
+    useCallback: ((callback: unknown) => callback) as typeof actual.useCallback,
+  };
+});
 
 const DUE = Date.parse("2026-11-03T06:00:00.000Z");
 
@@ -47,6 +87,49 @@ const booking = (overrides: Partial<OwnerBooking> = {}): OwnerBooking => ({
 
 const render = (props: Partial<OwnerBookingsContentProps>) =>
   renderToStaticMarkup(<OwnerBookingsContent {...base} {...props} />);
+
+function renderOwnerBookingsPage() {
+  hookHarness.cursor = 0;
+  hookHarness.active = true;
+  try {
+    return OwnerBookingsPage();
+  } finally {
+    hookHarness.active = false;
+  }
+}
+
+function resetOwnerBookingsPage(bookingItem: OwnerBooking) {
+  hookHarness.states = [
+    "PENDING",
+    [bookingItem],
+    1,
+    1,
+    false,
+    false,
+    false,
+    null,
+    null,
+    0,
+    null,
+    null,
+    null,
+    Date.now(),
+  ];
+  hookHarness.cursor = 0;
+  hookHarness.active = false;
+}
+
+beforeEach(() => {
+  hookHarness.active = false;
+  hookHarness.cursor = 0;
+  hookHarness.states = [];
+  fetchMock.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("OwnerBookingsContent", () => {
   it("marks the selected filter and explains the 24-hour rule", () => {
@@ -118,6 +201,14 @@ describe("OwnerBookingsContent", () => {
     expect(markup).toMatch(/disabled=""[^>]*>Confirming…/);
   });
 
+  it("withholds booking decisions while the current state is being refreshed", () => {
+    const markup = render({ isLoading: true });
+
+    expect(markup).toContain("Loading bookings...");
+    expect(markup).not.toContain("Confirm booking");
+    expect(markup).not.toContain(">Decline<");
+  });
+
   it("announces success and error notices differently", () => {
     expect(render({ notice: { tone: "success", text: "Booking confirmed." } })).toContain(
       'role="status"',
@@ -130,5 +221,92 @@ describe("OwnerBookingsContent", () => {
   it("offers load more only when there are further pages", () => {
     expect(render({ hasMore: true, items: [booking()], total: 30 })).toContain("Load more");
     expect(render({ items: [booking()], total: 1 })).not.toContain("Load more");
+  });
+});
+
+describe("OwnerBookingsPage", () => {
+  it("refreshes the paid booking state before allowing a retry after an interrupted decision", async () => {
+    const now = Date.now();
+    const pendingBooking = booking({
+      createdAt: new Date(now).toISOString(),
+      ownerResponseDueAt: new Date(now + 5 * 3_600_000).toISOString(),
+    });
+    resetOwnerBookingsPage(pendingBooking);
+    let finishRefresh!: (value: {
+      ok: boolean;
+      json: () => Promise<unknown>;
+    }) => void;
+    fetchMock
+      .mockRejectedValueOnce(new Error("connection interrupted"))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRefresh = resolve;
+          }),
+      );
+
+    const refreshedResponse = {
+      ok: true,
+      json: async () => ({
+          data: [
+            {
+              id: pendingBooking.id,
+              status: "PENDING",
+              checkIn: pendingBooking.checkIn,
+              checkOut: pendingBooking.checkOut,
+              months: pendingBooking.months,
+              guests: pendingBooking.guests,
+              total: pendingBooking.total,
+              createdAt: pendingBooking.createdAt,
+              ownerResponseDueAt: pendingBooking.ownerResponseDueAt,
+              hostel: pendingBooking.hostel,
+              user: pendingBooking.student,
+            },
+          ],
+          total: 1,
+          page: 1,
+          hasMore: false,
+      }),
+    };
+
+    const page = renderOwnerBookingsPage();
+    (page.props as OwnerBookingsContentProps).onConfirm(pendingBooking.id);
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    const checkingPage = renderOwnerBookingsPage().props as OwnerBookingsContentProps;
+
+    expect(checkingPage).toMatchObject({ isLoading: true, items: [] });
+    const checkingMarkup = renderToStaticMarkup(
+      <OwnerBookingsContent {...checkingPage} />,
+    );
+    expect(checkingMarkup).toContain("Loading bookings...");
+    expect(checkingMarkup).not.toContain("Confirm booking");
+    expect(checkingMarkup).not.toContain(">Decline<");
+
+    finishRefresh(refreshedResponse);
+    await vi.waitFor(() => {
+      const current = renderOwnerBookingsPage().props as OwnerBookingsContentProps;
+      expect(current.items[0]?.status).toBe("PENDING");
+      expect(current.isLoading).toBe(false);
+    });
+
+    expect(
+      renderToStaticMarkup(
+        <OwnerBookingsContent
+          {...(renderOwnerBookingsPage().props as OwnerBookingsContentProps)}
+        />,
+      ),
+    ).toContain("Confirm booking");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      `/api/bookings/${pendingBooking.id}`,
+      expect.objectContaining({ method: "PATCH" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/bookings?"),
+      expect.any(Object),
+    );
   });
 });

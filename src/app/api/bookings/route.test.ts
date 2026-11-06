@@ -65,25 +65,28 @@ describe("POST /api/bookings", () => {
     mocks.rateLimit.mockResolvedValue({ ok: true, remaining: 9, resetAt: Date.now() + 60_000 });
   });
 
-  function request() {
-    const checkIn = new Date();
-    checkIn.setDate(checkIn.getDate() + 1);
-    const checkOut = new Date(checkIn);
-    checkOut.setDate(checkOut.getDate() + 30);
-
+  function request(overrides: Record<string, unknown> = {}) {
     return new NextRequest("https://hostello.test/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         hostelId: "clh1234567890123456789012",
         roomId: "room-bsh-1",
-        checkIn: checkIn.toISOString(),
-        checkOut: checkOut.toISOString(),
+        checkIn: "2099-01-01",
+        checkOut: "2099-02-01",
         guests: 1,
         paymentMethod: "safepay",
+        ...overrides,
       }),
     });
   }
+
+  it("requires a specific room and date-only stay before invoking booking service", async () => {
+    const response = await POST(request({ roomId: undefined, checkIn: "2099-01-01T00:00:00.000Z" }));
+
+    expect(response.status).toBe(400);
+    expect(mocks.createBooking).not.toHaveBeenCalled();
+  });
 
   it("returns known booking conflicts without exposing database errors", async () => {
     mocks.createBooking.mockRejectedValueOnce(

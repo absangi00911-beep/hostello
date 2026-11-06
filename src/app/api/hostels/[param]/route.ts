@@ -18,7 +18,13 @@ import { rateLimit } from "@/lib/rate-limit";
 import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import { hostelCreateSchema } from "@hostello/shared";
 import { removeHostelIndex } from "@/lib/typesense-sync";
-import { RoomInventoryConflictError, syncHostelRooms } from "@/lib/room-inventory-service";
+import {
+  deriveHostelInventoryTotals,
+  RoomInventoryConflictError,
+  syncHostelRooms,
+} from "@/lib/room-inventory-service";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 // Owners can only move their own listing between these two states from
 // this endpoint — ACTIVE<->PENDING_REVIEW and SUSPENDED are admin-only,
@@ -147,9 +153,11 @@ export async function PATCH(
       }
 
       const listing = parsed.data;
+      const inventoryTotals = deriveHostelInventoryTotals(listing.roomTypes);
       let transactionResult: { kind: "changed" | "updated" };
       try {
         transactionResult = await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx, hostel.id);
           const result = await tx.hostel.updateMany({
             where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
             data: {
@@ -161,8 +169,8 @@ export async function PATCH(
               latitude: listing.latitude ?? null,
               longitude: listing.longitude ?? null,
               pricePerMonth: listing.pricePerMonth,
-              rooms: listing.rooms,
-              capacity: listing.capacity,
+              rooms: inventoryTotals.rooms,
+              capacity: inventoryTotals.capacity,
               gender: listing.gender,
               cancellationPolicy: listing.cancellationPolicy,
               minStay: listing.minStay,
@@ -178,7 +186,7 @@ export async function PATCH(
 
           await syncHostelRooms(tx, hostel.id, listing.roomTypes);
           return { kind: "updated" } as const;
-        }, { isolationLevel: "Serializable" });
+        }, { isolationLevel: "ReadCommitted" });
       } catch (error) {
         if (error instanceof RoomInventoryConflictError) {
           return NextResponse.json(
@@ -194,6 +202,10 @@ export async function PATCH(
           { status: 409 },
         );
       }
+
+      await reevaluateAvailabilityAlertsForHostel(hostel.id, {
+        includeAllSearchAlerts: true,
+      });
 
       const updated = { id: hostel.id, slug: hostel.slug, name: listing.name, status: "PENDING_REVIEW" as const };
 
@@ -212,9 +224,13 @@ export async function PATCH(
       );
     }
 
-    const result = await db.hostel.updateMany({
-      where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
-      data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },
+    const result = await db.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx, hostel.id);
+      const transition = await tx.hostel.updateMany({
+        where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
+        data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },
+      });
+      return transition;
     });
     if (result.count !== 1) {
       return NextResponse.json(
@@ -222,6 +238,10 @@ export async function PATCH(
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(hostel.id, {
+      includeAllSearchAlerts: true,
+    });
 
     return NextResponse.json({ data: { id: hostel.id, status: allowedNext } });
   } catch (err) {

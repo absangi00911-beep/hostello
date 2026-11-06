@@ -63,8 +63,10 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
+  LatePaymentResolution: 'LatePaymentResolution',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
   SafepayWebhookReplayEvent: 'SafepayWebhookReplayEvent',
   Review: 'Review',
@@ -75,6 +77,7 @@ export const ModelName = {
   ConversationParticipant: 'ConversationParticipant',
   Message: 'Message',
   PriceAlert: 'PriceAlert',
+  AvailabilityAlert: 'AvailabilityAlert',
   Notification: 'Notification',
   CronLog: 'CronLog',
   BlockedDate: 'BlockedDate',
@@ -330,6 +333,19 @@ export const BookingScalarFieldEnum = {
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
+export const SeatHoldScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  seatNo: 'seatNo',
+  bookingId: 'bookingId',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  createdAt: 'createdAt'
+} as const
+
+export type SeatHoldScalarFieldEnum = (typeof SeatHoldScalarFieldEnum)[keyof typeof SeatHoldScalarFieldEnum]
+
+
 export const HostelVerificationReviewScalarFieldEnum = {
   id: 'id',
   hostelId: 'hostelId',
@@ -363,6 +379,21 @@ export const RefundAuditEventScalarFieldEnum = {
 } as const
 
 export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
+
+
+export const LatePaymentResolutionScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  sourceWebhookEventId: 'sourceWebhookEventId',
+  providerTracker: 'providerTracker',
+  reason: 'reason',
+  outcome: 'outcome',
+  amount: 'amount',
+  currency: 'currency',
+  recordedAt: 'recordedAt'
+} as const
+
+export type LatePaymentResolutionScalarFieldEnum = (typeof LatePaymentResolutionScalarFieldEnum)[keyof typeof LatePaymentResolutionScalarFieldEnum]
 
 
 export const SafepayWebhookEventScalarFieldEnum = {
@@ -503,6 +534,25 @@ export const PriceAlertScalarFieldEnum = {
 export type PriceAlertScalarFieldEnum = (typeof PriceAlertScalarFieldEnum)[keyof typeof PriceAlertScalarFieldEnum]
 
 
+export const AvailabilityAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  hostelId: 'hostelId',
+  searchCriteria: 'searchCriteria',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  guests: 'guests',
+  active: 'active',
+  matched: 'matched',
+  matchVersion: 'matchVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AvailabilityAlertScalarFieldEnum = (typeof AvailabilityAlertScalarFieldEnum)[keyof typeof AvailabilityAlertScalarFieldEnum]
+
+
 export const NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -512,6 +562,8 @@ export const NotificationScalarFieldEnum = {
   bookingId: 'bookingId',
   reviewId: 'reviewId',
   hostelId: 'hostelId',
+  availabilityAlertId: 'availabilityAlertId',
+  availabilityAlertTransition: 'availabilityAlertTransition',
   read: 'read',
   readAt: 'readAt',
   createdAt: 'createdAt'
@@ -578,6 +630,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -592,4 +652,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

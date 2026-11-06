@@ -1,8 +1,19 @@
-// Path: src/lib/booking-service.ts
-
 import { db } from "@/lib/db";
+import type { PrismaClient } from "@/generated/client";
 import { calculateMonths } from "@/lib/utils";
-import type { BookingInput } from "@hostello/shared";
+import {
+  getPakistanCalendarDate,
+  isEnabledPaymentMethod,
+  type BookingInput,
+} from "@hostello/shared";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent } from "@/lib/operational-logger";
+import {
+  createSeatHolds,
+  getRoomStayAvailability,
+  lockHostelInventory,
+} from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export class BookingServiceError extends Error {
   constructor(
@@ -14,124 +25,170 @@ export class BookingServiceError extends Error {
   }
 }
 
-function isMissingRecordError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "P2025"
-  );
+type BookingDatabase = Pick<PrismaClient, "$transaction">;
+
+function getErrorCode(error: unknown): string | undefined {
+  if (typeof error !== "object" || error === null) return undefined;
+  if ("code" in error && typeof error.code === "string") return error.code;
+  if ("cause" in error) return getErrorCode(error.cause);
+  return undefined;
 }
 
-/**
- * Service to handle booking operations.
- * 
- * Concurrency Strategy:
- * - Uses optimistic locking on Room.version.
- * - Uses a transaction to ensure atomicity.
- * - Validates availability before and during the update.
- */
-export async function createBooking(userId: string, input: BookingInput) {
-  const { hostelId, roomId, checkIn, checkOut, guests, paymentMethod } = input;
+function isSeatHoldConflict(error: unknown) {
+  return ["23P01", "P2002", "P2004", "P2034"].includes(getErrorCode(error) ?? "");
+}
 
-  // 1. Fetch hostel and optional room
-  const hostel = await db.hostel.findUnique({
-    where: { id: hostelId },
-    select: { id: true, name: true, ownerId: true, status: true, pricePerMonth: true, capacity: true, cancellationPolicy: true },
-  });
+function isDateOnly(date: Date) {
+  return Number.isFinite(date.getTime()) &&
+    date.getUTCHours() === 0 &&
+    date.getUTCMinutes() === 0 &&
+    date.getUTCSeconds() === 0 &&
+    date.getUTCMilliseconds() === 0;
+}
 
-  if (!hostel || hostel.status !== "ACTIVE") {
-    throw new BookingServiceError("Hostel not found or not available for booking.", 404);
+function validateBookingInput(input: BookingInput) {
+  if (!isEnabledPaymentMethod(input.paymentMethod)) {
+    throw new BookingServiceError("Payment method is not available.", 409);
   }
-  if (!hostel.cancellationPolicy) {
-    throw new BookingServiceError("This hostel is updating its cancellation terms and is temporarily unavailable for booking.", 409);
+  if (!input.roomId) {
+    throw new BookingServiceError("Select a room before submitting this booking.", 409);
   }
-
-  let pricePerMonth = hostel.pricePerMonth;
-  let targetRoom = null;
-
-  if (roomId) {
-    targetRoom = await db.room.findUnique({
-      where: { id: roomId, hostelId },
-    });
-
-    if (!targetRoom) {
-      throw new BookingServiceError("Selected room not found.", 404);
-    }
-    
-    if (targetRoom.available < guests) {
-      throw new BookingServiceError("Not enough capacity in the selected room.", 409);
-    }
-
-    pricePerMonth = targetRoom.pricePerMonth;
+  if (
+    !isDateOnly(input.checkIn) ||
+    !isDateOnly(input.checkOut) ||
+    input.checkIn < getPakistanCalendarDate() ||
+    input.checkOut <= input.checkIn
+  ) {
+    throw new BookingServiceError("Select a valid future stay with check-out after check-in.", 409);
   }
+  if (!Number.isInteger(input.guests) || input.guests < 1 || input.guests > 4) {
+    throw new BookingServiceError("The guest count is invalid.", 409);
+  }
+}
 
-  // 2. Calculate totals
-  const months = calculateMonths(new Date(checkIn), new Date(checkOut));
-  const total = pricePerMonth * months * guests;
+export async function createBooking(
+  userId: string,
+  input: BookingInput,
+  database: BookingDatabase = db,
+) {
+  validateBookingInput(input);
 
-  // 3. Atomic transaction with optimistic locking
-  return await db.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      select: { deletionRequestedAt: true },
-    });
-    if (!user || user.deletionRequestedAt) {
-      throw new BookingServiceError("Account deletion is being processed.", 409);
-    }
-
-    // If a specific room was selected, decrement availability with optimistic lock
-    if (roomId && targetRoom) {
-      let updatedRoom;
-      try {
-        updatedRoom = await tx.room.update({
-          where: {
-            id: roomId,
-            version: targetRoom.version // Optimistic lock
-          },
-          data: {
-            available: { decrement: guests },
-            version: { increment: 1 }
-          }
-        });
-      } catch (error) {
-        if (isMissingRecordError(error)) {
-          throw new BookingServiceError("Room availability changed. Please try again.", 409);
-        }
-        throw error;
+  try {
+    const booking = await database.$transaction(async (tx) => {
+      if (!await lockHostelInventory(tx, input.hostelId)) {
+        throw new BookingServiceError("Hostel not found or not available for booking.", 404);
       }
 
-      if (updatedRoom.available < 0) {
-        throw new BookingServiceError("Room became full during booking. Please try again.", 409);
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { deletionRequestedAt: true },
+      });
+      if (!user || user.deletionRequestedAt) {
+        throw new BookingServiceError("Account deletion is being processed.", 409);
       }
+
+      const hostel = await tx.hostel.findUnique({
+        where: { id: input.hostelId },
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          status: true,
+          pricePerMonth: true,
+          cancellationPolicy: true,
+        },
+      });
+      if (!hostel || hostel.status !== "ACTIVE") {
+        throw new BookingServiceError("Hostel not found or not available for booking.", 404);
+      }
+      if (!hostel.cancellationPolicy) {
+        throw new BookingServiceError(
+          "This hostel is updating its cancellation terms and is temporarily unavailable for booking.",
+          409,
+        );
+      }
+
+      const room = await tx.room.findFirst({
+        where: { id: input.roomId, hostelId: input.hostelId },
+        select: { id: true, hostelId: true, capacity: true, pricePerMonth: true },
+      });
+      if (!room) {
+        throw new BookingServiceError("Selected room not found.", 404);
+      }
+
+      const availability = await getRoomStayAvailability(tx, {
+        hostelId: input.hostelId,
+        roomId: room.id,
+        capacity: room.capacity,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        guests: input.guests,
+      });
+      if (availability.blocked) {
+        throw new BookingServiceError(
+          "The selected room is blocked for one or more dates in this stay.",
+          409,
+        );
+      }
+      if (!availability.fits) {
+        throw new BookingServiceError(
+          "The selected room no longer has enough seats for these dates. Choose another room or stay.",
+          409,
+        );
+      }
+
+      const months = calculateMonths(input.checkIn, input.checkOut);
+      const total = room.pricePerMonth * months * input.guests;
+      const booking = await tx.booking.create({
+        data: {
+          userId,
+          hostelId: input.hostelId,
+          roomId: room.id,
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
+          months,
+          guests: input.guests,
+          total,
+          cancellationPolicy: hostel.cancellationPolicy,
+          paymentMethod: input.paymentMethod,
+          paymentStatus: "PENDING",
+          status: "PENDING",
+        },
+        include: {
+          hostel: { select: { name: true, ownerId: true } },
+          user: { select: { name: true } },
+        },
+      });
+
+      await createSeatHolds(tx, {
+        bookingId: booking.id,
+        roomId: room.id,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        seatNumbers: availability.availableSeatNumbers.slice(0, input.guests),
+      });
+
+      return booking;
+    }, { isolationLevel: "ReadCommitted" });
+    try {
+      await reevaluateAvailabilityAlertsForHostel(input.hostelId);
+    } catch (error) {
+      const summary = getSafeErrorSummary(error);
+      logOperationalEvent("error", "booking.availability_alerts.reevaluation_failed", {
+        error_name: summary.name,
+        ...(summary.code ? { error_code: summary.code } : {}),
+        ...(summary.status ? { error_status: summary.status } : {}),
+      });
     }
-
-    // Create the booking record
-    const booking = await tx.booking.create({
-      data: {
-        userId,
-        hostelId,
-        roomId: roomId || null,
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
-        months,
-        guests,
-        total,
-        cancellationPolicy: hostel.cancellationPolicy,
-        paymentMethod,
-        paymentStatus: "PENDING",
-        status: "PENDING",
-      },
-      include: {
-        hostel: { select: { name: true, ownerId: true } },
-        user: { select: { name: true } },
-      }
-    });
-
-    // The owner is deliberately not notified here. An unpaid booking is not
-    // visible to the owner and cannot be acted on; the payment webhook notifies
-    // the owner once payment is confirmed, which is also when the response
-    // window starts.
     return booking;
-  });
+  } catch (error) {
+    if (error instanceof BookingServiceError) throw error;
+    if (isSeatHoldConflict(error)) {
+      throw new BookingServiceError(
+        "Room availability changed while you were booking. Please choose another room or dates.",
+        409,
+      );
+    }
+    throw error;
+  }
 }

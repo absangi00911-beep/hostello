@@ -1,9 +1,7 @@
 # GitHub Actions — Vercel setup
 
-GitHub Actions builds and deploys the Hostello API application to Vercel. The
-web pages and UI have been removed; Next.js keeps only its required root
-layout, and requests to former page URLs return not found. API routes remain
-under `/api`.
+GitHub Actions builds and deploys the Hostello Next.js application to Vercel.
+It serves both the first-party web interface and API routes under `/api`.
 
 ## GitHub Actions secrets
 
@@ -81,11 +79,10 @@ database.
 
 ### Preview smoke checks
 
-The PR comment in `ci.yml` still links to the former homepage, hostel search,
-city, and login pages. Those UI routes no longer exist, so those links are
-stale and will return not found. Validate Preview deployments through API
-routes and their required integrations until the PR smoke-check list is
-updated.
+The PR comment in `ci.yml` links to the hostel search API as a basic deployment
+smoke check. This does not verify UI rendering or user journeys. Run the
+Playwright suite against disposable services before claiming browser-runtime
+validation; CI currently discovers/runs no browser E2E tests.
 
 ## Branch protection
 

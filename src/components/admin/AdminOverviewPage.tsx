@@ -54,41 +54,67 @@ export function AdminOverviewContent({
       </p>
 
       <div className="grid gap-5">
-        {isLoading ? (
-          <p className="m-0 text-muted" role="status">
-            Loading overview...
-          </p>
-        ) : loadError || !stats ? (
-          <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-            <p className="m-0 text-[#c13515]">
-              {loadError ?? "Could not load the overview."}
+        <section aria-labelledby="listing-statistics" id="listing-statistics">
+          <h2 className="mb-3 mt-0 text-[1.05rem] font-semibold text-ink">
+            Listing statistics
+          </h2>
+          {isLoading ? (
+            <p className="m-0 text-muted" role="status">
+              Loading overview...
             </p>
-            <button
-              className={`${secondaryButtonClassName} mt-3`}
-              onClick={onRetry}
-              type="button"
-            >
-              Try again
-            </button>
-          </div>
-        ) : (
-          <dl className="m-0 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <StatCard label="Total listings" value={stats.totalListings} />
-            <StatCard label="Pending review" value={stats.pendingApproval} />
-            <StatCard
-              label="Incomplete"
-              note={`Pending, completeness under ${stats.flaggedThreshold}%`}
-              value={stats.flaggedCount}
-            />
-            <StatCard
-              label="Newly live"
-              note={`Last ${stats.newlyPublishedWindowDays} days`}
-              value={stats.newlyPublished}
-            />
-          </dl>
-        )}
+          ) : loadError || !stats ? (
+            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+              <p className="m-0 text-[#c13515]">
+                {loadError ?? "Could not load the overview."}
+              </p>
+              <button
+                className={`${secondaryButtonClassName} mt-3`}
+                onClick={onRetry}
+                type="button"
+              >
+                Try again
+              </button>
+            </div>
+          ) : (
+            <dl className="m-0 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <StatCard label="Total listings" value={stats.totalListings} />
+              <StatCard label="Pending review" value={stats.pendingApproval} />
+              <StatCard
+                label="Incomplete"
+                note={`Pending, completeness under ${stats.flaggedThreshold}%`}
+                value={stats.flaggedCount}
+              />
+              <StatCard
+                label="Newly live"
+                note={`Last ${stats.newlyPublishedWindowDays} days`}
+                value={stats.newlyPublished}
+              />
+            </dl>
+          )}
+        </section>
 
         <nav aria-label="Admin sections" className="grid gap-3">
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin/bookings"
+          >
+            <span className="text-[1rem] font-semibold text-ink">Bookings</span>
+            <span className="text-[0.88rem] text-muted">
+              Review booking, payment and stay status without student contact
+              details.
+            </span>
+          </Link>
+          <Link
+            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
+            href="/admin#listing-statistics"
+          >
+            <span className="text-[1rem] font-semibold text-ink">
+              Listing statistics
+            </span>
+            <span className="text-[0.88rem] text-muted">
+              See current listing totals and the published-listing window.
+            </span>
+          </Link>
           <Link
             className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
             href="/admin/listings"

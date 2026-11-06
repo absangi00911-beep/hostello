@@ -1,10 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
+import { blockedDateSchema } from "@hostello/shared";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { parsePagination } from "@/lib/pagination";
 import { isBoundedRouteParam } from "@/lib/route-params";
+import {
+  createOwnerBlockedDate,
+  lockHostelInventory,
+} from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 type Ctx = { params: Promise<{ id: string }> };
 const MAX_BODY_BYTES = 2_048;
@@ -105,27 +111,31 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
   const reason = typeof body.reason === "string" ? body.reason.trim() || null : null;
 
-  const start = new Date(startDate);
-  const end   = new Date(endDate);
-
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+  const dateRange = blockedDateSchema.safeParse({ startDate, endDate });
+  if (!dateRange.success) {
+    return NextResponse.json({ error: "Provide valid inclusive calendar dates." }, { status: 400 });
   }
-  if (end < start) {
-    return NextResponse.json({ error: "endDate must be on or after startDate" }, { status: 400 });
-  }
-
-  const blocked = await db.blockedDate.create({
-    data: {
-      hostel: { connect: { id: hostel.id, ownerId: session.user.id } },
+  const { startDate: start, endDate: end } = dateRange.data;
+  const result = await db.$transaction(async (tx) => {
+    return createOwnerBlockedDate(tx, {
+      hostelId: hostel.id,
+      ownerId: session.user.id,
       startDate: start,
-      endDate:   end,
-      reason:    reason ?? null,
-    },
-    select: { id: true, startDate: true, endDate: true, reason: true },
+      endDate: end,
+      reason,
+    });
   });
 
-  return NextResponse.json({ data: blocked }, { status: 201 });
+  if (result.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (result.kind === "conflict") {
+    return NextResponse.json(
+      { error: "This block overlaps an active booking hold. Change the range or resolve the booking first." },
+      { status: 409 },
+    );
+  }
+
+  await reevaluateAvailabilityAlertsForHostel(hostel.id);
+  return NextResponse.json({ data: result.blocked }, { status: 201 });
 }
 
 /** DELETE — remove a blocked range by id */
@@ -157,13 +167,20 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  await db.blockedDate.deleteMany({
-    where: {
-      id,
-      hostelId,
-      hostel: { is: { ownerId: session.user.id } },
-    },
+  const deletedCount = await db.$transaction(async (tx) => {
+    if (!await lockHostelInventory(tx, hostelId)) return;
+    const deleted = await tx.blockedDate.deleteMany({
+      where: {
+        id,
+        hostelId,
+        hostel: { is: { ownerId: session.user.id } },
+      },
+    });
+    return deleted.count;
   });
+  if (deletedCount && deletedCount > 0) {
+    await reevaluateAvailabilityAlertsForHostel(hostelId);
+  }
 
   return NextResponse.json({ ok: true });
 }

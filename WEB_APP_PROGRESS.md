@@ -1,22 +1,25 @@
 # HostelLo — Progress
 
-**Current status (October 19, 2026):** The first-party web pages, screens, UI
-components, styles, and browser E2E suite have been removed. The Next.js
-application now exposes the existing backend through API routes; backend
-services and database code were not changed as part of that removal. The UI
-redesign is deferred.
+**Current status (November 6, 2026):** The first-party Next.js application
+includes student marketplace, owner workspace, admin, messaging,
+notification, and date-aware availability-alert surfaces. API routes,
+services, and Prisma models support these flows. The current workspace has 39
+page files, 80 API route files, 177 component source files, and 9 Playwright
+specs.
 
-**Latest verification after UI removal:** production build and typecheck pass;
-657 Vitest tests pass across 96 files. ESLint was run on the required root
-layout only; a full lint run was not part of that verification. Preview and
-production provider readiness remains a separate operational check.
+**Latest recorded verification:** 1,512 Vitest tests passed and 10 were
+skipped; application typecheck, full lint, production build, script tests,
+docs validation, Prisma schema validation, and shared-package typecheck
+passed. The build emitted a non-blocking Sentry recommendation to add a global
+error handler. Playwright test discovery passed, but browser-runtime E2E,
+Task 11 PostgreSQL concurrency, Safepay sandbox, QStash retry, and database
+backup/restore checks remain unverified. Do not treat this summary as evidence
+of production readiness.
 
-This file retains a progress log from the previous web-product state. The
-dated entries and sections below are historical snapshots; UI routes,
-components, and Playwright files mentioned there no longer exist. Do not use
-those entries as a current implementation inventory.
+The dated entries and sections below are historical snapshots, not a current
+implementation inventory.
 
-## Historical UI and backend progress snapshot (October 16, 2026)
+## Historical UI and backend progress snapshots (through October 16, 2026)
 
 **Status at that time:** MVP features were implemented and launch hardening
 was in progress. The web redesign was committed on `main`; its full visual
@@ -89,7 +92,7 @@ Multi-currency/international expansion, offline search, video reviews, Apple Pay
 
 ## Numbers (updated October 8, 2026 — recounted from the current workspace)
 
-58 web page files · 71 API route files · 28 Prisma models · 29 migrations · 122 Vitest files + 5 Playwright specs · PKR 3,000/month Pro plan.
+The October 16, 2026 snapshot recorded 58 web page files, 71 API route files, 28 Prisma models, 29 migrations, 122 Vitest files and 5 Playwright specs, plus a PKR 3,000/month Pro plan. These counts describe that dated snapshot only.
 
 Production schema deployment is now an explicit CI step after the quality gate: `npm run db:migrate:deploy` receives the production database URL from Vercel via `vercel env run`; `npm run build` only generates Prisma Client and builds Next.js. Preview builds no longer apply migrations, and preview schema updates must be managed separately. The new ledger migration was applied to the confirmed disposable local database; production has not been migrated.
 

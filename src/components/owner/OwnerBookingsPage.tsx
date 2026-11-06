@@ -390,31 +390,34 @@ export function OwnerBookingsPage() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const loadFirstPage = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
     setLoadError(null);
     setMoreError(null);
     setItems([]);
-    fetchBookings(filter, 1, controller.signal)
-      .then((result) => {
-        setItems(result.data);
-        setTotal(result.total);
-        setPage(result.page);
-        setHasMore(result.hasMore);
-        setNow(Date.now());
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
-        setLoadError(
-          error instanceof Error ? error.message : "Could not load your bookings.",
-        );
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false);
-      });
+    try {
+      const result = await fetchBookings(filter, 1, signal);
+      if (signal?.aborted) return;
+      setItems(result.data);
+      setTotal(result.total);
+      setPage(result.page);
+      setHasMore(result.hasMore);
+      setNow(Date.now());
+    } catch (error: unknown) {
+      if (signal?.aborted) return;
+      setLoadError(
+        error instanceof Error ? error.message : "Could not load your bookings.",
+      );
+    } finally {
+      if (!signal?.aborted) setIsLoading(false);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadFirstPage(controller.signal);
     return () => controller.abort();
-  }, [filter, retryCount]);
+  }, [filter, retryCount, loadFirstPage]);
 
   const loadMore = useCallback(async () => {
     setIsLoadingMore(true);
@@ -449,15 +452,16 @@ export function OwnerBookingsPage() {
         });
         const payload: unknown = await response.json().catch(() => null);
         if (!response.ok) {
+          const needsRefresh = response.status === 409 || response.status >= 500;
           setNotice({
             tone: "error",
-            text: readBookingsError(
-              payload,
-              "We couldn't update this booking. Please try again.",
-            ),
+            text: needsRefresh && response.status >= 500
+              ? "We couldn't confirm the booking decision. Refreshing its current status."
+              : readBookingsError(payload, "We couldn't update this booking. Please try again."),
           });
-          // A 409 means the booking changed or its window closed: show fresh data.
-          if (response.status === 409) setRetryCount((count) => count + 1);
+          if (needsRefresh) {
+            await loadFirstPage();
+          }
           return;
         }
         setNotice({
@@ -481,13 +485,14 @@ export function OwnerBookingsPage() {
       } catch {
         setNotice({
           tone: "error",
-          text: "We couldn't update this booking. Please try again.",
+          text: "We couldn't confirm the booking decision. Refreshing its current status.",
         });
+        await loadFirstPage();
       } finally {
         setBusyId(null);
       }
     },
-    [filter],
+    [filter, loadFirstPage],
   );
 
   return (

@@ -5,10 +5,15 @@ vi.mock("next/link", () => ({
   default: ({
     children,
     href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      children: React.ReactNode;
+      href: string;
+    }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@radix-ui/react-dropdown-menu", () => ({
@@ -50,10 +55,16 @@ vi.mock("./LoginDialogTrigger", () => ({
   LoginDialogTrigger: ({
     ariaLabel,
     children,
+    className,
   }: {
     ariaLabel: string;
     children: React.ReactNode;
-  }) => <button aria-label={ariaLabel}>{children}</button>,
+    className?: string;
+  }) => (
+    <button aria-label={ariaLabel} className={className}>
+      {children}
+    </button>
+  ),
 }));
 
 import { BrowseAccountMenu } from "./BrowseAccountMenu";
@@ -132,15 +143,30 @@ describe("BrowseAccountMenu", () => {
     [
       "OWNER",
       [
-        ["/", "Explore"],
+        ["/owner", "Dashboard"],
+        ["/owner/listings/new", "Create listing"],
+        ["/owner/bookings", "Bookings"],
         ["/messages", "Messages"],
+        ["/owner/reviews", "Reviews"],
+        ["/owner/analytics", "Analytics"],
+        ["/owner/earnings", "Earnings"],
+        ["/owner/subscription", "Subscription"],
       ],
-      ["/wishlists", "/trips", "/profile"],
+      ["/", "/wishlists", "/trips", "/profile"],
     ],
     [
       "ADMIN",
-      [["/", "Explore"]],
-      ["/wishlists", "/trips", "/messages", "/profile"],
+      [
+        ["/admin", "Admin console"],
+        ["/admin/listings", "Listings"],
+        ["/admin/verifications", "Verifications"],
+        ["/admin/roommate-reports", "Roommate reports"],
+        ["/admin/payment-events", "Payment events"],
+        ["/admin/refunds", "Refunds"],
+        ["/admin/payouts", "Payouts"],
+        ["/admin/search-sync", "Search sync"],
+      ],
+      ["/wishlists", "/trips", "/messages", "/profile", "/owner"],
     ],
   ] as const)(
     "shows only role-available destinations in the %s account menu",
@@ -150,7 +176,8 @@ describe("BrowseAccountMenu", () => {
       );
 
       for (const [href, label] of visibleLinks) {
-        expect(markup).toContain(`href="${href}">${label}</a>`);
+        expect(markup).toContain(`href="${href}"`);
+        expect(markup).toContain(`>${label}</span>`);
       }
       for (const href of hiddenLinks) {
         expect(markup).not.toContain(`href="${href}"`);
@@ -181,10 +208,12 @@ describe("BrowseAccountMenu", () => {
     ["OWNER", true],
     ["STUDENT", false],
     ["ADMIN", false],
-  ] as const)("shows the host dashboard link only to owners (%s)", (role, shown) => {
+  ] as const)("shows the owner dashboard only to owners (%s)", (role, shown) => {
     const markup = renderToStaticMarkup(<BrowseAccountMenu user={{ role }} />);
 
-    expect(markup.includes('href="/owner">Host dashboard</a>')).toBe(shown);
+    expect(
+      /<a\b(?=[^>]*href="\/owner")[^>]*><span>Dashboard<\/span>/.test(markup),
+    ).toBe(shown);
   });
 
   it.each([
@@ -194,6 +223,44 @@ describe("BrowseAccountMenu", () => {
   ] as const)("shows the admin console link only to admins (%s)", (role, shown) => {
     const markup = renderToStaticMarkup(<BrowseAccountMenu user={{ role }} />);
 
-    expect(markup.includes('href="/admin">Admin console</a>')).toBe(shown);
+    expect(
+      /<a\b(?=[^>]*href="\/admin")[^>]*><span>Admin console<\/span>/.test(
+        markup,
+      ),
+    ).toBe(shown);
+  });
+
+  it("uses a 44px keyboard-focusable sign-in target for guests", () => {
+    const markup = renderToStaticMarkup(<BrowseAccountMenu user={null} />);
+    const signIn = markup.match(/<button\b[^>]*aria-label="Sign in"[^>]*>/)?.[0];
+
+    expect(signIn).toContain("size-11");
+    expect(signIn).toContain("focus-visible:outline");
+  });
+
+  it("keeps the signed-in account trigger at least 44px and visibly focused", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseAccountMenu
+        user={{ name: "Alex Student", role: "STUDENT" }}
+      />,
+    );
+    const accountTrigger = markup.match(
+      /<button\b(?=[^>]*aria-label="Account menu for Alex Student")[^>]*>/,
+    )?.[0];
+
+    expect(accountTrigger).toContain("min-h-11");
+    expect(accountTrigger).toContain("focus-visible:outline");
+  });
+
+  it("gives owner menu links 44px keyboard-focusable targets", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseAccountMenu user={{ role: "OWNER" }} />,
+    );
+    const bookingsLink = markup.match(
+      /<a\b(?=[^>]*href="\/owner\/bookings")[^>]*>/,
+    )?.[0];
+
+    expect(bookingsLink).toContain("min-h-11");
+    expect(bookingsLink).toContain("focus-visible:outline");
   });
 });

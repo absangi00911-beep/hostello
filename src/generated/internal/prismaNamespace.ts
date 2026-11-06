@@ -409,8 +409,10 @@ export const ModelName = {
   Hostel: 'Hostel',
   Room: 'Room',
   Booking: 'Booking',
+  SeatHold: 'SeatHold',
   HostelVerificationReview: 'HostelVerificationReview',
   RefundAuditEvent: 'RefundAuditEvent',
+  LatePaymentResolution: 'LatePaymentResolution',
   SafepayWebhookEvent: 'SafepayWebhookEvent',
   SafepayWebhookReplayEvent: 'SafepayWebhookReplayEvent',
   Review: 'Review',
@@ -421,6 +423,7 @@ export const ModelName = {
   ConversationParticipant: 'ConversationParticipant',
   Message: 'Message',
   PriceAlert: 'PriceAlert',
+  AvailabilityAlert: 'AvailabilityAlert',
   Notification: 'Notification',
   CronLog: 'CronLog',
   BlockedDate: 'BlockedDate',
@@ -441,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "hostelVerificationReview" | "refundAuditEvent" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
+    modelProps: "user" | "accountDeletionJob" | "subscription" | "payout" | "payoutAuditEvent" | "account" | "session" | "verificationToken" | "phoneVerificationToken" | "hostel" | "room" | "booking" | "seatHold" | "hostelVerificationReview" | "refundAuditEvent" | "latePaymentResolution" | "safepayWebhookEvent" | "safepayWebhookReplayEvent" | "review" | "passwordResetToken" | "favorite" | "conversation" | "hostResponseSummary" | "conversationParticipant" | "message" | "priceAlert" | "availabilityAlert" | "notification" | "cronLog" | "blockedDate" | "roommatePost" | "roommateReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1333,6 +1336,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SeatHold: {
+      payload: Prisma.$SeatHoldPayload<ExtArgs>
+      fields: Prisma.SeatHoldFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SeatHoldFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SeatHoldFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        findFirst: {
+          args: Prisma.SeatHoldFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SeatHoldFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        findMany: {
+          args: Prisma.SeatHoldFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        create: {
+          args: Prisma.SeatHoldCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        createMany: {
+          args: Prisma.SeatHoldCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SeatHoldCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        delete: {
+          args: Prisma.SeatHoldDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        update: {
+          args: Prisma.SeatHoldUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        deleteMany: {
+          args: Prisma.SeatHoldDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SeatHoldUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SeatHoldUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>[]
+        }
+        upsert: {
+          args: Prisma.SeatHoldUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SeatHoldPayload>
+        }
+        aggregate: {
+          args: Prisma.SeatHoldAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSeatHold>
+        }
+        groupBy: {
+          args: Prisma.SeatHoldGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SeatHoldGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SeatHoldCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SeatHoldCountAggregateOutputType> | number
+        }
+      }
+    }
     HostelVerificationReview: {
       payload: Prisma.$HostelVerificationReviewPayload<ExtArgs>
       fields: Prisma.HostelVerificationReviewFieldRefs
@@ -1478,6 +1555,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.RefundAuditEventCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RefundAuditEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    LatePaymentResolution: {
+      payload: Prisma.$LatePaymentResolutionPayload<ExtArgs>
+      fields: Prisma.LatePaymentResolutionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LatePaymentResolutionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LatePaymentResolutionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        findFirst: {
+          args: Prisma.LatePaymentResolutionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LatePaymentResolutionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        findMany: {
+          args: Prisma.LatePaymentResolutionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        create: {
+          args: Prisma.LatePaymentResolutionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        createMany: {
+          args: Prisma.LatePaymentResolutionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LatePaymentResolutionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        delete: {
+          args: Prisma.LatePaymentResolutionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        update: {
+          args: Prisma.LatePaymentResolutionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        deleteMany: {
+          args: Prisma.LatePaymentResolutionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LatePaymentResolutionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LatePaymentResolutionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>[]
+        }
+        upsert: {
+          args: Prisma.LatePaymentResolutionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LatePaymentResolutionPayload>
+        }
+        aggregate: {
+          args: Prisma.LatePaymentResolutionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLatePaymentResolution>
+        }
+        groupBy: {
+          args: Prisma.LatePaymentResolutionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LatePaymentResolutionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LatePaymentResolutionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LatePaymentResolutionCountAggregateOutputType> | number
         }
       }
     }
@@ -2221,6 +2372,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AvailabilityAlert: {
+      payload: Prisma.$AvailabilityAlertPayload<ExtArgs>
+      fields: Prisma.AvailabilityAlertFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AvailabilityAlertFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AvailabilityAlertFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        findFirst: {
+          args: Prisma.AvailabilityAlertFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AvailabilityAlertFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        findMany: {
+          args: Prisma.AvailabilityAlertFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        create: {
+          args: Prisma.AvailabilityAlertCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        createMany: {
+          args: Prisma.AvailabilityAlertCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AvailabilityAlertCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        delete: {
+          args: Prisma.AvailabilityAlertDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        update: {
+          args: Prisma.AvailabilityAlertUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        deleteMany: {
+          args: Prisma.AvailabilityAlertDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AvailabilityAlertUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AvailabilityAlertUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>[]
+        }
+        upsert: {
+          args: Prisma.AvailabilityAlertUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AvailabilityAlertPayload>
+        }
+        aggregate: {
+          args: Prisma.AvailabilityAlertAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAvailabilityAlert>
+        }
+        groupBy: {
+          args: Prisma.AvailabilityAlertGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AvailabilityAlertGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AvailabilityAlertCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AvailabilityAlertCountAggregateOutputType> | number
+        }
+      }
+    }
     Notification: {
       payload: Prisma.$NotificationPayload<ExtArgs>
       fields: Prisma.NotificationFieldRefs
@@ -2862,6 +3087,19 @@ export const BookingScalarFieldEnum = {
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
+export const SeatHoldScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  seatNo: 'seatNo',
+  bookingId: 'bookingId',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  createdAt: 'createdAt'
+} as const
+
+export type SeatHoldScalarFieldEnum = (typeof SeatHoldScalarFieldEnum)[keyof typeof SeatHoldScalarFieldEnum]
+
+
 export const HostelVerificationReviewScalarFieldEnum = {
   id: 'id',
   hostelId: 'hostelId',
@@ -2895,6 +3133,21 @@ export const RefundAuditEventScalarFieldEnum = {
 } as const
 
 export type RefundAuditEventScalarFieldEnum = (typeof RefundAuditEventScalarFieldEnum)[keyof typeof RefundAuditEventScalarFieldEnum]
+
+
+export const LatePaymentResolutionScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  sourceWebhookEventId: 'sourceWebhookEventId',
+  providerTracker: 'providerTracker',
+  reason: 'reason',
+  outcome: 'outcome',
+  amount: 'amount',
+  currency: 'currency',
+  recordedAt: 'recordedAt'
+} as const
+
+export type LatePaymentResolutionScalarFieldEnum = (typeof LatePaymentResolutionScalarFieldEnum)[keyof typeof LatePaymentResolutionScalarFieldEnum]
 
 
 export const SafepayWebhookEventScalarFieldEnum = {
@@ -3035,6 +3288,25 @@ export const PriceAlertScalarFieldEnum = {
 export type PriceAlertScalarFieldEnum = (typeof PriceAlertScalarFieldEnum)[keyof typeof PriceAlertScalarFieldEnum]
 
 
+export const AvailabilityAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  hostelId: 'hostelId',
+  searchCriteria: 'searchCriteria',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  guests: 'guests',
+  active: 'active',
+  matched: 'matched',
+  matchVersion: 'matchVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AvailabilityAlertScalarFieldEnum = (typeof AvailabilityAlertScalarFieldEnum)[keyof typeof AvailabilityAlertScalarFieldEnum]
+
+
 export const NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3044,6 +3316,8 @@ export const NotificationScalarFieldEnum = {
   bookingId: 'bookingId',
   reviewId: 'reviewId',
   hostelId: 'hostelId',
+  availabilityAlertId: 'availabilityAlertId',
+  availabilityAlertTransition: 'availabilityAlertTransition',
   read: 'read',
   readAt: 'readAt',
   createdAt: 'createdAt'
@@ -3110,6 +3384,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -3124,6 +3406,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -3378,6 +3669,34 @@ export type ListEnumRefundAuditEventTypeFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'LatePaymentReason'
+ */
+export type EnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason'>
+    
+
+
+/**
+ * Reference to a field of type 'LatePaymentReason[]'
+ */
+export type ListEnumLatePaymentReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentReason[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LatePaymentOutcome'
+ */
+export type EnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome'>
+    
+
+
+/**
+ * Reference to a field of type 'LatePaymentOutcome[]'
+ */
+export type ListEnumLatePaymentOutcomeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LatePaymentOutcome[]'>
+    
+
+
+/**
  * Reference to a field of type 'SafepayWebhookEventStatus'
  */
 export type EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus'>
@@ -3388,6 +3707,34 @@ export type EnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefI
  * Reference to a field of type 'SafepayWebhookEventStatus[]'
  */
 export type ListEnumSafepayWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SafepayWebhookEventStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AvailabilityAlertType'
+ */
+export type EnumAvailabilityAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AvailabilityAlertType'>
+    
+
+
+/**
+ * Reference to a field of type 'AvailabilityAlertType[]'
+ */
+export type ListEnumAvailabilityAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AvailabilityAlertType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -3567,8 +3914,10 @@ export type GlobalOmitConfig = {
   hostel?: Prisma.HostelOmit
   room?: Prisma.RoomOmit
   booking?: Prisma.BookingOmit
+  seatHold?: Prisma.SeatHoldOmit
   hostelVerificationReview?: Prisma.HostelVerificationReviewOmit
   refundAuditEvent?: Prisma.RefundAuditEventOmit
+  latePaymentResolution?: Prisma.LatePaymentResolutionOmit
   safepayWebhookEvent?: Prisma.SafepayWebhookEventOmit
   safepayWebhookReplayEvent?: Prisma.SafepayWebhookReplayEventOmit
   review?: Prisma.ReviewOmit
@@ -3579,6 +3928,7 @@ export type GlobalOmitConfig = {
   conversationParticipant?: Prisma.ConversationParticipantOmit
   message?: Prisma.MessageOmit
   priceAlert?: Prisma.PriceAlertOmit
+  availabilityAlert?: Prisma.AvailabilityAlertOmit
   notification?: Prisma.NotificationOmit
   cronLog?: Prisma.CronLogOmit
   blockedDate?: Prisma.BlockedDateOmit

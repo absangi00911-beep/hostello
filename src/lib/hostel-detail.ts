@@ -53,7 +53,7 @@ export async function getPublicHostelDetail(param: string) {
         },
       },
       rooms_rel: {
-        where: { available: { gt: 0 } },
+        where: { capacity: { gt: 0 } },
         orderBy: { pricePerMonth: "asc" },
         select: {
           id: true,
@@ -61,7 +61,6 @@ export async function getPublicHostelDetail(param: string) {
           description: true,
           pricePerMonth: true,
           capacity: true,
-          available: true,
           images: true,
         },
       },
@@ -134,5 +133,72 @@ export async function getPublicHostelDetail(param: string) {
       value: value._avg.value,
       safety: safety._avg.safety,
     },
+  };
+}
+
+type PublicHostelDetailRecord = NonNullable<
+  Awaited<ReturnType<typeof getPublicHostelDetail>>
+>;
+
+function roundedPublicCoordinate(value: number | null): number | null {
+  return value !== null && Number.isFinite(value)
+    ? Number(value.toFixed(2))
+    : null;
+}
+
+export function projectPublicHostelDetail(hostel: PublicHostelDetailRecord) {
+  return {
+    id: hostel.id,
+    slug: hostel.slug,
+    name: hostel.name,
+    city: hostel.city,
+    area: hostel.area,
+    description: hostel.description,
+    amenities: hostel.amenities,
+    pricePerMonth: hostel.pricePerMonth,
+    gender: hostel.gender,
+    rooms: hostel.rooms,
+    capacity: hostel.capacity,
+    minStay: hostel.minStay,
+    maxStay: hostel.maxStay,
+    cancellationPolicy: hostel.cancellationPolicy,
+    images: hostel.images,
+    coverImage: hostel.coverImage,
+    verified: hostel.verified,
+    rating: hostel.rating,
+    reviewCount: hostel.reviewCount,
+    latitude: roundedPublicCoordinate(hostel.latitude),
+    longitude: roundedPublicCoordinate(hostel.longitude),
+    owner: {
+      name: hostel.owner.name,
+      avatar: hostel.owner.avatar,
+      bio: hostel.owner.bio,
+      city: hostel.owner.city,
+      createdAt: hostel.owner.createdAt,
+      hostResponseSummary: hostel.owner.hostResponseSummary,
+    },
+    rooms_rel: hostel.rooms_rel.map((room) => ({
+      id: room.id,
+      name: room.name,
+      description: room.description,
+      pricePerMonth: room.pricePerMonth,
+      capacity: room.capacity,
+      images: room.images,
+    })),
+    reviews: hostel.reviews.map((review) => ({
+      id: review.id,
+      rating: review.rating,
+      title: review.title,
+      comment: review.comment,
+      cleanliness: review.cleanliness,
+      location: review.location,
+      value: review.value,
+      safety: review.safety,
+      ownerReply: review.ownerReply,
+      createdAt: review.createdAt,
+      verified: review.verified,
+      user: { name: review.user.name, avatar: review.user.avatar },
+    })),
+    reviewCategoryRatings: hostel.reviewCategoryRatings,
   };
 }

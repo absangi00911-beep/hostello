@@ -78,6 +78,11 @@ export type Room = Prisma.RoomModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model SeatHold
+ * 
+ */
+export type SeatHold = Prisma.SeatHoldModel
+/**
  * Model HostelVerificationReview
  * 
  */
@@ -87,6 +92,11 @@ export type HostelVerificationReview = Prisma.HostelVerificationReviewModel
  * 
  */
 export type RefundAuditEvent = Prisma.RefundAuditEventModel
+/**
+ * Model LatePaymentResolution
+ * 
+ */
+export type LatePaymentResolution = Prisma.LatePaymentResolutionModel
 /**
  * Model SafepayWebhookEvent
  * 
@@ -137,6 +147,11 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type PriceAlert = Prisma.PriceAlertModel
+/**
+ * Model AvailabilityAlert
+ * 
+ */
+export type AvailabilityAlert = Prisma.AvailabilityAlertModel
 /**
  * Model Notification
  * 

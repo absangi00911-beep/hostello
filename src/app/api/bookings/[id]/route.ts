@@ -12,6 +12,11 @@ import { rateLimit } from "@/lib/rate-limit";
 import { processRefund } from "@/lib/refunds";
 import { CANCELLATION_POLICY_DETAILS, getCancellationRefundAmount } from "@/lib/cancellation-policy";
 import {
+  lockAvailabilityInventory,
+  releaseSeatHolds,
+} from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import {
   createOperationalLogContext,
   hashOperationalIdentifier,
   logOperationalEvent,
@@ -187,8 +192,9 @@ export async function PATCH(
           ? getCancellationRefundAmount(booking.cancellationPolicy, booking.total, booking.checkIn, cancelledAt)
           : booking.total;
 
-      // Use a transaction to atomically cancel the booking and restore room availability.
+      // The state transition and inventory release must commit or roll back together.
       const updated = await db.$transaction(async (tx) => {
+        await lockAvailabilityInventory(tx, booking.hostelId);
         const cancelled = await tx.booking.updateMany({
           where: {
             id,
@@ -204,17 +210,7 @@ export async function PATCH(
         });
 
         if (cancelled.count !== 1) return null;
-
-        // Restore room availability if a specific room was booked
-        if (booking.roomId && booking.checkIn > cancelledAt) {
-          await tx.room.update({
-            where: { id: booking.roomId },
-            data: {
-              available: { increment: booking.guests },
-              version: { increment: 1 },
-            },
-          });
-        }
+        await releaseSeatHolds(tx, id);
 
         return { id, status: "CANCELLED" as const, roomId: booking.roomId, cancellationRefundAmount: refundAmount };
       });
@@ -235,6 +231,8 @@ export async function PATCH(
           { status: 409 },
         );
       }
+
+      await reevaluateAvailabilityAlertsForHostel(booking.hostelId);
 
       // Notify owner that student cancelled
       await createNotification({
@@ -312,8 +310,9 @@ export async function PATCH(
 
     const newStatus = action === "confirm" ? "CONFIRMED" : "CANCELLED";
 
-    // Use a transaction so decline also restores room availability atomically
+    // Keep decline and hold release atomic so a failed transition cannot free seats.
     const updated = await db.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx, booking.hostelId);
       const result = await tx.booking.updateMany({
         where: {
           id,
@@ -336,17 +335,7 @@ export async function PATCH(
       });
 
       if (result.count !== 1) return null;
-
-      // Restore room availability when owner declines
-      if (newStatus === "CANCELLED" && booking.roomId) {
-        await tx.room.update({
-          where: { id: booking.roomId },
-          data: {
-            available: { increment: booking.guests },
-            version: { increment: 1 },
-          },
-        });
-      }
+      if (newStatus === "CANCELLED") await releaseSeatHolds(tx, id);
 
       return { id, status: newStatus, roomId: booking.roomId };
     });
@@ -357,6 +346,8 @@ export async function PATCH(
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(booking.hostelId);
 
     let refundAutomatic: boolean | null = null;
     let refundNeedsReview = false;

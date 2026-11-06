@@ -12,6 +12,9 @@ vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("@/lib/email-templates/booking-status", () => ({ bookingStatusEmail: vi.fn() }));
 vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn() }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
@@ -21,8 +24,9 @@ import { hashOperationalIdentifier } from "@/lib/operational-logger";
 import { GET, PATCH } from "./route";
 
 const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([]),
   booking: { updateMany: vi.fn() },
-  room: { update: vi.fn() },
+  seatHold: { deleteMany: vi.fn() },
 };
 
 const booking = {
@@ -67,7 +71,7 @@ beforeEach(() => {
   vi.mocked(db.booking.findUnique).mockResolvedValue(null);
   vi.mocked(db.$transaction).mockImplementation((async (callback: any) => callback(tx)) as any);
   tx.booking.updateMany.mockResolvedValue({ count: 1 });
-  tx.room.update.mockResolvedValue({});
+  tx.seatHold.deleteMany.mockResolvedValue({ count: 3 });
 });
 
 describe("PATCH /api/bookings/[id]", () => {
@@ -116,7 +120,7 @@ describe("PATCH /api/bookings/[id]", () => {
     expect(response.status).toBe(403);
   });
 
-  it("cancels once and restores the room only after the conditional transition", async () => {
+  it("cancels once and releases its seat holds only after the conditional transition", async () => {
     vi.mocked(auth).mockResolvedValue(session("student_1", "STUDENT"));
 
     const response = await patch("cancel");
@@ -133,10 +137,7 @@ describe("PATCH /api/bookings/[id]", () => {
       }),
       data: { status: "CANCELLED", cancellationRefundAmount: 0 },
     }));
-    expect(tx.room.update).toHaveBeenCalledWith({
-      where: { id: "room_1" },
-      data: { available: { increment: 3 }, version: { increment: 1 } },
-    });
+    expect(tx.seatHold.deleteMany).toHaveBeenCalledWith({ where: { bookingId: booking.id } });
     expect(body.data.status).toBe("CANCELLED");
   });
 
@@ -147,7 +148,7 @@ describe("PATCH /api/bookings/[id]", () => {
     const response = await patch("cancel");
 
     expect(response.status).toBe(409);
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(tx.seatHold.deleteMany).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
   });
 
@@ -162,7 +163,7 @@ describe("PATCH /api/bookings/[id]", () => {
 
     expect(response.status).toBe(400);
     expect(tx.booking.updateMany).not.toHaveBeenCalled();
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(tx.seatHold.deleteMany).not.toHaveBeenCalled();
   });
 
   it("allows a student to cancel a confirmed booking under its saved cancellation terms", async () => {
@@ -178,7 +179,7 @@ describe("PATCH /api/bookings/[id]", () => {
     expect(response.status).toBe(200);
     expect(body.data).toMatchObject({ status: "CANCELLED", cancellationRefundAmount: 0 });
     expect(tx.booking.updateMany).toHaveBeenCalledOnce();
-    expect(tx.room.update).toHaveBeenCalledOnce();
+    expect(tx.seatHold.deleteMany).toHaveBeenCalledOnce();
   });
 
   it("does not cancel a booking if a payout batch claims it after the initial read", async () => {
@@ -196,7 +197,7 @@ describe("PATCH /api/bookings/[id]", () => {
       where: expect.objectContaining({ id: booking.id, status: "PENDING", payoutId: null, paymentStatus: "PENDING" }),
       data: { status: "CANCELLED", cancellationRefundAmount: 0 },
     }));
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(tx.seatHold.deleteMany).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
   });
 
@@ -217,17 +218,17 @@ describe("PATCH /api/bookings/[id]", () => {
       }),
       data: { status: "CONFIRMED" },
     }));
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(tx.seatHold.deleteMany).not.toHaveBeenCalled();
     expect(body.data.status).toBe("CONFIRMED");
   });
 
-  it("restores room inventory when the owner declines a pending booking", async () => {
+  it("releases seat holds when the owner declines a pending booking", async () => {
     vi.mocked(auth).mockResolvedValue(session("owner_1", "OWNER"));
 
     const response = await patch("decline");
 
     expect(response.status).toBe(200);
-    expect(tx.room.update).toHaveBeenCalledTimes(1);
+    expect(tx.seatHold.deleteMany).toHaveBeenCalledWith({ where: { bookingId: booking.id } });
   });
 
   it("does not transition or restore inventory if hostel ownership changed after authorization", async () => {
@@ -246,7 +247,7 @@ describe("PATCH /api/bookings/[id]", () => {
       }),
       data: { status: "CANCELLED" },
     }));
-    expect(tx.room.update).not.toHaveBeenCalled();
+    expect(tx.seatHold.deleteMany).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
   });
 

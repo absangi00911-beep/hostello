@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getAccountNavigationItems,
   getProductNavigationTabs,
   productNavigationTabs,
   type ProductNavigationRole,
@@ -142,4 +143,61 @@ describe("getProductNavigationTabs role matrix", () => {
       expect(hrefs.some((href) => href.startsWith("/admin"))).toBe(false);
     }
   });
+});
+
+describe("getAccountNavigationItems role matrix", () => {
+  it.each([
+    [
+      "student",
+      "STUDENT",
+      [
+        ["/", "Explore"],
+        ["/wishlists", "Wishlists"],
+        ["/trips", "Trips"],
+        ["/messages", "Messages"],
+        ["/profile", "Profile"],
+        ["/notifications", "Notifications"],
+      ],
+    ],
+    [
+      "owner",
+      "OWNER",
+      [
+        ["/owner", "Dashboard"],
+        ["/owner/listings/new", "Create listing"],
+        ["/owner/bookings", "Bookings"],
+        ["/messages", "Messages"],
+        ["/owner/reviews", "Reviews"],
+        ["/owner/analytics", "Analytics"],
+        ["/owner/earnings", "Earnings"],
+        ["/owner/subscription", "Subscription"],
+        ["/notifications", "Notifications"],
+      ],
+    ],
+    [
+      "admin",
+      "ADMIN",
+      [
+        ["/admin", "Admin console"],
+        ["/admin/listings", "Listings"],
+        ["/admin/verifications", "Verifications"],
+        ["/admin/roommate-reports", "Roommate reports"],
+        ["/admin/payment-events", "Payment events"],
+        ["/admin/refunds", "Refunds"],
+        ["/admin/payouts", "Payouts"],
+        ["/admin/search-sync", "Search sync"],
+        ["/notifications", "Notifications"],
+      ],
+    ],
+  ] as const)(
+    "returns only existing, role-relevant destinations for a %s",
+    (_label, role, expected) => {
+      expect(
+        getAccountNavigationItems(role).map(({ href, label }) => [
+          href,
+          label,
+        ]),
+      ).toEqual(expected);
+    },
+  );
 });

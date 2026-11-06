@@ -6,6 +6,8 @@ import {
   FormSection,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
   isUnresolved,
@@ -35,6 +37,7 @@ const dangerButtonClassName =
 export interface RefundActionResult {
   /** Error to show on the card; null when the action succeeded. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type RefundAction = (
@@ -129,6 +132,7 @@ function RefundCard({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
   const unresolved = isUnresolved(booking.refundState);
 
   async function confirm() {
@@ -136,7 +140,10 @@ function RefundCard({
     setError(null);
     const result = await onRefund(booking, unresolved);
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
     else setConfirming(false);
   }
 
@@ -153,10 +160,16 @@ function RefundCard({
         </span>
       </div>
       <p className="m-0 text-[0.85rem] text-muted">
-        {booking.studentEmail} · {booking.hostelName} ·{" "}
+        {booking.hostelName} ·{" "}
         {dateFormatter.format(new Date(booking.checkIn))} to{" "}
         {dateFormatter.format(new Date(booking.checkOut))}
       </p>
+      <Link
+        className="w-fit text-[0.85rem] font-semibold text-brand hover:underline"
+        href={`/admin/bookings/${encodeURIComponent(booking.id)}`}
+      >
+        View booking
+      </Link>
       <dl className="m-0 grid gap-1 text-[0.88rem]">
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Paid</dt>
@@ -192,31 +205,37 @@ function RefundCard({
             : "Safepay did not confirm the last automatic refund. Check Safepay before doing anything else; a second automatic request is blocked."}
         </p>
       ) : null}
-      <div className="flex flex-wrap gap-2">
-        <button
-          className={secondaryButtonClassName}
-          onClick={() => {
-            setError(null);
-            setConfirming((open) => !open);
-          }}
-          type="button"
-        >
-          {unresolved ? "Confirm refund manually" : "Refund via Safepay"}
-        </button>
-      </div>
-      {confirming ? (
-        <RefundConfirmForm
-          booking={booking}
-          busy={busy}
-          error={error}
-          manual={unresolved}
-          onCancel={() => {
-            setConfirming(false);
-            setError(null);
-          }}
-          onConfirm={() => void confirm()}
-        />
-      ) : null}
+      {uncertain ? (
+        <AdminUncertainActionNotice />
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className={secondaryButtonClassName}
+              onClick={() => {
+                setError(null);
+                setConfirming((open) => !open);
+              }}
+              type="button"
+            >
+              {unresolved ? "Confirm refund manually" : "Refund via Safepay"}
+            </button>
+          </div>
+          {confirming ? (
+            <RefundConfirmForm
+              booking={booking}
+              busy={busy}
+              error={error}
+              manual={unresolved}
+              onCancel={() => {
+                setConfirming(false);
+                setError(null);
+              }}
+              onConfirm={() => void confirm()}
+            />
+          ) : null}
+        </>
+      )}
     </li>
   );
 }
@@ -453,9 +472,12 @@ export function AdminRefundsPage() {
         setNotice({ tone: "error", text: message });
         setRetryCount((count) => count + 1);
       }
-      return { error: message };
+      return {
+        error: message,
+        uncertain: isUncertainAdminActionStatus(response.status),
+      };
     } catch {
-      return { error: fallback };
+      return { error: fallback, uncertain: true };
     }
   }, []);
 

@@ -6,6 +6,8 @@ import {
   FormSection,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
   deletePostMessage,
@@ -36,6 +38,7 @@ const dangerButtonClassName =
 export interface DeleteResult {
   /** Error to show on the card; null when the post was deleted. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type DeletePostAction = (
@@ -103,6 +106,7 @@ function ReportedPostCard({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
 
   const hidden = isHiddenFromStudents(post.reportCount, hideThreshold);
   const expired = isPostExpired(post.expiresAt, now);
@@ -113,7 +117,10 @@ function ReportedPostCard({
     const result = await onDelete(post);
     // On success the parent removes this card, so only failures need state.
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
   }
 
   return (
@@ -179,28 +186,34 @@ function ReportedPostCard({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          className={secondaryButtonClassName}
-          onClick={() => setConfirming((open) => !open)}
-          type="button"
-        >
-          Delete post
-        </button>
-      </div>
+      {uncertain ? (
+        <AdminUncertainActionNotice />
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className={secondaryButtonClassName}
+              onClick={() => setConfirming((open) => !open)}
+              type="button"
+            >
+              Delete post
+            </button>
+          </div>
 
-      {confirming ? (
-        <DeleteForm
-          busy={busy}
-          error={error}
-          onCancel={() => {
-            setConfirming(false);
-            setError(null);
-          }}
-          onConfirm={() => void confirm()}
-          post={post}
-        />
-      ) : null}
+          {confirming ? (
+            <DeleteForm
+              busy={busy}
+              error={error}
+              onCancel={() => {
+                setConfirming(false);
+                setError(null);
+              }}
+              onConfirm={() => void confirm()}
+              post={post}
+            />
+          ) : null}
+        </>
+      )}
     </li>
   );
 }
@@ -434,9 +447,15 @@ export function AdminRoommateReportsPage() {
         setNotice({ tone: "error", text: message });
         setRetryCount((count) => count + 1);
       }
-      return { error: message };
+      return {
+        error: message,
+        uncertain: isUncertainAdminActionStatus(response.status),
+      };
     } catch {
-      return { error: "We couldn't delete this post. Please try again." };
+      return {
+        error: "We couldn't delete this post. Please try again.",
+        uncertain: true,
+      };
     }
   }, []);
 

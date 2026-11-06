@@ -40,4 +40,9 @@ describe("interpretSyncResponse", () => {
     expect(interpretSyncResponse(403, { error: "Forbidden" }, null).message).toBe("Forbidden");
     expect(interpretSyncResponse(500, null, null).message).toBe("Something went wrong. Try again.");
   });
+
+  it("marks server failures as uncertain so the action cannot be repeated blindly", () => {
+    expect(interpretSyncResponse(500, null, null).uncertain).toBe(true);
+    expect(interpretSyncResponse(403, { error: "Forbidden" }, null).uncertain).toBeFalsy();
+  });
 });

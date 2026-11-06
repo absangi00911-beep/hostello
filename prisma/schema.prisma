@@ -76,6 +76,16 @@ enum RefundAuditEventType {
   MANUAL_CONFIRMED
 }
 
+enum LatePaymentReason {
+  ABANDONED_CHECKOUT
+  CANCELLED_WHILE_UNPAID
+}
+
+enum LatePaymentOutcome {
+  REINSTATED
+  REFUND_REQUIRED
+}
+
 enum SafepayWebhookEventStatus {
   RECEIVED
   QUEUED
@@ -118,6 +128,12 @@ enum NotificationType {
   STUDENT_VERIFICATION_APPROVED
   STUDENT_VERIFICATION_REJECTED
   PRICE_ALERT
+  AVAILABILITY_ALERT
+}
+
+enum AvailabilityAlertType {
+  HOSTEL
+  SEARCH
 }
 
 // ─── Models ─────────────────────────────────────────────────────────────────
@@ -161,6 +177,7 @@ model User {
   conversationParticipants ConversationParticipant[]
   passwordResets PasswordResetToken[]
   priceAlerts    PriceAlert[]
+  availabilityAlerts AvailabilityAlert[]
   notifications  Notification[]
   phoneVerificationTokens PhoneVerificationToken[]
   roommmatePosts    RoommatePost[]
@@ -352,6 +369,7 @@ model Hostel {
   favorites Favorite[]
   conversations Conversation[]
   priceAlerts PriceAlert[]
+  availabilityAlerts AvailabilityAlert[]
   notifications Notification[]
   blockedDates BlockedDate[]
   roommmatePosts  RoommatePost[]
@@ -385,6 +403,7 @@ model Room {
   facilities String[] @default([])
 
   bookings Booking[]
+  seatHolds SeatHold[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -430,6 +449,8 @@ model Booking {
   payoutId String?
 
   notifications Notification[]
+  seatHolds SeatHold[]
+  latePaymentResolutions LatePaymentResolution[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -438,9 +459,27 @@ model Booking {
   @@index([userId])
   @@index([status])
   @@index([status, paymentStatus, ownerResponseDueAt])
+  @@index([status, paymentStatus, refundState, updatedAt])
   @@index([checkIn, checkOut])
   @@index([payoutId])
   @@map("bookings")
+}
+
+model SeatHold {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  seatNo    Int
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  checkIn   DateTime @db.Date
+  checkOut  DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, seatNo])
+  @@index([roomId])
+  @@index([bookingId])
+  @@map("seat_holds")
 }
 
 // Records the checks an admin completed before applying the public "verified" badge.
@@ -486,6 +525,24 @@ model RefundAuditEvent {
   @@map("refund_audit_events")
 }
 
+model LatePaymentResolution {
+  id                   String            @id @default(cuid())
+  bookingId            String
+  sourceWebhookEventId String            @unique
+  providerTracker      String            @unique
+  reason               LatePaymentReason
+  outcome              LatePaymentOutcome
+  amount               Int
+  currency             String            @default("PKR")
+  recordedAt           DateTime          @default(now())
+
+  booking            Booking             @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  sourceWebhookEvent SafepayWebhookEvent @relation(fields: [sourceWebhookEventId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId, recordedAt])
+  @@map("late_payment_resolutions")
+}
+
 // Stores minimal, verified Safepay event evidence before applying its business effects.
 // The merchant API key is redacted from payloadEvidence; bodyHash fingerprints the
 // exact signed bytes without retaining the credential embedded in the request.
@@ -507,6 +564,7 @@ model SafepayWebhookEvent {
   receivedAt          DateTime                 @default(now())
   updatedAt           DateTime                 @updatedAt
   replayEvents        SafepayWebhookReplayEvent[]
+  latePaymentResolution LatePaymentResolution?
 
   @@index([status, receivedAt])
   @@index([merchantOrderId, receivedAt])
@@ -684,6 +742,29 @@ model PriceAlert {
   @@map("price_alerts")
 }
 
+model AvailabilityAlert {
+  id            String               @id @default(cuid())
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  type          AvailabilityAlertType
+  hostel        Hostel?              @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostelId      String?
+  searchCriteria Json?
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  active        Boolean              @default(true)
+  matched       Boolean              @default(false)
+  matchVersion  Int                  @default(0)
+  notifications Notification[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([userId, active, checkIn])
+  @@index([hostelId, active, checkIn])
+  @@map("availability_alerts")
+}
+
 model Notification {
   id String @id @default(cuid())
 
@@ -706,14 +787,20 @@ model Notification {
   hostel   Hostel? @relation(fields: [hostelId], references: [id], onDelete: SetNull)
   hostelId String?
 
+  availabilityAlert           AvailabilityAlert? @relation(fields: [availabilityAlertId], references: [id], onDelete: SetNull)
+  availabilityAlertId         String?
+  availabilityAlertTransition Int?
+
   read      Boolean  @default(false)
   readAt    DateTime?
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([bookingId])
+  @@index([availabilityAlertId])
   @@index([read])
   @@index([createdAt])
+  @@unique([availabilityAlertId, availabilityAlertTransition], map: "notifications_alert_transition_key")
   @@map("notifications")
 }
 

@@ -21,6 +21,8 @@ export const credentialLoginSchema = z.object({
   password: z.string().min(6),
 });
 
+const DUMMY_PASSWORD_HASH = "$2b$12$1zuzVPtuwVgN9sQCw07Tv.yJCX4zFh4TL33DWTI0Ux7ZktYLulnQ6";
+
 export class CredentialLoginRateLimitError extends Error {
   constructor() {
     super("Too many login attempts. Please wait a few minutes and try again.");
@@ -28,12 +30,12 @@ export class CredentialLoginRateLimitError extends Error {
   }
 }
 
-function hashLoginEmail(email: string): string {
+function hashLoginAccount(email: string, clientIp: string): string {
   const secret = process.env.AUTH_SECRET;
   if (!secret) throw new Error("Authentication service unavailable.");
 
   return createHmac("sha256", secret)
-    .update(email.trim().toLowerCase())
+    .update(`${email.trim().toLowerCase()}\0${clientIp}`)
     .digest("hex");
 }
 
@@ -74,7 +76,7 @@ export async function checkCredentialLoginAccountLimit(
   email: string,
   request: Request,
 ): Promise<boolean> {
-  const result = await rateLimit(`login-account:${hashLoginEmail(email)}`, {
+  const result = await rateLimit(`login-account:${hashLoginAccount(email, getIp(request))}`, {
     limit: LOGIN_ACCOUNT_LIMIT,
     windowMs: LOGIN_WINDOW_MS,
   });
@@ -110,16 +112,8 @@ export async function authorizeCredentials(
 
   try {
     const user = await db.user.findUnique({ where: { email } });
-    if (!user?.password || user.deletionRequestedAt) {
-      logOperationalEvent("warn", "auth.login.rejected", {
-        reason: "invalid_credentials",
-        ...logIdentifiers,
-      }, logContext);
-      return null;
-    }
-
-    const valid = await compare(password, user.password);
-    if (!valid) {
+    const valid = await compare(password, user?.password ?? DUMMY_PASSWORD_HASH);
+    if (!user?.password || user.deletionRequestedAt || !valid) {
       logOperationalEvent("warn", "auth.login.rejected", {
         reason: "invalid_credentials",
         ...logIdentifiers,

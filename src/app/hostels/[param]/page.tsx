@@ -16,7 +16,10 @@ import { HostelReviewsSection } from "@/components/hostel-detail/HostelReviewsSe
 import { HostelRoomSection } from "@/components/hostel-detail/HostelRoomSection";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { getPublicHostelDetail } from "@/lib/hostel-detail";
+import {
+  getPublicHostelDetail,
+  projectPublicHostelDetail,
+} from "@/lib/hostel-detail";
 import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
 
 function genderLabel(gender: string): string {
@@ -38,6 +41,7 @@ export default async function HostelDetailPage({
   const { param } = await params;
   const hostel = await getPublicHostelDetail(param);
   if (!hostel) notFound();
+  const publicHostel = projectPublicHostelDetail(hostel);
 
   const session = await auth();
   const isSaved =
@@ -66,12 +70,12 @@ export default async function HostelDetailPage({
     <div className="hostel-detail-page min-h-dvh bg-white text-ink">
       <ScrollAwareSurface
         as="header"
-        className="sticky top-0 z-30 bg-white [@media(max-width:720px)]:hidden"
+        className="sticky top-0 z-30 bg-white"
         scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
       >
         <div className="hostel-detail-header-inner mx-auto grid min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] grid-cols-[minmax(0,1fr)_minmax(220px,320px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:960px)]:min-h-0 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:960px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:960px)]:gap-y-[10px] [@media(max-width:960px)]:py-3 [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))] [&>.browse-account-actions]:justify-self-end [&_.browse-account-trigger]:px-2 [&_.browse-account-trigger]:py-1 [&_.browse-account-trigger]:pl-1 [&_.browse-sign-in]:size-[34px]">
           <HostelloBrand
-            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:960px)]:col-start-1 [@media(max-width:960px)]:row-start-1 [@media(max-width:720px)]:hidden"
+            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:960px)]:col-start-1 [@media(max-width:960px)]:row-start-1"
           />
           <form
             action="/search"
@@ -144,7 +148,7 @@ export default async function HostelDetailPage({
                 rooms={hostel.rooms_rel}
               />
 
-              <div className="hostel-detail-host-column col-span-full row-start-1 min-w-0 [@media(min-width:901px)]:row-start-4 [@media(max-width:900px)]:row-start-2 [@media(max-width:720px)]:px-5">
+              <div className="hostel-detail-host-column col-span-full row-start-1 min-w-0 [@media(min-width:901px)]:row-start-4 [@media(max-width:900px)]:row-start-2 [@media(max-width:720px)]:row-start-5 [@media(max-width:720px)]:px-5">
                 <HostelHostSection
                   host={{
                     name: hostel.owner.name,
@@ -188,12 +192,12 @@ export default async function HostelDetailPage({
                 ) : null}
               </div>
 
-              <div className="hostel-detail-location-column col-span-full row-start-1 [@media(min-width:901px)]:row-start-3 [@media(max-width:900px)]:row-start-5 [@media(max-width:720px)]:px-5">
+              <div className="hostel-detail-location-column col-span-full row-start-1 [@media(min-width:901px)]:row-start-3 [@media(max-width:900px)]:row-start-5 [@media(max-width:720px)]:row-start-4 [@media(max-width:720px)]:px-5">
                 <HostelLocationSection
                   area={hostel.area}
                   city={hostel.city}
-                  latitude={hostel.latitude}
-                  longitude={hostel.longitude}
+                  latitude={publicHostel.latitude}
+                  longitude={publicHostel.longitude}
                 />
               </div>
             </div>

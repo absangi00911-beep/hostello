@@ -9,7 +9,6 @@ export interface RefundBooking {
   id: string;
   hostelName: string;
   studentName: string;
-  studentEmail: string;
   checkIn: string;
   checkOut: string;
   total: number;
@@ -109,7 +108,6 @@ function parseBooking(value: unknown): Parsed | "invalid" {
     id: value.id,
     hostelName: value.hostel.name,
     studentName: value.user.name,
-    studentEmail: value.user.email,
     checkIn: value.checkIn,
     checkOut: value.checkOut,
     total: value.total,

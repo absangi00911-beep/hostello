@@ -9,7 +9,7 @@ import {
   roomFieldKey,
   validateListingForm,
   type ListingFormValues,
-} from "./listingForm";
+} from "./listing-form";
 
 function validForm(overrides: Partial<ListingFormValues> = {}): ListingFormValues {
   return {

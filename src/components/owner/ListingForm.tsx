@@ -16,7 +16,7 @@ import {
   type ListingFormErrors,
   type ListingFormValues,
   type StoredListing,
-} from "./listingForm";
+} from "./listing-form";
 import {
   Field,
   FormSection,

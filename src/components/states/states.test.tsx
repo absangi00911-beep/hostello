@@ -28,6 +28,9 @@ import SearchError from "@/app/search/error";
 import SearchLoading from "@/app/search/loading";
 import HostelLoading from "@/app/hostels/[param]/loading";
 import BookingLoading from "@/app/bookings/[id]/loading";
+import { AccessDeniedState } from "./AccessDeniedState";
+import { EmptyState } from "./EmptyState";
+import Link from "next/link";
 
 const notFoundPages = {
   root: RootNotFound,
@@ -92,4 +95,31 @@ describe("loading pages", () => {
       expect(markup).toContain("motion-safe:animate-pulse");
     });
   }
+});
+
+describe("shared empty and denied states", () => {
+  it("announces an empty state and keeps its relevant action visible", () => {
+    const markup = renderToStaticMarkup(
+      <EmptyState
+        actions={<Link href="/">Explore hostels</Link>}
+        body="Hostels you save will appear here."
+        title="No saved hostels yet"
+      />,
+    );
+
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain("<h2");
+    expect(markup).toContain("No saved hostels yet");
+    expect(markup).toContain('href="/">Explore hostels</a>');
+  });
+
+  it("uses the safe not-found treatment for access denial", () => {
+    const markup = renderToStaticMarkup(<AccessDeniedState />);
+
+    expect(markup).toContain("We can&#x27;t find that page");
+    expect(markup).toContain("Back to listings");
+    expect(markup).toContain('href="/"');
+    expect(markup).not.toMatch(/owner|admin|permission|role/i);
+  });
 });

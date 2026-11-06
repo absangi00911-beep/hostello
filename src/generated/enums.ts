@@ -106,6 +106,22 @@ export const RefundAuditEventType = {
 export type RefundAuditEventType = (typeof RefundAuditEventType)[keyof typeof RefundAuditEventType]
 
 
+export const LatePaymentReason = {
+  ABANDONED_CHECKOUT: 'ABANDONED_CHECKOUT',
+  CANCELLED_WHILE_UNPAID: 'CANCELLED_WHILE_UNPAID'
+} as const
+
+export type LatePaymentReason = (typeof LatePaymentReason)[keyof typeof LatePaymentReason]
+
+
+export const LatePaymentOutcome = {
+  REINSTATED: 'REINSTATED',
+  REFUND_REQUIRED: 'REFUND_REQUIRED'
+} as const
+
+export type LatePaymentOutcome = (typeof LatePaymentOutcome)[keyof typeof LatePaymentOutcome]
+
+
 export const SafepayWebhookEventStatus = {
   RECEIVED: 'RECEIVED',
   QUEUED: 'QUEUED',
@@ -159,7 +175,16 @@ export const NotificationType = {
   HOSTEL_REJECTED: 'HOSTEL_REJECTED',
   STUDENT_VERIFICATION_APPROVED: 'STUDENT_VERIFICATION_APPROVED',
   STUDENT_VERIFICATION_REJECTED: 'STUDENT_VERIFICATION_REJECTED',
-  PRICE_ALERT: 'PRICE_ALERT'
+  PRICE_ALERT: 'PRICE_ALERT',
+  AVAILABILITY_ALERT: 'AVAILABILITY_ALERT'
 } as const
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const AvailabilityAlertType = {
+  HOSTEL: 'HOSTEL',
+  SEARCH: 'SEARCH'
+} as const
+
+export type AvailabilityAlertType = (typeof AvailabilityAlertType)[keyof typeof AvailabilityAlertType]

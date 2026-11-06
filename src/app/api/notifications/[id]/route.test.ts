@@ -31,6 +31,22 @@ beforeEach(() => {
 });
 
 describe("/api/notifications/[id] route", () => {
+  it.each(["PUT", "DELETE"] as const)(
+    "rejects unauthenticated %s requests before writing",
+    async (method) => {
+      vi.mocked(auth).mockResolvedValueOnce(null);
+
+      const response =
+        method === "PUT"
+          ? await PUT(request(), context())
+          : await DELETE(request("DELETE"), context());
+
+      expect(response.status).toBe(401);
+      expect(markNotificationAsRead).not.toHaveBeenCalled();
+      expect(db.notification.deleteMany).not.toHaveBeenCalled();
+    },
+  );
+
   it("applies a per-user cap before attempting a scoped notification write", async () => {
     vi.mocked(rateLimit).mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: Date.now() + 20_000 });
 

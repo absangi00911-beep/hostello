@@ -77,12 +77,14 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
   expect(pageClass).toContain("min-h-dvh");
   expect(headerClass).toContain("sticky");
   expect(headerClass).toContain("backdrop-blur-[12px]");
-  expect(mainClass).toContain("w-[min(1920px,calc(100%-64px))]");
+  expect(mainClass).toContain(
+    "w-[min(1920px,calc(100%-var(--page-gutter-total)))]",
+  );
 
   for (const [width, expectedGutter, expectedMapDisplay] of [
-    [1440, 32, "block"],
-    [800, 16, "block"],
-    [768, 16, "none"],
+    [1440, 64, "block"],
+    [800, 32, "block"],
+    [768, 32, "none"],
     [390, 20, "none"],
   ] as const) {
     await page.setViewportSize({
@@ -93,22 +95,19 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
     const layout = await page.evaluate(() => {
       const main = document.querySelector(".search-results-main");
       const map = document.querySelector(".search-map-preview");
-      const filters = document.querySelector(".search-filter-list");
-      if (!main || !map || !filters) {
+      if (!main || !map) {
         throw new Error("Search layout elements are missing");
       }
 
       return {
         gutter: Math.round(main.getBoundingClientRect().left),
         mapDisplay: getComputedStyle(map).display,
-        filterOverflow: getComputedStyle(filters).overflowX,
         documentWidth: document.documentElement.scrollWidth,
       };
     });
 
     expect(layout.gutter).toBe(expectedGutter);
     expect(layout.mapDisplay).toBe(expectedMapDisplay);
-    expect(layout.filterOverflow).toBe("auto");
     expect(layout.documentWidth).toBeLessThanOrEqual(width);
     if (width === 1440) {
       await expect(hostLink).toBeVisible();
@@ -122,11 +121,6 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
     .locator(".search-result-grid")
     .evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length);
   expect(resultColumnCount).toBe(1);
-  const filtersCanScroll = await page
-    .locator(".search-filter-list")
-    .evaluate((filters) => filters.scrollWidth > filters.clientWidth);
-  expect(filtersCanScroll).toBe(true);
-
   const currentPage = page.getByRole("button", { name: "Page 1" });
   await expect(currentPage).toHaveAttribute("aria-current", "page");
   await expect(currentPage).toHaveCSS("background-color", "rgb(15, 23, 42)");
@@ -152,6 +146,71 @@ test("search_results_are_available_without_a_city_filter", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Hostels across Pakistan" }),
   ).toBeVisible();
+});
+
+test("supported filters and pagination are reflected in the search request and URL", async ({
+  page,
+}) => {
+  const requests: URL[] = [];
+  await page.route("**/api/hostels**", async (route) => {
+    const url = new URL(route.request().url());
+    requests.push(url);
+    const currentPage = Number(url.searchParams.get("page") ?? 1);
+    const data = Array.from({ length: 20 }, (_, index) => ({
+      id: `filtered-hostel-${currentPage}-${index + 1}`,
+      name: `Filtered hostel ${currentPage}-${index + 1}`,
+      slug: `filtered-hostel-${currentPage}-${index + 1}`,
+      city: "Lahore",
+      area: "Gulberg",
+      pricePerMonth: 18_000,
+      coverImage: null,
+      images: [],
+      rating: 4.5,
+      reviewCount: 18,
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data,
+        total: 45,
+        page: currentPage,
+        limit: 20,
+        hasMore: currentPage < 3,
+      }),
+    });
+  });
+
+  await page.goto("/search?city=Lahore");
+  await page.getByText("Filters", { exact: true }).click();
+  await page.getByLabel("Hostel type").selectOption("FEMALE");
+  await page.getByLabel("Sort by").selectOption("price_asc");
+  await page.getByLabel("Minimum monthly price (PKR)").fill("8000");
+  await page.getByLabel("Maximum monthly price (PKR)").fill("24000");
+  await page.getByLabel("Wi-Fi").check();
+  await page.getByRole("button", { name: "Apply filters" }).click();
+
+  await expect.poll(() =>
+    requests.some((url) =>
+      url.searchParams.get("gender") === "FEMALE" &&
+      url.searchParams.get("minPrice") === "8000" &&
+      url.searchParams.get("maxPrice") === "24000" &&
+      url.searchParams.get("amenities") === "wifi" &&
+      url.searchParams.get("sort") === "price_asc",
+    ),
+  ).toBe(true);
+  await expect(page).toHaveURL(/gender=FEMALE/);
+  await expect(page.getByRole("button", { name: "Remove Women only filter" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Page 2" }).click();
+  await expect.poll(() =>
+    requests.some((url) =>
+      url.searchParams.get("page") === "2" &&
+      url.searchParams.get("gender") === "FEMALE" &&
+      url.searchParams.get("amenities") === "wifi",
+    ),
+  ).toBe(true);
+  await expect(page).toHaveURL(/page=2/);
 });
 
 test("home_search_opens_the_results_page_for_the_entered_city", async ({

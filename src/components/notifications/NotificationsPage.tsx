@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { announceUnreadCount } from "./useUnreadNotificationCount";
+import { buildAvailabilityAlertSearchResultsHref } from "@/lib/availability-alert-links";
+
+type AvailabilityAlertNotificationData = {
+  type: "HOSTEL" | "SEARCH";
+  criteria: unknown;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+};
 
 export interface NotificationItem {
   id: string;
@@ -13,6 +22,7 @@ export interface NotificationItem {
   createdAt: string;
   bookingId: string | null;
   hostelId: string | null;
+  availabilityAlert?: AvailabilityAlertNotificationData | null;
 }
 
 interface NotificationsResponse {
@@ -23,6 +33,7 @@ interface NotificationsResponse {
 }
 
 type Role = "STUDENT" | "OWNER" | "ADMIN";
+const NOTIFICATION_PAGE_SIZE = 20;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -42,6 +53,25 @@ function isNotificationItem(value: unknown): value is NotificationItem {
   );
 }
 
+function parseAvailabilityAlert(value: unknown): AvailabilityAlertNotificationData | null {
+  if (
+    !isRecord(value) ||
+    (value.type !== "HOSTEL" && value.type !== "SEARCH") ||
+    typeof value.checkIn !== "string" ||
+    typeof value.checkOut !== "string" ||
+    typeof value.guests !== "number"
+  ) {
+    return null;
+  }
+  return {
+    type: value.type,
+    criteria: value.criteria,
+    checkIn: value.checkIn,
+    checkOut: value.checkOut,
+    guests: value.guests,
+  };
+}
+
 function parseResponse(value: unknown): NotificationsResponse | null {
   if (
     !isRecord(value) ||
@@ -58,6 +88,7 @@ function parseResponse(value: unknown): NotificationsResponse | null {
       ...item,
       bookingId: item.bookingId ?? null,
       hostelId: item.hostelId ?? null,
+      availabilityAlert: parseAvailabilityAlert(item.availabilityAlert),
     })),
     unreadCount: value.unreadCount,
     hasMore: value.hasMore,
@@ -76,23 +107,49 @@ function readApiError(value: unknown, fallback: string): string {
  * Anything else renders as plain text rather than guessing a route.
  */
 export function getNotificationHref(
-  item: Pick<NotificationItem, "type" | "bookingId" | "hostelId">,
+  item: Pick<NotificationItem, "type" | "bookingId" | "hostelId"> &
+    Pick<NotificationItem, "availabilityAlert">,
   role: Role,
 ): string | null {
-  if (item.type === "MESSAGE_RECEIVED") {
-    return role === "ADMIN" ? null : "/messages";
+  switch (item.type) {
+    case "MESSAGE_RECEIVED":
+      return role === "ADMIN" ? null : "/messages";
+    case "BOOKING_REQUEST":
+      if (role === "OWNER") return "/owner/bookings";
+      return role === "STUDENT" ? "/trips" : null;
+    case "BOOKING_CONFIRMED":
+    case "BOOKING_CANCELLED":
+    case "BOOKING_COMPLETED":
+    case "BOOKING_REFUNDED":
+      return role === "STUDENT" ? "/trips" : null;
+    case "REVIEW_RECEIVED":
+      return role === "OWNER" ? "/owner/reviews" : null;
+    case "HOSTEL_APPROVED":
+    case "HOSTEL_REJECTED":
+      return role === "OWNER" ? "/owner" : null;
+    case "STUDENT_VERIFICATION_APPROVED":
+    case "STUDENT_VERIFICATION_REJECTED":
+      return role === "STUDENT" ? "/profile" : null;
+    case "PRICE_ALERT":
+      return role === "STUDENT" &&
+        item.hostelId &&
+        /^[a-zA-Z0-9_-]{1,128}$/.test(item.hostelId)
+        ? `/hostels/${encodeURIComponent(item.hostelId)}`
+        : null;
+    case "AVAILABILITY_ALERT":
+      if (role !== "STUDENT") return null;
+      if (item.availabilityAlert?.type === "SEARCH") {
+        return buildAvailabilityAlertSearchResultsHref({
+          criteria: item.availabilityAlert.criteria,
+          checkIn: item.availabilityAlert.checkIn,
+          checkOut: item.availabilityAlert.checkOut,
+          guests: item.availabilityAlert.guests,
+        }) ?? "/student/availability-alerts";
+      }
+      return "/student/availability-alerts";
+    default:
+      return null;
   }
-  if (item.bookingId && role === "STUDENT") return "/trips";
-  if (item.hostelId && role === "STUDENT") {
-    return `/hostels/${encodeURIComponent(item.hostelId)}`;
-  }
-  if (item.type === "STUDENT_VERIFICATION_APPROVED" && role === "STUDENT") {
-    return "/profile";
-  }
-  if (item.type === "STUDENT_VERIFICATION_REJECTED" && role === "STUDENT") {
-    return "/profile";
-  }
-  return null;
 }
 
 function formatWhen(iso: string): string {
@@ -107,23 +164,28 @@ function formatWhen(iso: string): string {
 }
 
 const actionClassName =
-  "cursor-pointer rounded-[8px] border border-line bg-white px-3 py-[6px] text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
+  "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
 
 export function NotificationsPage({ role }: { role: Role }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [retryAction, setRetryAction] = useState<{
+    label: string;
+    run: () => Promise<void>;
+  } | null>(null);
+  const [announcement, setAnnouncement] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async (nextPage: number, signal?: AbortSignal) => {
-    const response = await fetch(`/api/notifications?page=${nextPage}&limit=20`, {
-      signal,
-    });
+    const response = await fetch(
+      `/api/notifications?page=${nextPage}&limit=${NOTIFICATION_PAGE_SIZE}`,
+      { signal },
+    );
     const payload: unknown = await response.json().catch(() => null);
     if (!response.ok) {
       throw new Error(readApiError(payload, "Could not load notifications."));
@@ -133,49 +195,86 @@ export function NotificationsPage({ role }: { role: Role }) {
     return parsed;
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    load(1, controller.signal)
-      .then((result) => {
+  const loadFirstPage = useCallback(
+    async (signal?: AbortSignal) => {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const result = await load(1, signal);
         setItems(result.data);
         setUnreadCount(result.unreadCount);
         setHasMore(result.hasMore);
-        setPage(result.page);
-        setLoadError(null);
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
+      } catch (error) {
+        if (signal?.aborted) return;
         setLoadError(
           error instanceof Error ? error.message : "Could not load notifications.",
         );
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false);
-      });
+      } finally {
+        if (!signal?.aborted) setIsLoading(false);
+      }
+    },
+    [load],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadFirstPage(controller.signal);
     return () => controller.abort();
-  }, [load]);
+  }, [loadFirstPage]);
 
   // Keep the shared header badge in step with what this page shows.
   useEffect(() => {
     if (!isLoading && !loadError) announceUnreadCount(unreadCount);
   }, [isLoading, loadError, unreadCount]);
 
+  function clearActionError() {
+    setActionError(null);
+    setRetryAction(null);
+  }
+
   async function loadMore() {
     setIsLoadingMore(true);
-    setActionError(null);
+    clearActionError();
     try {
-      const result = await load(page + 1);
+      const nextPage = Math.floor(items.length / NOTIFICATION_PAGE_SIZE) + 1;
+      const result = await load(nextPage);
+      if (result.data.length === 0) {
+        const currentPage = Math.max(
+          1,
+          Math.ceil(items.length / NOTIFICATION_PAGE_SIZE),
+        );
+        const refreshed = await load(currentPage);
+        setItems((current) => [
+          ...current.slice(
+            0,
+            (currentPage - 1) * NOTIFICATION_PAGE_SIZE,
+          ),
+          ...refreshed.data,
+        ]);
+        setUnreadCount(refreshed.unreadCount);
+        setHasMore(refreshed.hasMore);
+        setAnnouncement(
+          "Notifications have changed. The current page has been refreshed.",
+        );
+        return;
+      }
       setItems((current) => {
         const seen = new Set(current.map((item) => item.id));
         return [...current, ...result.data.filter((item) => !seen.has(item.id))];
       });
       setUnreadCount(result.unreadCount);
       setHasMore(result.hasMore);
-      setPage(result.page);
-    } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Could not load more.",
+      setAnnouncement(
+        `Loaded ${result.data.length} more notification${
+          result.data.length === 1 ? "" : "s"
+        }.`,
       );
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not load more.");
+      setRetryAction({
+        label: "Load more notifications",
+        run: () => loadMore(),
+      });
     } finally {
       setIsLoadingMore(false);
     }
@@ -183,7 +282,7 @@ export function NotificationsPage({ role }: { role: Role }) {
 
   async function markRead(id: string) {
     setBusyId(id);
-    setActionError(null);
+    clearActionError();
     try {
       const response = await fetch(`/api/notifications/${encodeURIComponent(id)}`, {
         method: "PUT",
@@ -196,10 +295,15 @@ export function NotificationsPage({ role }: { role: Role }) {
         current.map((item) => (item.id === id ? { ...item, read: true } : item)),
       );
       setUnreadCount((count) => Math.max(0, count - 1));
+      setAnnouncement("Notification marked as read.");
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : "Could not mark as read.",
       );
+      setRetryAction({
+        label: "Mark notification as read",
+        run: () => markRead(id),
+      });
     } finally {
       setBusyId(null);
     }
@@ -207,7 +311,7 @@ export function NotificationsPage({ role }: { role: Role }) {
 
   async function remove(item: NotificationItem) {
     setBusyId(item.id);
-    setActionError(null);
+    clearActionError();
     try {
       const response = await fetch(
         `/api/notifications/${encodeURIComponent(item.id)}`,
@@ -219,10 +323,15 @@ export function NotificationsPage({ role }: { role: Role }) {
       }
       setItems((current) => current.filter((entry) => entry.id !== item.id));
       if (!item.read) setUnreadCount((count) => Math.max(0, count - 1));
+      setAnnouncement("Notification deleted.");
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : "Could not delete notification.",
       );
+      setRetryAction({
+        label: "Delete notification",
+        run: () => remove(item),
+      });
     } finally {
       setBusyId(null);
     }
@@ -230,7 +339,7 @@ export function NotificationsPage({ role }: { role: Role }) {
 
   async function markAllRead() {
     setBusyId("all");
-    setActionError(null);
+    clearActionError();
     try {
       const response = await fetch("/api/notifications", {
         method: "PUT",
@@ -243,25 +352,33 @@ export function NotificationsPage({ role }: { role: Role }) {
       }
       setItems((current) => current.map((item) => ({ ...item, read: true })));
       setUnreadCount(0);
+      setAnnouncement("All notifications marked as read.");
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : "Could not mark all as read.",
       );
+      setRetryAction({
+        label: "Mark all notifications as read",
+        run: () => markAllRead(),
+      });
     } finally {
       setBusyId(null);
     }
   }
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-4 pb-24 pt-8">
+    <main
+      aria-busy={isLoading || isLoadingMore}
+      className="mx-auto w-full max-w-[760px] px-4 pb-24 pt-8"
+    >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-[1.75rem] font-bold text-ink">Notifications</h1>
-          <p aria-live="polite" className="m-0 text-[0.9rem] text-muted">
+          <p aria-live="polite" className="m-0 text-[0.9rem] text-muted" role="status">
             {isLoading
               ? "Loading…"
-              : unreadCount === 0
-                ? "You're all caught up."
+              : unreadCount === 0 && items.length > 0
+                ? "You’re all caught up."
                 : `${unreadCount} unread`}
           </p>
         </div>
@@ -276,30 +393,49 @@ export function NotificationsPage({ role }: { role: Role }) {
       </div>
 
       {actionError ? (
-        <p
-          className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+        <div
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
           role="alert"
         >
-          {actionError}
-        </p>
+          <p className="m-0">{actionError}</p>
+          {retryAction ? (
+            <button
+              className={actionClassName}
+              disabled={busyId !== null || isLoadingMore}
+              aria-label={`Retry: ${retryAction.label}`}
+              onClick={() => void retryAction.run()}
+              type="button"
+            >
+              Try again
+            </button>
+          ) : null}
+        </div>
       ) : null}
+      <p aria-live="polite" className="sr-only" role="status">
+        {announcement}
+      </p>
 
       {isLoading ? (
-        <p className="text-muted">Loading notifications...</p>
+        <p aria-live="polite" className="text-muted" role="status">
+          Loading notifications...
+        </p>
       ) : loadError ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
           <p className="m-0 text-[#c13515]">{loadError}</p>
           <button
             className={`${actionClassName} mt-3`}
-            onClick={() => window.location.reload()}
+            onClick={() => void loadFirstPage()}
             type="button"
           >
             Try again
           </button>
         </div>
       ) : items.length === 0 ? (
-        <p className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted">
-          No notifications yet.
+        <p
+          className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted"
+          role="status"
+        >
+          You’re all caught up.
         </p>
       ) : (
         <ul className="m-0 grid list-none gap-3 p-0">
@@ -317,22 +453,36 @@ export function NotificationsPage({ role }: { role: Role }) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="m-0 text-[0.95rem] font-semibold text-ink">
-                      {!item.read ? (
-                        <span className="sr-only">Unread: </span>
-                      ) : null}
                       {item.title}
                     </p>
                     <p className="mb-0 mt-1 text-[0.9rem] text-ink">
                       {item.message}
                     </p>
                     <p className="mb-0 mt-1 text-[0.78rem] text-muted">
-                      {formatWhen(item.createdAt)}
+                      <span
+                        className={
+                          item.read
+                            ? "font-medium"
+                            : "font-semibold text-brand"
+                        }
+                      >
+                        {item.read ? "Read" : "Unread"}
+                      </span>
+                      {formatWhen(item.createdAt) ? (
+                        <>
+                          {" · "}
+                          <time dateTime={item.createdAt}>
+                            {formatWhen(item.createdAt)}
+                          </time>
+                        </>
+                      ) : null}
                     </p>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {href ? (
                     <Link
+                      aria-label={`View notification: ${item.title}`}
                       className={`${actionClassName} no-underline`}
                       href={href}
                     >
@@ -341,6 +491,7 @@ export function NotificationsPage({ role }: { role: Role }) {
                   ) : null}
                   {!item.read ? (
                     <button
+                      aria-label={`Mark notification as read: ${item.title}`}
                       className={actionClassName}
                       disabled={busyId !== null}
                       onClick={() => markRead(item.id)}
@@ -350,6 +501,7 @@ export function NotificationsPage({ role }: { role: Role }) {
                     </button>
                   ) : null}
                   <button
+                    aria-label={`Delete notification: ${item.title}`}
                     className={actionClassName}
                     disabled={busyId !== null}
                     onClick={() => remove(item)}

@@ -34,6 +34,8 @@ describe("AdminOverviewContent", () => {
 
   it("links to every admin section that exists", () => {
     const markup = render();
+    expect(markup).toContain('href="/admin/bookings"');
+    expect(markup).toContain('href="/admin#listing-statistics"');
     expect(markup).toContain('href="/admin/listings"');
     expect(markup).toContain('href="/admin/verifications"');
     expect(markup).toContain('href="/admin/roommate-reports"');

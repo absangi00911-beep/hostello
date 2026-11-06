@@ -16,6 +16,7 @@
     "test": "vitest",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
+    "db:seat-holds:preflight": "tsx scripts/preflight-seat-holds.ts",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:preview": "node scripts/migrate-preview.mjs",
     "db:studio": "prisma studio",

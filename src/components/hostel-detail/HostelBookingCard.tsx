@@ -1,9 +1,12 @@
 "use client";
 
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
-import { useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { calculateMonths } from "@/lib/utils";
+import { getPakistanCalendarDate } from "@hostello/shared";
 import { isStayWithinBounds } from "@/lib/hostel-date-selection";
+import { buildHostelAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
 
@@ -12,7 +15,6 @@ interface BookableRoom {
   name: string;
   pricePerMonth: number;
   capacity: number;
-  available: number;
 }
 
 interface HostelBookingCardProps {
@@ -22,6 +24,147 @@ interface HostelBookingCardProps {
   hasCancellationPolicy: boolean;
   rooms: BookableRoom[];
 }
+
+export interface ExactRoomAvailability {
+  roomId: string;
+  capacity: number;
+  availableSeats: number;
+  fits: boolean;
+}
+
+export function buildExactAvailabilityUrl(
+  hostelSlug: string,
+  checkIn: string,
+  checkOut: string,
+  guests: number,
+): string {
+  const query = new URLSearchParams({
+    checkIn,
+    checkOut,
+    guests: String(guests),
+  });
+  return `/api/hostels/${encodeURIComponent(hostelSlug)}/availability/exact?${query}`;
+}
+
+export function parseExactAvailability(
+  value: unknown,
+): ExactRoomAvailability[] | null {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("data" in value) ||
+    !Array.isArray(value.data)
+  ) {
+    return null;
+  }
+
+  const rooms: ExactRoomAvailability[] = [];
+  for (const room of value.data) {
+    if (
+      typeof room !== "object" ||
+      room === null ||
+      !("roomId" in room) ||
+      typeof room.roomId !== "string" ||
+      !("capacity" in room) ||
+      typeof room.capacity !== "number" ||
+      !Number.isSafeInteger(room.capacity) ||
+      !("availableSeats" in room) ||
+      typeof room.availableSeats !== "number" ||
+      !Number.isSafeInteger(room.availableSeats) ||
+      !("fits" in room) ||
+      typeof room.fits !== "boolean" ||
+      room.capacity < 0 ||
+      room.availableSeats < 0 ||
+      room.availableSeats > room.capacity
+    ) {
+      return null;
+    }
+
+    rooms.push({
+      roomId: room.roomId,
+      capacity: room.capacity,
+      availableSeats: room.availableSeats,
+      fits: room.fits,
+    });
+  }
+
+  return rooms;
+}
+
+type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+type PaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "PARTIALLY_REFUNDED"
+  | "REFUNDED"
+  | "FAILED";
+
+interface ConfirmedBookingOutcome {
+  id: string;
+  total: number;
+  status: BookingStatus;
+  paymentStatus: PaymentStatus;
+}
+
+export function parseBookingOutcome(
+  value: unknown,
+): ConfirmedBookingOutcome | null {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("data" in value) ||
+    typeof value.data !== "object" ||
+    value.data === null
+  ) {
+    return null;
+  }
+
+  const booking = value.data;
+  const statuses: BookingStatus[] = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"];
+  const paymentStatuses: PaymentStatus[] = [
+    "PENDING",
+    "PAID",
+    "PARTIALLY_REFUNDED",
+    "REFUNDED",
+    "FAILED",
+  ];
+  if (
+    !("id" in booking) ||
+    typeof booking.id !== "string" ||
+    !("total" in booking) ||
+    typeof booking.total !== "number" ||
+    !Number.isFinite(booking.total) ||
+    !("status" in booking) ||
+    typeof booking.status !== "string" ||
+    !statuses.includes(booking.status as BookingStatus) ||
+    !("paymentStatus" in booking) ||
+    typeof booking.paymentStatus !== "string" ||
+    !paymentStatuses.includes(booking.paymentStatus as PaymentStatus)
+  ) {
+    return null;
+  }
+
+  return {
+    id: booking.id,
+    total: booking.total,
+    status: booking.status as BookingStatus,
+    paymentStatus: booking.paymentStatus as PaymentStatus,
+  };
+}
+
+const bookingStatusLabels: Record<BookingStatus, string> = {
+  PENDING: "Pending",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
+};
+const paymentStatusLabels: Record<PaymentStatus, string> = {
+  PENDING: "Payment pending",
+  PAID: "Payment received",
+  PARTIALLY_REFUNDED: "Partially refunded",
+  REFUNDED: "Refunded",
+  FAILED: "Payment failed",
+};
 
 function readError(value: unknown): string | null {
   if (
@@ -36,34 +179,16 @@ function readError(value: unknown): string | null {
   return null;
 }
 
-function readBookingId(value: unknown): string | null {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("data" in value) ||
-    typeof value.data !== "object" ||
-    value.data === null ||
-    !("id" in value.data) ||
-    typeof value.data.id !== "string"
-  ) {
-    return null;
-  }
-
-  return value.data.id;
-}
-
 function formatPrice(amount: number): string {
   return new Intl.NumberFormat("en-PK").format(amount);
 }
 
 function todayDateInputValue(): string {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().slice(0, 10);
+  return getPakistanCalendarDate().toISOString().slice(0, 10);
 }
 
 function maxGuestsFor(room: BookableRoom | undefined): number {
-  return room ? Math.min(4, room.capacity, room.available) : 0;
+  return room ? Math.min(4, room.capacity) : 0;
 }
 
 export function HostelBookingCard({
@@ -75,21 +200,32 @@ export function HostelBookingCard({
 }: HostelBookingCardProps) {
   const bookingCardRef = useRef<HTMLElement>(null);
   const moveInInputRef = useRef<HTMLInputElement>(null);
-  const [roomId, setRoomId] = useState(rooms[0]?.id ?? "");
+  const roomSelectRef = useRef<HTMLSelectElement>(null);
+  const [roomId, setRoomId] = useState("");
   const { checkIn, checkOut, setMoveIn, setMoveOut } =
     useHostelDateSelection();
   const [guests, setGuests] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [retryBookingId, setRetryBookingId] = useState<string | null>(null);
+  const [isStartingPayment, setIsStartingPayment] = useState(false);
+  const [availability, setAvailability] = useState<ExactRoomAvailability[] | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
+  const [availabilityRefresh, setAvailabilityRefresh] = useState(0);
+  const [showReview, setShowReview] = useState(false);
+  const [bookingOutcome, setBookingOutcome] =
+    useState<ConfirmedBookingOutcome | null>(null);
+  const [submissionUncertain, setSubmissionUncertain] = useState(false);
   const [message, setMessage] = useState("");
   const [needsSignIn, setNeedsSignIn] = useState(false);
 
   const room = rooms.find((candidate) => candidate.id === roomId);
+  const selectedAvailability =
+    availability?.find((candidate) => candidate.roomId === roomId) ?? null;
   const stayMonths =
     checkIn && checkOut && checkOut > checkIn
       ? calculateMonths(
-          new Date(`${checkIn}T00:00:00`),
-          new Date(`${checkOut}T00:00:00`),
+          new Date(`${checkIn}T00:00:00.000Z`),
+          new Date(`${checkOut}T00:00:00.000Z`),
         )
       : 0;
   const stayIsValid = isStayWithinBounds(
@@ -106,16 +242,79 @@ export function HostelBookingCard({
     checkIn.length > 0 &&
     checkOut.length > 0 &&
     stayIsValid &&
-    guests <= maxGuestsFor(room);
-  const quickReserveLabel = !room || !hasCancellationPolicy
+    guests <= maxGuestsFor(room) &&
+    Boolean(selectedAvailability?.fits) &&
+    !availabilityLoading &&
+    !bookingOutcome &&
+    !submissionUncertain;
+  const quickReserveLabel = bookingOutcome
+    ? "Booking status"
+    : submissionUncertain
+      ? "Check booking status"
+      : !hasCancellationPolicy
     ? "Unavailable"
-    : canBook
-      ? retryBookingId
-        ? "Retry payment"
-        : "Reserve"
+      : !room
+        ? "Choose a room"
+      : availabilityLoading && checkIn && checkOut
+        ? "Checking availability…"
+        : canBook
+          ? showReview
+            ? "Request booking"
+            : "Review booking"
       : checkIn && checkOut
-        ? "Update dates"
-        : "Choose dates";
+          ? "Choose another room"
+          : "Choose dates";
+  const availabilityAlertHref = buildHostelAvailabilityAlertHref({
+    hostelId,
+    checkIn,
+    checkOut,
+    guests,
+  });
+
+  useEffect(() => {
+    if (bookingOutcome || !checkIn || !checkOut || checkOut <= checkIn) {
+      setAvailabilityLoading(false);
+      setAvailability(null);
+      setAvailabilityError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    setAvailability(null);
+    setAvailabilityLoading(true);
+    setAvailabilityError("");
+
+    async function loadAvailability() {
+      try {
+        const response = await fetch(
+          buildExactAvailabilityUrl(hostelId, checkIn, checkOut, guests),
+          { signal: controller.signal },
+        );
+        const result: unknown = await response.json();
+        if (!response.ok) {
+          setAvailabilityError(
+            readError(result) ?? "Could not check room availability. Try again.",
+          );
+          return;
+        }
+
+        const parsed = parseExactAvailability(result);
+        if (!parsed) {
+          setAvailabilityError("Could not confirm room availability. Try again.");
+          return;
+        }
+        setAvailability(parsed);
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        setAvailabilityError("Could not check room availability. Try again.");
+      } finally {
+        if (!controller.signal.aborted) setAvailabilityLoading(false);
+      }
+    }
+
+    void loadAvailability();
+    return () => controller.abort();
+  }, [hostelId, checkIn, checkOut, guests, availabilityRefresh, bookingOutcome]);
 
   function handleQuickReserve() {
     if (canBook) return;
@@ -124,7 +323,9 @@ export function HostelBookingCard({
       behavior: "smooth",
       block: "center",
     });
-    moveInInputRef.current?.focus({ preventScroll: true });
+    (room ? moveInInputRef.current : roomSelectRef.current)?.focus({
+      preventScroll: true,
+    });
   }
 
   async function startPayment(bookingId: string): Promise<boolean> {
@@ -168,62 +369,102 @@ export function HostelBookingCard({
     setMessage("");
     setNeedsSignIn(false);
 
+    if (!showReview) {
+      if (!canBook || !room) {
+        setMessage("Choose an available room and valid stay dates before continuing.");
+        return;
+      }
+      setShowReview(true);
+      return;
+    }
+
     if (!canBook || !room) {
       setMessage("Choose a room and valid stay dates before continuing.");
       return;
     }
     setIsSubmitting(true);
-    let bookingId = retryBookingId;
     try {
-      if (!bookingId) {
-        const response = await fetch("/api/bookings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            hostelId,
-            roomId,
-            checkIn,
-            checkOut,
-            guests,
-            paymentMethod: DEFAULT_PAYMENT_METHOD,
-          }),
-        });
-        const result: unknown = await response.json();
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hostelId,
+          roomId,
+          checkIn,
+          checkOut,
+          guests,
+          paymentMethod: DEFAULT_PAYMENT_METHOD,
+        }),
+      });
+      const result: unknown = await response.json();
 
-        if (!response.ok) {
-          setNeedsSignIn(response.status === 401);
+      if (!response.ok) {
+        setNeedsSignIn(response.status === 401);
+        if (response.status === 409) {
+          setRoomId("");
+          setShowReview(false);
+          setAvailabilityRefresh((current) => current + 1);
+          setMessage(
+            "This room is no longer available for those dates. Change dates or choose another room.",
+          );
+        } else {
           setMessage(
             response.status === 401
               ? "Sign in as a student to continue with this booking."
               : readError(result) ?? "Could not create this booking. Please try again.",
           );
-          return;
         }
-
-        bookingId = readBookingId(result);
-        if (!bookingId) {
-          setMessage("The booking service returned an unexpected response.");
-          return;
-        }
-        setRetryBookingId(bookingId);
+        return;
       }
 
-      if (await startPayment(bookingId)) return;
+      const booking = parseBookingOutcome(result);
+      if (!booking) {
+        setSubmissionUncertain(true);
+        setMessage(
+          "We couldn't confirm the request status. Check Trips before trying again.",
+        );
+        return;
+      }
+      setBookingOutcome(booking);
+      setShowReview(false);
     } catch {
+      setSubmissionUncertain(true);
       setMessage(
-        bookingId
-          ? "Your booking is saved, but secure checkout could not start. Retry payment."
-          : "Could not submit this booking. Please check your connection and try again.",
+        "We couldn't confirm the request status. Check Trips before trying again.",
       );
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  async function handleStartPayment() {
+    if (
+      !bookingOutcome ||
+      bookingOutcome.status !== "PENDING" ||
+      !["PENDING", "FAILED"].includes(bookingOutcome.paymentStatus)
+    ) {
+      return;
+    }
+
+    setIsStartingPayment(true);
+    setMessage("");
+    try {
+      await startPayment(bookingOutcome.id);
+    } catch {
+      setMessage("Could not start secure checkout. Check booking status before retrying.");
+    } finally {
+      setIsStartingPayment(false);
+    }
+  }
+
+  function changeBookingDetails() {
+    setShowReview(false);
+    setMessage("");
+  }
   return (
     <aside
       aria-label="Reserve this hostel"
-      className="hostel-booking-card sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(max-width:900px)]:row-[4] [@media(max-width:720px)]:rounded-none [@media(max-width:720px)]:border-0 [@media(max-width:720px)]:bg-transparent [@media(max-width:720px)]:p-5 [@media(max-width:720px)]:shadow-none"
+      className="hostel-booking-card sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(min-width:721px)_and_(max-width:900px)]:row-[4] [@media(max-width:720px)]:row-[2] [@media(max-width:720px)]:rounded-none [@media(max-width:720px)]:border-0 [@media(max-width:720px)]:bg-transparent [@media(max-width:720px)]:p-5 [@media(max-width:720px)]:shadow-none"
       id="hostel-booking"
       ref={bookingCardRef}
     >
@@ -249,17 +490,27 @@ export function HostelBookingCard({
           <label className="grid min-w-0 gap-1">
             <span className="text-[0.68rem] font-[650] text-ink">Room</span>
             <select
-              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
+              ref={roomSelectRef}
               onChange={(event) => {
                 const nextRoom = rooms.find((candidate) => candidate.id === event.target.value);
                 setRoomId(event.target.value);
                 setGuests((current) => Math.min(current, maxGuestsFor(nextRoom) || 1));
+                setShowReview(false);
+                setMessage("");
               }}
               value={roomId}
             >
+              <option disabled value="">
+                Choose a room
+              </option>
               {rooms.map((candidate) => (
                 <option key={candidate.id} value={candidate.id}>
                   {candidate.name} · PKR {formatPrice(candidate.pricePerMonth)} / month
+                  {availability
+                    ? ` · ${availability.find((item) => item.roomId === candidate.id)?.availableSeats ?? 0} of ${candidate.capacity} seats`
+                    : ""}
                 </option>
               ))}
             </select>
@@ -270,10 +521,15 @@ export function HostelBookingCard({
                 Move in
               </span>
               <input
-                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 ref={moveInInputRef}
                 min={todayDateInputValue()}
-                onChange={(event) => setMoveIn(event.target.value)}
+                onChange={(event) => {
+                  setMoveIn(event.target.value);
+                  setShowReview(false);
+                  setMessage("");
+                }}
                 required
                 type="date"
                 value={checkIn}
@@ -284,9 +540,14 @@ export function HostelBookingCard({
                 Move out
               </span>
               <input
-                className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 min={checkIn || todayDateInputValue()}
-                onChange={(event) => setMoveOut(event.target.value)}
+                onChange={(event) => {
+                  setMoveOut(event.target.value);
+                  setShowReview(false);
+                  setMessage("");
+                }}
                 required
                 type="date"
                 value={checkOut}
@@ -296,8 +557,13 @@ export function HostelBookingCard({
           <label className="grid min-w-0 gap-1">
             <span className="text-[0.68rem] font-[650] text-ink">Guests</span>
             <select
-              className="min-h-10 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
-              onChange={(event) => setGuests(Number(event.target.value))}
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
+              onChange={(event) => {
+                setGuests(Number(event.target.value));
+                setShowReview(false);
+                setMessage("");
+              }}
               value={guests}
             >
               {Array.from({ length: maxGuestsFor(room) }, (_, index) => index + 1).map(
@@ -309,6 +575,35 @@ export function HostelBookingCard({
               )}
             </select>
           </label>
+          {availabilityLoading && (
+            <p className="m-0 text-[0.78rem] text-muted" role="status">
+              Checking exact availability for these dates…
+            </p>
+          )}
+          {availabilityError && (
+            <p className="m-0 text-[0.78rem] text-[#991b1b]" role="alert">
+              {availabilityError}
+              {" "}
+              <button
+                className="min-h-11 cursor-pointer border-0 bg-transparent p-0 font-semibold text-brand-dark underline underline-offset-2"
+                onClick={() => setAvailabilityRefresh((current) => current + 1)}
+                type="button"
+              >
+                Try again
+              </button>
+            </p>
+          )}
+          {!availabilityLoading &&
+            !availabilityError &&
+            checkIn &&
+            checkOut &&
+            selectedAvailability && (
+              <p className="m-0 text-[0.78rem] text-muted" role="status">
+                {selectedAvailability.fits
+                  ? `Available for all selected dates: ${selectedAvailability.availableSeats} of ${selectedAvailability.capacity} seats.`
+                  : "No room seats are available for the selected dates and guest count. Change dates or choose another room."}
+              </p>
+            )}
           {checkIn && checkOut && !stayIsValid && (
             <p
               className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
@@ -326,19 +621,83 @@ export function HostelBookingCard({
               </strong>
             </p>
           )}
+          {showReview && room && (
+            <section
+              aria-labelledby="booking-review-title"
+              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-[0.82rem]"
+            >
+              <h3 className="m-0 text-sm font-semibold" id="booking-review-title">
+                Review your booking
+              </h3>
+              <p className="m-0">Room: {room.name}</p>
+              <p className="m-0">Move in: {checkIn}</p>
+              <p className="m-0">Move out: {checkOut} (checkout day is not an occupied night)</p>
+              <p className="m-0">{guests} {guests === 1 ? "guest" : "guests"}</p>
+              {estimatedTotal !== null && (
+                <p className="m-0 font-semibold">
+                  Estimated total: PKR {formatPrice(estimatedTotal)}
+                </p>
+              )}
+              <button
+                className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 font-semibold text-ink"
+                onClick={changeBookingDetails}
+                type="button"
+              >
+                Change details
+              </button>
+            </section>
+          )}
+          {bookingOutcome && (
+            <section
+              aria-label="Booking request status"
+              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-[0.82rem]"
+              role="status"
+            >
+              <p className="m-0 font-semibold">Booking request received</p>
+              <p className="m-0">Booking status: {bookingStatusLabels[bookingOutcome.status]}</p>
+              <p className="m-0">Payment status: {paymentStatusLabels[bookingOutcome.paymentStatus]}</p>
+              <p className="m-0">Total: PKR {formatPrice(bookingOutcome.total)}</p>
+              <a
+                className="inline-flex min-h-11 items-center text-brand-dark underline underline-offset-2"
+                href={`/bookings/${encodeURIComponent(bookingOutcome.id)}`}
+              >
+                View booking
+              </a>
+              {bookingOutcome.status === "PENDING" &&
+                ["PENDING", "FAILED"].includes(bookingOutcome.paymentStatus) && (
+                  <button
+                    className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand px-3 font-semibold text-white hover:bg-brand-dark"
+                    disabled={isStartingPayment}
+                    onClick={() => void handleStartPayment()}
+                    type="button"
+                  >
+                    {isStartingPayment ? "Starting secure checkout…" : "Continue to Safepay"}
+                  </button>
+                )}
+            </section>
+          )}
+          {submissionUncertain && (
+            <p className="m-0 text-[0.78rem] text-[#991b1b]" role="alert">
+              We couldn't confirm the request status. Check Trips before trying again.
+              {" "}
+              <a className="font-semibold text-brand-dark underline" href="/trips">
+                Check Trips
+              </a>
+            </p>
+          )}
           <button
             className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-[0.84rem] font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 [@media(max-width:720px)]:hidden"
-            disabled={!canBook || isSubmitting}
+            disabled={!canBook || isSubmitting || isStartingPayment}
             type="submit"
           >
             {isSubmitting
-              ? "Starting secure checkout…"
-              : retryBookingId
-                ? "Retry payment"
-                : "Reserve"}
+              ? "Sending booking request…"
+              : showReview
+                ? "Request booking"
+                : "Review booking"}
           </button>
           <p className="m-0 text-[0.7rem] leading-[1.5] text-muted">
-            Secure card checkout starts before the host reviews your booking.
+            Booking and payment statuses are shown only after the server confirms them.
           </p>
           {!hasCancellationPolicy && (
             <p
@@ -393,11 +752,18 @@ export function HostelBookingCard({
             </div>
             <button
               className="min-h-12 min-w-[132px] shrink-0 cursor-pointer rounded-lg border-0 bg-brand px-5 text-[0.9rem] font-semibold text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!room || !hasCancellationPolicy || isSubmitting}
-              onClick={handleQuickReserve}
+              disabled={
+                !hasCancellationPolicy ||
+                isSubmitting ||
+                isStartingPayment ||
+                Boolean(bookingOutcome) ||
+                submissionUncertain ||
+                (availabilityLoading && Boolean(checkIn && checkOut))
+              }
+              onClick={canBook ? undefined : handleQuickReserve}
               type={canBook ? "submit" : "button"}
             >
-              {isSubmitting ? "Please wait…" : quickReserveLabel}
+              {isSubmitting || isStartingPayment ? "Please wait…" : quickReserveLabel}
             </button>
           </div>
         </form>
@@ -409,6 +775,12 @@ export function HostelBookingCard({
           No rooms are currently available to book.
         </p>
       )}
+      <Link
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-brand px-4 text-center text-sm font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+        href={availabilityAlertHref}
+      >
+        Alert me when these dates are available
+      </Link>
     </aside>
   );
 }

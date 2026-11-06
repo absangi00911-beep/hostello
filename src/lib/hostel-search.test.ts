@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/db", () => ({
   db: {
+    $transaction: vi.fn(),
     hostel: {
       findMany: vi.fn(),
       count:    vi.fn(),
@@ -230,6 +231,73 @@ describe("move-in date availability", () => {
     expect(result.hostelIds).toEqual(IDS);
     expect(searchHostels).toHaveBeenCalledOnce();
     expect(db.hostel.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("exact stay availability", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("uses seat holds across the full stay before paginating results", async () => {
+    const checkIn = new Date("2030-06-15T00:00:00.000Z");
+    const checkOut = new Date("2030-06-20T00:00:00.000Z");
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      { id: "available", latitude: null, longitude: null },
+      { id: "held-during-stay", latitude: null, longitude: null },
+    ] as never);
+    const tx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      hostel: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: "available", latitude: null, longitude: null },
+          { id: "held-during-stay", latitude: null, longitude: null },
+        ]),
+      },
+      room: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: "room-available", hostelId: "available", capacity: 2 },
+          { id: "room-held", hostelId: "held-during-stay", capacity: 2 },
+        ]),
+      },
+      seatHold: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            roomId: "room-held",
+            seatNo: 1,
+          },
+          {
+            roomId: "room-held",
+            seatNo: 2,
+          },
+        ]),
+      },
+      blockedDate: {
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+    };
+    vi.mocked(db.$transaction).mockImplementation(
+      async (callback: any) => callback(tx),
+    );
+
+    const result = await searchHostelsWithFallback(
+      baseParams({ moveInDate: checkIn, checkOut, guests: 2, limit: 1 }),
+    );
+
+    expect(result).toEqual({
+      hostelIds: ["available"],
+      total: 1,
+      isSearchDegraded: false,
+    });
+    expect(tx.seatHold.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          checkIn: { lt: checkOut },
+          checkOut: { gt: checkIn },
+        }),
+      }),
+    );
+    expect(searchHostels).not.toHaveBeenCalled();
   });
 });
 

@@ -4,6 +4,11 @@ import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
 import { createOperationalLogContext } from "@/lib/operational-logger";
+import {
+  lockAvailabilityInventory,
+  releaseSeatHolds,
+} from "@/lib/room-availability-service";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export const maxDuration = 60;
 const BATCH_SIZE = 100;
@@ -20,7 +25,7 @@ export async function POST(req: NextRequest) {
   return runCronJob("cancel-abandoned-payments", async () => {
     const olderThan = new Date(Date.now() - ABANDONED_AFTER_MS);
     let cancelled = 0;
-    let roomsRestored = 0;
+    let holdsReleased = 0;
 
     while (true) {
       const candidates = await db.booking.findMany({
@@ -31,7 +36,7 @@ export async function POST(req: NextRequest) {
         },
         orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         take: BATCH_SIZE,
-        select: { id: true, roomId: true, guests: true },
+        select: { id: true, hostelId: true },
       });
 
       if (candidates.length === 0) break;
@@ -40,8 +45,11 @@ export async function POST(req: NextRequest) {
       // after the read; in that case this booking must stay paid/confirmed and
       // its room must not be released by the cleanup job.
       const batchResult = await db.$transaction(async (tx) => {
+        const hostelIds = [...new Set(candidates.map(({ hostelId }) => hostelId))];
+        await lockAvailabilityInventory(tx, hostelIds);
         let batchCancelled = 0;
-        let batchRoomsRestored = 0;
+        let batchHoldsReleased = 0;
+        const changedHostelIds = new Set<string>();
 
         for (const booking of candidates) {
           const result = await tx.booking.updateMany({
@@ -56,21 +64,23 @@ export async function POST(req: NextRequest) {
 
           if (result.count === 0) continue;
           batchCancelled += result.count;
-
-          if (booking.roomId) {
-            const roomResult = await tx.room.updateMany({
-              where: { id: booking.roomId },
-              data: { available: { increment: booking.guests }, version: { increment: 1 } },
-            });
-            batchRoomsRestored += roomResult.count;
-          }
+          const released = await releaseSeatHolds(tx, booking.id);
+          batchHoldsReleased += released.count;
+          changedHostelIds.add(booking.hostelId);
         }
 
-        return { cancelled: batchCancelled, roomsRestored: batchRoomsRestored };
+        return {
+          cancelled: batchCancelled,
+          holdsReleased: batchHoldsReleased,
+          hostelIds: [...changedHostelIds],
+        };
       });
 
       cancelled += batchResult.cancelled;
-      roomsRestored += batchResult.roomsRestored;
+      holdsReleased += batchResult.holdsReleased;
+      for (const hostelId of batchResult.hostelIds) {
+        await reevaluateAvailabilityAlertsForHostel(hostelId);
+      }
 
       if (candidates.length < BATCH_SIZE) break;
     }
@@ -78,7 +88,7 @@ export async function POST(req: NextRequest) {
     return {
       message:       "Abandoned payments cancelled",
       count: cancelled,
-      roomsRestored,
+      holdsReleased,
     };
   }, logContext);
 }

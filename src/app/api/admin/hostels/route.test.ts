@@ -25,6 +25,9 @@ vi.mock("@/lib/typesense-sync", () => ({
 vi.mock("@/lib/notifications", () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { PATCH } from "./route";
 import { auth } from "@/lib/auth/config";
@@ -79,6 +82,7 @@ beforeEach(() => {
   vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
   vi.mocked(db.$transaction).mockImplementation((async (callback: any) => callback({
+    $queryRaw: vi.fn().mockResolvedValue([]),
     hostel: db.hostel,
     hostelVerificationReview: { create: vi.fn().mockResolvedValue({}) },
   })) as any);

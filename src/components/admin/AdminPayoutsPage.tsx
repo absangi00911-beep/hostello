@@ -10,6 +10,8 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
+import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
+import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
   REFERENCE_MAX,
@@ -57,6 +59,7 @@ const STATUS_LABELS: Record<AdminPayout["status"], string> = {
 export interface PayoutActionResult {
   /** Error to show on the card; null when the action succeeded. */
   error: string | null;
+  uncertain?: boolean;
 }
 
 export type GenerateBatchAction = (
@@ -74,8 +77,15 @@ export type VoidAction = (
 ) => Promise<PayoutActionResult>;
 
 function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
+  const [showAccountNumber, setShowAccountNumber] = useState(false);
   if (payout.status !== "PENDING") return null;
   if (payout.destinationStatus === "available" && payout.destination) {
+    const accountId = `payout-account-${payout.id}`;
+    const accountNumber = payout.destination.bankAccountNumber;
+    const maskedAccountNumber =
+      accountNumber.length > 4
+        ? `•••• ${accountNumber.slice(-4)}`
+        : "••••";
     return (
       <dl className="m-0 grid gap-1 rounded-[12px] bg-surface-muted p-3 text-[0.85rem]">
         <div className="flex flex-wrap gap-x-2">
@@ -86,10 +96,22 @@ function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
         </div>
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Account number</dt>
-          <dd className="m-0 font-semibold text-ink">
-            {payout.destination.bankAccountNumber}
+          <dd
+            className="m-0 font-semibold text-ink"
+            id={accountId}
+          >
+            {showAccountNumber ? accountNumber : maskedAccountNumber}
           </dd>
         </div>
+        <button
+          aria-controls={accountId}
+          aria-expanded={showAccountNumber}
+          className="w-fit text-left font-semibold text-brand underline"
+          onClick={() => setShowAccountNumber((shown) => !shown)}
+          type="button"
+        >
+          {showAccountNumber ? "Hide account number" : "Show account number"}
+        </button>
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Bank</dt>
           <dd className="m-0 font-semibold text-ink">
@@ -262,13 +284,17 @@ function PayoutRow({
   const [mode, setMode] = useState<"paid" | "void" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
 
   async function run(action: () => Promise<PayoutActionResult>) {
     setBusy(true);
     setError(null);
     const result = await action();
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
     else setMode(null);
   }
 
@@ -320,7 +346,8 @@ function PayoutRow({
         </ul>
       ) : null}
 
-      {payout.status === "PENDING" ? (
+      {uncertain ? <AdminUncertainActionNotice /> : null}
+      {payout.status === "PENDING" && !uncertain ? (
         <>
           <div className="flex flex-wrap gap-2">
             <button
@@ -385,6 +412,7 @@ function OwnerCard({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
   const blocked = generateBlockedReason(owner);
 
   async function generate() {
@@ -392,7 +420,10 @@ function OwnerCard({
     setError(null);
     const result = await onGenerate(owner);
     setBusy(false);
-    if (result.error) setError(result.error);
+    if (result.error) {
+      setError(result.error);
+      setUncertain(result.uncertain === true);
+    }
   }
 
   return (
@@ -407,19 +438,23 @@ function OwnerCard({
         Ready for payout:{" "}
         <strong>{currencyFormatter.format(owner.pendingBalance)}</strong>
       </p>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          className={secondaryButtonClassName}
-          disabled={busy || !canGenerateBatch(owner)}
-          onClick={() => void generate()}
-          type="button"
-        >
-          {busy ? "Working…" : "Generate payout batch"}
-        </button>
-        {blocked ? (
-          <span className="text-[0.8rem] text-muted">{blocked}</span>
-        ) : null}
-      </div>
+      {uncertain ? (
+        <AdminUncertainActionNotice />
+      ) : (
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            className={secondaryButtonClassName}
+            disabled={busy || !canGenerateBatch(owner)}
+            onClick={() => void generate()}
+            type="button"
+          >
+            {busy ? "Working…" : "Generate payout batch"}
+          </button>
+          {blocked ? (
+            <span className="text-[0.8rem] text-muted">{blocked}</span>
+          ) : null}
+        </div>
+      )}
       {error ? (
         <p className="m-0 text-[0.875rem] text-[#c13515]" role="alert">
           {error}
@@ -680,9 +715,12 @@ export function AdminPayoutsPage() {
           setNotice({ tone: "error", text: message });
           setRetryCount((count) => count + 1);
         }
-        return { error: message };
+        return {
+          error: message,
+          uncertain: isUncertainAdminActionStatus(response.status),
+        };
       } catch {
-        return { error: fallback };
+        return { error: fallback, uncertain: true };
       }
     },
     [],
