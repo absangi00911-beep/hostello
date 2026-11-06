@@ -6,6 +6,7 @@ import { deleteVerificationDocument, isVerificationObjectKey } from "@/lib/verif
 import { removeHostelIndex } from "@/lib/typesense-sync";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
 
 export const ACCOUNT_DELETION_BATCH_SIZE = 100;
 const STALE_CLAIM_MS = 15 * 60 * 1000;
@@ -65,6 +66,7 @@ export type AccountDeletionStartResult =
 /** Create one deletion job and revoke sessions before any background cleanup begins. */
 export async function enqueueAccountDeletion(userId: string): Promise<AccountDeletionStartResult> {
   return db.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: {
@@ -507,6 +509,7 @@ async function processHostelBatch(jobId: string, userId: string | null): Promise
   await removeDeletedOwnerHostelsFromSearch(ids);
   const lastId = ids[ids.length - 1];
   await db.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
     await tx.hostel.updateMany({ where: { id: { in: ids }, ownerId: userId }, data: { status: "SUSPENDED" } });
     for (const id of ids) {
       await reevaluateAvailabilityAlertsForHostel(tx, id, {

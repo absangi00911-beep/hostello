@@ -56,15 +56,17 @@ const mapPinPositions = [
   { top: "72%", left: "79%" },
 ];
 
-function readNearbyCoordinates(): NearbyCoordinates | null {
+function readNearbyCoordinates(
+  fallback: NearbyCoordinates | null = null,
+): NearbyCoordinates | null {
   const raw = window.sessionStorage.getItem(NEARBY_COORDINATES_SESSION_KEY);
-  if (!raw) return null;
+  if (!raw) return fallback;
 
   try {
     const coordinates: unknown = JSON.parse(raw);
-    return isNearbyCoordinates(coordinates) ? coordinates : null;
+    return isNearbyCoordinates(coordinates) ? coordinates : fallback;
   } catch {
-    return null;
+    return fallback;
   }
 }
 
@@ -248,16 +250,20 @@ function HostelCard({
 
 export default function SearchPageClient({
   accountUser,
+  initialQuery,
   initialCity,
   initialNearby,
+  initialNearbyCoordinates,
   initialMoveInDate,
   initialGuests,
   initialFilters,
   initialPage,
 }: {
   accountUser: BrowseAccountUser | null;
+  initialQuery: string;
   initialCity: string;
   initialNearby: boolean;
+  initialNearbyCoordinates: NearbyCoordinates | null;
   initialMoveInDate: string;
   initialGuests: number;
   initialFilters: {
@@ -265,11 +271,13 @@ export default function SearchPageClient({
     minPrice: string;
     maxPrice: string;
     amenities: string[];
+    verified: boolean;
     sort: HostelSearchSort;
   };
   initialPage: number;
 }) {
   const router = useRouter();
+  const [appliedQuery] = useState(initialQuery);
   const [destination, setDestination] = useState(
     initialNearby ? "Nearby" : initialCity,
   );
@@ -295,7 +303,8 @@ export default function SearchPageClient({
   const [searchReload, setSearchReload] = useState(0);
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
   const availabilityAlertHref = buildSearchAvailabilityAlertHref({
-    city: appliedNearby ? undefined : appliedCity,
+    q: appliedQuery,
+    city: appliedCity,
     gender: appliedFilters.gender || undefined,
     minPrice: appliedFilters.minPrice
       ? Number(appliedFilters.minPrice)
@@ -304,6 +313,7 @@ export default function SearchPageClient({
       ? Number(appliedFilters.maxPrice)
       : undefined,
     amenities: appliedFilters.amenities,
+    verified: appliedFilters.verified,
     ...(appliedNearby && alertNearbyCoordinates
       ? { nearby: alertNearbyCoordinates }
       : {}),
@@ -320,13 +330,15 @@ export default function SearchPageClient({
 
     setAlertNearbyCoordinatesLoaded(false);
     try {
-      setAlertNearbyCoordinates(readNearbyCoordinates());
+      setAlertNearbyCoordinates(
+        readNearbyCoordinates(initialNearbyCoordinates),
+      );
     } catch {
       setAlertNearbyCoordinates(null);
     } finally {
       setAlertNearbyCoordinatesLoaded(true);
     }
-  }, [appliedNearby]);
+  }, [appliedNearby, initialNearbyCoordinates]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -335,6 +347,7 @@ export default function SearchPageClient({
       setIsLoading(true);
       setSearchError(null);
       const query = buildSearchParams({
+        q: appliedQuery,
         city: appliedCity,
         moveInDate: appliedMoveInDate,
         guests: Number(appliedGuests),
@@ -346,6 +359,7 @@ export default function SearchPageClient({
           ? Number(appliedFilters.maxPrice)
           : undefined,
         amenities: appliedFilters.amenities,
+        verified: appliedFilters.verified,
         sort: appliedFilters.sort,
         page,
         limit: PAGE_SIZE,
@@ -354,7 +368,7 @@ export default function SearchPageClient({
       try {
         let response: Response;
         if (appliedNearby) {
-          const coordinates = readNearbyCoordinates();
+          const coordinates = readNearbyCoordinates(initialNearbyCoordinates);
           if (!coordinates) {
             setHostels([]);
             setTotalHostels(0);
@@ -429,8 +443,10 @@ export default function SearchPageClient({
     appliedMoveInDate,
     appliedNearby,
     appliedFilters,
+    appliedQuery,
     page,
     searchReload,
+    initialNearbyCoordinates,
   ]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
@@ -446,6 +462,7 @@ export default function SearchPageClient({
     setIsNearby(useNearby);
 
     const params = buildSearchParams({
+      q: appliedQuery,
       city: useNearby ? undefined : trimmedDestination,
       moveInDate: moveInDate || undefined,
       guests: Number(guests),
@@ -457,6 +474,7 @@ export default function SearchPageClient({
         ? Number(appliedFilters.maxPrice)
         : undefined,
       amenities: appliedFilters.amenities,
+      verified: appliedFilters.verified,
       sort: appliedFilters.sort,
       page: 1,
       limit: PAGE_SIZE,
@@ -495,6 +513,7 @@ export default function SearchPageClient({
       maxPrice,
     });
     const params = buildSearchParams({
+      q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
       guests: Number(appliedGuests),
@@ -502,6 +521,7 @@ export default function SearchPageClient({
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       amenities: filters.amenities,
+      verified: filters.verified,
       sort: filters.sort,
       page: 1,
       limit: PAGE_SIZE,
@@ -527,6 +547,7 @@ export default function SearchPageClient({
     setAppliedFilters(next);
     setPage(1);
     const params = buildSearchParams({
+      q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
       guests: Number(appliedGuests),
@@ -534,6 +555,7 @@ export default function SearchPageClient({
       minPrice: next.minPrice ? Number(next.minPrice) : undefined,
       maxPrice: next.maxPrice ? Number(next.maxPrice) : undefined,
       amenities: next.amenities,
+      verified: next.verified,
       sort: next.sort,
       page: 1,
       limit: PAGE_SIZE,
@@ -549,6 +571,7 @@ export default function SearchPageClient({
       minPrice: "",
       maxPrice: "",
       amenities: [],
+      verified: false,
       sort: "newest" as const,
     };
     setFilters(reset);
@@ -556,6 +579,7 @@ export default function SearchPageClient({
     setFilterError(null);
     setPage(1);
     const params = buildSearchParams({
+      q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
       guests: Number(appliedGuests),
@@ -571,6 +595,7 @@ export default function SearchPageClient({
     const next = Math.min(pageCount, Math.max(1, nextPage));
     setPage(next);
     const params = buildSearchParams({
+      q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
       guests: Number(appliedGuests),
@@ -582,6 +607,7 @@ export default function SearchPageClient({
         ? Number(appliedFilters.maxPrice)
         : undefined,
       amenities: appliedFilters.amenities,
+      verified: appliedFilters.verified,
       sort: appliedFilters.sort,
       page: next,
       limit: PAGE_SIZE,

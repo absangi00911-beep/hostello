@@ -301,7 +301,7 @@ describe("PATCH /api/hostels/[param]", () => {
       }),
     }));
     expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
-      isolationLevel: "Serializable",
+      isolationLevel: "ReadCommitted",
     });
     expect(transactionRoom.createMany).toHaveBeenCalledWith({
       data: [

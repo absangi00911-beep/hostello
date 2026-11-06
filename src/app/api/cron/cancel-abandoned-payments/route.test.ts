@@ -26,6 +26,7 @@ import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 
 const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([]),
   booking: { updateMany: vi.fn() },
   seatHold: { deleteMany: vi.fn() },
 };

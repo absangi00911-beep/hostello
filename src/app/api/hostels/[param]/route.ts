@@ -23,6 +23,7 @@ import {
   RoomInventoryConflictError,
   syncHostelRooms,
 } from "@/lib/room-inventory-service";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 // Owners can only move their own listing between these two states from
@@ -156,6 +157,7 @@ export async function PATCH(
       let transactionResult: { kind: "changed" | "updated" };
       try {
         transactionResult = await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx);
           const result = await tx.hostel.updateMany({
             where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
             data: {
@@ -187,7 +189,7 @@ export async function PATCH(
             includeAllSearchAlerts: true,
           });
           return { kind: "updated" } as const;
-        }, { isolationLevel: "Serializable" });
+        }, { isolationLevel: "ReadCommitted" });
       } catch (error) {
         if (error instanceof RoomInventoryConflictError) {
           return NextResponse.json(
@@ -222,6 +224,7 @@ export async function PATCH(
     }
 
     const result = await db.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx);
       const transition = await tx.hostel.updateMany({
         where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
         data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },

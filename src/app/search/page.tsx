@@ -2,19 +2,24 @@ import { auth } from "@/lib/auth/config";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { AMENITIES } from "@hostello/shared";
 import SearchPageClient from "./SearchPageClient";
+import { isNearbyCoordinates, type NearbyCoordinates } from "@/lib/nearby-search";
 
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: Promise<{
     city?: string | string[];
+    q?: string | string[];
     nearby?: string | string[];
+    latitude?: string | string[];
+    longitude?: string | string[];
     moveInDate?: string | string[];
     guests?: string | string[];
     gender?: string | string[];
     minPrice?: string | string[];
     maxPrice?: string | string[];
     amenities?: string | string[];
+    verified?: string | string[];
     sort?: string | string[];
     page?: string | string[];
   }>;
@@ -22,8 +27,17 @@ export default async function SearchPage({
   const [params, session] = await Promise.all([searchParams, auth()]);
   const firstString = (value: string | string[] | undefined) =>
     typeof value === "string" ? value : "";
+  const query = firstString(params.q).trim().slice(0, 200);
   const city = firstString(params.city).trim();
-  const nearby = params.nearby === "true" && !city;
+  const nearby = params.nearby === "true";
+  const latitudeValue = firstString(params.latitude);
+  const longitudeValue = firstString(params.longitude);
+  const latitude = latitudeValue ? Number(latitudeValue) : NaN;
+  const longitude = longitudeValue ? Number(longitudeValue) : NaN;
+  const initialNearbyCoordinates: NearbyCoordinates | null =
+    isNearbyCoordinates({ latitude, longitude })
+      ? { latitude, longitude }
+      : null;
   const dateValue = firstString(params.moveInDate);
   const parsedDate =
     typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
@@ -86,8 +100,10 @@ export default async function SearchPage({
   return (
     <SearchPageClient
       accountUser={accountUser}
+      initialQuery={query}
       initialCity={city}
       initialNearby={nearby}
+      initialNearbyCoordinates={initialNearbyCoordinates}
       initialMoveInDate={moveInDate}
       initialGuests={guests}
       initialFilters={{
@@ -95,6 +111,7 @@ export default async function SearchPage({
         minPrice: validPriceRange ? minPrice : "",
         maxPrice: validPriceRange ? maxPrice : "",
         amenities,
+        verified: firstString(params.verified) === "true",
         sort,
       }}
       initialPage={page}

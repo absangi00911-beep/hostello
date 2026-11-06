@@ -36,13 +36,38 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
+        include: {
+          availabilityAlert: {
+            select: {
+              type: true,
+              hostelId: true,
+              searchCriteria: true,
+              checkIn: true,
+              checkOut: true,
+              guests: true,
+            },
+          },
+        },
       }),
       db.notification.count({ where }),
       getUnreadCount(session.user.id),
     ]);
 
     return NextResponse.json({
-      data: notifications,
+      data: notifications.map((notification) => ({
+        ...notification,
+        availabilityAlert: notification.availabilityAlert
+          ? {
+              type: notification.availabilityAlert.type,
+              criteria: notification.availabilityAlert.type === "HOSTEL"
+                ? { hostelId: notification.availabilityAlert.hostelId }
+                : notification.availabilityAlert.searchCriteria,
+              checkIn: notification.availabilityAlert.checkIn,
+              checkOut: notification.availabilityAlert.checkOut,
+              guests: notification.availabilityAlert.guests,
+            }
+          : null,
+      })),
       unreadCount,
       total,
       page,

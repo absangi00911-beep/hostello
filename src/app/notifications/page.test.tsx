@@ -111,6 +111,68 @@ describe("getNotificationHref", () => {
     expect(getNotificationHref(item, "ADMIN")).toBeNull();
   });
 
+  it("links SEARCH alerts to their saved public results and keeps HOSTEL alerts in the manager", () => {
+    const searchItem = {
+      ...base,
+      type: "AVAILABILITY_ALERT",
+      availabilityAlert: {
+        type: "SEARCH" as const,
+        criteria: {
+          city: "Lahore",
+          gender: "FEMALE" as const,
+          amenities: ["wifi"],
+        },
+        checkIn: "2030-03-20T00:00:00.000Z",
+        checkOut: "2030-03-22T00:00:00.000Z",
+        guests: 2,
+      },
+    };
+    const hostelItem = {
+      ...base,
+      type: "AVAILABILITY_ALERT",
+      availabilityAlert: {
+        type: "HOSTEL" as const,
+        criteria: { hostelId: "hostel_1" },
+        checkIn: "2030-03-20T00:00:00.000Z",
+        checkOut: "2030-03-22T00:00:00.000Z",
+        guests: 2,
+      },
+    };
+
+    const href = getNotificationHref(searchItem, "STUDENT");
+    expect(href).toMatch(/^\/search\?/);
+    const search = new URL(href!, "https://hostello.test");
+    expect(search.origin).toBe("https://hostello.test");
+    expect(search.searchParams.get("city")).toBe("Lahore");
+    expect(search.searchParams.get("gender")).toBe("FEMALE");
+    expect(search.searchParams.get("amenities")).toBe("wifi");
+    expect(search.searchParams.get("moveInDate")).toBe("2030-03-20");
+    expect(search.searchParams.get("checkOut")).toBe("2030-03-22");
+    expect(search.searchParams.get("guests")).toBe("2");
+    expect(getNotificationHref(hostelItem, "STUDENT")).toBe(
+      "/student/availability-alerts",
+    );
+  });
+
+  it("falls back to the alert manager for invalid SEARCH alert data", () => {
+    expect(
+      getNotificationHref(
+        {
+          ...base,
+          type: "AVAILABILITY_ALERT",
+          availabilityAlert: {
+            type: "SEARCH",
+            criteria: { amenities: ["untrusted"] },
+            checkIn: "2030-03-20",
+            checkOut: "2030-03-22",
+            guests: 2,
+          },
+        },
+        "STUDENT",
+      ),
+    ).toBe("/student/availability-alerts");
+  });
+
   it("does not construct a route from path-like or external hostel identifiers", () => {
     expect(
       getNotificationHref(

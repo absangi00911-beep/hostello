@@ -20,6 +20,8 @@ import { GET } from "./route";
 const checkIn = "2099-03-10";
 const checkOut = "2099-03-13";
 const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([]),
+  hostel: { findFirst: vi.fn() },
   room: {
     findMany: vi.fn().mockResolvedValue([
       { id: "room_1", capacity: 2 },
@@ -48,12 +50,13 @@ beforeEach(() => {
   vi.clearAllMocks();
   tx.seatHold.findMany.mockResolvedValue([{ roomId: "room_1", seatNo: 1 }]);
   tx.blockedDate.findFirst.mockResolvedValue(null);
+  tx.hostel.findFirst.mockResolvedValue({ id: "hostel_1" });
   vi.mocked(rateLimit).mockResolvedValue({
     ok: true,
     remaining: 59,
     resetAt: Date.now() + 60_000,
   });
-  vi.mocked(db.hostel.findFirst).mockResolvedValue({
+  tx.hostel.findFirst.mockResolvedValue({
     id: "hostel_1",
     rooms: [],
   } as never);
@@ -71,7 +74,7 @@ describe("GET exact hostel availability", () => {
       { roomId: "room_2", capacity: 4, availableSeats: 4, fits: true },
     ]);
     expect(JSON.stringify(body)).not.toContain("bookingId");
-    expect(db.hostel.findFirst).toHaveBeenCalledWith({
+    expect(tx.hostel.findFirst).toHaveBeenCalledWith({
       where: {
         OR: [{ id: "green-view" }, { slug: "green-view" }],
         status: "ACTIVE",
@@ -90,7 +93,7 @@ describe("GET exact hostel availability", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+    expect(tx.hostel.findFirst).not.toHaveBeenCalled();
     expect(db.$transaction).not.toHaveBeenCalled();
   });
 
@@ -104,13 +107,13 @@ describe("GET exact hostel availability", () => {
     const response = await GET(request(), params() as any);
 
     expect(response.status).toBe(429);
-    expect(db.hostel.findFirst).not.toHaveBeenCalled();
+    expect(tx.hostel.findFirst).not.toHaveBeenCalled();
   });
 
   it("resolves the same public detail identifier when the client has a hostel id", async () => {
     await GET(request(), params("hostel_1") as any);
 
-    expect(db.hostel.findFirst).toHaveBeenCalledWith({
+    expect(tx.hostel.findFirst).toHaveBeenCalledWith({
       where: {
         OR: [{ id: "hostel_1" }, { slug: "hostel_1" }],
         status: "ACTIVE",

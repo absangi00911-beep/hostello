@@ -3,7 +3,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { exactAvailabilitySchema } from "@hostello/shared";
 import { db } from "@/lib/db";
 import { getIp, rateLimit } from "@/lib/rate-limit";
-import { getHostelStayAvailability } from "@/lib/room-availability-service";
+import {
+  getHostelStayAvailability,
+  lockAvailabilityInventory,
+} from "@/lib/room-availability-service";
 import { hostelIdOrSlugWhere } from "@/lib/hostel-service";
 import {
   isBoundedRouteParam,
@@ -46,21 +49,24 @@ export async function GET(
       return NextResponse.json({ error: "Provide a valid future stay and guest count." }, { status: 400 });
     }
 
-    const hostel = await db.hostel.findFirst({
-      where: { ...hostelIdOrSlugWhere(param), status: "ACTIVE" },
-      select: { id: true },
-    });
-    if (!hostel) {
+    const data = await db.$transaction(
+      async (tx) => {
+        await lockAvailabilityInventory(tx);
+        const hostel = await tx.hostel.findFirst({
+          where: { ...hostelIdOrSlugWhere(param), status: "ACTIVE" },
+          select: { id: true },
+        });
+        if (!hostel) return null;
+        return getHostelStayAvailability(tx, {
+          hostelId: hostel.id,
+          ...parsed.data,
+        });
+      },
+      { isolationLevel: "ReadCommitted" },
+    );
+    if (!data) {
       return NextResponse.json({ error: "Hostel not found." }, { status: 404 });
     }
-
-    const data = await db.$transaction(
-      (tx) => getHostelStayAvailability(tx, {
-        hostelId: hostel.id,
-        ...parsed.data,
-      }),
-      { isolationLevel: "RepeatableRead" },
-    );
     return NextResponse.json({ data });
   } catch (error) {
     console.error("[GET /api/hostels/[param]/availability/exact]", getSafeErrorSummary(error));

@@ -143,12 +143,16 @@ describe("room availability transaction service", () => {
     ]);
   });
 
-  it("locks the listing inventory before locking room state", async () => {
+  it("takes the shared availability lock before locking listing and room state", async () => {
     const client = inventoryClient();
 
     await lockHostelInventory(client, "hostel_1");
 
-    expect(client.$queryRaw).toHaveBeenCalledTimes(2);
+    const calls = vi.mocked(client.$queryRaw).mock.calls;
+    expect(calls).toHaveLength(3);
+    expect((calls[0][0] as { values: unknown[] }).values).toHaveLength(2);
+    expect((calls[1][0] as { values: unknown[] }).values).toContain("hostel_1");
+    expect((calls[2][0] as { values: unknown[] }).values).toContain("hostel_1");
   });
 
   it("creates an inclusive owner block through the shared inventory transaction path", async () => {

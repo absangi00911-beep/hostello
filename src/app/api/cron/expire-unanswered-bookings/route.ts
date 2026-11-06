@@ -10,7 +10,10 @@ import { createOperationalLogContext, hashOperationalIdentifier, logOperationalE
 import { runCronJob } from "@/lib/cron-utils";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { getSafeErrorSummary } from "@/lib/safe-error";
-import { releaseSeatHolds } from "@/lib/room-availability-service";
+import {
+  lockAvailabilityInventory,
+  releaseSeatHolds,
+} from "@/lib/room-availability-service";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export const maxDuration = 60;
@@ -160,6 +163,7 @@ export async function POST(req: NextRequest) {
       if (expiredCandidates.length === 0) break;
 
       const cancelled = await db.$transaction(async (tx) => {
+        await lockAvailabilityInventory(tx);
         const claimed: typeof expiredCandidates = [];
         let batchHoldsReleased = 0;
         for (const candidate of expiredCandidates) {

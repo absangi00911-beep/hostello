@@ -4,7 +4,10 @@ import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { runCronJob } from "@/lib/cron-utils";
 import { createOperationalLogContext } from "@/lib/operational-logger";
-import { releaseSeatHolds } from "@/lib/room-availability-service";
+import {
+  lockAvailabilityInventory,
+  releaseSeatHolds,
+} from "@/lib/room-availability-service";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 
 export const maxDuration = 60;
@@ -42,6 +45,7 @@ export async function POST(req: NextRequest) {
       // after the read; in that case this booking must stay paid/confirmed and
       // its room must not be released by the cleanup job.
       const batchResult = await db.$transaction(async (tx) => {
+        await lockAvailabilityInventory(tx);
         let batchCancelled = 0;
         let batchHoldsReleased = 0;
 

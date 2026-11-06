@@ -66,6 +66,52 @@ describe("/api/notifications collection route", () => {
     expect(rateLimit).toHaveBeenCalledWith("notifications:list:user-1", { limit: 60, windowMs: 60_000 });
   });
 
+  it("includes the alert criteria and stay needed for safe SEARCH notification links", async () => {
+    vi.mocked(db.notification.findMany).mockResolvedValue([
+      {
+        id: "notification-search",
+        userId: "user-1",
+        availabilityAlert: {
+          type: "SEARCH",
+          hostelId: null,
+          searchCriteria: { city: "Lahore" },
+          checkIn: new Date("2030-03-20T00:00:00.000Z"),
+          checkOut: new Date("2030-03-22T00:00:00.000Z"),
+          guests: 2,
+        },
+      },
+    ] as any);
+
+    const response = await GET(
+      new NextRequest("https://hostello.test/api/notifications"),
+    );
+    const body = await response.json();
+
+    expect(body.data[0].availabilityAlert).toEqual({
+      type: "SEARCH",
+      criteria: { city: "Lahore" },
+      checkIn: "2030-03-20T00:00:00.000Z",
+      checkOut: "2030-03-22T00:00:00.000Z",
+      guests: 2,
+    });
+    expect(db.notification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          availabilityAlert: {
+            select: {
+              type: true,
+              hostelId: true,
+              searchCriteria: true,
+              checkIn: true,
+              checkOut: true,
+              guests: true,
+            },
+          },
+        },
+      }),
+    );
+  });
+
   it("does not list notifications for an unauthenticated request", async () => {
     vi.mocked(auth).mockResolvedValueOnce(null);
 

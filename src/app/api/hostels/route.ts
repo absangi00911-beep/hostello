@@ -169,6 +169,9 @@ export async function GET(req: NextRequest) {
 
     const q      = params.get("q") ?? undefined;
     const city   = params.get("city") ?? undefined;
+    const verifiedValues = params.getAll("verified");
+    const verifiedValue = verifiedValues[0];
+    const verified = verifiedValue === "true" ? true : undefined;
     const genderParam = params.get("gender");
     const gender = genderParam === "MALE" || genderParam === "FEMALE" || genderParam === "MIXED" ? genderParam : undefined;
     const minPrice = params.has("minPrice") ? Number(params.get("minPrice")) : undefined;
@@ -185,6 +188,8 @@ export async function GET(req: NextRequest) {
     if (
       (q !== undefined && q.length > MAX_SEARCH_LENGTH) ||
       (city !== undefined && city.length > MAX_CITY_LENGTH) ||
+      verifiedValues.length > 1 ||
+      (verifiedValue !== undefined && verifiedValue !== "true") ||
       amenities.length > MAX_AMENITY_FILTERS ||
       amenities.some((amenity) => amenity.length > MAX_AMENITY_LENGTH)
     ) {
@@ -226,6 +231,7 @@ export async function GET(req: NextRequest) {
       q,
       city,
       gender,
+      verified,
       minPrice,
       maxPrice,
       amenities: amenities.length ? amenities : undefined,

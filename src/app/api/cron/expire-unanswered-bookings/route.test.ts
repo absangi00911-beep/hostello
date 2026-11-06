@@ -35,6 +35,7 @@ vi.mock("@/lib/availability-alerts", () => ({
 import { POST } from "./route";
 
 const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([]),
   booking: { updateMany: vi.fn() },
   seatHold: { deleteMany: vi.fn() },
 };

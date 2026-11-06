@@ -156,6 +156,10 @@ describe("availability alert service", () => {
     );
 
     expect(harness.database.$transaction).toHaveBeenCalledOnce();
+    expect(harness.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      harness.tx.availabilityAlert.create.mock.invocationCallOrder[0],
+    );
+    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(2);
     expect(harness.tx.notification.create).toHaveBeenCalledOnce();
     expect(harness.tx.availabilityAlert.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -319,6 +323,10 @@ describe("availability alert service", () => {
     expect(harness.alert?.checkIn).toEqual(new Date("2030-03-21T00:00:00.000Z"));
     expect(harness.alert?.matched).toBe(true);
     expect(harness.notifications).toHaveLength(1);
+    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(harness.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      harness.tx.availabilityAlert.findFirst.mock.invocationCallOrder[0],
+    );
   });
 
   it("deletes an alert only in the authenticated user's scope", async () => {

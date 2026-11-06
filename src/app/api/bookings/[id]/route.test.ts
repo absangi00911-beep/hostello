@@ -24,6 +24,7 @@ import { hashOperationalIdentifier } from "@/lib/operational-logger";
 import { GET, PATCH } from "./route";
 
 const tx = {
+  $queryRaw: vi.fn().mockResolvedValue([]),
   booking: { updateMany: vi.fn() },
   seatHold: { deleteMany: vi.fn() },
 };

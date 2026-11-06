@@ -82,6 +82,7 @@ beforeEach(() => {
   vi.mocked(db.hostel.findUnique).mockResolvedValue(makeHostel({ status: "PENDING_REVIEW", verified: false }) as any);
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
   vi.mocked(db.$transaction).mockImplementation((async (callback: any) => callback({
+    $queryRaw: vi.fn().mockResolvedValue([]),
     hostel: db.hostel,
     hostelVerificationReview: { create: vi.fn().mockResolvedValue({}) },
   })) as any);

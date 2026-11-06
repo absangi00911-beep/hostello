@@ -11,7 +11,10 @@ import { createNotification } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
 import { processRefund } from "@/lib/refunds";
 import { CANCELLATION_POLICY_DETAILS, getCancellationRefundAmount } from "@/lib/cancellation-policy";
-import { releaseSeatHolds } from "@/lib/room-availability-service";
+import {
+  lockAvailabilityInventory,
+  releaseSeatHolds,
+} from "@/lib/room-availability-service";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 import {
   createOperationalLogContext,
@@ -191,6 +194,7 @@ export async function PATCH(
 
       // The state transition and inventory release must commit or roll back together.
       const updated = await db.$transaction(async (tx) => {
+        await lockAvailabilityInventory(tx);
         const cancelled = await tx.booking.updateMany({
           where: {
             id,
@@ -307,6 +311,7 @@ export async function PATCH(
 
     // Keep decline and hold release atomic so a failed transition cannot free seats.
     const updated = await db.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx);
       const result = await tx.booking.updateMany({
         where: {
           id,

@@ -1,6 +1,7 @@
 export type HostelSearchSort = "newest" | "rating" | "price_asc" | "price_desc";
 
 export interface HostelSearchFilterParams {
+  q?: string;
   city?: string;
   moveInDate?: string;
   guests?: number;
@@ -8,6 +9,7 @@ export interface HostelSearchFilterParams {
   minPrice?: number;
   maxPrice?: number;
   amenities?: string[];
+  verified?: boolean;
   sort?: HostelSearchSort;
   page: number;
   limit: number;
@@ -21,6 +23,8 @@ export function buildSearchParams(
     page: String(filters.page),
     limit: String(filters.limit),
   });
+  const q = filters.q?.trim();
+  if (q) params.set("q", q);
   const city = filters.city?.trim();
   if (city) params.set("city", city);
   if (filters.moveInDate) {
@@ -37,6 +41,7 @@ export function buildSearchParams(
   for (const amenity of filters.amenities ?? []) {
     params.append("amenities", amenity);
   }
+  if (filters.verified) params.set("verified", "true");
 
   return params;
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAvailabilityAlertSearchResultsHref,
   buildHostelAvailabilityAlertHref,
   buildSearchAvailabilityAlertHref,
 } from "@/lib/availability-alert-links";
@@ -62,5 +63,66 @@ describe("availability alert entry links", () => {
     expect(query.get("checkIn")).toBe("2030-03-20");
     expect(query.get("checkOut")).toBe("2030-03-22");
     expect(query.get("guests")).toBe("3");
+  });
+
+  it("builds a same-origin public search destination from validated saved criteria and stay", () => {
+    const href = buildAvailabilityAlertSearchResultsHref({
+      criteria: {
+        q: "Near campus & transit",
+        city: "Lahore",
+        gender: "FEMALE",
+        minPrice: 10_000,
+        maxPrice: 20_000,
+        amenities: ["wifi", "laundry"],
+        verified: true,
+      },
+      checkIn: "2030-03-20",
+      checkOut: "2030-03-22",
+      guests: 2,
+    });
+
+    expect(href).not.toBeNull();
+    expect(href?.startsWith("/search?")).toBe(true);
+    const destination = new URL(href!, "https://hostello.test");
+    expect(destination.origin).toBe("https://hostello.test");
+    expect(destination.pathname).toBe("/search");
+    expect(destination.searchParams.get("q")).toBe("Near campus & transit");
+    expect(destination.searchParams.get("city")).toBe("Lahore");
+    expect(destination.searchParams.get("gender")).toBe("FEMALE");
+    expect(destination.searchParams.get("minPrice")).toBe("10000");
+    expect(destination.searchParams.get("maxPrice")).toBe("20000");
+    expect(destination.searchParams.getAll("amenities")).toEqual(["laundry", "wifi"]);
+    expect(destination.searchParams.get("verified")).toBe("true");
+    expect(destination.searchParams.get("moveInDate")).toBe("2030-03-20");
+    expect(destination.searchParams.get("checkOut")).toBe("2030-03-22");
+    expect(destination.searchParams.get("guests")).toBe("2");
+    expect(destination.searchParams.has("sort")).toBe(false);
+    expect(destination.searchParams.has("page")).toBe(false);
+  });
+
+  it("rejects malformed notification criteria without producing an external destination", () => {
+    expect(
+      buildAvailabilityAlertSearchResultsHref({
+        criteria: { city: "https://evil.example" },
+        checkIn: "2030-02-31",
+        guests: 99,
+      }),
+    ).toBeNull();
+  });
+
+  it("carries explicit nearby coordinates to the public results destination", () => {
+    const href = buildAvailabilityAlertSearchResultsHref({
+      criteria: {
+        nearby: { latitude: 31.52, longitude: 74.36 },
+      },
+      checkIn: "2030-03-20",
+      checkOut: "2030-03-22",
+      guests: 1,
+    });
+    const query = new URLSearchParams(href?.split("?")[1]);
+
+    expect(query.get("nearby")).toBe("true");
+    expect(query.get("latitude")).toBe("31.52");
+    expect(query.get("longitude")).toBe("74.36");
   });
 });

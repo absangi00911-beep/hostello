@@ -30,3 +30,21 @@ Resumed from HEAD `486c39e`, preserving the existing criteria normalization comm
 - `git diff --check` reported apparent trailing whitespace on added lines in `src/app/api/hostels/[param]/route.ts`. A byte-level scan of added lines (excluding CRLF terminators) and new Task 11 files found **no actual trailing spaces or tabs**; this is a CRLF line-ending artifact, so line endings were left unchanged. Unrelated existing worktree paths (`docs/team/`, `.github/agents/`, `docs/audits/`, and the plan file) were not included in Task 11 changes.
 
 The continuation commit contains only Task 11 implementation, related tests/docs, and this report; the two prior Task 11 commits remain in history.
+
+## Review fix round 1
+
+Addressed the three review findings:
+
+- **Concurrent false matches:** availability reads/evaluations and inventory mutations now acquire the same transaction-scoped PostgreSQL advisory lock before taking hostel, room, booking/hold, or alert row locks. Alert creation/edit/evaluation and inventory changes retain state/notification transaction coupling and the unique transition key. Converted the owner listing edit transaction to ReadCommitted so a transaction waiting for the advisory lock does not continue with a pre-wait snapshot; its conditional status update remains the optimistic concurrency guard. The exact-availability route also takes the lock before reading inventory. Regression tests verify lock-before-alert-write/evaluation ordering.
+- **SEARCH notification destination:** notifications now use a validated fixed same-origin `/search` URL populated from saved filters, stay dates, and guest count. HOSTEL alerts continue to link to the alert manager. URL builder and notification/page tests cover the destinations and unsafe input.
+- **Integration evidence:** added an opt-in PostgreSQL concurrency/retry/idempotency test guarded by an explicit environment flag and a disposable loopback `*_test` database check, plus discoverable Playwright create/manage flows for HOSTEL and SEARCH alerts guarded by safe test-auth and database prerequisites.
+
+Verification for this round:
+
+- `npm test -- --run src/app/api/hostels/[param]/availability/exact/route.test.ts src/lib/availability-alerts.test.ts src/lib/room-availability-service.test.ts src/lib/availability-alert-links.test.ts src/app/notifications/page.test.tsx src/app/api/notifications/route.test.ts src/app/search/search-params.test.ts --reporter=dot` — **7 files passed, 48 tests passed**.
+- `npm test -- --run --reporter=dot` — **234 files passed, 2 skipped; 1,503 tests passed, 9 skipped**.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run docs:check` — passed: **80 routes, 9 cron jobs, 65 environment variables read, 41 Markdown files linked**.
+- `npm run e2e -- --list e2e/availability-alerts.spec.ts` — discovered both HOSTEL and SEARCH management specs (**2 tests**); browser execution not performed.
+- PostgreSQL integration test not run: no disposable loopback database and safe test auth were verified. No DB connection or migrations were attempted.

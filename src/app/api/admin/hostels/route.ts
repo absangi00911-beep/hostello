@@ -12,6 +12,7 @@ import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
+import { lockAvailabilityInventory } from "@/lib/room-availability-service";
 
 const schema = z.object({
   hostelId: z.string().cuid(),
@@ -109,6 +110,7 @@ export async function PATCH(req: NextRequest) {
 
     const changed = action === "verify"
       ? await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx);
           const result = await tx.hostel.updateMany({
             where: { id: hostelId, status: "PENDING_REVIEW" },
             data,
@@ -131,6 +133,7 @@ export async function PATCH(req: NextRequest) {
           return true;
         })
       : await db.$transaction(async (tx) => {
+          await lockAvailabilityInventory(tx);
           const result = await tx.hostel.updateMany({
             where: { id: hostelId, status: hostel.status },
             data,

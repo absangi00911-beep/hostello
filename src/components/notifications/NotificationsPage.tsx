@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { announceUnreadCount } from "./useUnreadNotificationCount";
+import { buildAvailabilityAlertSearchResultsHref } from "@/lib/availability-alert-links";
+
+type AvailabilityAlertNotificationData = {
+  type: "HOSTEL" | "SEARCH";
+  criteria: unknown;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+};
 
 export interface NotificationItem {
   id: string;
@@ -13,6 +22,7 @@ export interface NotificationItem {
   createdAt: string;
   bookingId: string | null;
   hostelId: string | null;
+  availabilityAlert?: AvailabilityAlertNotificationData | null;
 }
 
 interface NotificationsResponse {
@@ -43,6 +53,25 @@ function isNotificationItem(value: unknown): value is NotificationItem {
   );
 }
 
+function parseAvailabilityAlert(value: unknown): AvailabilityAlertNotificationData | null {
+  if (
+    !isRecord(value) ||
+    (value.type !== "HOSTEL" && value.type !== "SEARCH") ||
+    typeof value.checkIn !== "string" ||
+    typeof value.checkOut !== "string" ||
+    typeof value.guests !== "number"
+  ) {
+    return null;
+  }
+  return {
+    type: value.type,
+    criteria: value.criteria,
+    checkIn: value.checkIn,
+    checkOut: value.checkOut,
+    guests: value.guests,
+  };
+}
+
 function parseResponse(value: unknown): NotificationsResponse | null {
   if (
     !isRecord(value) ||
@@ -59,6 +88,7 @@ function parseResponse(value: unknown): NotificationsResponse | null {
       ...item,
       bookingId: item.bookingId ?? null,
       hostelId: item.hostelId ?? null,
+      availabilityAlert: parseAvailabilityAlert(item.availabilityAlert),
     })),
     unreadCount: value.unreadCount,
     hasMore: value.hasMore,
@@ -77,7 +107,8 @@ function readApiError(value: unknown, fallback: string): string {
  * Anything else renders as plain text rather than guessing a route.
  */
 export function getNotificationHref(
-  item: Pick<NotificationItem, "type" | "bookingId" | "hostelId">,
+  item: Pick<NotificationItem, "type" | "bookingId" | "hostelId"> &
+    Pick<NotificationItem, "availabilityAlert">,
   role: Role,
 ): string | null {
   switch (item.type) {
@@ -106,7 +137,16 @@ export function getNotificationHref(
         ? `/hostels/${encodeURIComponent(item.hostelId)}`
         : null;
     case "AVAILABILITY_ALERT":
-      return role === "STUDENT" ? "/student/availability-alerts" : null;
+      if (role !== "STUDENT") return null;
+      if (item.availabilityAlert?.type === "SEARCH") {
+        return buildAvailabilityAlertSearchResultsHref({
+          criteria: item.availabilityAlert.criteria,
+          checkIn: item.availabilityAlert.checkIn,
+          checkOut: item.availabilityAlert.checkOut,
+          guests: item.availabilityAlert.guests,
+        }) ?? "/student/availability-alerts";
+      }
+      return "/student/availability-alerts";
     default:
       return null;
   }

@@ -16,10 +16,28 @@ type HostelAlertLinkInput = {
   guests?: number;
 };
 
+type AvailabilityAlertSearchDestinationInput = {
+  criteria: unknown;
+  checkIn: string | Date;
+  checkOut: string | Date;
+  guests: number;
+};
+
 function isCalendarDate(value: string | undefined): value is string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function dateOnly(value: string | Date): string | null {
+  const date = value instanceof Date
+    ? value
+    : /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? new Date(`${value}T00:00:00.000Z`)
+      : new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  const result = date.toISOString().slice(0, 10);
+  return isCalendarDate(result) ? result : null;
 }
 
 function setStayParams(
@@ -72,4 +90,52 @@ export function buildSearchAvailabilityAlertHref(input: SearchAlertLinkInput) {
 
   setStayParams(params, { checkIn, checkOut, guests });
   return `/student/availability-alerts?${params.toString()}`;
+}
+
+export function buildAvailabilityAlertSearchResultsHref(
+  input: AvailabilityAlertSearchDestinationInput,
+) {
+  const checkIn = dateOnly(input.checkIn);
+  const checkOut = dateOnly(input.checkOut);
+  if (
+    !checkIn ||
+    !checkOut ||
+    checkOut <= checkIn ||
+    !Number.isInteger(input.guests) ||
+    input.guests < 1 ||
+    input.guests > 4
+  ) {
+    return null;
+  }
+
+  let criteria: SearchAlertCriteria;
+  try {
+    criteria = normalizeSearchAlertCriteria(input.criteria);
+  } catch {
+    return null;
+  }
+
+  const params = new URLSearchParams();
+  if (criteria.q) params.set("q", criteria.q);
+  if (criteria.city) params.set("city", criteria.city);
+  if (criteria.gender) params.set("gender", criteria.gender);
+  if (criteria.minPrice !== undefined) {
+    params.set("minPrice", String(criteria.minPrice));
+  }
+  if (criteria.maxPrice !== undefined) {
+    params.set("maxPrice", String(criteria.maxPrice));
+  }
+  for (const amenity of criteria.amenities ?? []) {
+    params.append("amenities", amenity);
+  }
+  if (criteria.verified) params.set("verified", "true");
+  if (criteria.nearby) {
+    params.set("nearby", "true");
+    params.set("latitude", String(criteria.nearby.latitude));
+    params.set("longitude", String(criteria.nearby.longitude));
+  }
+  params.set("moveInDate", checkIn);
+  params.set("checkOut", checkOut);
+  params.set("guests", String(input.guests));
+  return `/search?${params.toString()}`;
 }

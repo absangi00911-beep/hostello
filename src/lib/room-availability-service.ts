@@ -23,6 +23,18 @@ type RoomStayRange = StayRange & {
   capacity: number;
 };
 
+const AVAILABILITY_LOCK_NAMESPACE = 1_214_867_536;
+const AVAILABILITY_LOCK_KEY = 1;
+
+// Exact-availability transactions take this transaction lock before any row locks.
+export async function lockAvailabilityInventory(
+  client: InventoryLockClient,
+) {
+  await client.$queryRaw(
+    Prisma.sql`SELECT pg_advisory_xact_lock(${AVAILABILITY_LOCK_NAMESPACE}, ${AVAILABILITY_LOCK_KEY})`,
+  );
+}
+
 function summarizeRoomAvailability(
   capacity: number,
   seatNumbers: Iterable<number>,
@@ -46,6 +58,7 @@ function summarizeRoomAvailability(
 }
 
 export async function lockHostelInventory(client: InventoryLockClient, hostelId: string) {
+  await lockAvailabilityInventory(client);
   const hostels = await client.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`SELECT "id" FROM "hostels" WHERE "id" = ${hostelId} FOR UPDATE`,
   );

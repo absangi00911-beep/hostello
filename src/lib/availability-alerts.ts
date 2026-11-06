@@ -8,7 +8,10 @@ import {
   type SearchAlertCriteria,
 } from "@/lib/availability-alert-criteria";
 import { distanceBetweenCoordinatesKm, NEARBY_SEARCH_RADIUS_KM } from "@/lib/nearby-search";
-import { getHostelStayAvailability } from "@/lib/room-availability-service";
+import {
+  getHostelStayAvailability,
+  lockAvailabilityInventory,
+} from "@/lib/room-availability-service";
 import { buildPublicSearchWhereClause } from "@/lib/hostel-search";
 
 export type AvailabilityAlertRecord = AvailabilityAlert;
@@ -227,12 +230,13 @@ async function lockAlert(
   return rows.length > 0;
 }
 
-export async function evaluateAvailabilityAlert(
+async function evaluateAvailabilityAlertWithLockHeld(
   id: string,
   tx: AlertTransaction,
   today = getPakistanCalendarDate(),
+  alertLocked = false,
 ) {
-  if (!await lockAlert(tx, id)) return null;
+  if (!alertLocked && !await lockAlert(tx, id)) return null;
   const alert = await tx.availabilityAlert.findUnique({ where: { id } });
   if (!alert) return null;
 
@@ -267,6 +271,15 @@ export async function evaluateAvailabilityAlert(
   return updated;
 }
 
+export async function evaluateAvailabilityAlert(
+  id: string,
+  tx: AlertTransaction,
+  today = getPakistanCalendarDate(),
+) {
+  await lockAvailabilityInventory(tx);
+  return evaluateAvailabilityAlertWithLockHeld(id, tx, today);
+}
+
 export async function createAvailabilityAlert(
   userId: string,
   input: AvailabilityAlertInput,
@@ -275,6 +288,7 @@ export async function createAvailabilityAlert(
 ) {
   const normalized = normalizeInput(input, today);
   return database.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
     if (normalized.type === "HOSTEL") {
       const hostel = await tx.hostel.findFirst({
         where: { id: normalized.hostelId, status: "ACTIVE" },
@@ -286,7 +300,7 @@ export async function createAvailabilityAlert(
     const alert = await tx.availabilityAlert.create({
       data: { userId, ...normalized },
     });
-    return evaluateAvailabilityAlert(alert.id, tx, today);
+    return evaluateAvailabilityAlertWithLockHeld(alert.id, tx, today);
   }, { isolationLevel: "ReadCommitted" });
 }
 
@@ -298,6 +312,7 @@ export async function updateAvailabilityAlert(
   today = getPakistanCalendarDate(),
 ) {
   return database.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
     if (!await lockAlert(tx, id, userId)) return null;
     const current = await tx.availabilityAlert.findFirst({
       where: { id, userId },
@@ -326,7 +341,7 @@ export async function updateAvailabilityAlert(
     if (Object.keys(data).length > 0) {
       await tx.availabilityAlert.update({ where: { id }, data });
     }
-    return evaluateAvailabilityAlert(id, tx, today);
+    return evaluateAvailabilityAlertWithLockHeld(id, tx, today, true);
   }, { isolationLevel: "ReadCommitted" });
 }
 
@@ -336,6 +351,7 @@ export async function deleteAvailabilityAlert(
   database: AlertDatabase = db,
 ) {
   return database.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
     if (!await lockAlert(tx, id, userId)) return false;
     const deleted = await tx.availabilityAlert.deleteMany({
       where: { id, userId },
@@ -365,6 +381,7 @@ export async function reevaluateAvailabilityAlertsForHostel(
   hostelId: string,
   options: { includeAllSearchAlerts?: boolean } = {},
 ) {
+  await lockAvailabilityInventory(tx);
   const hostel = await tx.hostel.findUnique({
     where: { id: hostelId },
     select: REEVALUATION_HOSTEL_SELECT,
@@ -390,7 +407,7 @@ export async function reevaluateAvailabilityAlertsForHostel(
     ) {
       continue;
     }
-    await evaluateAvailabilityAlert(alert.id, tx);
+    await evaluateAvailabilityAlertWithLockHeld(alert.id, tx);
     evaluated++;
   }
   return evaluated;
@@ -399,12 +416,15 @@ export async function reevaluateAvailabilityAlertsForHostel(
 export async function reevaluateAllAvailabilityAlerts(
   tx: AlertTransaction,
 ) {
+  await lockAvailabilityInventory(tx);
   const alerts = await tx.availabilityAlert.findMany({
     where: { active: true },
     select: { id: true },
     orderBy: { id: "asc" },
   });
-  for (const alert of alerts) await evaluateAvailabilityAlert(alert.id, tx);
+  for (const alert of alerts) {
+    await evaluateAvailabilityAlertWithLockHeld(alert.id, tx);
+  }
   return alerts.length;
 }
 
@@ -413,14 +433,17 @@ export async function expireAvailabilityAlerts(
   database: AlertDatabase = db,
   userId?: string,
 ) {
-  return database.availabilityAlert.updateMany({
-    where: {
-      active: true,
-      checkIn: { lte: today },
-      ...(userId ? { userId } : {}),
-    },
-    data: { active: false, matched: false },
-  });
+  return database.$transaction(async (tx) => {
+    await lockAvailabilityInventory(tx);
+    return tx.availabilityAlert.updateMany({
+      where: {
+        active: true,
+        checkIn: { lte: today },
+        ...(userId ? { userId } : {}),
+      },
+      data: { active: false, matched: false },
+    });
+  }, { isolationLevel: "ReadCommitted" });
 }
 
 export function getAvailabilityAlertStatus(

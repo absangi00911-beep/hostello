@@ -16,6 +16,8 @@ const MAX_SEARCH_GUESTS = 8;
 const MAX_REQUEST_BODY_BYTES = 4_096;
 const MAX_AMENITY_FILTERS = 30;
 const MAX_AMENITY_LENGTH = 100;
+const MAX_SEARCH_LENGTH = 200;
+const MAX_CITY_LENGTH = 100;
 
 interface NearbySearchBody {
   latitude: number;
@@ -106,6 +108,13 @@ export async function POST(req: NextRequest) {
       defaultLimit: DEFAULT_LIMIT,
       maxLimit: MAX_LIMIT,
     });
+    const queryValues = req.nextUrl.searchParams.getAll("q");
+    const cityValues = req.nextUrl.searchParams.getAll("city");
+    const verifiedValues = req.nextUrl.searchParams.getAll("verified");
+    const q = queryValues[0];
+    const city = cityValues[0];
+    const verifiedValue = verifiedValues[0];
+    const verified = verifiedValue === "true" ? true : undefined;
     const genderValues = req.nextUrl.searchParams.getAll("gender");
     const genderValue = genderValues[0];
     const gender =
@@ -131,6 +140,12 @@ export async function POST(req: NextRequest) {
         ? sortValue
         : "newest";
     if (
+      queryValues.length > 1 ||
+      (q !== undefined && q.length > MAX_SEARCH_LENGTH) ||
+      cityValues.length > 1 ||
+      (city !== undefined && city.length > MAX_CITY_LENGTH) ||
+      verifiedValues.length > 1 ||
+      (verifiedValue !== undefined && verifiedValue !== "true") ||
       genderValues.length > 1 ||
       (genderValue !== undefined && gender === undefined) ||
       minPriceValues.length > 1 ||
@@ -158,7 +173,10 @@ export async function POST(req: NextRequest) {
             latitude: body.data.latitude,
             longitude: body.data.longitude,
           },
+          q,
+          city,
           gender,
+          verified,
           minPrice,
           maxPrice,
           amenities: amenities.length ? amenities : undefined,
