@@ -194,7 +194,7 @@ export async function PATCH(
 
       // The state transition and inventory release must commit or roll back together.
       const updated = await db.$transaction(async (tx) => {
-        await lockAvailabilityInventory(tx);
+        await lockAvailabilityInventory(tx, booking.hostelId);
         const cancelled = await tx.booking.updateMany({
           where: {
             id,
@@ -211,7 +211,6 @@ export async function PATCH(
 
         if (cancelled.count !== 1) return null;
         await releaseSeatHolds(tx, id);
-        await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
 
         return { id, status: "CANCELLED" as const, roomId: booking.roomId, cancellationRefundAmount: refundAmount };
       });
@@ -232,6 +231,8 @@ export async function PATCH(
           { status: 409 },
         );
       }
+
+      await reevaluateAvailabilityAlertsForHostel(booking.hostelId);
 
       // Notify owner that student cancelled
       await createNotification({
@@ -311,7 +312,7 @@ export async function PATCH(
 
     // Keep decline and hold release atomic so a failed transition cannot free seats.
     const updated = await db.$transaction(async (tx) => {
-      await lockAvailabilityInventory(tx);
+      await lockAvailabilityInventory(tx, booking.hostelId);
       const result = await tx.booking.updateMany({
         where: {
           id,
@@ -335,7 +336,6 @@ export async function PATCH(
 
       if (result.count !== 1) return null;
       if (newStatus === "CANCELLED") await releaseSeatHolds(tx, id);
-      await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
 
       return { id, status: newStatus, roomId: booking.roomId };
     });
@@ -346,6 +346,8 @@ export async function PATCH(
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(booking.hostelId);
 
     let refundAutomatic: boolean | null = null;
     let refundNeedsReview = false;

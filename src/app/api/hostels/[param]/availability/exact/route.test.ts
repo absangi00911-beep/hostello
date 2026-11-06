@@ -74,13 +74,23 @@ describe("GET exact hostel availability", () => {
       { roomId: "room_2", capacity: 4, availableSeats: 4, fits: true },
     ]);
     expect(JSON.stringify(body)).not.toContain("bookingId");
-    expect(tx.hostel.findFirst).toHaveBeenCalledWith({
+    expect(tx.hostel.findFirst).toHaveBeenNthCalledWith(1, {
       where: {
         OR: [{ id: "green-view" }, { slug: "green-view" }],
-        status: "ACTIVE",
       },
       select: { id: true },
     });
+    expect(tx.hostel.findFirst).toHaveBeenNthCalledWith(2, {
+      where: { id: "hostel_1", status: "ACTIVE" },
+      select: { id: true },
+    });
+    const lockCall = tx.$queryRaw.mock.calls.findIndex(
+      ([query]) => (query as { values: unknown[] }).values.includes("hostel_1"),
+    );
+    expect(lockCall).toBeGreaterThanOrEqual(0);
+    expect(tx.$queryRaw.mock.invocationCallOrder[lockCall]).toBeLessThan(
+      tx.room.findMany.mock.invocationCallOrder[0],
+    );
     expect(tx.room.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { hostelId: "hostel_1" },
     }));
@@ -113,10 +123,9 @@ describe("GET exact hostel availability", () => {
   it("resolves the same public detail identifier when the client has a hostel id", async () => {
     await GET(request(), params("hostel_1") as any);
 
-    expect(tx.hostel.findFirst).toHaveBeenCalledWith({
+    expect(tx.hostel.findFirst).toHaveBeenNthCalledWith(1, {
       where: {
         OR: [{ id: "hostel_1" }, { slug: "hostel_1" }],
-        status: "ACTIVE",
       },
       select: { id: true },
     });

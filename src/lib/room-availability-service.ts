@@ -10,6 +10,10 @@ type BlockClient = Pick<
   PrismaTypes.TransactionClient,
   "$queryRaw" | "seatHold" | "blockedDate"
 >;
+type ExactStayClient = Pick<
+  PrismaTypes.TransactionClient,
+  "room" | "seatHold" | "blockedDate"
+>;
 
 type StayRange = {
   hostelId: string;
@@ -24,15 +28,19 @@ type RoomStayRange = StayRange & {
 };
 
 const AVAILABILITY_LOCK_NAMESPACE = 1_214_867_536;
-const AVAILABILITY_LOCK_KEY = 1;
 
-// Exact-availability transactions take this transaction lock before any row locks.
+// Inventory transactions take per-hostel advisory locks before any row locks.
 export async function lockAvailabilityInventory(
   client: InventoryLockClient,
+  hostelIds: string | readonly string[],
 ) {
-  await client.$queryRaw(
-    Prisma.sql`SELECT pg_advisory_xact_lock(${AVAILABILITY_LOCK_NAMESPACE}, ${AVAILABILITY_LOCK_KEY})`,
-  );
+  const ids = [...new Set(typeof hostelIds === "string" ? [hostelIds] : hostelIds)]
+    .sort();
+  for (const hostelId of ids) {
+    await client.$queryRaw(
+      Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${hostelId}, ${AVAILABILITY_LOCK_NAMESPACE}))`,
+    );
+  }
 }
 
 function summarizeRoomAvailability(
@@ -58,7 +66,7 @@ function summarizeRoomAvailability(
 }
 
 export async function lockHostelInventory(client: InventoryLockClient, hostelId: string) {
-  await lockAvailabilityInventory(client);
+  await lockAvailabilityInventory(client, hostelId);
   const hostels = await client.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`SELECT "id" FROM "hostels" WHERE "id" = ${hostelId} FOR UPDATE`,
   );
@@ -68,6 +76,69 @@ export async function lockHostelInventory(client: InventoryLockClient, hostelId:
     Prisma.sql`SELECT "id" FROM "rooms" WHERE "hostelId" = ${hostelId} ORDER BY "id" FOR UPDATE`,
   );
   return true;
+}
+
+export async function getAvailableHostelIdsForStay(
+  client: ExactStayClient,
+  input: {
+    hostelIds: string[];
+    checkIn: Date;
+    checkOut: Date;
+    guests: number;
+  },
+) {
+  const hostelIds = [...new Set(input.hostelIds)];
+  if (hostelIds.length === 0) return new Set<string>();
+
+  const rooms = await client.room.findMany({
+    where: { hostelId: { in: hostelIds } },
+    orderBy: { id: "asc" },
+    select: { id: true, hostelId: true, capacity: true },
+  });
+  if (rooms.length === 0) return new Set<string>();
+
+  const roomIds = rooms.map((room) => room.id);
+  const [holds, blocks] = await Promise.all([
+    client.seatHold.findMany({
+      where: {
+        roomId: { in: roomIds },
+        checkIn: { lt: input.checkOut },
+        checkOut: { gt: input.checkIn },
+      },
+      select: { roomId: true, seatNo: true },
+    }),
+    client.blockedDate.findMany({
+      where: {
+        hostelId: { in: hostelIds },
+        startDate: { lt: input.checkOut },
+        endDate: { gte: input.checkIn },
+      },
+      select: { hostelId: true },
+    }),
+  ]);
+  const seatsByRoom = new Map<string, number[]>();
+  for (const hold of holds) {
+    const seats = seatsByRoom.get(hold.roomId) ?? [];
+    seats.push(hold.seatNo);
+    seatsByRoom.set(hold.roomId, seats);
+  }
+  const blockedHostels = new Set(blocks.map((block) => block.hostelId));
+  const availableHostels = new Set<string>();
+
+  for (const room of rooms) {
+    if (
+      summarizeRoomAvailability(
+        room.capacity,
+        seatsByRoom.get(room.id) ?? [],
+        blockedHostels.has(room.hostelId),
+        input.guests,
+      ).fits
+    ) {
+      availableHostels.add(room.hostelId);
+    }
+  }
+
+  return availableHostels;
 }
 
 export async function createOwnerBlockedDate(

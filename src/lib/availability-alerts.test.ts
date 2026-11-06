@@ -82,7 +82,21 @@ function createHarness(initialAlert?: Partial<AvailabilityAlertRecord>) {
     hostel: {
       findFirst: vi.fn(async () => ({ id: "hostel-1", status: "ACTIVE" })),
       findMany: vi.fn(async () => [
-        { id: "hostel-1", latitude: 31.52, longitude: 74.36 },
+        {
+          id: "hostel-1",
+          status: "ACTIVE",
+          name: "Green View",
+          description: "",
+          city: "Lahore",
+          area: null,
+          address: "",
+          gender: "FEMALE",
+          pricePerMonth: 10_000,
+          amenities: ["wifi"],
+          verified: true,
+          latitude: 31.52,
+          longitude: 74.36,
+        },
       ]),
     },
     room: {
@@ -159,7 +173,7 @@ describe("availability alert service", () => {
     expect(harness.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
       harness.tx.availabilityAlert.create.mock.invocationCallOrder[0],
     );
-    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(3);
     expect(harness.tx.notification.create).toHaveBeenCalledOnce();
     expect(harness.tx.availabilityAlert.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -204,9 +218,16 @@ describe("availability alert service", () => {
             pricePerMonth: { gte: 10_000 },
             amenities: { hasEvery: ["wifi"] },
           }),
-          select: { id: true, latitude: true, longitude: true },
+          select: expect.objectContaining({
+            id: true,
+            status: true,
+            city: true,
+            latitude: true,
+            longitude: true,
+          }),
         }),
       );
+      expect(harness.tx.hostel.findMany).toHaveBeenCalledTimes(2);
       expect(harness.inventoryQueries.holds[0]).toMatchObject({
         where: {
           roomId: { in: ["room-1"] },
@@ -221,6 +242,13 @@ describe("availability alert service", () => {
           endDate: { gte: checkIn },
         },
       });
+      const candidateLock = harness.tx.$queryRaw.mock.calls.findIndex(
+        ([query]) => (query as { values: unknown[] }).values.includes("hostel-1"),
+      );
+      expect(candidateLock).toBeGreaterThanOrEqual(0);
+      expect(harness.tx.$queryRaw.mock.invocationCallOrder[candidateLock]).toBeLessThan(
+        harness.tx.room.findMany.mock.invocationCallOrder[0],
+      );
       expect(harness.alert?.matched).toBe(true);
       expect(harness.notifications).toHaveLength(1);
     });
@@ -242,7 +270,7 @@ describe("availability alert service", () => {
         today,
       );
 
-      expect(harness.tx.hostel.findMany).toHaveBeenCalledOnce();
+      expect(harness.tx.hostel.findMany).toHaveBeenCalledTimes(2);
       expect(harness.alert?.matched).toBe(false);
       expect(harness.notifications).toHaveLength(0);
   });
@@ -323,7 +351,7 @@ describe("availability alert service", () => {
     expect(harness.alert?.checkIn).toEqual(new Date("2030-03-21T00:00:00.000Z"));
     expect(harness.alert?.matched).toBe(true);
     expect(harness.notifications).toHaveLength(1);
-    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(harness.tx.$queryRaw).toHaveBeenCalledTimes(3);
     expect(harness.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
       harness.tx.availabilityAlert.findFirst.mock.invocationCallOrder[0],
     );

@@ -23,6 +23,7 @@ interface NearbySearchBody {
   latitude: number;
   longitude: number;
   moveInDate?: string;
+  checkOut?: string;
   guests?: number;
 }
 
@@ -49,13 +50,25 @@ function isNearbySearchBody(value: unknown): value is NearbySearchBody {
 
   if (
     Object.keys(value).some(
-      (key) => !["latitude", "longitude", "moveInDate", "guests"].includes(key),
+      (key) =>       !["latitude", "longitude", "moveInDate", "checkOut", "guests"].includes(key),
     )
   ) {
     return false;
   }
 
   if ("moveInDate" in value && !isMoveInDate(value.moveInDate)) {
+    return false;
+  }
+  if ("checkOut" in value && !isMoveInDate(value.checkOut)) {
+    return false;
+  }
+  if (
+    "checkOut" in value &&
+    (!("moveInDate" in value) ||
+      typeof value.checkOut !== "string" ||
+      typeof value.moveInDate !== "string" ||
+      value.checkOut <= value.moveInDate)
+  ) {
     return false;
   }
   if (
@@ -181,6 +194,9 @@ export async function POST(req: NextRequest) {
           maxPrice,
           amenities: amenities.length ? amenities : undefined,
           moveInDate,
+          checkOut: body.data.checkOut
+            ? new Date(`${body.data.checkOut}T00:00:00.000Z`)
+            : undefined,
           guests: moveInDate ? body.data.guests ?? 1 : undefined,
           sort,
           page,

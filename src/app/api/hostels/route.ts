@@ -177,6 +177,9 @@ export async function GET(req: NextRequest) {
     const minPrice = params.has("minPrice") ? Number(params.get("minPrice")) : undefined;
     const maxPrice = params.has("maxPrice") ? Number(params.get("maxPrice")) : undefined;
     const amenities = params.getAll("amenities");
+    const checkInValues = params.getAll("checkIn");
+    const checkInValue = checkInValues[0];
+    const checkOutValues = params.getAll("checkOut");
     const moveInDateValues = params.getAll("moveInDate");
     const guestsValues = params.getAll("guests");
     const sortParam = params.get("sort");
@@ -195,19 +198,34 @@ export async function GET(req: NextRequest) {
     ) {
       return NextResponse.json({ error: "One or more search filters are too long." }, { status: 400 });
     }
-    const moveInDateValue = moveInDateValues[0];
+    const moveInDateValue = checkInValue ?? moveInDateValues[0];
     const guestsValue = guestsValues[0];
     const moveInDate = moveInDateValue
       ? new Date(`${moveInDateValue}T00:00:00.000Z`)
       : undefined;
+    const checkOutValue = checkOutValues[0];
+    const checkOut = checkOutValue
+      ? new Date(`${checkOutValue}T00:00:00.000Z`)
+      : undefined;
     const guests = guestsValue ? Number(guestsValue) : undefined;
     if (
+      checkInValues.length > 1 ||
+      checkOutValues.length > 1 ||
+      (checkInValue !== undefined && moveInDateValues.length > 0) ||
       moveInDateValues.length > 1 ||
       guestsValues.length > 1 ||
+      (checkInValue !== undefined && checkOutValue === undefined) ||
       (moveInDateValue !== undefined &&
         (!/^\d{4}-\d{2}-\d{2}$/.test(moveInDateValue) ||
           Number.isNaN(moveInDate?.getTime()) ||
           moveInDate?.toISOString().slice(0, 10) !== moveInDateValue)) ||
+      (checkOutValue !== undefined &&
+        (!moveInDate ||
+          !checkOut ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(checkOutValue) ||
+          Number.isNaN(checkOut?.getTime()) ||
+          checkOut?.toISOString().slice(0, 10) !== checkOutValue ||
+          checkOut <= moveInDate)) ||
       (guestsValue !== undefined &&
         (!moveInDate ||
           guests === undefined ||
@@ -236,6 +254,7 @@ export async function GET(req: NextRequest) {
       maxPrice,
       amenities: amenities.length ? amenities : undefined,
       moveInDate,
+      checkOut,
       guests: moveInDate ? guests ?? 1 : undefined,
       sort,
       page,

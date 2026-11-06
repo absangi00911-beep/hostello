@@ -128,7 +128,7 @@ describe.skipIf(!enabled)("availability alerts PostgreSQL concurrency", () => {
 
   async function createHeldSeat() {
     await prisma.$transaction(async (tx) => {
-      await lockAvailabilityInventory(tx);
+      await lockAvailabilityInventory(tx, hostelId);
       const booking = await tx.booking.create({
         data: {
           userId: studentId,
@@ -166,7 +166,7 @@ describe.skipIf(!enabled)("availability alerts PostgreSQL concurrency", () => {
     });
 
     const inventoryWriter = prisma.$transaction(async (tx) => {
-      await lockAvailabilityInventory(tx);
+      await lockAvailabilityInventory(tx, hostelId);
       const booking = await tx.booking.create({
         data: {
           userId: studentId,
@@ -258,7 +258,7 @@ describe.skipIf(!enabled)("availability alerts PostgreSQL concurrency", () => {
     expect(alert?.matched).toBe(false);
 
     await prisma.$transaction(async (tx) => {
-      await lockAvailabilityInventory(tx);
+      await lockAvailabilityInventory(tx, hostelId);
       await tx.seatHold.deleteMany({ where: { booking: { hostelId } } });
     });
 
@@ -282,5 +282,44 @@ describe.skipIf(!enabled)("availability alerts PostgreSQL concurrency", () => {
     });
     expect(stored).toMatchObject({ matched: true, matchVersion: 1 });
     expect(notifications).toEqual([{ availabilityAlertTransition: 1 }]);
+  });
+
+  it("does not serialize unrelated hostel inventory locks", async () => {
+    let releaseFirst!: () => void;
+    let signalFirstLocked!: () => void;
+    let signalSecondLocked!: () => void;
+    const firstLockHeld = new Promise<void>((resolve) => {
+      signalFirstLocked = resolve;
+    });
+    const secondLockHeld = new Promise<void>((resolve) => {
+      signalSecondLocked = resolve;
+    });
+    const firstCanFinish = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    const first = prisma.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx, "unrelated-hostel-a");
+      signalFirstLocked();
+      await firstCanFinish;
+    });
+    await firstLockHeld;
+
+    const second = prisma.$transaction(async (tx) => {
+      await lockAvailabilityInventory(tx, "unrelated-hostel-b");
+      signalSecondLocked();
+    });
+    let secondAcquired = false;
+    try {
+      secondAcquired = await Promise.race([
+        secondLockHeld.then(() => true),
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2_000)),
+      ]);
+    } finally {
+      releaseFirst();
+    }
+
+    await Promise.all([first, second]);
+    expect(secondAcquired).toBe(true);
   });
 });

@@ -172,6 +172,7 @@ async function alertMatches(
 ): Promise<boolean> {
   if (alert.type === "HOSTEL") {
     if (!alert.hostelId) return false;
+    await lockAvailabilityInventory(tx, alert.hostelId);
     const hostel = await tx.hostel.findFirst({
       where: { id: alert.hostelId, status: "ACTIVE" },
       select: { id: true },
@@ -190,20 +191,19 @@ async function alertMatches(
   const candidates = await tx.hostel.findMany({
     where: buildPublicSearchWhereClause(criteria),
     orderBy: { id: "asc" },
-    select: { id: true, latitude: true, longitude: true },
+    select: REEVALUATION_HOSTEL_SELECT,
   });
-  for (const candidate of candidates) {
-    if (
-      criteria.nearby &&
-      (candidate.latitude === null ||
-        candidate.longitude === null ||
-        distanceBetweenCoordinatesKm(criteria.nearby, {
-          latitude: candidate.latitude,
-          longitude: candidate.longitude,
-        }) > NEARBY_SEARCH_RADIUS_KM)
-    ) {
-      continue;
-    }
+  const candidateIds = candidates.map(({ id }) => id);
+  if (candidateIds.length === 0) return false;
+  await lockAvailabilityInventory(tx, candidateIds);
+
+  const currentCandidates = await tx.hostel.findMany({
+    where: { id: { in: candidateIds } },
+    orderBy: { id: "asc" },
+    select: REEVALUATION_HOSTEL_SELECT,
+  });
+  for (const candidate of currentCandidates) {
+    if (!matchesPublicFilters(candidate, criteria)) continue;
 
     const rooms = await getHostelStayAvailability(tx, {
       hostelId: candidate.id,
@@ -276,7 +276,6 @@ export async function evaluateAvailabilityAlert(
   tx: AlertTransaction,
   today = getPakistanCalendarDate(),
 ) {
-  await lockAvailabilityInventory(tx);
   return evaluateAvailabilityAlertWithLockHeld(id, tx, today);
 }
 
@@ -288,8 +287,8 @@ export async function createAvailabilityAlert(
 ) {
   const normalized = normalizeInput(input, today);
   return database.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
     if (normalized.type === "HOSTEL") {
+      await lockAvailabilityInventory(tx, normalized.hostelId);
       const hostel = await tx.hostel.findFirst({
         where: { id: normalized.hostelId, status: "ACTIVE" },
         select: { id: true },
@@ -312,7 +311,6 @@ export async function updateAvailabilityAlert(
   today = getPakistanCalendarDate(),
 ) {
   return database.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
     if (!await lockAlert(tx, id, userId)) return null;
     const current = await tx.availabilityAlert.findFirst({
       where: { id, userId },
@@ -327,6 +325,7 @@ export async function updateAvailabilityAlert(
         matched: false,
       };
       if (normalized.type === "HOSTEL") {
+        await lockAvailabilityInventory(tx, normalized.hostelId);
         const hostel = await tx.hostel.findFirst({
           where: { id: normalized.hostelId, status: "ACTIVE" },
           select: { id: true },
@@ -351,7 +350,6 @@ export async function deleteAvailabilityAlert(
   database: AlertDatabase = db,
 ) {
   return database.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
     if (!await lockAlert(tx, id, userId)) return false;
     const deleted = await tx.availabilityAlert.deleteMany({
       where: { id, userId },
@@ -377,16 +375,17 @@ const REEVALUATION_HOSTEL_SELECT = {
 } as const;
 
 export async function reevaluateAvailabilityAlertsForHostel(
-  tx: AlertTransaction,
   hostelId: string,
   options: { includeAllSearchAlerts?: boolean } = {},
+  database: AlertDatabase = db,
 ) {
-  await lockAvailabilityInventory(tx);
-  const hostel = await tx.hostel.findUnique({
-    where: { id: hostelId },
-    select: REEVALUATION_HOSTEL_SELECT,
-  });
-  const alerts = await tx.availabilityAlert.findMany({
+  const alerts = await database.$transaction(async (tx) => {
+    const [hostels, activeAlerts] = await Promise.all([
+      tx.hostel.findMany({
+        where: { id: { in: [hostelId] } },
+        select: REEVALUATION_HOSTEL_SELECT,
+      }),
+      tx.availabilityAlert.findMany({
     where: {
       active: true,
       OR: [
@@ -396,34 +395,44 @@ export async function reevaluateAvailabilityAlertsForHostel(
     },
     select: { id: true, type: true, searchCriteria: true },
     orderBy: { id: "asc" },
-  });
-  let evaluated = 0;
+      }),
+    ]);
+
+    return activeAlerts.filter((alert) =>
+      alert.type !== "SEARCH" ||
+      options.includeAllSearchAlerts ||
+      hostels.length === 0 ||
+      hostels.some((hostel) =>
+        matchesPublicFilters(
+          hostel,
+          normalizeSearchAlertCriteria(alert.searchCriteria),
+        ),
+      ),
+    );
+  }, { isolationLevel: "ReadCommitted" });
+
   for (const alert of alerts) {
-    if (
-      alert.type === "SEARCH" &&
-      !options.includeAllSearchAlerts &&
-      hostel &&
-      !matchesPublicFilters(hostel, normalizeSearchAlertCriteria(alert.searchCriteria))
-    ) {
-      continue;
-    }
-    await evaluateAvailabilityAlertWithLockHeld(alert.id, tx);
-    evaluated++;
+    await database.$transaction(
+      (tx) => evaluateAvailabilityAlertWithLockHeld(alert.id, tx),
+      { isolationLevel: "ReadCommitted" },
+    );
   }
-  return evaluated;
+  return alerts.length;
 }
 
 export async function reevaluateAllAvailabilityAlerts(
-  tx: AlertTransaction,
+  database: AlertDatabase = db,
 ) {
-  await lockAvailabilityInventory(tx);
-  const alerts = await tx.availabilityAlert.findMany({
+  const alerts = await database.$transaction((tx) => tx.availabilityAlert.findMany({
     where: { active: true },
     select: { id: true },
     orderBy: { id: "asc" },
-  });
+  }));
   for (const alert of alerts) {
-    await evaluateAvailabilityAlertWithLockHeld(alert.id, tx);
+    await database.$transaction(
+      (tx) => evaluateAvailabilityAlertWithLockHeld(alert.id, tx),
+      { isolationLevel: "ReadCommitted" },
+    );
   }
   return alerts.length;
 }
@@ -434,7 +443,6 @@ export async function expireAvailabilityAlerts(
   userId?: string,
 ) {
   return database.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
     return tx.availabilityAlert.updateMany({
       where: {
         active: true,

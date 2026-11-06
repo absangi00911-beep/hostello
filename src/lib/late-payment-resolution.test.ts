@@ -13,8 +13,12 @@ vi.mock("@/lib/room-availability-service", () => ({
   createSeatHolds: vi.fn(),
 }));
 vi.mock("@/lib/refunds", () => ({ processRefund: vi.fn() }));
+vi.mock("@/lib/availability-alerts", () => ({
+  reevaluateAvailabilityAlertsForHostel: vi.fn().mockResolvedValue(0),
+}));
 
 import { db } from "@/lib/db";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 import {
   createSeatHolds,
   getRoomStayAvailability,
@@ -101,6 +105,7 @@ describe("resolveLatePayment", () => {
       checkOut: booking.checkOut,
       guests: 1,
     });
+
     expect(tx.booking.updateMany).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({ status: "CANCELLED", paymentStatus: { in: ["PENDING", "FAILED"] } }),
       data: expect.objectContaining({
@@ -127,6 +132,27 @@ describe("resolveLatePayment", () => {
       }),
     });
     expect(processRefund).not.toHaveBeenCalled();
+  });
+
+  it("reevaluates availability alerts after reinstating the seat hold commits", async () => {
+    let committed = false;
+    vi.mocked(db.$transaction).mockImplementation((async (callback: any) => {
+      const result = await callback(tx);
+      committed = true;
+      return result;
+    }) as typeof db.$transaction);
+    vi.mocked(reevaluateAvailabilityAlertsForHostel).mockImplementation(async () => {
+      expect(committed).toBe(true);
+      return 0;
+    });
+
+    await resolveLatePayment(input);
+
+    expect(reevaluateAvailabilityAlertsForHostel).toHaveBeenCalledWith(
+      "hostel-1",
+      {},
+      db,
+    );
   });
 
   it("keeps the booking cancelled and requests a full refund when seats are unavailable", async () => {

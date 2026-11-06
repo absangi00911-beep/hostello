@@ -3,8 +3,10 @@ import type { Prisma } from "@/generated/client";
 import {
   createOwnerBlockedDate,
   createSeatHolds,
+  getAvailableHostelIdsForStay,
   getHostelStayAvailability,
   getRoomStayAvailability,
+  lockAvailabilityInventory,
   lockHostelInventory,
   releaseSeatHolds,
 } from "./room-availability-service";
@@ -143,16 +145,89 @@ describe("room availability transaction service", () => {
     ]);
   });
 
-  it("takes the shared availability lock before locking listing and room state", async () => {
+  it("takes the hostel-scoped advisory lock before locking listing and room state", async () => {
     const client = inventoryClient();
 
     await lockHostelInventory(client, "hostel_1");
 
     const calls = vi.mocked(client.$queryRaw).mock.calls;
     expect(calls).toHaveLength(3);
-    expect((calls[0][0] as { values: unknown[] }).values).toHaveLength(2);
+    expect((calls[0][0] as { values: unknown[] }).values).toContain("hostel_1");
     expect((calls[1][0] as { values: unknown[] }).values).toContain("hostel_1");
     expect((calls[2][0] as { values: unknown[] }).values).toContain("hostel_1");
+  });
+
+  it("uses a separate advisory lock key for each hostel", async () => {
+    const client = inventoryClient();
+
+    await lockAvailabilityInventory(client, "hostel_1");
+    await lockAvailabilityInventory(client, "hostel_2");
+
+    const lockValues = vi.mocked(client.$queryRaw).mock.calls.map(
+      ([query]) => (query as { values: unknown[] }).values,
+    );
+    expect(lockValues).toHaveLength(2);
+    expect(lockValues[0]).toContain("hostel_1");
+    expect(lockValues[1]).toContain("hostel_2");
+    expect(lockValues[0]).not.toEqual(lockValues[1]);
+  });
+
+  it("takes multiple hostel locks in unique sorted order", async () => {
+    const client = inventoryClient();
+
+    await lockAvailabilityInventory(client, ["hostel_2", "hostel_1", "hostel_2"]);
+
+    const lockValues = vi.mocked(client.$queryRaw).mock.calls.map(
+      ([query]) => (query as { values: unknown[] }).values,
+    );
+    expect(lockValues).toHaveLength(2);
+    expect(lockValues[0]).toContain("hostel_1");
+    expect(lockValues[1]).toContain("hostel_2");
+  });
+
+  it("filters a full stay using overlapping seat holds and inclusive blocks", async () => {
+    const client = {
+      room: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: "room-1", hostelId: "hostel-1", capacity: 2 },
+          { id: "room-2", hostelId: "hostel-2", capacity: 2 },
+          { id: "room-3", hostelId: "hostel-3", capacity: 4 },
+        ]),
+      },
+      seatHold: {
+        findMany: vi.fn().mockResolvedValue([
+          { roomId: "room-2", seatNo: 1 },
+          { roomId: "room-2", seatNo: 2 },
+        ]),
+      },
+      blockedDate: {
+        findMany: vi.fn().mockResolvedValue([{ hostelId: "hostel-3" }]),
+      },
+    } as unknown as Parameters<typeof getAvailableHostelIdsForStay>[0];
+
+    await expect(getAvailableHostelIdsForStay(client, {
+      hostelIds: ["hostel-1", "hostel-2", "hostel-3"],
+      checkIn,
+      checkOut,
+      guests: 2,
+    })).resolves.toEqual(new Set(["hostel-1"]));
+
+    expect(client.seatHold.findMany).toHaveBeenCalledWith({
+      where: {
+        roomId: { in: ["room-1", "room-2", "room-3"] },
+        checkIn: { lt: checkOut },
+        checkOut: { gt: checkIn },
+      },
+      select: { roomId: true, seatNo: true },
+    });
+    expect(client.blockedDate.findMany).toHaveBeenCalledWith({
+      where: {
+        hostelId: { in: ["hostel-1", "hostel-2", "hostel-3"] },
+        startDate: { lt: checkOut },
+        endDate: { gte: checkIn },
+      },
+      select: { hostelId: true },
+    });
   });
 
   it("creates an inclusive owner block through the shared inventory transaction path", async () => {

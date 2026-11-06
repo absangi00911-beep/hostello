@@ -117,17 +117,13 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   }
   const { startDate: start, endDate: end } = dateRange.data;
   const result = await db.$transaction(async (tx) => {
-    const created = await createOwnerBlockedDate(tx, {
+    return createOwnerBlockedDate(tx, {
       hostelId: hostel.id,
       ownerId: session.user.id,
       startDate: start,
       endDate: end,
       reason,
     });
-    if (created.kind === "created") {
-      await reevaluateAvailabilityAlertsForHostel(tx, hostel.id);
-    }
-    return created;
   });
 
   if (result.kind === "missing") return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -138,6 +134,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     );
   }
 
+  await reevaluateAvailabilityAlertsForHostel(hostel.id);
   return NextResponse.json({ data: result.blocked }, { status: 201 });
 }
 
@@ -170,7 +167,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  await db.$transaction(async (tx) => {
+  const deletedCount = await db.$transaction(async (tx) => {
     if (!await lockHostelInventory(tx, hostelId)) return;
     const deleted = await tx.blockedDate.deleteMany({
       where: {
@@ -179,10 +176,11 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
         hostel: { is: { ownerId: session.user.id } },
       },
     });
-    if (deleted.count > 0) {
-      await reevaluateAvailabilityAlertsForHostel(tx, hostelId);
-    }
+    return deleted.count;
   });
+  if (deletedCount && deletedCount > 0) {
+    await reevaluateAvailabilityAlertsForHostel(hostelId);
+  }
 
   return NextResponse.json({ ok: true });
 }

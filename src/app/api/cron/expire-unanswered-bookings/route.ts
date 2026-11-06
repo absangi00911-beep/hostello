@@ -163,7 +163,8 @@ export async function POST(req: NextRequest) {
       if (expiredCandidates.length === 0) break;
 
       const cancelled = await db.$transaction(async (tx) => {
-        await lockAvailabilityInventory(tx);
+        const hostelIds = [...new Set(expiredCandidates.map(({ hostelId }) => hostelId))];
+        await lockAvailabilityInventory(tx, hostelIds);
         const claimed: typeof expiredCandidates = [];
         let batchHoldsReleased = 0;
         for (const candidate of expiredCandidates) {
@@ -180,13 +181,15 @@ export async function POST(req: NextRequest) {
           if (transition.count !== 1) continue;
           const released = await releaseSeatHolds(tx, candidate.id);
           batchHoldsReleased += released.count;
-          await reevaluateAvailabilityAlertsForHostel(tx, candidate.hostelId);
           claimed.push(candidate);
         }
         return { claimed, holdsReleased: batchHoldsReleased };
       });
 
       if (cancelled.claimed.length === 0) break;
+      for (const hostelId of [...new Set(cancelled.claimed.map(({ hostelId }) => hostelId))]) {
+        await reevaluateAvailabilityAlertsForHostel(hostelId);
+      }
       expired += cancelled.claimed.length;
       holdsReleased += cancelled.holdsReleased;
 

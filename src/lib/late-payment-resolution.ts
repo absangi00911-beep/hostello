@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 import {
   createSeatHolds,
   getRoomStayAvailability,
@@ -203,6 +204,7 @@ async function resolveInTransaction(input: LatePaymentInput, forceRefund = false
     return {
       outcome: reinstate ? "REINSTATED" as const : "REFUND_REQUIRED" as const,
       newResolution: true,
+      ...(reinstate ? { hostelId: booking.hostelId } : {}),
     };
   }, { isolationLevel: "ReadCommitted" });
 }
@@ -217,6 +219,15 @@ export async function resolveLatePayment(
   } catch (error) {
     if (!isSeatHoldConflict(error)) throw error;
     resolution = await resolveInTransaction(input, true, client);
+  }
+
+  if (
+    resolution.outcome === "REINSTATED" &&
+    resolution.newResolution &&
+    "hostelId" in resolution &&
+    resolution.hostelId
+  ) {
+    await reevaluateAvailabilityAlertsForHostel(resolution.hostelId, {}, client);
   }
 
   if (resolution.outcome === "REFUND_REQUIRED" && resolution.newResolution) {

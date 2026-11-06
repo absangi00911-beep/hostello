@@ -72,7 +72,7 @@ export async function createBooking(
   validateBookingInput(input);
 
   try {
-    return await database.$transaction(async (tx) => {
+    const booking = await database.$transaction(async (tx) => {
       if (!await lockHostelInventory(tx, input.hostelId)) {
         throw new BookingServiceError("Hostel not found or not available for booking.", 404);
       }
@@ -165,10 +165,11 @@ export async function createBooking(
         checkOut: input.checkOut,
         seatNumbers: availability.availableSeatNumbers.slice(0, input.guests),
       });
-      await reevaluateAvailabilityAlertsForHostel(tx, input.hostelId);
 
       return booking;
     }, { isolationLevel: "ReadCommitted" });
+    await reevaluateAvailabilityAlertsForHostel(input.hostelId);
+    return booking;
   } catch (error) {
     if (error instanceof BookingServiceError) throw error;
     if (isSeatHoldConflict(error)) {

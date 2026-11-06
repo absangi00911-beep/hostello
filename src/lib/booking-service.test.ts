@@ -8,6 +8,7 @@ vi.mock("@/lib/availability-alerts", () => ({
 }));
 
 import { db } from "@/lib/db";
+import { reevaluateAvailabilityAlertsForHostel } from "@/lib/availability-alerts";
 import { BookingServiceError, createBooking } from "./booking-service";
 
 const userId = "usr_0000000000000000000001";
@@ -134,6 +135,24 @@ describe("createBooking", () => {
         paymentStatus: "PENDING",
       }),
     }));
+  });
+
+  it("reevaluates availability alerts after the inventory transaction commits", async () => {
+    const tx = transaction();
+    let committed = false;
+    vi.mocked(db.$transaction).mockImplementation(async (callback: any) => {
+      const result = await callback(tx);
+      committed = true;
+      return result;
+    });
+    vi.mocked(reevaluateAvailabilityAlertsForHostel).mockImplementation(async () => {
+      expect(committed).toBe(true);
+      return 0;
+    });
+
+    await createBooking(userId, bookingInput());
+
+    expect(reevaluateAvailabilityAlertsForHostel).toHaveBeenCalledWith(hostelId);
   });
 
   it("returns an actionable conflict when the selected room no longer fits the guests", async () => {

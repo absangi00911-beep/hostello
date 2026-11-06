@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
       // after the read; in that case this booking must stay paid/confirmed and
       // its room must not be released by the cleanup job.
       const batchResult = await db.$transaction(async (tx) => {
-        await lockAvailabilityInventory(tx);
+        const hostelIds = [...new Set(candidates.map(({ hostelId }) => hostelId))];
+        await lockAvailabilityInventory(tx, hostelIds);
         let batchCancelled = 0;
         let batchHoldsReleased = 0;
+        const changedHostelIds = new Set<string>();
 
         for (const booking of candidates) {
           const result = await tx.booking.updateMany({
@@ -64,14 +66,21 @@ export async function POST(req: NextRequest) {
           batchCancelled += result.count;
           const released = await releaseSeatHolds(tx, booking.id);
           batchHoldsReleased += released.count;
-          await reevaluateAvailabilityAlertsForHostel(tx, booking.hostelId);
+          changedHostelIds.add(booking.hostelId);
         }
 
-        return { cancelled: batchCancelled, holdsReleased: batchHoldsReleased };
+        return {
+          cancelled: batchCancelled,
+          holdsReleased: batchHoldsReleased,
+          hostelIds: [...changedHostelIds],
+        };
       });
 
       cancelled += batchResult.cancelled;
       holdsReleased += batchResult.holdsReleased;
+      for (const hostelId of batchResult.hostelIds) {
+        await reevaluateAvailabilityAlertsForHostel(hostelId);
+      }
 
       if (candidates.length < BATCH_SIZE) break;
     }

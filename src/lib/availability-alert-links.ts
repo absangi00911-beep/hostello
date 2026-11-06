@@ -134,7 +134,7 @@ export function buildAvailabilityAlertSearchResultsHref(
     params.set("latitude", String(criteria.nearby.latitude));
     params.set("longitude", String(criteria.nearby.longitude));
   }
-  params.set("moveInDate", checkIn);
+  params.set("checkIn", checkIn);
   params.set("checkOut", checkOut);
   params.set("guests", String(input.guests));
   return `/search?${params.toString()}`;

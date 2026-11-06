@@ -157,7 +157,7 @@ export async function PATCH(
       let transactionResult: { kind: "changed" | "updated" };
       try {
         transactionResult = await db.$transaction(async (tx) => {
-          await lockAvailabilityInventory(tx);
+          await lockAvailabilityInventory(tx, hostel.id);
           const result = await tx.hostel.updateMany({
             where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
             data: {
@@ -185,9 +185,6 @@ export async function PATCH(
           if (result.count !== 1) return { kind: "changed" } as const;
 
           await syncHostelRooms(tx, hostel.id, listing.roomTypes);
-          await reevaluateAvailabilityAlertsForHostel(tx, hostel.id, {
-            includeAllSearchAlerts: true,
-          });
           return { kind: "updated" } as const;
         }, { isolationLevel: "ReadCommitted" });
       } catch (error) {
@@ -205,6 +202,10 @@ export async function PATCH(
           { status: 409 },
         );
       }
+
+      await reevaluateAvailabilityAlertsForHostel(hostel.id, {
+        includeAllSearchAlerts: true,
+      });
 
       const updated = { id: hostel.id, slug: hostel.slug, name: listing.name, status: "PENDING_REVIEW" as const };
 
@@ -224,16 +225,11 @@ export async function PATCH(
     }
 
     const result = await db.$transaction(async (tx) => {
-      await lockAvailabilityInventory(tx);
+      await lockAvailabilityInventory(tx, hostel.id);
       const transition = await tx.hostel.updateMany({
         where: { id: hostel.id, ownerId: session.user.id, status: hostel.status },
         data: { status: allowedNext as "DRAFT" | "PENDING_REVIEW" },
       });
-      if (transition.count === 1) {
-        await reevaluateAvailabilityAlertsForHostel(tx, hostel.id, {
-          includeAllSearchAlerts: true,
-        });
-      }
       return transition;
     });
     if (result.count !== 1) {
@@ -242,6 +238,10 @@ export async function PATCH(
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(hostel.id, {
+      includeAllSearchAlerts: true,
+    });
 
     return NextResponse.json({ data: { id: hostel.id, status: allowedNext } });
   } catch (err) {

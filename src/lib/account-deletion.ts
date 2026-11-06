@@ -65,8 +65,7 @@ export type AccountDeletionStartResult =
 
 /** Create one deletion job and revoke sessions before any background cleanup begins. */
 export async function enqueueAccountDeletion(userId: string): Promise<AccountDeletionStartResult> {
-  return db.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
+  const result = await db.$transaction<AccountDeletionStartResult>(async (tx) => {
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: {
@@ -80,6 +79,14 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
     });
     if (!user) return { kind: "not_found" };
     if (user.deletionRequestedAt) return { kind: "already_queued" };
+
+    const activeHostels = await tx.hostel.findMany({
+      where: { ownerId: userId, status: "ACTIVE" },
+      select: { id: true },
+      take: 100,
+      orderBy: { id: "asc" },
+    });
+    await lockAvailabilityInventory(tx, activeHostels.map(({ id }) => id));
 
     const activeBooking = await tx.booking.findFirst({
       where: {
@@ -121,7 +128,7 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
     });
     if (unresolvedRefund) return { kind: "blocked", reason: "refund_reconciliation" };
 
-    const [payout, financialBooking, subscription, activeHostels] = await Promise.all([
+    const [payout, financialBooking, subscription] = await Promise.all([
       tx.payout.findFirst({ where: { ownerId: userId }, select: { id: true } }),
       tx.booking.findFirst({
         where: {
@@ -131,9 +138,8 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
           ],
         },
         select: { id: true },
-      }),
+    }),
     tx.subscription.findFirst({ where: { userId }, select: { id: true } }),
-      tx.hostel.findMany({ where: { ownerId: userId, status: "ACTIVE" }, select: { id: true }, take: 100 }),
     ]);
 
     const subjectHash = createHash("sha256").update(userId).digest("hex");
@@ -168,12 +174,6 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
       where: { ownerId: userId, status: "ACTIVE" },
       data: { status: "SUSPENDED" },
     });
-    for (const { id } of activeHostels) {
-      await reevaluateAvailabilityAlertsForHostel(tx, id, {
-        includeAllSearchAlerts: true,
-      });
-    }
-
     return {
       kind: "queued",
       email: user.email,
@@ -182,6 +182,14 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
       tokenVersion: updatedUser.tokenVersion,
     };
   });
+  if (result.kind === "queued") {
+    for (const hostelId of result.activeHostelIds) {
+      await reevaluateAvailabilityAlertsForHostel(hostelId, {
+        includeAllSearchAlerts: true,
+      });
+    }
+  }
+  return result;
 }
 
 export async function removeDeletedOwnerHostelsFromSearch(hostelIds: string[]) {
@@ -509,13 +517,8 @@ async function processHostelBatch(jobId: string, userId: string | null): Promise
   await removeDeletedOwnerHostelsFromSearch(ids);
   const lastId = ids[ids.length - 1];
   await db.$transaction(async (tx) => {
-    await lockAvailabilityInventory(tx);
+    await lockAvailabilityInventory(tx, ids);
     await tx.hostel.updateMany({ where: { id: { in: ids }, ownerId: userId }, data: { status: "SUSPENDED" } });
-    for (const id of ids) {
-      await reevaluateAvailabilityAlertsForHostel(tx, id, {
-        includeAllSearchAlerts: true,
-      });
-    }
     const emptyHostels = await tx.hostel.findMany({
       where: { id: { in: ids }, ownerId: userId, bookings: { none: {} } },
       select: { id: true },
@@ -527,6 +530,11 @@ async function processHostelBatch(jobId: string, userId: string | null): Promise
     }
     await tx.accountDeletionJob.update({ where: { id: jobId }, data: { cursor: lastId, status: "PENDING" } });
   });
+  for (const id of ids) {
+    await reevaluateAvailabilityAlertsForHostel(id, {
+      includeAllSearchAlerts: true,
+    });
+  }
   return "batch";
 }
 

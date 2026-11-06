@@ -93,7 +93,7 @@ describe("availability alert entry links", () => {
     expect(destination.searchParams.get("maxPrice")).toBe("20000");
     expect(destination.searchParams.getAll("amenities")).toEqual(["laundry", "wifi"]);
     expect(destination.searchParams.get("verified")).toBe("true");
-    expect(destination.searchParams.get("moveInDate")).toBe("2030-03-20");
+    expect(destination.searchParams.get("checkIn")).toBe("2030-03-20");
     expect(destination.searchParams.get("checkOut")).toBe("2030-03-22");
     expect(destination.searchParams.get("guests")).toBe("2");
     expect(destination.searchParams.has("sort")).toBe(false);

@@ -110,7 +110,7 @@ export async function PATCH(req: NextRequest) {
 
     const changed = action === "verify"
       ? await db.$transaction(async (tx) => {
-          await lockAvailabilityInventory(tx);
+          await lockAvailabilityInventory(tx, hostelId);
           const result = await tx.hostel.updateMany({
             where: { id: hostelId, status: "PENDING_REVIEW" },
             data,
@@ -127,21 +127,15 @@ export async function PATCH(req: NextRequest) {
               notes: verification!.notes?.trim() || null,
             },
           });
-          await reevaluateAvailabilityAlertsForHostel(tx, hostelId, {
-            includeAllSearchAlerts: true,
-          });
           return true;
         })
       : await db.$transaction(async (tx) => {
-          await lockAvailabilityInventory(tx);
+          await lockAvailabilityInventory(tx, hostelId);
           const result = await tx.hostel.updateMany({
             where: { id: hostelId, status: hostel.status },
             data,
           });
           if (result.count !== 1) return false;
-          await reevaluateAvailabilityAlertsForHostel(tx, hostelId, {
-            includeAllSearchAlerts: true,
-          });
           return true;
         });
     if (!changed) {
@@ -150,6 +144,10 @@ export async function PATCH(req: NextRequest) {
         { status: 409 },
       );
     }
+
+    await reevaluateAvailabilityAlertsForHostel(hostelId, {
+      includeAllSearchAlerts: true,
+    });
 
     // -- Typesense sync --
     if (action === "verify" || action === "activate") {

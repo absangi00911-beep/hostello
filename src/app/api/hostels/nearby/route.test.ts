@@ -62,6 +62,14 @@ describe("POST /api/hostels/nearby", () => {
     const guestsWithoutDate = await POST(
       request({ latitude: 33.6844, longitude: 73.0479, guests: 2 }),
     );
+    const invalidStay = await POST(
+      request({
+        latitude: 33.6844,
+        longitude: 73.0479,
+        moveInDate: "2030-06-15",
+        checkOut: "2030-06-15",
+      }),
+    );
     const clientProvidedRadius = await POST(
       request({
         latitude: 33.6844,
@@ -73,6 +81,7 @@ describe("POST /api/hostels/nearby", () => {
     expect(invalidCoordinates.status).toBe(400);
     expect(invalidDate.status).toBe(400);
     expect(guestsWithoutDate.status).toBe(400);
+    expect(invalidStay.status).toBe(400);
     expect(clientProvidedRadius.status).toBe(400);
     expect(searchHostelsWithFallback).not.toHaveBeenCalled();
   });
@@ -83,6 +92,7 @@ describe("POST /api/hostels/nearby", () => {
         latitude: 33.6844,
         longitude: 73.0479,
         moveInDate: "2030-06-15",
+        checkOut: "2030-06-20",
         guests: 3,
       }),
     );
@@ -91,6 +101,7 @@ describe("POST /api/hostels/nearby", () => {
       expect.objectContaining({
         nearby: { latitude: 33.6844, longitude: 73.0479 },
         moveInDate: new Date("2030-06-15T00:00:00.000Z"),
+        checkOut: new Date("2030-06-20T00:00:00.000Z"),
         guests: 3,
       }),
       expect.anything(),

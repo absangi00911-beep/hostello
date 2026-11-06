@@ -51,9 +51,15 @@ export async function GET(
 
     const data = await db.$transaction(
       async (tx) => {
-        await lockAvailabilityInventory(tx);
+        const where = hostelIdOrSlugWhere(param);
+        const candidate = await tx.hostel.findFirst({
+          where,
+          select: { id: true },
+        });
+        if (!candidate) return null;
+        await lockAvailabilityInventory(tx, candidate.id);
         const hostel = await tx.hostel.findFirst({
-          where: { ...hostelIdOrSlugWhere(param), status: "ACTIVE" },
+          where: { id: candidate.id, status: "ACTIVE" },
           select: { id: true },
         });
         if (!hostel) return null;

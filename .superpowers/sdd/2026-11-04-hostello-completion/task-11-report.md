@@ -48,3 +48,23 @@ Verification for this round:
 - `npm run docs:check` — passed: **80 routes, 9 cron jobs, 65 environment variables read, 41 Markdown files linked**.
 - `npm run e2e -- --list e2e/availability-alerts.spec.ts` — discovered both HOSTEL and SEARCH management specs (**2 tests**); browser execution not performed.
 - PostgreSQL integration test not run: no disposable loopback database and safe test auth were verified. No DB connection or migrations were attempted.
+
+## Review fix round 2
+
+Addressed the round-2 findings:
+
+- **Global advisory-lock contention:** replaced the constant lock with transaction-scoped, hostel-keyed advisory locks. Multi-hostel acquisitions deduplicate and sort IDs before locking. SEARCH alert evaluation locks only hostels matching its saved public filters, then re-reads current filters and authoritative inventory. Ordinary single-hostel reads/mutations no longer serialize behind an unrelated hostel. Inventory-triggered alert evaluation runs after the inventory transaction commits, one alert transaction at a time; each alert's state transition and notification remain atomic. Late-payment seat-hold reinstatement now also reevaluates alerts after its successful transaction commits.
+- **Full-stay SEARCH destination:** saved SEARCH notifications now link to `/search` with validated criteria, explicit `checkIn`, `checkOut`, and `guests`. Public search filters by seat holds overlapping the entire `[checkIn, checkOut)` stay and inclusive blocked dates before pagination; legacy move-in-only search remains compatible. Added coverage for exact dates and updated the notification expectation from `moveInDate` to `checkIn`.
+- **Inventory-path audit:** verified booking create/cancel/decision/expiry, room/listing/blocked-date changes, account deletion, and late-payment reinstatement acquire hostel locks for inventory changes and reevaluate only after commit.
+
+Verification:
+
+- Focused availability/search regression command: `npm test -- --run src/app/api/admin/hostels/route.test.ts src/app/api/hostels/nearby/route.test.ts src/app/api/hostels/route.test.ts src/app/api/hostels/[param]/availability/exact/route.test.ts src/app/search/search-params.test.ts src/app/notifications/page.test.tsx src/lib/availability-alert-links.test.ts src/lib/availability-alerts.test.ts src/lib/booking-service.test.ts src/lib/hostel-search.test.ts src/lib/late-payment-resolution.test.ts src/lib/room-availability-service.test.ts --reporter=dot` — **12 files passed (12)**.
+- Full Vitest command: `npm test -- --run --exclude "**/*.postgres.integration.test.ts" --reporter=dot` — **234 files passed, 1 skipped (235); exit 0**. The first run exposed a stale assertion expecting `moveInDate`; updated it to `checkIn`, then reran the full suite successfully.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run docs:check` — passed: `docs check passed: 80 routes, 9 cron jobs, 65 env vars read, 41 Markdown files linked.`
+- `npm run e2e -- --list e2e/availability-alerts.spec.ts` — discovered the HOSTEL and SEARCH create/pause/edit/delete Playwright specs (**2 tests**); browser tests were not run.
+- `git diff --check` reports apparent trailing whitespace on added lines in `src/app/api/hostels/[param]/route.ts`; a byte-level check of its 10 added lines found **0 actual trailing spaces/tabs** (CRLF line endings). Line endings were left unchanged.
+
+The PostgreSQL integration spec was explicitly excluded from the Vitest run. Neither it nor browser execution was attempted because a disposable loopback database and safe test authentication were not verified. No database connection, migration, external provider, deployment, or push was attempted.

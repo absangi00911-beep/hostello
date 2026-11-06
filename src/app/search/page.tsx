@@ -13,6 +13,8 @@ export default async function SearchPage({
     nearby?: string | string[];
     latitude?: string | string[];
     longitude?: string | string[];
+    checkIn?: string | string[];
+    checkOut?: string | string[];
     moveInDate?: string | string[];
     guests?: string | string[];
     gender?: string | string[];
@@ -38,16 +40,30 @@ export default async function SearchPage({
     isNearbyCoordinates({ latitude, longitude })
       ? { latitude, longitude }
       : null;
-  const dateValue = firstString(params.moveInDate);
+  const explicitCheckIn = firstString(params.checkIn);
+  const dateValue = explicitCheckIn || firstString(params.moveInDate);
   const parsedDate =
     typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
       ? new Date(`${dateValue}T00:00:00.000Z`)
       : null;
-  const moveInDate =
+  const parsedCheckIn =
     parsedDate && !Number.isNaN(parsedDate.getTime()) &&
     parsedDate.toISOString().slice(0, 10) === dateValue
       ? dateValue
       : "";
+  const checkOutValue = firstString(params.checkOut);
+  const parsedCheckOut = /^\d{4}-\d{2}-\d{2}$/.test(checkOutValue)
+    ? new Date(`${checkOutValue}T00:00:00.000Z`)
+    : null;
+  const checkOut =
+    parsedCheckIn &&
+    parsedCheckOut &&
+    !Number.isNaN(parsedCheckOut.getTime()) &&
+    parsedCheckOut.toISOString().slice(0, 10) === checkOutValue &&
+    checkOutValue > parsedCheckIn
+      ? checkOutValue
+      : "";
+  const moveInDate = explicitCheckIn && !checkOut ? "" : parsedCheckIn;
   const guests =
     /^[1-8]$/.test(firstString(params.guests))
       ? Number(firstString(params.guests))
@@ -105,6 +121,7 @@ export default async function SearchPage({
       initialNearby={nearby}
       initialNearbyCoordinates={initialNearbyCoordinates}
       initialMoveInDate={moveInDate}
+      initialCheckOut={checkOut}
       initialGuests={guests}
       initialFilters={{
         gender,

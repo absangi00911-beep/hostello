@@ -255,6 +255,7 @@ export default function SearchPageClient({
   initialNearby,
   initialNearbyCoordinates,
   initialMoveInDate,
+  initialCheckOut,
   initialGuests,
   initialFilters,
   initialPage,
@@ -265,6 +266,7 @@ export default function SearchPageClient({
   initialNearby: boolean;
   initialNearbyCoordinates: NearbyCoordinates | null;
   initialMoveInDate: string;
+  initialCheckOut: string;
   initialGuests: number;
   initialFilters: {
     gender: "" | "MALE" | "FEMALE" | "MIXED";
@@ -290,6 +292,8 @@ export default function SearchPageClient({
     useState(false);
   const [moveInDate, setMoveInDate] = useState(initialMoveInDate);
   const [appliedMoveInDate, setAppliedMoveInDate] = useState(initialMoveInDate);
+  const [checkOutDate, setCheckOutDate] = useState(initialCheckOut);
+  const [appliedCheckOutDate, setAppliedCheckOutDate] = useState(initialCheckOut);
   const [guests, setGuests] = useState(String(initialGuests));
   const [appliedGuests, setAppliedGuests] = useState(String(initialGuests));
   const [filters, setFilters] = useState(initialFilters);
@@ -318,6 +322,7 @@ export default function SearchPageClient({
       ? { nearby: alertNearbyCoordinates }
       : {}),
     checkIn: appliedMoveInDate || undefined,
+    checkOut: appliedCheckOutDate || undefined,
     guests: Number(appliedGuests),
   });
 
@@ -350,6 +355,7 @@ export default function SearchPageClient({
         q: appliedQuery,
         city: appliedCity,
         moveInDate: appliedMoveInDate,
+        checkOut: appliedCheckOutDate || undefined,
         guests: Number(appliedGuests),
         gender: appliedFilters.gender || undefined,
         minPrice: appliedFilters.minPrice
@@ -381,6 +387,7 @@ export default function SearchPageClient({
             latitude: number;
             longitude: number;
             moveInDate?: string;
+            checkOut?: string;
             guests?: number;
           } = {
             latitude: coordinates.latitude,
@@ -388,6 +395,7 @@ export default function SearchPageClient({
           };
           if (appliedMoveInDate) {
             body.moveInDate = appliedMoveInDate;
+            if (appliedCheckOutDate) body.checkOut = appliedCheckOutDate;
             body.guests = Number(appliedGuests);
           }
           response = await fetch(`/api/hostels/nearby?${query}`, {
@@ -441,6 +449,7 @@ export default function SearchPageClient({
     appliedCity,
     appliedGuests,
     appliedMoveInDate,
+    appliedCheckOutDate,
     appliedNearby,
     appliedFilters,
     appliedQuery,
@@ -451,6 +460,13 @@ export default function SearchPageClient({
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (
+      Boolean(moveInDate) !== Boolean(checkOutDate) ||
+      (moveInDate && checkOutDate && checkOutDate <= moveInDate)
+    ) {
+      setFilterError("Choose a check-in and a later check-out date.");
+      return;
+    }
     const trimmedDestination = destination.trim();
     const useNearby =
       isNearby && trimmedDestination.toLocaleLowerCase() === "nearby";
@@ -458,6 +474,7 @@ export default function SearchPageClient({
     setAppliedCity(useNearby ? "" : trimmedDestination);
     setAppliedNearby(useNearby);
     setAppliedMoveInDate(moveInDate);
+    setAppliedCheckOutDate(checkOutDate);
     setAppliedGuests(guests);
     setIsNearby(useNearby);
 
@@ -465,6 +482,7 @@ export default function SearchPageClient({
       q: appliedQuery,
       city: useNearby ? undefined : trimmedDestination,
       moveInDate: moveInDate || undefined,
+      checkOut: checkOutDate || undefined,
       guests: Number(guests),
       gender: appliedFilters.gender || undefined,
       minPrice: appliedFilters.minPrice
@@ -516,6 +534,7 @@ export default function SearchPageClient({
       q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
+      checkOut: appliedCheckOutDate || undefined,
       guests: Number(appliedGuests),
       gender: filters.gender || undefined,
       minPrice: minPrice ? Number(minPrice) : undefined,
@@ -550,6 +569,7 @@ export default function SearchPageClient({
       q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
+      checkOut: appliedCheckOutDate || undefined,
       guests: Number(appliedGuests),
       gender: next.gender || undefined,
       minPrice: next.minPrice ? Number(next.minPrice) : undefined,
@@ -582,6 +602,7 @@ export default function SearchPageClient({
       q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
+      checkOut: appliedCheckOutDate || undefined,
       guests: Number(appliedGuests),
       page: 1,
       limit: PAGE_SIZE,
@@ -598,6 +619,7 @@ export default function SearchPageClient({
       q: appliedQuery,
       city: appliedCity,
       moveInDate: appliedMoveInDate || undefined,
+      checkOut: appliedCheckOutDate || undefined,
       guests: Number(appliedGuests),
       gender: appliedFilters.gender || undefined,
       minPrice: appliedFilters.minPrice
@@ -659,7 +681,7 @@ export default function SearchPageClient({
           />
 
           <form
-            className="search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 [@media(max-width:520px)]:min-h-[50px] [@media(max-width:520px)]:grid-cols-[minmax(100px,1.2fr)_minmax(80px,0.8fr)_38px]"
+            className="search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 [@media(max-width:520px)]:min-h-[50px] [@media(max-width:520px)]:grid-cols-[minmax(86px,1.15fr)_minmax(72px,0.9fr)_minmax(72px,0.9fr)_38px]"
             onSubmit={submitSearch}
             role="search"
           >
@@ -682,14 +704,26 @@ export default function SearchPageClient({
             </label>
             <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
               <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
-                Move-in
+                Check-in
               </span>
               <input
-                aria-label="Move-in date"
+                aria-label="Check-in date"
                 className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
                 onChange={(event) => setMoveInDate(event.target.value)}
                 type="date"
                 value={moveInDate}
+              />
+            </label>
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
+              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
+                Check-out
+              </span>
+              <input
+                aria-label="Check-out date"
+                className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                onChange={(event) => setCheckOutDate(event.target.value)}
+                type="date"
+                value={checkOutDate}
               />
             </label>
             <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:hidden [@media(max-width:520px)]:px-[10px]">

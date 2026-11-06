@@ -146,7 +146,7 @@ describe("getNotificationHref", () => {
     expect(search.searchParams.get("city")).toBe("Lahore");
     expect(search.searchParams.get("gender")).toBe("FEMALE");
     expect(search.searchParams.get("amenities")).toBe("wifi");
-    expect(search.searchParams.get("moveInDate")).toBe("2030-03-20");
+    expect(search.searchParams.get("checkIn")).toBe("2030-03-20");
     expect(search.searchParams.get("checkOut")).toBe("2030-03-22");
     expect(search.searchParams.get("guests")).toBe("2");
     expect(getNotificationHref(hostelItem, "STUDENT")).toBe(
