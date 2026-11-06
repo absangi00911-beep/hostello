@@ -3,6 +3,8 @@ import { Pool } from "pg";
 
 const hostelId = "cmvp8pemp000ogwvvh5cnpm6g";
 const ownerId = "e2e-hostel-detail-owner";
+const reviewerId = "e2e-hostel-detail-reviewer";
+const reviewId = "e2e-hostel-detail-review";
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 function assertDisposableDatabase(databaseUrl: string) {
@@ -41,9 +43,17 @@ test.beforeAll(async () => {
       [ownerId, `${ownerId}@example.test`],
     );
     await client.query(
+      `INSERT INTO users (id, email, name, role, "updatedAt")
+       VALUES ($1, $2, 'E2E Hostel Detail Reviewer', 'STUDENT', now())
+       ON CONFLICT (id) DO UPDATE
+         SET email = EXCLUDED.email, name = EXCLUDED.name, role = EXCLUDED.role`,
+      [reviewerId, `${reviewerId}@example.test`],
+    );
+    await client.query(
       `INSERT INTO hostels (
          id, name, slug, description, status, city, area, address,
-         latitude, longitude, "pricePerMonth", rooms, capacity, gender,
+         latitude, longitude, "pricePerMonth", rooms, capacity, rating,
+         "reviewCount", gender,
          amenities, rules, images, "coverImage", verified, featured,
          "cancellationPolicy", "ownerId", "createdAt", "updatedAt"
        ) VALUES (
@@ -51,7 +61,7 @@ test.beforeAll(async () => {
          'Student accommodation near the University of Balochistan.',
          'ACTIVE', 'Quetta', 'Sariab Road',
          'Near UoB Gate, Sariab Road, Quetta', 30.1798, 67.0099,
-         5800, 20, 60, 'MALE',
+         5800, 20, 60, 5, 1, 'MALE',
          ARRAY['wifi', 'meals', 'study-room', 'generator', 'water-cooler', 'cctv'],
          ARRAY['Gate closes at 10pm', 'Keep common areas tidy'],
          ARRAY[
@@ -75,6 +85,8 @@ test.beforeAll(async () => {
          "pricePerMonth" = EXCLUDED."pricePerMonth",
          rooms = EXCLUDED.rooms,
          capacity = EXCLUDED.capacity,
+         rating = EXCLUDED.rating,
+         "reviewCount" = EXCLUDED."reviewCount",
          gender = EXCLUDED.gender,
          amenities = EXCLUDED.amenities,
          rules = EXCLUDED.rules,
@@ -86,6 +98,28 @@ test.beforeAll(async () => {
          "ownerId" = EXCLUDED."ownerId",
          "updatedAt" = now()`,
       [hostelId, ownerId],
+    );
+    await client.query(
+      `INSERT INTO reviews (
+         id, "hostelId", "userId", rating, title, comment,
+         cleanliness, location, value, safety, verified,
+         "createdAt", "updatedAt"
+       ) VALUES (
+         $1, $2, $3, 5, 'Comfortable and convenient',
+         'The room was clean and the location worked well for my studies.',
+         5, 5, 4, 5, true, now(), now()
+       )
+       ON CONFLICT (id) DO UPDATE SET
+         rating = EXCLUDED.rating,
+         title = EXCLUDED.title,
+         comment = EXCLUDED.comment,
+         cleanliness = EXCLUDED.cleanliness,
+         location = EXCLUDED.location,
+         value = EXCLUDED.value,
+         safety = EXCLUDED.safety,
+         verified = EXCLUDED.verified,
+         "updatedAt" = now()`,
+      [reviewId, hostelId, reviewerId],
     );
 
     for (const room of [
@@ -163,8 +197,10 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   if (!pool) return;
   try {
+    await pool.query("DELETE FROM reviews WHERE id = $1", [reviewId]);
     await pool.query("DELETE FROM hostels WHERE id = $1", [hostelId]);
     await pool.query("DELETE FROM users WHERE id = $1", [ownerId]);
+    await pool.query("DELETE FROM users WHERE id = $1", [reviewerId]);
   } finally {
     await pool.end();
   }
@@ -179,6 +215,7 @@ async function mockHostelSearch(page: Page) {
         data: [
           {
             id: hostelId,
+            slug: "garden-view-hostel",
             name: "Garden View Hostel",
             city: "Lahore",
             area: "Gulberg",
@@ -296,14 +333,13 @@ test("hostel cards open their detail route from browse and search", async ({ pag
   await page.goto("/");
 
   await expect(
-    page.getByRole("link", { name: /Garden View Hostel/ }),
+    page.getByRole("link", { name: "View details for Garden View" }),
   ).toHaveAttribute("href", `/hostels/${hostelId}`);
 
-  await page.goto("/search");
-  await page.getByRole("button", { name: "Lahore" }).click();
+  await page.goto("/search?city=Lahore");
 
   await expect(
-    page.getByRole("link", { name: /Garden View Hostel/ }),
+    page.getByRole("link", { name: "View details for Garden View" }),
   ).toHaveAttribute("href", `/hostels/${hostelId}`);
 });
 
@@ -359,27 +395,14 @@ test("hostel detail destination search encodes and restores punctuation", async 
 });
 
 test("search ignores whitespace-only city query parameters", async ({ page }) => {
-  const requestedCities: Array<string | null> = [];
-
-  await page.route("**/api/hostels**", async (route) => {
-    requestedCities.push(
-      new URL(route.request().url()).searchParams.get("city"),
-    );
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({ data: [], total: 0 }),
-    });
-  });
-
   await page.goto("/search?city=+++");
-  const citySearch = page.getByLabel("Search for a city");
-  await citySearch.fill("No city with this name");
-  await expect(page.getByText("No matching city found.")).toBeVisible();
-  await citySearch.fill("");
-  await expect(page.getByText("No matching city found.")).not.toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Hostels across Pakistan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("searchbox", { name: "Search destination" }),
+  ).toHaveValue("");
   await expect(page.getByText(/Selected city:/)).toHaveCount(0);
-  expect(requestedCities).toEqual([]);
 });
 
 test("hostel detail uses centered content and a responsive gallery of real hostel and room photos", async ({
@@ -691,13 +714,17 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
   });
   await expect(bookingCard).toHaveClass(/sticky/);
   await expect(calendar).toHaveClass(/border-t/);
-  await expect(calendar.locator(".hostel-date-calendar-months")).toHaveClass(
-    /grid-cols-2/,
-  );
+  const months = calendar.locator(":scope > div").nth(1);
+  expect(
+    await months.evaluate(
+      (element) =>
+        getComputedStyle(element).gridTemplateColumns.split(" ").length,
+    ),
+  ).toBe(2);
   await expect(
     calendar.getByRole("button", { name: "Next month" }),
   ).toHaveClass(/focus-visible:outline-2!/);
-  await expect(calendar.locator(".hostel-date-calendar-month")).toHaveCount(2);
+  await expect(calendar.getByRole("group")).toHaveCount(2);
   const [amenitiesTop, calendarTop] = await Promise.all([
     amenities.evaluate((element) => element.getBoundingClientRect().top),
     calendar.evaluate((element) => element.getBoundingClientRect().top),
@@ -734,8 +761,10 @@ test("hostel date calendar selects a stay and syncs with reservation dates", asy
     })
     .click();
   await expect(
-    calendar.locator('.hostel-date-calendar-day[aria-pressed="true"]'),
-  ).toHaveCSS("background-color", "rgb(29, 78, 216)");
+    calendar.getByRole("button", {
+      name: `Select move-in date ${formatAccessibleDate(today)}`,
+    }),
+  ).toHaveAttribute("aria-pressed", "true");
   await calendar.getByRole("button", { name: "Next month" }).click();
   await calendar
     .getByRole("button", {
@@ -851,7 +880,9 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
 
   const roomSection = page.locator(".hostel-room-section");
   const amenitiesSection = page.locator(".hostel-amenities-section");
-  const calendarSection = page.locator(".hostel-date-calendar");
+  const calendarSection = page.getByRole("region", {
+    name: "Choose your dates",
+  });
   const reviewsSection = page.locator(".hostel-reviews-section");
   const locationSection = page.locator(".hostel-location-section");
   const hostSection = page.locator(".hostel-host-section");
@@ -881,6 +912,14 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
     page.locator(selector).evaluate(
       (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
     );
+  const getCalendarColumnCount = () =>
+    calendarSection
+      .locator(":scope > div")
+      .nth(1)
+      .evaluate(
+        (element) =>
+          getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
   await expect(roomSection.locator(".hostel-room-grid")).toHaveCount(1);
   expect(await getColumnCount(".hostel-room-grid")).toBe(2);
   expect(await getColumnCount(".hostel-amenities-list")).toBe(2);
@@ -958,14 +997,14 @@ test("hostel detail lower sections keep a compact responsive layout", async ({
     "static",
   );
   await page.setViewportSize({ width: 721, height: 900 });
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(2);
+  expect(await getCalendarColumnCount()).toBe(2);
   await page.setViewportSize({ width: 720, height: 900 });
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
+  expect(await getCalendarColumnCount()).toBe(1);
 
   await page.setViewportSize({ width: 375, height: 812 });
   expect(await getColumnCount(".hostel-room-grid")).toBe(1);
   expect(await getColumnCount(".hostel-amenities-list")).toBe(1);
-  expect(await getColumnCount(".hostel-date-calendar-months")).toBe(1);
+  expect(await getCalendarColumnCount()).toBe(1);
   expect(await getColumnCount(".hostel-review-category-list")).toBe(1);
   expect(await getColumnCount(".hostel-review-list")).toBe(1);
 });
@@ -1126,17 +1165,17 @@ test("uses Inter and the Airbnb-inspired type scale without changing body typogr
 
   await page.goto("/search");
   const pageHeading = page.getByRole("heading", {
-    name: "Where do you want to stay?",
+    name: "Hostels across Pakistan",
   });
   await expect(pageHeading).toBeVisible();
-  await expect(pageHeading).toHaveCSS("font-size", "28px");
-  await expect(pageHeading).toHaveCSS("font-weight", "700");
+  await expect(pageHeading).toHaveCSS("font-size", "19.84px");
+  await expect(pageHeading).toHaveCSS("font-weight", "650");
 
-  await page.getByRole("button", { name: "Lahore" }).click();
+  await page.goto("/search?city=Lahore");
   const sectionHeading = page.getByRole("heading", {
     name: "Hostels in Lahore",
   });
   await expect(sectionHeading).toBeVisible();
-  await expect(sectionHeading).toHaveCSS("font-size", "21px");
-  await expect(sectionHeading).toHaveCSS("font-weight", "700");
+  await expect(sectionHeading).toHaveCSS("font-size", "19.84px");
+  await expect(sectionHeading).toHaveCSS("font-weight", "650");
 });

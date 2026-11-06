@@ -464,7 +464,7 @@ export function HostelBookingCard({
   return (
     <aside
       aria-label="Reserve this hostel"
-      className="hostel-booking-card sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(max-width:900px)]:row-[4] [@media(max-width:720px)]:rounded-none [@media(max-width:720px)]:border-0 [@media(max-width:720px)]:bg-transparent [@media(max-width:720px)]:p-5 [@media(max-width:720px)]:shadow-none"
+      className="hostel-booking-card sticky top-6 col-[2] row-[1] rounded-[10px] border border-line bg-white p-[18px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:900px)]:static [@media(max-width:900px)]:col-[1] [@media(min-width:721px)_and_(max-width:900px)]:row-[4] [@media(max-width:720px)]:row-[2] [@media(max-width:720px)]:rounded-none [@media(max-width:720px)]:border-0 [@media(max-width:720px)]:bg-transparent [@media(max-width:720px)]:p-5 [@media(max-width:720px)]:shadow-none"
       id="hostel-booking"
       ref={bookingCardRef}
     >
