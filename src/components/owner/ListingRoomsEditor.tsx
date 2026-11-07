@@ -31,7 +31,7 @@ export function ListingRoomsEditor({
   return (
     <div className="grid gap-4">
       {errors.rooms ? (
-        <p className="m-0 text-[0.85rem] text-[#c13515]" role="alert">
+        <p className="m-0 text-[0.85rem] text-danger" role="alert">
           {errors.rooms}
         </p>
       ) : null}

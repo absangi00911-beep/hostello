@@ -170,12 +170,12 @@ export function ListingPhotosField({
       </div>
 
       {error ? (
-        <p className="m-0 text-[0.82rem] text-[#c13515]" role="alert">
+        <p className="m-0 text-[0.82rem] text-danger" role="alert">
           {error}
         </p>
       ) : null}
       {uploadErrors.length > 0 ? (
-        <ul className="m-0 grid gap-1 pl-5 text-[0.82rem] text-[#c13515]" role="alert">
+        <ul className="m-0 grid gap-1 pl-5 text-[0.82rem] text-danger" role="alert">
           {uploadErrors.map((message) => (
             <li key={message}>{message}</li>
           ))}

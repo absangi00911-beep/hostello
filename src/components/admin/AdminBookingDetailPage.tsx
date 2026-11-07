@@ -56,7 +56,7 @@ export function AdminBookingDetailContent({
         </p>
       ) : loadError ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-          <p className="m-0 text-[#c13515]">{loadError}</p>
+          <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
             onClick={onRetry}

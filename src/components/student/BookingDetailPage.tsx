@@ -161,7 +161,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 const primaryButtonClassName =
   "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 const secondaryButtonClassName =
-  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-5 text-[0.95rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-[#cbd5e1] enabled:hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
+  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-5 text-[0.95rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
 
 export function BookingDetailPage({
   bookingId,
@@ -326,7 +326,7 @@ export function BookingDetailPage({
     return (
       <main className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
         <p
-          className="rounded-[14px] bg-surface-muted p-4 text-[#c13515]"
+          className="rounded-[14px] bg-surface-muted p-4 text-danger"
           role="alert"
         >
           {loadError ?? "Could not load this booking."}
@@ -375,7 +375,7 @@ export function BookingDetailPage({
       ) : null}
       {actionError ? (
         <p
-          className="my-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.9rem] text-[#c13515]"
+          className="my-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.9rem] text-danger"
           role="alert"
         >
           {actionError}

@@ -6,7 +6,7 @@ export function AdminUncertainActionNotice() {
   return (
     <div
       aria-live="assertive"
-      className="grid gap-3 rounded-[12px] bg-[#fbf4e6] p-4 text-[0.88rem] text-[#583c13]"
+      className="grid gap-3 rounded-[12px] bg-warn-soft p-4 text-[0.88rem] text-warn-ink"
       role="alert"
     >
       <p className="m-0">

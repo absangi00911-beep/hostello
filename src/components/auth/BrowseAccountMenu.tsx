@@ -89,7 +89,7 @@ export function BrowseAccountMenu({
           )}
           {unreadCount > 0 && (
             <span
-              className="absolute -right-1 -top-1 grid min-w-[18px] place-items-center rounded-full border-2 border-white bg-[#c13515] px-[3px] text-[0.62rem] font-bold leading-[14px] text-white"
+              className="absolute -right-1 -top-1 grid min-w-[18px] place-items-center rounded-full border-2 border-white bg-danger px-[3px] text-[0.62rem] font-bold leading-[14px] text-white"
               data-testid="unread-badge"
             >
               {formatUnreadCount(unreadCount)}
@@ -124,7 +124,7 @@ export function BrowseAccountMenu({
               >
                 <span>{label}</span>
                 {href === "/notifications" && unreadCount > 0 && (
-                  <span className="rounded-full bg-[#c13515] px-[7px] text-[0.72rem] font-bold leading-[18px] text-white">
+                  <span className="rounded-full bg-danger px-[7px] text-[0.72rem] font-bold leading-[18px] text-white">
                     {formatUnreadCount(unreadCount)}
                   </span>
                 )}

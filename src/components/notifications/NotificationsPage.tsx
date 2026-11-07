@@ -164,7 +164,7 @@ function formatWhen(iso: string): string {
 }
 
 const actionClassName =
-  "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
+  "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
 
 export function NotificationsPage({ role }: { role: Role }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -394,7 +394,7 @@ export function NotificationsPage({ role }: { role: Role }) {
 
       {actionError ? (
         <div
-          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
           role="alert"
         >
           <p className="m-0">{actionError}</p>
@@ -421,7 +421,7 @@ export function NotificationsPage({ role }: { role: Role }) {
         </p>
       ) : loadError ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-          <p className="m-0 text-[#c13515]">{loadError}</p>
+          <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${actionClassName} mt-3`}
             onClick={() => void loadFirstPage()}

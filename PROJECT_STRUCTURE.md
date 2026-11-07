@@ -37,7 +37,7 @@ discovery passed; browser execution is not yet verified.
 | `tsconfig.json` | TypeScript configuration. |
 | `vitest.config.ts` | Vitest configuration and aliases. |
 | `eslint.config.mjs` | ESLint configuration. |
-| `tailwind.config.js`, `postcss.config.js`, `components.json` | Styling and component tooling used by the first-party web UI. |
+| `postcss.config.js`, `src/app/globals.css` | Tailwind v4 setup: the PostCSS plugin, the `@theme` tokens and the global CSS. There is no `tailwind.config.js`; v4 reads tokens from CSS. |
 | `prisma.config.ts` | Prisma configuration. |
 | `vercel.json`, `scripts/vercel-build.mjs` | Vercel custom build command. |
 | `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts` | Sentry initialization for Next.js runtimes. |

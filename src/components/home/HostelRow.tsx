@@ -213,7 +213,7 @@ export function HostelRow({
         <div className="flex flex-[0_0_auto] gap-2">
           <button
             aria-label={`Scroll ${city} listings left`}
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
+            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
             onClick={() => scrollCarousel(-1)}
             type="button"
           >
@@ -221,7 +221,7 @@ export function HostelRow({
           </button>
           <button
             aria-label={`Scroll ${city} listings right`}
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
+            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
             onClick={() => scrollCarousel(1)}
             type="button"
           >

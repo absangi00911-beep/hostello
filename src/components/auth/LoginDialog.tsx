@@ -398,7 +398,7 @@ export default function LoginDialog({
           {errorMessage && (
             <p
               id="login-dialog-error"
-              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-[#c13515]"
+              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-danger"
               role="alert"
             >
               {errorMessage}

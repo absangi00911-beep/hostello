@@ -78,7 +78,7 @@ export function ListingStatusActions({
     >
       <p className="m-0 text-[0.88rem] text-muted">{action.help}</p>
       {error ? (
-        <p className="m-0 text-[0.85rem] text-[#c13515]" role="alert">
+        <p className="m-0 text-[0.85rem] text-danger" role="alert">
           {error}
         </p>
       ) : null}

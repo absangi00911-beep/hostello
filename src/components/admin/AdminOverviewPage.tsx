@@ -64,7 +64,7 @@ export function AdminOverviewContent({
             </p>
           ) : loadError || !stats ? (
             <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-              <p className="m-0 text-[#c13515]">
+              <p className="m-0 text-danger">
                 {loadError ?? "Could not load the overview."}
               </p>
               <button

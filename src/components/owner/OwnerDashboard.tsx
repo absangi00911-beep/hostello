@@ -32,11 +32,11 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 });
 
 const secondaryButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
+  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
 
 const statusBadgeClassName: Record<ListingStatus, string> = {
   ACTIVE: "bg-brand-soft text-brand-dark",
-  PENDING_REVIEW: "bg-[#fbf4e6] text-[#583c13]",
+  PENDING_REVIEW: "bg-warn-soft text-warn-ink",
   DRAFT: "bg-surface-muted text-muted",
   SUSPENDED: "bg-[#f9e4e0] text-[#8c2822]",
 };
@@ -245,7 +245,7 @@ export function OwnerDashboardContent({
           </p>
         ) : loadError ? (
           <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-            <p className="m-0 text-[#c13515]">{loadError}</p>
+            <p className="m-0 text-danger">{loadError}</p>
             <button
               className={`${secondaryButtonClassName} mt-3`}
               onClick={onRetry}
@@ -270,7 +270,7 @@ export function OwnerDashboardContent({
 
         {moreError ? (
           <p
-            className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+            className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
             role="alert"
           >
             {moreError}

@@ -12,6 +12,10 @@
   --color-brand-dark: var(--brand-dark);
   --color-brand-soft: var(--brand-soft);
   --color-warm: var(--warm);
+  --color-line-strong: var(--line-strong);
+  --color-danger: var(--danger);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-soft: var(--warn-soft);
 }
 
 :root {
@@ -25,6 +29,10 @@
   --brand-dark: #1d4ed8;
   --brand-soft: #e0e7ff;
   --warm: #f59e0b;
+  --line-strong: #cbd5e1;
+  --danger: #c13515;
+  --warn-ink: #583c13;
+  --warn-soft: #fbf4e6;
   --page-gutter-total: 128px;
   --page-gutter-tablet: 64px;
   --page-gutter-mobile: 40px;
@@ -194,7 +202,9 @@ a[class~="bg-brand"]:active {
 
 /*
  * iOS Safari zooms the whole page when a focused text control is set below
- * 16px. This rule is unlayered, so it beats the Tailwind text-* utilities.
+ * 16px. Tailwind utilities are not in a cascade layer in this setup either, so
+ * this wins by selector specificity (:is() and :not() add to it), not by being
+ * unlayered.
  * Between 521px and 720px the compact results-page search pill is left out:
  * its fields share a row. At 520px and below it opens as a full-screen sheet,
  * so every control gets 16px there.

@@ -79,7 +79,7 @@ describe("AdminListingsContent", () => {
 
   it("flags low completeness", () => {
     expect(render({ listings: [listing({ completeness: 30 })], total: 1 })).toContain(
-      "bg-[#fbf4e6]",
+      "bg-warn-soft",
     );
   });
 

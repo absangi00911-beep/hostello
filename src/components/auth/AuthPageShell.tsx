@@ -22,7 +22,7 @@ export function AuthNotice({
     <p
       className={`mb-4 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] leading-[1.45] ${
         tone === "error"
-          ? "bg-surface-muted text-[#c13515]"
+          ? "bg-surface-muted text-danger"
           : "bg-brand-soft text-brand-dark"
       }`}
       role={tone === "error" ? "alert" : "status"}

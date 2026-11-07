@@ -47,7 +47,7 @@ export function MessagesInbox({
 
       {inbox.hasPendingInquiry && (
         <section
-          className="mx-5 mt-4 rounded-lg border border-[#d8bd84] bg-[#fbf4e6] p-4 text-[#583c13] md:mx-8"
+          className="mx-5 mt-4 rounded-lg border border-[#d8bd84] bg-warn-soft p-4 text-warn-ink md:mx-8"
           aria-live="polite"
         >
           {!inbox.pendingError ? (

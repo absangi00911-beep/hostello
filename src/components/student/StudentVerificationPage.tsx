@@ -142,7 +142,7 @@ export function StudentVerificationPage() {
       {isLoading ? (
         <p className="text-muted">Loading verification status...</p>
       ) : loadError || !status ? (
-        <p className="rounded-[14px] bg-surface-muted p-4 text-[#c13515]" role="alert">
+        <p className="rounded-[14px] bg-surface-muted p-4 text-danger" role="alert">
           {loadError ?? "Could not load your verification status."}
         </p>
       ) : status === "APPROVED" ? (
@@ -172,7 +172,7 @@ export function StudentVerificationPage() {
           ) : null}
           {errorMessage ? (
             <p
-              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
               role="alert"
             >
               {errorMessage}

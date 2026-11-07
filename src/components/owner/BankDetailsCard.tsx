@@ -107,7 +107,7 @@ export function BankDetailsCard({
         <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
           {error ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
               role="alert"
             >
               {error}

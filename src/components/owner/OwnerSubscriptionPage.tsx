@@ -113,7 +113,7 @@ export function OwnerSubscriptionContent({
         </p>
       ) : loadError || !data ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-          <p className="m-0 text-[#c13515]">
+          <p className="m-0 text-danger">
             {loadError ?? "Could not load your subscription."}
           </p>
           <button
@@ -128,13 +128,13 @@ export function OwnerSubscriptionContent({
         <div className="grid gap-5">
           {returnState === "upgraded" && !isPro ? (
             <p
-              className="m-0 rounded-[14px] bg-[#fbf4e6] px-[13px] py-[11px] text-[0.875rem] text-[#583c13]"
+              className="m-0 rounded-[14px] bg-warn-soft px-[13px] py-[11px] text-[0.875rem] text-warn-ink"
               role="status"
             >
               Thanks. We&apos;re waiting for the payment confirmation. Pro
               switches on as soon as it arrives, usually within a minute.{" "}
               <button
-                className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-[#583c13] underline"
+                className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-warn-ink underline"
                 onClick={onRetry}
                 type="button"
               >
@@ -191,7 +191,7 @@ export function OwnerSubscriptionContent({
             <div className="grid gap-3">
               {upgradeError ? (
                 <p
-                  className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+                  className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
                   role="alert"
                 >
                   {upgradeError}

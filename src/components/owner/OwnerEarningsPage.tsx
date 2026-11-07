@@ -28,7 +28,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 });
 
 const statusBadgeClassName: Record<PayoutStatus, string> = {
-  PENDING: "bg-[#fbf4e6] text-[#583c13]",
+  PENDING: "bg-warn-soft text-warn-ink",
   PAID: "bg-brand-soft text-brand-dark",
   CANCELLED: "bg-surface-muted text-muted",
 };
@@ -113,7 +113,7 @@ export function OwnerEarningsContent({
         </p>
       ) : loadError ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-          <p className="m-0 text-[#c13515]">{loadError}</p>
+          <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
             onClick={onRetry}
@@ -143,7 +143,7 @@ export function OwnerEarningsContent({
             </p>
             {pendingBalance > 0 && !hasBankDetails ? (
               <p
-                className="m-0 mt-1 rounded-[12px] bg-[#fbf4e6] px-3 py-2 text-[0.85rem] text-[#583c13]"
+                className="m-0 mt-1 rounded-[12px] bg-warn-soft px-3 py-2 text-[0.85rem] text-warn-ink"
                 role="note"
               >
                 Add your bank details below so we can send this to you.
@@ -172,7 +172,7 @@ export function OwnerEarningsContent({
             )}
             {moreError ? (
               <p
-                className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+                className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
                 role="alert"
               >
                 {moreError}

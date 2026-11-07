@@ -39,7 +39,7 @@ const statusLabel: Record<BookingStatus, string> = {
 };
 
 const statusBadgeClassName: Record<BookingStatus, string> = {
-  PENDING: "bg-[#fbf4e6] text-[#583c13]",
+  PENDING: "bg-warn-soft text-warn-ink",
   CONFIRMED: "bg-brand-soft text-brand-dark",
   COMPLETED: "bg-surface-muted text-muted",
   CANCELLED: "bg-[#f9e4e0] text-[#8c2822]",
@@ -118,7 +118,7 @@ function BookingCard({
       {response.kind === "open" ? (
         <p
           className={`m-0 text-[0.85rem] font-semibold ${
-            response.urgent ? "text-[#c13515]" : "text-[#583c13]"
+            response.urgent ? "text-danger" : "text-warn-ink"
           }`}
         >
           {response.label}
@@ -267,7 +267,7 @@ export function OwnerBookingsContent({
         <p
           className={`mb-4 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${
             notice.tone === "error"
-              ? "bg-surface-muted text-[#c13515]"
+              ? "bg-surface-muted text-danger"
               : "bg-brand-soft text-brand-dark"
           }`}
           role={notice.tone === "error" ? "alert" : "status"}
@@ -288,7 +288,7 @@ export function OwnerBookingsContent({
         </p>
       ) : loadError ? (
         <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-          <p className="m-0 text-[#c13515]">{loadError}</p>
+          <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
             onClick={onRetry}
@@ -325,7 +325,7 @@ export function OwnerBookingsContent({
 
       {moreError ? (
         <p
-          className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+          className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
           role="alert"
         >
           {moreError}

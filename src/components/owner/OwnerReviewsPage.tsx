@@ -184,7 +184,7 @@ function ReviewCard({
 
       {error ? (
         <p
-          className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+          className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
           role="alert"
         >
           {error}
@@ -295,7 +295,7 @@ export function OwnerReviewsContent({
             </p>
           ) : loadError ? (
             <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
-              <p className="m-0 text-[#c13515]">{loadError}</p>
+              <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
                 onClick={onRetry}
@@ -329,7 +329,7 @@ export function OwnerReviewsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
               role="alert"
             >
               {moreError}

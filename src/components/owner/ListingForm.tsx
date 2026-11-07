@@ -198,7 +198,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
     <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
       {hasSummary ? (
         <div
-          className="rounded-[14px] bg-surface-muted p-4 text-[0.9rem] text-[#c13515] outline-none"
+          className="rounded-[14px] bg-surface-muted p-4 text-[0.9rem] text-danger outline-none"
           ref={summaryRef}
           role="alert"
           tabIndex={-1}
@@ -274,7 +274,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             ))}
           </div>
           {errors.gender ? (
-            <p className="m-0 text-[0.82rem] text-[#c13515]" id="listing-gender-error">
+            <p className="m-0 text-[0.82rem] text-danger" id="listing-gender-error">
               {errors.gender}
             </p>
           ) : null}
@@ -360,7 +360,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             </div>
           ))}
           {errors.amenities ? (
-            <p className="m-0 text-[0.82rem] text-[#c13515]" id="listing-amenities-error">
+            <p className="m-0 text-[0.82rem] text-danger" id="listing-amenities-error">
               {errors.amenities}
             </p>
           ) : null}
@@ -454,7 +454,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             );
           })}
           {errors.cancellationPolicy ? (
-            <p className="m-0 text-[0.82rem] text-[#c13515]" id="listing-policy-error">
+            <p className="m-0 text-[0.82rem] text-danger" id="listing-policy-error">
               {errors.cancellationPolicy}
             </p>
           ) : null}

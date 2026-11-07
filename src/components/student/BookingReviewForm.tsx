@@ -140,7 +140,7 @@ export function BookingReviewForm({
 
       {errorMessage ? (
         <p
-          className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-[#c13515]"
+          className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
           role="alert"
         >
           {errorMessage}
