@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only owners and admins publish listing images. Without this gate any
+    // signed-in user could write to the public bucket when no hostelId is sent.
+    if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Only owners can upload listing images." }, { status: 403 });
+    }
+
     // Rate limit: 5 uploads per 10 minutes per user (not IP)
     const rl = await rateLimit(`upload:${session.user.id}`, { limit: 5, windowMs: 10 * 60 * 1000 });
     if (!rl.ok) {
@@ -131,10 +137,6 @@ export async function POST(req: NextRequest) {
       if (!isBoundedRouteParam(hostelId)) {
         return NextResponse.json({ error: "Invalid hostel." }, { status: 400 });
       }
-      if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-        return NextResponse.json({ error: "Only owners can upload listing images." }, { status: 403 });
-      }
-
       const hostel = await db.hostel.findFirst({
         where: session.user.role === "ADMIN"
           ? { id: hostelId }
