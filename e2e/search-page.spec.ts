@@ -248,13 +248,126 @@ test("search_results_fit_supported_viewports_without_horizontal_overflow", async
   }
 
   await page.setViewportSize({ width: 390, height: 844 });
-  const searchButtonTop = await page
-    .locator(".search-compact-submit")
-    .evaluate((button) => button.getBoundingClientRect().top);
-  const searchFormTop = await page
-    .locator(".search-compact-form")
-    .evaluate((form) => form.getBoundingClientRect().top);
-  expect(Math.abs(searchButtonTop - searchFormTop)).toBeLessThan(20);
+  await expect(page.getByRole("button", { name: "Edit search" })).toBeVisible();
+  await expect(page.locator(".search-compact-form")).toBeHidden();
+  await page.getByRole("button", { name: "Edit search" }).click();
+  await expect(page.locator(".search-compact-submit")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    )
+    .toBe(true);
+});
+
+test("search_on_phones_opens_a_full_screen_sheet_from_a_summary_bar", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/search?city=Lahore");
+
+  const summary = page.getByRole("button", { name: "Edit search" });
+  await expect(summary).toContainText("Lahore");
+  await expect(summary).toContainText("Any dates");
+  await expect(page.locator(".search-compact-form")).toBeHidden();
+
+  await summary.click();
+  const form = page.locator(".search-compact-form");
+  await expect(form).toBeVisible();
+  const box = await form.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(389);
+  expect(box?.height).toBeGreaterThanOrEqual(843);
+  await expect(page.getByLabel("Search destination")).toBeVisible();
+  await expect(page.getByLabel("Check-in date")).toBeVisible();
+  await expect(page.getByLabel("Check-out date")).toBeVisible();
+  await expect(page.getByLabel("Guests", { exact: true })).toBeVisible();
+
+  await expect(page.getByLabel("Search destination")).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(form).toBeHidden();
+  await expect(summary).toBeFocused();
+
+  await summary.click();
+  await page.getByLabel("Search destination").fill("Murree");
+  await form.getByRole("button", { name: "Search hostels" }).click();
+  await expect(page).toHaveURL(/city=Murree/);
+  await expect(form).toBeHidden();
+  await expect(summary).toContainText("Murree");
+});
+
+test("search_sheet_controls_use_16px_text_and_44px_targets_on_phones", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/search?city=Lahore");
+
+  const summary = page.getByRole("button", { name: "Edit search" });
+  expect((await summary.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await summary.click();
+
+  const form = page.locator(".search-compact-form");
+  for (const label of [
+    "Search destination",
+    "Check-in date",
+    "Check-out date",
+  ]) {
+    await expect(page.getByLabel(label)).toHaveCSS("font-size", "16px");
+  }
+  await expect(page.getByLabel("Guests", { exact: true })).toHaveCSS(
+    "font-size",
+    "16px",
+  );
+  for (const name of ["Close search", "Search hostels"]) {
+    const box = await form.getByRole("button", { name }).boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test("search_header_scrolls_away_on_phones_but_stays_pinned_on_desktop", async ({
+  page,
+}) => {
+  await page.goto("/search?city=Lahore");
+  const header = page.locator(".search-results-header");
+  const filters = page.locator(".search-filter-bar");
+
+  await page.setViewportSize({ width: 1024, height: 800 });
+  await expect(header).toHaveCSS("position", "sticky");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(header).toHaveCSS("position", "static");
+  await expect(filters).toHaveCSS("position", "sticky");
+  await expect(filters).toHaveCSS("top", "0px");
+});
+
+test("open_filter_panel_scrolls_inside_the_pinned_bar_on_short_phones", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 600 });
+  await page.goto("/search?city=Lahore");
+  await page.getByText("Filters", { exact: true }).click();
+
+  const panel = page.getByRole("form", { name: "Hostel filters" });
+  await expect(panel).toBeVisible();
+  const { clientHeight, scrollHeight } = await panel.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(clientHeight).toBeLessThan(600);
+  expect(scrollHeight).toBeGreaterThanOrEqual(clientHeight);
+  await expect(panel).toHaveCSS("overflow-y", "auto");
+});
+
+test("pages_declare_viewport_fit_cover_so_safe_area_insets_work", async ({
+  page,
+}) => {
+  await page.goto("/search?city=Lahore");
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
+    "content",
+    /viewport-fit=cover/,
+  );
 });
 
 test("search_reports_errors_when_hostel_results_cannot_be_loaded", async ({

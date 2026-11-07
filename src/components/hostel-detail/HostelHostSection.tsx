@@ -118,13 +118,13 @@ export function HostelHostSection({
               className="hostel-host-listing-stats m-0 grid min-w-0"
             >
               <div className="grid gap-[3px] py-2">
-                <dt className="text-[0.72rem] leading-[1.3] text-muted">Hostel reviews</dt>
+                <dt className="text-[0.8125rem] leading-[1.3] text-muted">Hostel reviews</dt>
                 <dd className="m-0 flex items-center gap-1 text-[1.05rem] font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
                   {reviewCount}
                 </dd>
               </div>
               <div className="grid gap-[3px] border-t border-line py-2">
-                <dt className="text-[0.72rem] leading-[1.3] text-muted">Hostel rating</dt>
+                <dt className="text-[0.8125rem] leading-[1.3] text-muted">Hostel rating</dt>
                 <dd className="m-0 flex items-center gap-1 text-[1.05rem] font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
                   {reviewCount > 0 ? rating.toFixed(1) : "—"}
                   {reviewCount > 0 && (
@@ -133,7 +133,7 @@ export function HostelHostSection({
                 </dd>
               </div>
               <div className="grid gap-[3px] border-t border-line py-2">
-                <dt className="text-[0.72rem] leading-[1.3] text-muted">Member since</dt>
+                <dt className="text-[0.8125rem] leading-[1.3] text-muted">Member since</dt>
                 <dd className="m-0 text-[0.82rem] [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
                   {membershipDate}
                 </dd>

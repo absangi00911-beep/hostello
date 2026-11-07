@@ -26,7 +26,7 @@ function StatCard({
       <dd className="m-0 text-[1.6rem] font-bold tracking-[-0.03em] text-ink">
         {value}
       </dd>
-      {note ? <dd className="m-0 text-[0.78rem] text-muted">{note}</dd> : null}
+      {note ? <dd className="m-0 text-[0.8125rem] text-muted">{note}</dd> : null}
     </div>
   );
 }

@@ -59,7 +59,7 @@ export function SearchPillForm({
     >
       <div className={`peer/where group/where flex min-h-14 min-w-0 cursor-text flex-col justify-center gap-px rounded-full px-5 transition-[background-color,box-shadow] duration-150 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:shadow-[0_1px_4px_rgb(0_0_0/12%)] focus-within:bg-white focus-within:shadow-[0_1px_4px_rgb(0_0_0/12%)] focus-within:ring-2 focus-within:ring-brand/30 motion-reduce:transition-none${activePanel === "where" ? " bg-white shadow-[0_1px_4px_rgb(0_0_0/12%)]" : ""} [@media(max-width:720px)]:col-span-full [@media(max-width:720px)]:min-h-12 [@media(max-width:720px)]:rounded-full [@media(max-width:720px)]:border-b [@media(max-width:720px)]:border-line [@media(max-width:720px)]:pb-[7px]`}>
         <label
-          className="text-[0.68rem] leading-[1.3] font-semibold text-ink"
+          className="text-[0.8125rem] leading-[1.3] font-semibold text-ink"
           htmlFor={inDialog ? "mobile-destination" : "desktop-destination"}
         >
           Where
@@ -68,7 +68,7 @@ export function SearchPillForm({
           <input
             aria-label="Destination"
             autoComplete="off"
-            className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.76rem] leading-[1.4] text-muted outline-none focus-visible:outline-none! placeholder:text-muted placeholder:opacity-100"
+            className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.8125rem] leading-[1.4] text-muted outline-none focus-visible:outline-none! placeholder:text-muted placeholder:opacity-100"
             id={inDialog ? "mobile-destination" : "desktop-destination"}
             onChange={(event) => onDestinationChange(event.target.value)}
             onFocus={onDestinationFocus}
@@ -89,13 +89,13 @@ export function SearchPillForm({
         </div>
       </div>
       <div className={`peer/move-in group/move-in relative flex min-h-14 min-w-0 cursor-pointer flex-col justify-center gap-px rounded-full px-5 transition-[background-color,box-shadow] duration-150 before:absolute before:top-3 before:bottom-3 before:left-0 before:w-px before:bg-line before:transition-opacity peer-hover/where:before:opacity-0 peer-focus/where:before:opacity-0 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:before:opacity-0 [@media(hover:hover)]:hover:shadow-[0_1px_4px_rgb(0_0_0/12%)] focus-within:bg-white focus-within:shadow-[0_1px_4px_rgb(0_0_0/12%)] focus-within:ring-2 focus-within:ring-brand/30 motion-reduce:transition-none${activePanel === "date" ? " bg-white shadow-[0_1px_4px_rgb(0_0_0/12%)] before:opacity-0" : ""} [@media(max-width:720px)]:min-h-12 [@media(max-width:720px)]:pl-3 [@media(max-width:720px)]:before:opacity-0`}>
-        <span className="text-[0.68rem] leading-[1.3] font-semibold text-ink">
+        <span className="text-[0.8125rem] leading-[1.3] font-semibold text-ink">
           Move-in
         </span>
         <button
           aria-expanded={activePanel === "date"}
           aria-label="Move-in date"
-          className="min-h-[21px] w-full cursor-pointer border-0 bg-transparent p-0 text-left text-[0.76rem] leading-[1.4] text-muted outline-none focus-visible:outline-none!"
+          className="min-h-[21px] w-full cursor-pointer border-0 bg-transparent p-0 text-left text-[0.8125rem] leading-[1.4] text-muted outline-none focus-visible:outline-none!"
           onClick={onToggleDate}
           type="button"
         >
@@ -114,10 +114,10 @@ export function SearchPillForm({
           onClick={onToggleStudents}
           type="button"
         >
-          <span className="text-[0.68rem] leading-[1.3] font-semibold text-ink">
+          <span className="text-[0.8125rem] leading-[1.3] font-semibold text-ink">
             Guests
           </span>
-          <span className="truncate text-[0.76rem] leading-[1.4] text-muted">
+          <span className="truncate text-[0.8125rem] leading-[1.4] text-muted">
             {studentCount} {studentCount === 1 ? "student" : "students"}
           </span>
         </button>

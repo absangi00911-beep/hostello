@@ -68,7 +68,7 @@ export function ConversationThread({
     <section className="flex min-w-0 flex-col" aria-label="Conversation">
       <div className="flex min-h-[78px] items-center justify-between gap-[14px] border-b border-line px-5 py-[14px]">
         <div>
-          <p className="m-0 mb-1 text-[0.75rem] font-bold uppercase tracking-[0.09em] text-muted">
+          <p className="m-0 mb-1 text-[0.8125rem] font-bold uppercase tracking-[0.09em] text-muted">
             {thread?.hostelName ?? "Hostel conversation"}
           </p>
           <h2 className="m-0 text-[1.15rem] tracking-[-0.045em] text-ink">
@@ -141,7 +141,7 @@ export function ConversationThread({
                     }`}
                     key={item.id}
                   >
-                    <div className="flex items-baseline gap-[9px] text-[0.72rem] text-muted">
+                    <div className="flex items-baseline gap-[9px] text-[0.8125rem] text-muted">
                       <strong className="text-ink">
                         {isOwnMessage ? "You" : item.sender.name || "Hostello member"}
                       </strong>
@@ -173,7 +173,7 @@ export function ConversationThread({
             />
             {sendError && <p className="mt-2 mb-0 text-[0.84rem] text-[#772e1b]" role="alert">{sendError}</p>}
             <div className="mt-2 flex items-center justify-between gap-3">
-              <span className="text-[0.76rem] text-muted">
+              <span className="text-[0.8125rem] text-muted">
                 Keep personal contact details private.
               </span>
               <button

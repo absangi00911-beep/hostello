@@ -47,7 +47,7 @@ export function HostelDetailOverview({
           </span>
         </p>
         {area && (
-          <p className="hostel-detail-area mt-2 mb-0 flex items-center gap-[7px] text-[0.78rem] text-muted">
+          <p className="hostel-detail-area mt-2 mb-0 flex items-center gap-[7px] text-[0.8125rem] text-muted">
             <MapPin aria-hidden="true" className="shrink-0" size={16} />
             <span className="min-w-0 [overflow-wrap:anywhere]">{area}</span>
           </p>

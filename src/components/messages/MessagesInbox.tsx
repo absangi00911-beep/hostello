@@ -31,7 +31,7 @@ export function MessagesInbox({
   }, [inbox.selectedConversationId]);
 
   return (
-    <main className="flex min-h-screen flex-col bg-canvas [@media(max-width:720px)]:pb-[calc(64px+env(safe-area-inset-bottom))]">
+    <main className="flex min-h-dvh flex-col bg-canvas [@media(max-width:720px)]:pb-[calc(64px+env(safe-area-inset-bottom))]">
       <ScrollAwareSurface
         as="header"
         className="sticky top-0 z-30 flex min-h-[72px] items-center justify-between gap-5 bg-surface px-5 py-3 md:px-8"

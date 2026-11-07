@@ -111,7 +111,7 @@ export function BrowseAccountMenu({
             {displayName}
           </DropdownMenu.Label>
           {user.email && (
-            <div className="overflow-hidden px-[9px] pt-0 pb-[7px] text-ellipsis whitespace-nowrap text-[0.78rem] text-muted">
+            <div className="overflow-hidden px-[9px] pt-0 pb-[7px] text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted">
               {user.email}
             </div>
           )}
@@ -134,7 +134,7 @@ export function BrowseAccountMenu({
           <DropdownMenu.Separator className="my-[5px] h-px bg-line" />
           {errorMessage && (
             <p
-              className="mx-[9px] my-[5px] text-[0.78rem] text-[#a12622]"
+              className="mx-[9px] my-[5px] text-[0.8125rem] text-[#a12622]"
               role="alert"
             >
               {errorMessage}

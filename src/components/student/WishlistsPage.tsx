@@ -122,7 +122,7 @@ export function WishlistsPageContent({
   onRetry: () => void;
 }) {
   return (
-    <main className="min-h-screen bg-canvas py-12 md:py-16">
+    <main className="min-h-dvh bg-canvas py-12 md:py-16">
       <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),600px)] md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">
         <header className="mb-7 md:mb-8">
           <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
@@ -229,13 +229,13 @@ export function WishlistsPageContent({
                         >
                           {hostel.name}
                         </h2>
-                        <p className="hostel-card-price m-0 mb-[9px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.73rem] [font-family:var(--font-inter),_sans-serif]">
+                        <p className="hostel-card-price m-0 mb-[9px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.875rem] [font-family:var(--font-inter),_sans-serif]">
                           PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
-                          <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                          <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-xs">
                             {" / month"}
                           </span>
                         </p>
-                        <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                        <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-xs">
                           <span className="hostel-card-area inline-flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
                             {hostel.area || hostel.city}
                           </span>

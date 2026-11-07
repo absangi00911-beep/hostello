@@ -164,7 +164,7 @@ function BookingCard({
         ) : (
           <div className="flex flex-wrap gap-2">
             <button
-              className={`${primaryButtonClassName} min-h-10! px-4! text-[0.85rem]!`}
+              className={`${primaryButtonClassName} min-h-11! px-4! text-[0.85rem]!`}
               disabled={busy}
               onClick={() => onConfirm(booking.id)}
               type="button"

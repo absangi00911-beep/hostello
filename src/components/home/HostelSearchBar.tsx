@@ -191,13 +191,13 @@ export function HostelSearchBar({
               </button>
             </div>
             {renderSearchForm(true)}
-            <p className="mt-2 text-center text-[0.7rem] text-muted">
+            <p className="mt-2 text-center text-[0.8125rem] text-muted">
               Availability is checked only on the selected move-in date.
             </p>
           </div>
         </dialog>
         {renderSearchForm(false)}
-        <p className="mt-2 text-center text-[0.7rem] text-muted [@media(max-width:720px)]:hidden">
+        <p className="mt-2 text-center text-[0.8125rem] text-muted [@media(max-width:720px)]:hidden">
           Availability is checked only on the selected move-in date.
         </p>
       </div>
