@@ -19,7 +19,7 @@
   --surface: #ffffff;
   --surface-muted: #f1f5f9;
   --ink: #0f172a;
-  --muted: #64748b;
+  --muted: #586579;
   --line: #e2e8f0;
   --brand: #2563eb;
   --brand-dark: #1d4ed8;
@@ -190,4 +190,46 @@ a[class~="bg-brand"]:active {
     ) {
     transform: none;
   }
+}
+
+/*
+ * iOS Safari zooms the whole page when a focused text control is set below
+ * 16px. This rule is unlayered, so it beats the Tailwind text-* utilities.
+ * Between 521px and 720px the compact results-page search pill is left out:
+ * its fields share a row. At 520px and below it opens as a full-screen sheet,
+ * so every control gets 16px there.
+ */
+@media (max-width: 720px) {
+  :is(input, select, textarea):not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="file"],
+      [type="hidden"]
+    ):not(.search-compact-form *) {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 520px) {
+  :is(input, select, textarea):not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="file"],
+      [type="hidden"]
+    ) {
+    font-size: 1rem;
+  }
+}
+
+/*
+ * Form controls drawn with the pale --line border (1.2:1 on white) fail the
+ * 3:1 contrast WCAG 1.4.11 needs to identify a field. Give them a darker edge
+ * until focused; controls with their own border colour are unaffected.
+ */
+input[class~="border-line"]:not(:focus),
+select[class~="border-line"]:not(:focus),
+textarea[class~="border-line"]:not(:focus) {
+  border-color: #7d8ba1;
 }

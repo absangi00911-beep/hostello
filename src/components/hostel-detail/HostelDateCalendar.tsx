@@ -85,7 +85,7 @@ export function HostelDateCalendar({
               return (
                 <span
                   aria-hidden="true"
-                  className="aspect-square w-[min(100%,40px)]"
+                  className="aspect-square w-[min(100%,44px)]"
                   key={`empty-${index}`}
                 />
               );
@@ -126,7 +126,7 @@ export function HostelDateCalendar({
                   ? "is-in-range rounded-none bg-surface-muted"
                   : "rounded-full bg-transparent";
             const className = [
-              "grid aspect-square w-[min(100%,40px)] cursor-pointer place-items-center border-0 text-sm tabular-nums text-ink aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
+              "grid aspect-square w-[min(100%,44px)] cursor-pointer place-items-center border-0 text-sm tabular-nums text-ink aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
               dateStyle,
               isMoveIn ? "is-move-in" : "",
               isMoveOut ? "is-move-out" : "",
@@ -182,7 +182,7 @@ export function HostelDateCalendar({
         <div className="flex flex-[0_0_auto] items-center gap-2 [@media(max-width:720px)]:w-full [@media(max-width:720px)]:justify-end">
           {(checkIn || checkOut) && (
             <button
-              className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
+              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
               onClick={() => selectMoveIn("")}
               type="button"
             >
@@ -191,7 +191,7 @@ export function HostelDateCalendar({
           )}
           <button
             aria-label="Previous month"
-            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:enabled:border-[#cbd5e1] hover:enabled:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 btn-secondary"
+            className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:enabled:border-[#cbd5e1] hover:enabled:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 btn-secondary"
             disabled={
               firstMonth.getFullYear() === today.getFullYear() &&
               firstMonth.getMonth() <= today.getMonth()
@@ -205,7 +205,7 @@ export function HostelDateCalendar({
           </button>
           <button
             aria-label="Next month"
-            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
+            className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
             onClick={() =>
               setFirstMonth((month) => startOfMonth(addMonths(month, 1)))
             }

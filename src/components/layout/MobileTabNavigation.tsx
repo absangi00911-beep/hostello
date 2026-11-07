@@ -31,7 +31,7 @@ export function MobileTabNavigation({
       {visibleTabs.map(({ id, label, href, icon: Icon }) => (
         <Link
           aria-current={activeTab === id ? "page" : undefined}
-          className="flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-[3px] rounded-[10px] text-[0.66rem] font-[550] text-muted no-underline data-[active=true]:font-bold data-[active=true]:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[-2px]!"
+          className="flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-[3px] rounded-[10px] text-[0.72rem] font-[550] text-muted no-underline data-[active=true]:font-bold data-[active=true]:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[-2px]!"
           data-active={activeTab === id ? "true" : undefined}
           href={href}
           key={id}

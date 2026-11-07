@@ -32,7 +32,7 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 });
 
 const secondaryButtonClassName =
-  "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
+  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-[#cbd5e1] hover:bg-surface-muted active:translate-y-px active:bg-[#e2e8f0] active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
 
 const statusBadgeClassName: Record<ListingStatus, string> = {
   ACTIVE: "bg-brand-soft text-brand-dark",
@@ -189,7 +189,7 @@ export function OwnerDashboardContent({
 
       <nav aria-label="Host tools" className="mb-8 flex flex-wrap gap-2">
         <Link
-          className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-brand px-4 text-[0.85rem] font-semibold text-white no-underline hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+          className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-brand px-4 text-[0.85rem] font-semibold text-white no-underline hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
           href="/owner/listings/new"
         >
           Add listing
