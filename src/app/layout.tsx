@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { LoginDialogProvider } from "@/components/auth/LoginDialogProvider";
@@ -10,6 +10,13 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   title: "HostelLo",
@@ -29,7 +36,7 @@ export default function RootLayout({
 
   return (
     <html className={inter.variable} lang="en">
-      <body className="min-h-screen bg-canvas text-ink">
+      <body className="min-h-dvh bg-canvas text-ink">
         <LoginDialogProvider
           emailCodeEnabled={signInMethods.emailCode}
           googleEnabled={signInMethods.google}

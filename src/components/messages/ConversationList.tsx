@@ -308,16 +308,16 @@ export function ConversationList({
                         {otherName}
                       </strong>
                       <time
-                        className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.78rem] text-muted"
+                        className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted"
                         dateTime={conversation.updatedAt}
                       >
                         {displayMessageDate(conversation.updatedAt)}
                       </time>
                     </span>
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.78rem] text-muted">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted">
                       {conversation.hostelName}
                     </span>
-                    <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[0.78rem] text-muted">
+                    <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted">
                       {latestMessage?.content ?? "Start the conversation"}
                     </span>
                   </span>

@@ -468,7 +468,7 @@ export function HostelBookingCard({
       id="hostel-booking"
       ref={bookingCardRef}
     >
-      <div className="mb-3 text-[0.78rem] text-muted">
+      <div className="mb-3 text-[0.8125rem] text-muted">
         {room ? (
           <>
             <strong className="text-[1.2rem] leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
@@ -488,9 +488,9 @@ export function HostelBookingCard({
           onSubmit={submitBooking}
         >
           <label className="grid min-w-0 gap-1">
-            <span className="text-[0.68rem] font-[650] text-ink">Room</span>
+            <span className="text-[0.8125rem] font-[650] text-ink">Room</span>
             <select
-              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
               disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
               ref={roomSelectRef}
               onChange={(event) => {
@@ -517,11 +517,11 @@ export function HostelBookingCard({
           </label>
           <div className="grid grid-cols-2 gap-[10px]">
             <label className="grid min-w-0 gap-1">
-              <span className="text-[0.68rem] font-[650] text-ink">
+              <span className="text-[0.8125rem] font-[650] text-ink">
                 Move in
               </span>
               <input
-                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
                 disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 ref={moveInInputRef}
                 min={todayDateInputValue()}
@@ -536,11 +536,11 @@ export function HostelBookingCard({
               />
             </label>
             <label className="grid min-w-0 gap-1">
-              <span className="text-[0.68rem] font-[650] text-ink">
+              <span className="text-[0.8125rem] font-[650] text-ink">
                 Move out
               </span>
               <input
-                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
                 disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 min={checkIn || todayDateInputValue()}
                 onChange={(event) => {
@@ -555,9 +555,9 @@ export function HostelBookingCard({
             </label>
           </div>
           <label className="grid min-w-0 gap-1">
-            <span className="text-[0.68rem] font-[650] text-ink">Guests</span>
+            <span className="text-[0.8125rem] font-[650] text-ink">Guests</span>
             <select
-              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.76rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
               disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
               onChange={(event) => {
                 setGuests(Number(event.target.value));
@@ -576,12 +576,12 @@ export function HostelBookingCard({
             </select>
           </label>
           {availabilityLoading && (
-            <p className="m-0 text-[0.78rem] text-muted" role="status">
+            <p className="m-0 text-[0.8125rem] text-muted" role="status">
               Checking exact availability for these dates…
             </p>
           )}
           {availabilityError && (
-            <p className="m-0 text-[0.78rem] text-[#991b1b]" role="alert">
+            <p className="m-0 text-[0.8125rem] text-[#991b1b]" role="alert">
               {availabilityError}
               {" "}
               <button
@@ -598,7 +598,7 @@ export function HostelBookingCard({
             checkIn &&
             checkOut &&
             selectedAvailability && (
-              <p className="m-0 text-[0.78rem] text-muted" role="status">
+              <p className="m-0 text-[0.8125rem] text-muted" role="status">
                 {selectedAvailability.fits
                   ? `Available for all selected dates: ${selectedAvailability.availableSeats} of ${selectedAvailability.capacity} seats.`
                   : "No room seats are available for the selected dates and guest count. Change dates or choose another room."}
@@ -606,7 +606,7 @@ export function HostelBookingCard({
             )}
           {checkIn && checkOut && !stayIsValid && (
             <p
-              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
               role="status"
             >
               Stay must be {minStay}
@@ -677,7 +677,7 @@ export function HostelBookingCard({
             </section>
           )}
           {submissionUncertain && (
-            <p className="m-0 text-[0.78rem] text-[#991b1b]" role="alert">
+            <p className="m-0 text-[0.8125rem] text-[#991b1b]" role="alert">
               We couldn't confirm the request status. Check Trips before trying again.
               {" "}
               <a className="font-semibold text-brand-dark underline" href="/trips">
@@ -696,12 +696,12 @@ export function HostelBookingCard({
                 ? "Request booking"
                 : "Review booking"}
           </button>
-          <p className="m-0 text-[0.7rem] leading-[1.5] text-muted">
+          <p className="m-0 text-[0.8125rem] leading-[1.5] text-muted">
             Booking and payment statuses are shown only after the server confirms them.
           </p>
           {!hasCancellationPolicy && (
             <p
-              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
               role="status"
             >
               Booking is temporarily unavailable while cancellation terms are updated.
@@ -710,7 +710,7 @@ export function HostelBookingCard({
           {message && (
             <p
               aria-live="polite"
-              className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
               role="alert"
             >
               {message}
@@ -730,7 +730,7 @@ export function HostelBookingCard({
             role="region"
           >
             <div className="min-w-0">
-              <p className="m-0 flex items-baseline gap-1 text-[0.78rem] text-muted">
+              <p className="m-0 flex items-baseline gap-1 text-sm text-muted">
                 {room ? (
                   <>
                     <strong className="text-[1rem] font-bold text-ink tabular-nums">
@@ -744,7 +744,7 @@ export function HostelBookingCard({
                   </strong>
                 )}
               </p>
-              <p className="m-0 mt-0.5 truncate text-[0.72rem] text-muted">
+              <p className="m-0 mt-0.5 truncate text-[0.8125rem] text-muted">
                 {estimatedTotal !== null
                   ? `Estimated total PKR ${formatPrice(estimatedTotal)}`
                   : "Choose dates to see your stay total"}
@@ -769,7 +769,7 @@ export function HostelBookingCard({
         </form>
       ) : (
         <p
-          className="m-0 text-[0.7rem] leading-[1.5] text-[#8b2525]"
+          className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
           role="status"
         >
           No rooms are currently available to book.

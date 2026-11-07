@@ -120,7 +120,7 @@ export function AvailabilityAlertCard({
                 </Link>
               )}
           </div>
-          <span className="inline-flex min-h-8 items-center rounded-full border border-line px-3 text-xs font-semibold">
+          <span className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-xs font-semibold">
             {statusLabel}
           </span>
         </div>

@@ -28,7 +28,7 @@ export function SearchLocationPicker({
           {locationError}
         </p>
       )}
-      <p className="m-0 px-1 text-[0.68rem] font-semibold text-muted">
+      <p className="m-0 px-1 text-[0.8125rem] font-semibold text-muted">
         Suggested destinations
       </p>
       <div>

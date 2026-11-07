@@ -62,7 +62,7 @@ export function SearchCalendarMonth({
         {WEEKDAYS.map((weekday) => (
           <span
             aria-hidden="true"
-            className="pb-2 text-[0.68rem] font-medium text-muted"
+            className="pb-2 text-[0.8125rem] font-medium text-muted"
             key={weekday}
           >
             {weekday}

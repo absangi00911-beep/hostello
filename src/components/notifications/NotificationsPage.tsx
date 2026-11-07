@@ -458,7 +458,7 @@ export function NotificationsPage({ role }: { role: Role }) {
                     <p className="mb-0 mt-1 text-[0.9rem] text-ink">
                       {item.message}
                     </p>
-                    <p className="mb-0 mt-1 text-[0.78rem] text-muted">
+                    <p className="mb-0 mt-1 text-[0.8125rem] text-muted">
                       <span
                         className={
                           item.read
