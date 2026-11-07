@@ -108,7 +108,7 @@ export function ListingPhotosField({
                   unoptimized
                 />
                 {index === 0 ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-[0.7rem] font-bold text-ink">
+                  <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-[0.8125rem] font-bold text-ink">
                     Cover
                   </span>
                 ) : null}
@@ -116,7 +116,7 @@ export function ListingPhotosField({
               <div className="flex flex-wrap gap-2">
                 {index > 0 ? (
                   <button
-                    className={`${secondaryButtonClassName} min-h-8 px-3 text-[0.78rem]`}
+                    className={`${secondaryButtonClassName} min-h-11 px-3 text-[0.8125rem]`}
                     disabled={isUploading}
                     onClick={() =>
                       onChange([url, ...images.filter((_, i) => i !== index)])
@@ -128,7 +128,7 @@ export function ListingPhotosField({
                 ) : null}
                 <button
                   aria-label={`Remove photo ${index + 1}`}
-                  className={`${secondaryButtonClassName} min-h-8 gap-1 px-3 text-[0.78rem]`}
+                  className={`${secondaryButtonClassName} min-h-11 gap-1 px-3 text-[0.8125rem]`}
                   disabled={isUploading}
                   onClick={() => onChange(images.filter((_, i) => i !== index))}
                   type="button"

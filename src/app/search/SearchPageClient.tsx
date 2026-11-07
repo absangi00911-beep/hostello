@@ -8,8 +8,9 @@ import {
   Search,
   SlidersHorizontal,
   Star,
+  X,
 } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AMENITIES, SORT_OPTIONS } from "@hostello/shared";
 import {
@@ -169,6 +170,13 @@ function MapPreview({
   );
 }
 
+function formatShortDate(value: string): string | null {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
 function HostelCard({
   hostel,
   priority,
@@ -205,7 +213,7 @@ function HostelCard({
       <div className="search-result-details pt-[9px]">
         <div className="search-result-title-row flex items-baseline justify-between gap-2">
           <h2
-            className="m-0 overflow-hidden text-[0.84rem] font-semibold leading-[1.35] tracking-[-0.01em] text-ellipsis whitespace-nowrap"
+            className="m-0 overflow-hidden text-[0.84rem] font-semibold leading-[1.35] tracking-[-0.01em] text-ellipsis [@media(max-width:520px)]:text-base whitespace-nowrap"
             title={hostel.name}
           >
             {hostel.name}
@@ -216,7 +224,7 @@ function HostelCard({
                 ? `Rated ${hostel.rating.toFixed(1)} out of 5`
                 : "No ratings yet"
             }
-            className="search-result-rating inline-flex shrink-0 items-center gap-1 text-[0.72rem] font-semibold text-ink"
+            className="search-result-rating inline-flex shrink-0 items-center gap-1 text-[0.72rem] font-semibold text-ink [@media(max-width:520px)]:text-sm"
             role="img"
           >
             {hostel.reviewCount > 0 ? (
@@ -234,10 +242,10 @@ function HostelCard({
             )}
           </span>
         </div>
-        <p className="search-result-area mt-[3px] mb-0 overflow-hidden text-[0.75rem] text-muted text-ellipsis whitespace-nowrap">
+        <p className="search-result-area mt-[3px] mb-0 overflow-hidden text-[0.75rem] text-muted text-ellipsis [@media(max-width:520px)]:text-sm whitespace-nowrap">
           {hostel.area || hostel.city}, {hostel.city}
         </p>
-        <p className="search-result-price mt-2 mb-0 text-[0.78rem]">
+        <p className="search-result-price mt-2 mb-0 text-[0.78rem] [@media(max-width:520px)]:text-base">
           <strong className="font-[650]">
             PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
           </strong>
@@ -295,6 +303,24 @@ export default function SearchPageClient({
   const [checkOutDate, setCheckOutDate] = useState(initialCheckOut);
   const [appliedCheckOutDate, setAppliedCheckOutDate] = useState(initialCheckOut);
   const [guests, setGuests] = useState(String(initialGuests));
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const summaryButtonRef = useRef<HTMLButtonElement>(null);
+  const destinationInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return;
+    const summaryButton = summaryButtonRef.current;
+    destinationInputRef.current?.focus();
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileSearchOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      summaryButton?.focus();
+    };
+  }, [mobileSearchOpen]);
   const [appliedGuests, setAppliedGuests] = useState(String(initialGuests));
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
@@ -467,6 +493,7 @@ export default function SearchPageClient({
       setFilterError("Choose a check-in and a later check-out date.");
       return;
     }
+    setMobileSearchOpen(false);
     const trimmedDestination = destination.trim();
     const useNearby =
       isNearby && trimmedDestination.toLocaleLowerCase() === "nearby";
@@ -668,11 +695,18 @@ export default function SearchPageClient({
     })),
   ];
 
+  const summaryWhere = appliedNearby ? "Nearby" : appliedCity || "Any city";
+  const summaryStart = formatShortDate(appliedMoveInDate);
+  const summaryEnd = formatShortDate(appliedCheckOutDate);
+  const summaryWhen =
+    summaryStart && summaryEnd ? `${summaryStart} to ${summaryEnd}` : "Any dates";
+  const summaryGuests = `${appliedGuests} ${appliedGuests === "1" ? "guest" : "guests"}`;
+
   return (
     <div className="search-results-page min-h-dvh bg-white text-ink">
       <ScrollAwareSurface
         as="header"
-        className="search-results-header sticky top-0 z-30 bg-white/[0.96] backdrop-blur-[12px]"
+        className="search-results-header sticky top-0 z-30 bg-white/[0.96] backdrop-blur-[12px] [@media(max-width:780px)]:static [@media(max-width:520px)]:[backdrop-filter:none]"
         scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
       >
         <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-var(--page-gutter-total)))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
@@ -680,18 +714,50 @@ export default function SearchPageClient({
             className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:780px)]:hidden"
           />
 
+          <button
+            aria-label="Edit search"
+            ref={summaryButtonRef}
+            className="col-span-full col-start-1 row-start-2 mb-3 hidden min-h-12 w-full cursor-pointer items-center gap-3 rounded-full border border-line bg-white px-4 text-left shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:520px)]:flex"
+            onClick={() => {
+              setFilterError(null);
+              setMobileSearchOpen(true);
+            }}
+            type="button"
+          >
+            <Search aria-hidden="true" className="shrink-0 text-ink" size={18} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-ink">
+                {summaryWhere}
+              </span>
+              <span className="block truncate text-[0.8125rem] text-muted">
+                {summaryWhen}, {summaryGuests}
+              </span>
+            </span>
+          </button>
           <form
-            className="search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 [@media(max-width:520px)]:min-h-[50px] [@media(max-width:520px)]:grid-cols-[minmax(86px,1.15fr)_minmax(72px,0.9fr)_minmax(72px,0.9fr)_38px]"
+            className={`search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 ${mobileSearchOpen ? "[@media(max-width:520px)]:fixed [@media(max-width:520px)]:inset-0 [@media(max-width:520px)]:z-50 [@media(max-width:520px)]:h-dvh [@media(max-width:520px)]:grid-cols-1 [@media(max-width:520px)]:content-start [@media(max-width:520px)]:gap-4 [@media(max-width:520px)]:overflow-y-auto [@media(max-width:520px)]:rounded-none [@media(max-width:520px)]:border-0 [@media(max-width:520px)]:bg-white [@media(max-width:520px)]:p-4 [@media(max-width:520px)]:pb-[calc(16px+env(safe-area-inset-bottom))] [@media(max-width:520px)]:shadow-none" : "[@media(max-width:520px)]:hidden"}`}
             onSubmit={submitSearch}
             role="search"
           >
-            <label className="search-compact-location flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
+            <div className="hidden items-center justify-between [@media(max-width:520px)]:flex">
+              <h2 className="m-0 text-lg font-bold">Search hostels</h2>
+              <button
+                aria-label="Close search"
+                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
+                onClick={() => setMobileSearchOpen(false)}
+                type="button"
+              >
+                <X aria-hidden="true" size={20} />
+              </button>
+            </div>
+            <label className="search-compact-location flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
+              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
                 Where
               </span>
               <input
                 aria-label="Search destination"
                 autoComplete="off"
+                ref={destinationInputRef}
                 className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.75rem] leading-[1.4] text-muted outline-none placeholder:text-muted placeholder:opacity-100"
                 onChange={(event) => {
                   setDestination(event.target.value);
@@ -702,8 +768,8 @@ export default function SearchPageClient({
                 value={destination}
               />
             </label>
-            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
+              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
                 Check-in
               </span>
               <input
@@ -714,8 +780,8 @@ export default function SearchPageClient({
                 value={moveInDate}
               />
             </label>
-            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:px-[10px]">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
+              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
                 Check-out
               </span>
               <input
@@ -726,8 +792,8 @@ export default function SearchPageClient({
                 value={checkOutDate}
               />
             </label>
-            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] [@media(max-width:520px)]:hidden [@media(max-width:520px)]:px-[10px]">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink">
+            <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
+              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
                 Guests
               </span>
               <select
@@ -745,18 +811,29 @@ export default function SearchPageClient({
             </label>
             <button
               aria-label="Search hostels"
-              className="search-compact-submit grid size-[38px] cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-colors duration-[160ms] hover:bg-brand-dark [@media(max-width:520px)]:size-9"
+              className="search-compact-submit grid size-[38px] cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-colors duration-[160ms] hover:bg-brand-dark [@media(max-width:520px)]:h-12 [@media(max-width:520px)]:w-full [@media(max-width:520px)]:grid-flow-col [@media(max-width:520px)]:gap-2 [@media(max-width:520px)]:rounded-xl"
               type="submit"
             >
               <Search aria-hidden="true" size={17} />
+              <span className="hidden text-base font-semibold [@media(max-width:520px)]:inline">
+                Search hostels
+              </span>
             </button>
+            {filterError ? (
+              <p
+                className="m-0 hidden text-sm text-[#b32505] [@media(max-width:520px)]:block"
+                role="alert"
+              >
+                {filterError}
+              </p>
+            ) : null}
           </form>
 
           <BrowseAccountActions user={accountUser} />
         </div>
       </ScrollAwareSurface>
 
-      <div className="search-filter-bar sticky top-[82px] z-[15] border-b border-line bg-white/[0.97] [@media(max-width:780px)]:top-[133px]">
+      <div className="search-filter-bar sticky top-[82px] z-[15] border-b border-line bg-white/[0.97] [@media(max-width:780px)]:top-0">
         <div className="search-filter-inner mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]!">
           <details className="search-filter-details py-3">
             <summary className="search-filter-control inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-white px-4 text-[0.82rem] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2">
@@ -773,7 +850,7 @@ export default function SearchPageClient({
             </summary>
             <form
               aria-label="Hostel filters"
-              className="search-filter-form mt-3 grid gap-4 rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-4"
+              className="search-filter-form mt-3 grid max-h-[calc(100dvh-9rem)] gap-4 overflow-y-auto overscroll-contain rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-4"
               onSubmit={applyFilters}
             >
               <label className="grid min-w-0 gap-1 text-sm font-medium">

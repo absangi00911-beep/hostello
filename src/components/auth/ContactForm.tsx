@@ -126,7 +126,7 @@ export function ContactForm({
             required
             value={message}
           />
-          <span className="text-[0.78rem] font-normal text-muted">
+          <span className="text-[0.8125rem] font-normal text-muted">
             At least {MESSAGE_MIN} characters · {message.length}/{MESSAGE_MAX}
           </span>
         </label>

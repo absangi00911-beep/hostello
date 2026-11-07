@@ -349,7 +349,7 @@ export default function ProductHome({
               </div>
             )}
             {favoriteError && accountUser?.role === "STUDENT" && (
-              <p className="mt-2 mb-0 text-[0.78rem] leading-[1.4] text-[#a12622]" role="alert">
+              <p className="mt-2 mb-0 text-[0.8125rem] leading-[1.4] text-[#a12622]" role="alert">
                 {favoriteError}{" "}
                 <button
                   className="cursor-pointer border-0 bg-transparent p-0 font-bold underline underline-offset-[2px]"

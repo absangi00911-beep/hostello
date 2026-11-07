@@ -44,7 +44,7 @@ export function AuthPageShell({
   user?: BrowseAccountUser | null;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-canvas">
+    <div className="flex min-h-dvh flex-col bg-canvas">
       <SiteHeader hideOnMobile={false} user={user} />
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6">
         <div className="w-full max-w-[440px] rounded-[16px] border border-line bg-surface p-6 shadow-[0_8px_24px_rgb(15_23_42_/_6%)] sm:p-8">

@@ -150,7 +150,7 @@ function HostelFavoriteControl({
       </button>
       {message && (
         <p
-          className={`hostel-favorite-feedback mt-2 mb-0 text-[0.78rem] leading-[1.4] ${
+          className={`hostel-favorite-feedback mt-2 mb-0 text-[0.8125rem] leading-[1.4] ${
             isError ? "text-[#a12622]" : "text-muted"
           }`}
           role={isError ? "alert" : "status"}
@@ -275,13 +275,13 @@ export function HostelRow({
                   >
                     {hostel.name}
                   </h3>
-                  <p className="hostel-card-price m-0 mb-[5px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.73rem] [font-family:var(--font-inter),_sans-serif]">
+                  <p className="hostel-card-price m-0 mb-[5px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.875rem] [font-family:var(--font-inter),_sans-serif]">
                     PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
-                    <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                    <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-xs">
                       {" / month"}
                     </span>
                   </p>
-                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-[0.68rem]">
+                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-xs">
                     <span className="hostel-card-area inline-flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {hostel.area || hostel.city}
                     </span>

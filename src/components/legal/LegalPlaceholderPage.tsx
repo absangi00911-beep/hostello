@@ -10,7 +10,7 @@ export function LegalPlaceholderPage({
   user?: BrowseAccountUser | null;
 }) {
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-dvh bg-canvas">
       <SiteHeader hideOnMobile={false} user={user} />
       <main className="mx-auto max-w-[720px] px-4 pb-16 pt-6">
         <h1 className="m-0 text-[2rem] font-bold text-ink">{title}</h1>
