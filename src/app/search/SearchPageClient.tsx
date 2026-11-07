@@ -179,9 +179,11 @@ function formatShortDate(value: string): string | null {
 
 function HostelCard({
   hostel,
+  isFirst,
   priority,
 }: {
   hostel: HostelSearchResult;
+  isFirst: boolean;
   priority: boolean;
 }) {
   const image = hostel.coverImage || hostel.images[0];
@@ -197,6 +199,7 @@ function HostelCard({
           <Image
             alt={hostel.name}
             className={hostelCardImageClassName}
+            fetchPriority={isFirst ? "high" : "auto"}
             fill
             loading={priority ? "eager" : "lazy"}
             sizes="(max-width: 720px) 90vw, (max-width: 1100px) 35vw, 25vw"
@@ -1081,8 +1084,9 @@ export default function SearchPageClient({
                   {hostels.map((hostel, index) => (
                     <HostelCard
                       hostel={hostel}
+                      isFirst={index === 0}
                       key={hostel.id}
-                      priority={index < 2}
+                      priority={index < 4}
                     />
                   ))}
                 </div>
