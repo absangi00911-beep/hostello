@@ -138,6 +138,16 @@ describe("POST /api/upload", () => {
     expect(mocks.hostelFindFirst).not.toHaveBeenCalled();
   });
 
+  it("rejects uploads without a hostel ID from non-owner roles", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "student-1", role: "STUDENT" } });
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "Only owners can upload listing images." });
+    expect(mocks.hostelFindFirst).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized hostel ID before a lookup", async () => {
     const response = await POST(request("h".repeat(129)));
 

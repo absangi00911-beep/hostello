@@ -237,6 +237,15 @@ export async function removeHostelFromIndex(hostelId: string) {
 }
 
 /**
+ * Quote a value for a Typesense `filter_by` clause. Backticks are the only
+ * quoting character Typesense recognises and cannot be escaped, so they are
+ * stripped from the value first.
+ */
+export function quoteFilterValue(value: string): string {
+  return `\`${value.replace(/`/g, "")}\``;
+}
+
+/**
  * Search hostels using Typesense
  *
  * @returns TypesenseSearchResult with properly typed hits and metadata
@@ -268,15 +277,16 @@ export async function searchHostels(
     limit = 20,
   } = options;
 
-  // Build filter string
+  // Build filter string. User-supplied values are backtick-quoted so operators
+  // such as && and || inside them cannot add or widen clauses.
   const filters: string[] = ["status:ACTIVE"];
 
   if (city) {
-    filters.push(`city:${city}`);
+    filters.push(`city:${quoteFilterValue(city)}`);
   }
 
   if (gender) {
-    filters.push(`gender:${gender}`);
+    filters.push(`gender:${quoteFilterValue(gender)}`);
   }
 
   if (verified !== undefined) {
@@ -293,7 +303,7 @@ export async function searchHostels(
 
   if (amenities && amenities.length > 0) {
     // For multi-value facet filters, use AND within parentheses to require all amenities
-    const amenityFilters = amenities.map((a) => `amenities:${a}`).join(" && ");
+    const amenityFilters = amenities.map((a) => `amenities:${quoteFilterValue(a)}`).join(" && ");
     filters.push(`(${amenityFilters})`);
   }
 
