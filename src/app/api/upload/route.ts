@@ -110,8 +110,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only owners can upload listing images." }, { status: 403 });
     }
 
-    // Rate limit: 5 uploads per 10 minutes per user (not IP)
-    const rl = await rateLimit(`upload:${session.user.id}`, { limit: 5, windowMs: 10 * 60 * 1000 });
+    // Rate limit per user (not IP). The listing form uploads one file per
+    // request and allows MAX_IMAGES_PER_HOSTEL photos, so the cap must cover a
+    // full gallery plus a few retries.
+    const rl = await rateLimit(`upload:${session.user.id}`, {
+      limit: MAX_IMAGES_PER_HOSTEL + 5,
+      windowMs: 10 * 60 * 1000,
+    });
     if (!rl.ok) {
       return NextResponse.json({ error: "Upload limit reached. Try again later." }, { status: 429 });
     }

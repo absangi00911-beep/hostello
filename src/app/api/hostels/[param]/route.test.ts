@@ -105,6 +105,7 @@ function paramsFor(param: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("R2_PUBLIC_URL", "https://images.hostello.test");
   vi.mocked(rateLimit).mockResolvedValue({ ok: true, remaining: 29, resetAt: Date.now() + 60 * 60 * 1000 });
   vi.mocked(db.hostel.updateMany).mockResolvedValue({ count: 1 } as any);
   transactionRoom.findMany.mockResolvedValue([]);
@@ -333,6 +334,19 @@ describe("PATCH /api/hostels/[param]", () => {
     expect(res.status).toBe(409);
     expect(transactionRoom.deleteMany).not.toHaveBeenCalled();
     expect(removeHostelIndex).not.toHaveBeenCalled();
+  });
+
+  it("rejects listing photos that are not on the configured image bucket", async () => {
+    const res = await PATCH(
+      patchReq(listingEditBody({
+        images: ["https://pub-attacker.r2.dev/photo.jpg"],
+        coverImage: "https://pub-attacker.r2.dev/photo.jpg",
+      })),
+      paramsFor("hst_1"),
+    );
+
+    expect(res.status).toBe(400);
+    expect(db.hostel.updateMany).not.toHaveBeenCalled();
   });
 
   it("returns HTTP 409 when a capacity edit would invalidate an active seat hold", async () => {

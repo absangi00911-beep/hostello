@@ -1,4 +1,6 @@
-import { getSafeErrorSummary } from "@/lib/safe-error";
+import { findUntrustedListingImage, UNTRUSTED_LISTING_IMAGE_ERROR } from "@/lib/listing-images";
+import { getSafeErrorSummary } from "@/lib/safe-error";
+
 import { runAfterResponse } from "@/lib/background";
 import { readBoundedJson } from "@/lib/bounded-json";
 // Path: src/app/api/hostels/[param]/route.ts
@@ -153,6 +155,10 @@ export async function PATCH(
       }
 
       const listing = parsed.data;
+      const untrustedImage = findUntrustedListingImage(listing.images, listing.coverImage);
+      if (untrustedImage) {
+        return NextResponse.json({ error: UNTRUSTED_LISTING_IMAGE_ERROR }, { status: 400 });
+      }
       const inventoryTotals = deriveHostelInventoryTotals(listing.roomTypes);
       let transactionResult: { kind: "changed" | "updated" };
       try {
