@@ -1,11 +1,14 @@
 /** Verify requests delivered by Upstash QStash. */
 
 import { Receiver } from "@upstash/qstash";
-import { timingSafeEqual } from "node:crypto";
 import { type NextRequest } from "next/server";
+import { safeSecretEqual } from "@/lib/secret-compare";
 
 interface VerifyOptions {
-  /** Accept the shared CRON_SECRET Bearer credential as a fallback. */
+  /**
+   * Accept the shared CRON_SECRET Bearer credential as a fallback.
+   * Off by default: each caller must opt in explicitly.
+   */
   acceptBearerToken?: boolean;
   /** Raw body text already read under a caller-specific byte limit. */
   body?: string;
@@ -17,9 +20,8 @@ function hasValidBearerToken(request: NextRequest): boolean {
 
   if (!cronSecret || !authorization) return false;
 
-  const provided = Buffer.from(authorization);
-  const expected = Buffer.from(`Bearer ${cronSecret}`);
-  return provided.length === expected.length && timingSafeEqual(provided, expected);
+  // Hash-then-compare, so neither a length mismatch nor timing reveals the secret.
+  return safeSecretEqual(authorization, `Bearer ${cronSecret}`);
 }
 
 /**
@@ -31,7 +33,7 @@ export async function verifyUpstashRequest(
   request: NextRequest,
   options: VerifyOptions = {},
 ): Promise<true> {
-  const { acceptBearerToken = true } = options;
+  const { acceptBearerToken = false } = options;
   const signature = request.headers.get("upstash-signature");
   const currentSigningKey = process.env.QSTASH_CURRENT_SIGNING_KEY;
   const nextSigningKey = process.env.QSTASH_NEXT_SIGNING_KEY;
@@ -51,7 +53,10 @@ export async function verifyUpstashRequest(
         upstashRegion: request.headers.get("upstash-region") ?? undefined,
       });
 
-      if (isValid) return true;
+      // `verify` throws on failure today; treat a false result the same way so
+      // a library change can never turn a bad signature into the Bearer path.
+      if (!isValid) throw new Error("Request verification failed");
+      return true;
     } catch {
       // A present but invalid QStash signature must not fall back to a static token.
       throw new Error("Request verification failed");

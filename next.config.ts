@@ -5,6 +5,23 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 const __impeccableLiveDev =
   process.env.NODE_ENV === "development" ? " http://localhost:8400" : "";
 
+// The project's own public image bucket, taken from R2_PUBLIC_URL. When it is
+// set, only that exact host may serve images. A wildcard on r2.dev would also
+// allow every other Cloudflare user's public bucket, and would block a custom
+// domain. When it is not set, keep the previous wildcard so nothing regresses.
+function getR2ImageSource(): { host: string; hostname: string; port: string } | null {
+  try {
+    const url = new URL(process.env.R2_PUBLIC_URL ?? "");
+    if (url.protocol !== "https:") return null;
+    return { host: url.host, hostname: url.hostname, port: url.port };
+  } catch {
+    return null;
+  }
+}
+
+const r2Image = getR2ImageSource();
+const r2CspSource = r2Image ? `https://${r2Image.host}` : "https://*.r2.dev";
+
 // Environment-aware CSP configuration
 // In development: Allow unsafe-eval and unsafe-inline (required for Next.js HMR)
 // In production: Allow unsafe-inline for Next.js internal scripts (hydration, error boundaries)
@@ -51,7 +68,7 @@ const securityHeaders = [
       `script-src ${getScriptSrc()}${__impeccableLiveDev}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' blob: data: https://images.unsplash.com https://*.r2.dev https://*.cloudflare.com https://*.tile.openstreetmap.org",
+      `img-src 'self' blob: data: https://images.unsplash.com ${r2CspSource} https://*.cloudflare.com https://*.tile.openstreetmap.org`,
       // API connections — includes Safepay, JazzCash, and EasyPaisa
       [
         "connect-src 'self'",
@@ -93,7 +110,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "pub-*.r2.dev" },
+      r2Image
+        ? { protocol: "https", hostname: r2Image.hostname, ...(r2Image.port ? { port: r2Image.port } : {}) }
+        : { protocol: "https", hostname: "pub-*.r2.dev" },
       { protocol: "https", hostname: "*.cloudflare.com" },
       // OAuth providers for user avatars
       { protocol: "https", hostname: "lh3.googleusercontent.com" },

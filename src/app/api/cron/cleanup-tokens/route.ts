@@ -7,7 +7,7 @@ import { createOperationalLogContext } from "@/lib/operational-logger";
 
 export async function POST(req: NextRequest) {
   try {
-    await verifyUpstashRequest(req);
+    await verifyUpstashRequest(req, { acceptBearerToken: true });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

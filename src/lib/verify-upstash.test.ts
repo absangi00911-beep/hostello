@@ -109,7 +109,19 @@ describe("verifyUpstashRequest", () => {
       headers: { authorization: "Bearer test-cron-secret" },
     });
 
-    await expect(verifyUpstashRequest(bearerRequest)).resolves.toBe(true);
+    await expect(verifyUpstashRequest(bearerRequest, { acceptBearerToken: true })).resolves.toBe(true);
+  });
+
+  it("rejects a valid Bearer secret unless the caller opts in", async () => {
+    process.env.CRON_SECRET = "test-cron-secret";
+    const bearerRequest = new NextRequest(url, {
+      method: "POST",
+      headers: { authorization: "Bearer test-cron-secret" },
+    });
+
+    await expect(verifyUpstashRequest(bearerRequest)).rejects.toThrow("Request verification failed");
+    await expect(verifyUpstashRequest(bearerRequest, { acceptBearerToken: false }))
+      .rejects.toThrow("Request verification failed");
   });
 
   it("does not accept a bad Bearer token without a valid QStash signature", async () => {
@@ -119,7 +131,8 @@ describe("verifyUpstashRequest", () => {
       headers: { authorization: "Bearer wrong-secret" },
     });
 
-    await expect(verifyUpstashRequest(bearerRequest)).rejects.toThrow("Request verification failed");
+    await expect(verifyUpstashRequest(bearerRequest, { acceptBearerToken: true }))
+      .rejects.toThrow("Request verification failed");
   });
 
   it("does not let a valid Bearer token bypass an invalid QStash signature", async () => {
@@ -135,6 +148,7 @@ describe("verifyUpstashRequest", () => {
       body: "{}",
     });
 
-    await expect(verifyUpstashRequest(invalidSignedRequest)).rejects.toThrow("Request verification failed");
+    await expect(verifyUpstashRequest(invalidSignedRequest, { acceptBearerToken: true }))
+      .rejects.toThrow("Request verification failed");
   });
 });
