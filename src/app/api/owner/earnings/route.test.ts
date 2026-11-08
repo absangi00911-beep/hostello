@@ -26,6 +26,19 @@ vi.mock("@/lib/payouts", () => ({
 
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
+const notify = vi.hoisted(() => ({
+  sendEmail: vi.fn(),
+  runAfterResponse: vi.fn((_name: string, task: () => unknown) => { void task(); }),
+  logOperationalEvent: vi.fn(),
+}));
+vi.mock("@/lib/email", () => ({ sendEmail: notify.sendEmail, escapeHtml: (v: string) => v }));
+vi.mock("@/lib/background", () => ({ runAfterResponse: notify.runAfterResponse }));
+vi.mock("@/lib/operational-logger", () => ({ logOperationalEvent: notify.logOperationalEvent }));
+vi.mock("@/lib/app-url", () => ({
+  getAppOrigin: () => "https://hostello.test",
+  getAppUrl: () => "https://hostello.test",
+}));
+
 import { GET, PATCH } from "./route";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
@@ -213,5 +226,77 @@ describe("PATCH /api/owner/earnings", () => {
     );
     expect(res.status).toBe(200);
     expect(body.bankDetails.bankName).toBe("HBL");
+  });
+
+  describe("owner notification", () => {
+    const previous = {
+      name: "Jane Owner",
+      email: "jane@owner.example",
+      bankAccountTitle: "Jane Owner",
+      bankAccountNumber: "PK00HABB0000000011111111",
+      bankName: "HBL",
+    };
+    const submitted = {
+      bankAccountTitle: "Jane Owner",
+      bankAccountNumber: "PK00MEZN0000000099999999",
+      bankName: "Meezan",
+    };
+
+    beforeEach(() => {
+      vi.mocked(auth).mockResolvedValue(ownerSession());
+      vi.mocked(db.user.findUnique).mockResolvedValue(previous as any);
+      vi.mocked(db.user.update).mockResolvedValue(submitted as any);
+    });
+
+    it("emails the account owner when the details change, without the full account number", async () => {
+      const res = await PATCH(patchRequest(submitted));
+
+      expect(res.status).toBe(200);
+      expect(notify.sendEmail).toHaveBeenCalledTimes(1);
+      const mail = notify.sendEmail.mock.calls[0][0];
+      expect(mail.to).toBe("jane@owner.example");
+      expect(mail.html).toContain("ending 9999");
+      expect(mail.html).toContain("ending 1111");
+      expect(mail.html).not.toContain(submitted.bankAccountNumber);
+      expect(mail.html).not.toContain(previous.bankAccountNumber);
+      expect(mail.html).toContain("https://hostello.test/forgot-password");
+      expect(notify.logOperationalEvent).toHaveBeenCalledWith(
+        "info", "owner.bank_details.changed", { owner_id: "usr_owner_1" },
+      );
+    });
+
+    it("stays quiet when the owner re-saves identical details", async () => {
+      vi.mocked(db.user.update).mockResolvedValue({
+        bankAccountTitle: previous.bankAccountTitle,
+        bankAccountNumber: previous.bankAccountNumber,
+        bankName: previous.bankName,
+      } as any);
+
+      const res = await PATCH(patchRequest(previous));
+
+      expect(res.status).toBe(200);
+      expect(notify.sendEmail).not.toHaveBeenCalled();
+      expect(notify.logOperationalEvent).not.toHaveBeenCalled();
+    });
+
+    it("also notifies when details are set for the first time", async () => {
+      vi.mocked(db.user.findUnique).mockResolvedValue({
+        ...previous, bankAccountTitle: null, bankAccountNumber: null, bankName: null,
+      } as any);
+
+      await PATCH(patchRequest(submitted));
+
+      expect(notify.sendEmail).toHaveBeenCalledTimes(1);
+      expect(notify.sendEmail.mock.calls[0][0].html).toContain("none");
+    });
+
+    it("still saves the details if sending the email fails", async () => {
+      notify.sendEmail.mockRejectedValueOnce(new Error("resend down"));
+
+      const res = await PATCH(patchRequest(submitted));
+
+      expect(res.status).toBe(200);
+      expect(db.user.update).toHaveBeenCalledTimes(1);
+    });
   });
 });

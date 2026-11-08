@@ -8,6 +8,11 @@ import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { parsePagination } from "@/lib/pagination";
 import { rateLimit } from "@/lib/rate-limit";
+import { getAppOrigin } from "@/lib/app-url";
+import { runAfterResponse } from "@/lib/background";
+import { sendEmail } from "@/lib/email";
+import { bankDetailsChangedEmail, maskAccountNumber } from "@/lib/email-templates/bank-details-changed";
+import { logOperationalEvent } from "@/lib/operational-logger";
 
 const OWNER_EARNINGS_READS_PER_MINUTE = 30;
 
@@ -124,11 +129,39 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
+    const previous = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true, bankAccountTitle: true, bankAccountNumber: true, bankName: true },
+    });
+
     const user = await db.user.update({
       where: { id: session.user.id },
       data: parsed.data,
       select: { bankAccountTitle: true, bankAccountNumber: true, bankName: true },
     });
+
+    // Payouts go to whatever is on file, so a change must never be silent: tell
+    // the account owner, so a hijacked session cannot redirect money unnoticed.
+    const changed =
+      previous?.bankAccountTitle !== user.bankAccountTitle ||
+      previous?.bankAccountNumber !== user.bankAccountNumber ||
+      previous?.bankName !== user.bankName;
+    if (changed) {
+      logOperationalEvent("info", "owner.bank_details.changed", { owner_id: session.user.id });
+      if (previous?.email) {
+        const notice = bankDetailsChangedEmail({
+          name: previous.name,
+          bankName: user.bankName ?? "",
+          previousAccount: previous.bankAccountNumber,
+          newAccount: maskAccountNumber(user.bankAccountNumber),
+          changedAt: new Date(),
+          resetUrl: `${getAppOrigin()}/forgot-password`,
+        });
+        void runAfterResponse("email.bank_details_changed", () =>
+          sendEmail({ to: previous.email, ...notice }),
+        );
+      }
+    }
 
     return NextResponse.json({ bankDetails: user });
   } catch (err) {
