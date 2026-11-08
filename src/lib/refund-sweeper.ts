@@ -11,9 +11,19 @@ export async function sweepCancelledRefunds(limit = BATCH_SIZE) {
       status: "CANCELLED",
       paymentStatus: { in: ["PAID", "PARTIALLY_REFUNDED"] },
       refundState: { in: ["NONE", "PARTIALLY_REFUNDED"] },
+      // Only bookings where part of the approved refund is still owed. A
+      // finished partial-policy refund stays PARTIALLY_REFUNDED forever, so
+      // without this it would match on every run, sort to the front of the
+      // oldest-first batch (its updatedAt never changes), and once enough
+      // accumulate they would fill the whole batch and starve every booking
+      // that genuinely needs a refund.
+      refundedAmount: { lt: db.booking.fields.total },
       OR: [
         { cancellationRefundAmount: null },
-        { cancellationRefundAmount: { gt: 0 } },
+        {
+          cancellationRefundAmount: { gt: 0 },
+          refundedAmount: { lt: db.booking.fields.cancellationRefundAmount },
+        },
       ],
     },
     orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
