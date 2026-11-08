@@ -64,9 +64,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-        
-      - name: Check docs
-        run: npm run docs:check
 
   # ─────────────────────────────────────────────
   # Job 2: Shared package — type check

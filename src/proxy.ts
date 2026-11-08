@@ -27,9 +27,6 @@ const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
 export function proxy(req: NextRequest) {
   const { pathname } = new URL(req.url);
 
-  // -- Bearer Token Support (Mobile) --
-  // Mobile clients send the JWT in the Authorization header. We detect it
-  // and inject it into the cookies so NextAuth's auth() helper can find it.
   // -- CSRF protection --
   // Applied to every state-mutating API route that isn't exempt.
   const isMethodBasedExempt = METHOD_BASED_CSRF_EXEMPT.some(
