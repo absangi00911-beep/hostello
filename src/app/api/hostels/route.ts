@@ -1,5 +1,6 @@
 // Path: src/app/api/hostels/route.ts
 
+import { findUntrustedListingImage, UNTRUSTED_LISTING_IMAGE_ERROR } from "@/lib/listing-images";
 import { type NextRequest, NextResponse } from "next/server";
 import { hostelCreateSchema } from "@hostello/shared";
 import { auth } from "@/lib/auth/config";
@@ -75,6 +76,11 @@ export async function POST(req: NextRequest) {
         { error: "Validation failed.", details: parsed.error.flatten() },
         { status: 400 },
       );
+    }
+
+    const untrustedImage = findUntrustedListingImage(parsed.data.images, parsed.data.coverImage);
+    if (untrustedImage) {
+      return NextResponse.json({ error: UNTRUSTED_LISTING_IMAGE_ERROR }, { status: 400 });
     }
 
     let result:
