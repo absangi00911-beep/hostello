@@ -102,8 +102,8 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
     return (
       <div className="grid gap-4">
         <AuthNotice tone="success">
-          Account created. We sent a verification link to {createdEmail}. Open it
-          to verify your email, then log in.
+          Check your inbox. We sent an email to {createdEmail}. Follow the link
+          in it to verify your email, then log in.
         </AuthNotice>
         <Link className={authButtonClassName} href="/login">
           Go to log in

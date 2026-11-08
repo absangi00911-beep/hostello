@@ -9,10 +9,24 @@ import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/email-templates/welcome";
 import { verificationEmail } from "@/lib/email-templates/verification";
 import { rateLimit, getIp } from "@/lib/rate-limit";
-import { randomBytes } from "crypto";
+import { createHmac, randomBytes } from "crypto";
+import { accountExistsEmail } from "@/lib/email-templates/account-exists";
 import { hashOneTimeToken } from "@/lib/one-time-token";
 import { getAppOrigin } from "@/lib/app-url";
 import { readBoundedJson } from "@/lib/bounded-json";
+
+// One response for every valid signup so the endpoint cannot be used to find
+// out which addresses are registered. Do not add fields that differ by case.
+const SIGNUP_OK_MESSAGE = "Account created successfully.";
+
+function accountExistsThrottleKey(email: string): string {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error("Authentication service unavailable.");
+  const digest = createHmac("sha256", secret)
+    .update(`signup-exists\0${email.trim().toLowerCase()}`)
+    .digest("hex");
+  return `signup-exists:${digest}`;
+}
 
 export async function POST(req: NextRequest) {
   // 5 signups per IP per hour
@@ -40,10 +54,27 @@ export async function POST(req: NextRequest) {
 
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) {
-      return NextResponse.json(
-        { error: "An account with this email already exists." },
-        { status: 409 }
-      );
+      // Do the same expensive hash as a real signup so response time does not
+      // reveal that the address is registered.
+      await hash(password, 12);
+
+      // Tell the real owner instead of the requester. Limited to one notice
+      // per address per hour so signup cannot be used to spam someone's inbox.
+      const origin = getAppOrigin();
+      const notice = accountExistsEmail({
+        name: existing.name,
+        loginUrl: `${origin}/login`,
+        resetUrl: `${origin}/forgot-password`,
+      });
+      void runAfterResponse("email.account_exists", async () => {
+        const limit = await rateLimit(accountExistsThrottleKey(existing.email), {
+          limit: 1,
+          windowMs: 60 * 60 * 1000,
+        });
+        if (limit.ok) await sendEmail({ to: existing.email, ...notice });
+      });
+
+      return NextResponse.json({ message: SIGNUP_OK_MESSAGE }, { status: 201 });
     }
 
     const hashed = await hash(password, 12);
@@ -91,10 +122,7 @@ export async function POST(req: NextRequest) {
     const welcomeTemplate = welcomeEmail({ name: user.name, role: user.role as "STUDENT" | "OWNER" });
     void runAfterResponse("email.welcome", () => sendEmail({ to: user.email, ...welcomeTemplate }));
 
-    return NextResponse.json(
-      { data: user, message: "Account created successfully." },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: SIGNUP_OK_MESSAGE }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/auth/signup]", getSafeErrorSummary(err));
     return NextResponse.json(

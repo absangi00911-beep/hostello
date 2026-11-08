@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   })),
   welcomeEmail: vi.fn(() => ({ subject: "Welcome", html: "Welcome", text: "Welcome" })),
   getAppOrigin: vi.fn(() => "https://hostello.test"),
+  accountExistsEmail: vi.fn(() => ({ subject: "Already registered", html: "exists", text: "exists" })),
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -37,6 +38,7 @@ vi.mock("@/lib/email", () => ({ sendEmail: mocks.sendEmail }));
 vi.mock("@/lib/email-templates/verification", () => ({ verificationEmail: mocks.verificationEmail }));
 vi.mock("@/lib/email-templates/welcome", () => ({ welcomeEmail: mocks.welcomeEmail }));
 vi.mock("@/lib/app-url", () => ({ getAppOrigin: mocks.getAppOrigin }));
+vi.mock("@/lib/email-templates/account-exists", () => ({ accountExistsEmail: mocks.accountExistsEmail }));
 
 import { POST } from "@/app/api/auth/signup/route";
 import { rateLimit } from "@/lib/rate-limit";
@@ -54,7 +56,10 @@ describe("POST /api/auth/signup", () => {
     mocks.verificationTokenCreate.mockResolvedValue({});
     mocks.hash.mockResolvedValue("password-hash");
     mocks.sendEmail.mockResolvedValue(undefined);
+    vi.stubEnv("AUTH_SECRET", "test-auth-secret");
   });
+
+  afterEach(() => vi.unstubAllEnvs());
 
   it("emails the raw verification token but stores only its SHA-256 digest", async () => {
     const response = await POST(new NextRequest("https://hostello.test/api/auth/signup", {
@@ -115,5 +120,69 @@ describe("POST /api/auth/signup", () => {
     expect(response.status).toBe(201);
     expect(mocks.verificationEmail).not.toHaveBeenCalled();
     expect(mocks.welcomeEmail).toHaveBeenCalled();
+  });
+
+  describe("when the email is already registered", () => {
+    const EXISTING = { id: "user-9", name: "Existing Owner", email: USER.email, role: "OWNER" as const };
+    const signup = () =>
+      POST(new NextRequest("https://hostello.test/api/auth/signup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: "Someone Else", email: USER.email, password: "A-secure-password-123", role: "STUDENT" }),
+      }));
+
+    beforeEach(() => mocks.userFindUnique.mockResolvedValue(EXISTING));
+
+    it("returns exactly the response a new signup gets and creates nothing", async () => {
+      const existingResponse = await signup();
+      const existingBody = await existingResponse.json();
+
+      mocks.userFindUnique.mockResolvedValue(null);
+      const newResponse = await signup();
+      const newBody = await newResponse.json();
+
+      expect(existingResponse.status).toBe(201);
+      expect(existingResponse.status).toBe(newResponse.status);
+      expect(existingBody).toEqual(newBody);
+      expect(JSON.stringify(existingBody)).not.toContain(EXISTING.id);
+      expect(mocks.userCreate).toHaveBeenCalledTimes(1); // only the genuinely new signup
+    });
+
+    it("pays the same password-hash cost so timing does not reveal the account", async () => {
+      await signup();
+
+      expect(mocks.hash).toHaveBeenCalledWith("A-secure-password-123", 12);
+    });
+
+    it("notifies the existing owner, not the requester, and sends no verification or welcome email", async () => {
+      await signup();
+      await vi.waitFor(() => expect(mocks.sendEmail).toHaveBeenCalledTimes(1));
+
+      expect(mocks.accountExistsEmail).toHaveBeenCalledWith({
+        name: EXISTING.name,
+        loginUrl: "https://hostello.test/login",
+        resetUrl: "https://hostello.test/forgot-password",
+      });
+      expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: EXISTING.email }));
+      expect(mocks.verificationEmail).not.toHaveBeenCalled();
+      expect(mocks.welcomeEmail).not.toHaveBeenCalled();
+      expect(mocks.verificationTokenCreate).not.toHaveBeenCalled();
+    });
+
+    it("sends at most one notice per address per hour, keyed without the raw email", async () => {
+      vi.mocked(rateLimit)
+        .mockResolvedValueOnce({ ok: true, remaining: 4, resetAt: 0 }) // per-IP signup limit
+        .mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: 1 }); // per-address notice limit
+
+      const response = await signup();
+      await vi.waitFor(() => expect(rateLimit).toHaveBeenCalledTimes(2));
+
+      expect(response.status).toBe(201);
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      const [key, options] = vi.mocked(rateLimit).mock.calls[1];
+      expect(String(key)).toMatch(/^signup-exists:[a-f0-9]{64}$/);
+      expect(String(key)).not.toContain("student");
+      expect(options).toEqual({ limit: 1, windowMs: 60 * 60 * 1000 });
+    });
   });
 });
