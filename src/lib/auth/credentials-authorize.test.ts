@@ -175,4 +175,40 @@ describe("authorizeCredentials", () => {
 
     expect(db.user.findUnique).not.toHaveBeenCalled();
   });
+
+  it("caps attempts against one email across all source IPs", async () => {
+    const emailKey = createHmac("sha256", "test-auth-secret")
+      .update(`login-email\0${user.email.trim().toLowerCase()}`)
+      .digest("hex");
+
+    await authorizeCredentials({ email: user.email, password: "password123" }, request);
+    vi.mocked(getIp).mockReturnValue("198.51.100.77");
+    await authorizeCredentials({ email: user.email, password: "password123" }, request);
+
+    const emailCalls = vi.mocked(rateLimit).mock.calls.filter(([key]) => String(key).startsWith("login-email:"));
+    expect(emailCalls).toHaveLength(2);
+    expect(emailCalls[0]).toEqual([`login-email:${emailKey}`, { limit: 30, windowMs: 15 * 60 * 1000 }]);
+    // Same key from two different IPs: the bucket is shared, and never contains the raw email.
+    expect(emailCalls[1][0]).toBe(emailCalls[0][0]);
+    expect(String(emailCalls[0][0])).not.toContain("student");
+  });
+
+  it("does not query the account when the cross-IP email limit is exhausted", async () => {
+    vi.mocked(rateLimit)
+      .mockResolvedValueOnce({ ok: true, remaining: 9, resetAt: 0 })
+      .mockResolvedValueOnce({ ok: true, remaining: 4, resetAt: 0 })
+      .mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: 1 });
+
+    await expect(authorizeCredentials({ email: user.email, password: "password123" }, request))
+      .rejects.toThrow("Too many login attempts");
+
+    expect(db.user.findUnique).not.toHaveBeenCalled();
+    expect(compare).not.toHaveBeenCalled();
+    expect(logOperationalEvent).toHaveBeenCalledWith(
+      "warn",
+      "auth.login.throttled",
+      expect.objectContaining({ limit_scope: "email" }),
+      { request_id: "req_test" },
+    );
+  });
 });

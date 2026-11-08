@@ -41,8 +41,9 @@ Push to main
   ├─ CI runs Web and Shared package checks
   └─ Production workflow runs its Web quality gate
        └─ Approve production environment → pull Vercel Production environment
+            → build for production → snapshot database
             → apply database migrations from the GitHub environment secret
-            → build for production → deploy to Vercel
+            → deploy to Vercel
 ```
 
 - CI is defined in [workflows/ci.yml](./workflows/ci.yml). Preview deployments
@@ -53,7 +54,10 @@ Push to main
   type-check, tests, and lint before migrating and deploying. After the
   production environment approval, the migration uses
   `HOSTELLO_PRODUCTION_DATABASE_URL` from that GitHub environment. It runs
-  before the build and deployment.
+  after the build succeeds and before the deployment, so a failed build never
+  changes the database. Migrations must stay backward compatible with the
+  code that is still serving traffic (expand first, contract in a later
+  release).
 - Vercel uses `node scripts/vercel-build.mjs` as its build command. It runs
   `npm run build` (Prisma client generation and `next build`) and does not
   apply database migrations.

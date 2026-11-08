@@ -11,6 +11,7 @@ import {
 } from "@/lib/operational-logger";
 import {
   LOGIN_ACCOUNT_LIMIT,
+  LOGIN_EMAIL_GLOBAL_LIMIT,
   LOGIN_IP_LIMIT,
   LOGIN_WINDOW_MS,
   loginIpLimitKey,
@@ -36,6 +37,15 @@ function hashLoginAccount(email: string, clientIp: string): string {
 
   return createHmac("sha256", secret)
     .update(`${email.trim().toLowerCase()}\0${clientIp}`)
+    .digest("hex");
+}
+
+function hashLoginEmail(email: string): string {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error("Authentication service unavailable.");
+
+  return createHmac("sha256", secret)
+    .update(`login-email\0${email.trim().toLowerCase()}`)
     .digest("hex");
 }
 
@@ -91,6 +101,26 @@ export async function checkCredentialLoginAccountLimit(
   return result.ok;
 }
 
+/** Consume a pseudonymous per-email bucket shared by every source IP. */
+export async function checkCredentialLoginEmailLimit(
+  email: string,
+  request: Request,
+): Promise<boolean> {
+  const result = await rateLimit(`login-email:${hashLoginEmail(email)}`, {
+    limit: LOGIN_EMAIL_GLOBAL_LIMIT,
+    windowMs: LOGIN_WINDOW_MS,
+  });
+
+  if (!result.ok) {
+    logOperationalEvent("warn", "auth.login.throttled", {
+      limit_scope: "email",
+      ...getLogIdentifiers(getIp(request), email),
+    }, createOperationalLogContext(request));
+  }
+
+  return result.ok;
+}
+
 export async function authorizeCredentials(
   credentials: Partial<Record<string, unknown>>,
   request: Request,
@@ -103,6 +133,9 @@ export async function authorizeCredentials(
     throw new CredentialLoginRateLimitError();
   }
   if (!(await checkCredentialLoginAccountLimit(email, request))) {
+    throw new CredentialLoginRateLimitError();
+  }
+  if (!(await checkCredentialLoginEmailLimit(email, request))) {
     throw new CredentialLoginRateLimitError();
   }
 
