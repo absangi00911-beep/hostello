@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/price-alert.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailTheme, emailSubject } from "./layout";
 
 interface PriceAlertEmailProps {
   userName: string;
@@ -71,7 +71,7 @@ export function priceAlertEmail({
   `;
 
   return {
-    subject: `Price alert: ${escapedHostelName} dropped below your target!`,
+    subject: emailSubject(`Price alert: ${hostelName} dropped below your target!`),
     html: emailLayout(content, `${escapedHostelName} price just dropped!`),
   };
 }

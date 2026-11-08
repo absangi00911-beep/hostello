@@ -1,7 +1,7 @@
 // Path: src/lib/email-templates/booking.ts
 
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailRow, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailRow, emailTheme, emailSubject } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface BookingEmailProps {
@@ -65,7 +65,7 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
         ${emailRow("Check-out", formatDate(checkOut))}
         ${emailRow("Duration", `${months} month${months !== 1 ? "s" : ""}`)}
         ${emailRow("Total", formatPrice(total))}
-        ${emailRow("Payment via", paymentMethod)}
+        ${emailRow("Payment via", escapeHtml(paymentMethod))}
       </tbody>
     </table>
 
@@ -83,7 +83,7 @@ export function bookingNotificationEmail(props: BookingEmailProps) {
 
   return {
     to: props.ownerEmail,
-    subject: `New booking request for ${escapedHostelName}`,
+    subject: emailSubject(`New booking request for ${hostelName}`),
     html: emailLayout(content, `${escapedStudentName} wants to book ${escapedHostelName}`),
   };
 }
@@ -113,7 +113,7 @@ export function bookingOwnerReminderEmail(props: BookingEmailProps & { responseD
 
   return {
     to: props.ownerEmail,
-    subject: `Response needed by ${deadline} — ${escapedHostelName}`,
+    subject: emailSubject(`Response needed by ${deadline} — ${props.hostelName}`),
     html: emailLayout(content, `A student is waiting for your response.`),
   };
 }
@@ -150,7 +150,7 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
         ${emailRow("Check-out", formatDate(checkOut))}
         ${emailRow("Duration", `${months} month${months !== 1 ? "s" : ""}`)}
         ${emailRow("Total", formatPrice(total))}
-        ${emailRow("Payment via", paymentMethod)}
+        ${emailRow("Payment via", escapeHtml(paymentMethod))}
       </tbody>
     </table>
 
@@ -169,7 +169,7 @@ export function bookingConfirmationEmail(props: BookingEmailProps) {
 
   return {
     to: props.studentEmail,
-    subject: `Your booking request for ${escapedHostelName} — ref #${shortId}`,
+    subject: emailSubject(`Your booking request for ${hostelName} — ref #${shortId}`),
     html: emailLayout(content, `Your booking request has been sent.`),
   };
 }

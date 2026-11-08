@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/listing-status.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailTheme, emailSubject } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface ListingStatusEmailProps {
@@ -49,7 +49,7 @@ export function listingApprovedEmail({
 
   return {
     to: ownerEmail,
-    subject: `Your hostel is now live — ${escapedHostelName}`,
+    subject: emailSubject(`Your hostel is now live — ${hostelName}`),
     html: emailLayout(content, `Your listing has been approved`),
   };
 }
@@ -94,7 +94,7 @@ export function listingSuspendedEmail({
 
   return {
     to: ownerEmail,
-    subject: `Your listing has been suspended — ${escapedHostelName}`,
+    subject: emailSubject(`Your listing has been suspended — ${hostelName}`),
     html: emailLayout(content, `Your listing has been suspended`),
   };
 }
