@@ -1,7 +1,7 @@
 // Path: src/lib/email-templates/welcome.ts
 
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailTheme, emailSubject } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface WelcomeEmailProps {
@@ -47,7 +47,7 @@ export function welcomeEmail({ name, role }: WelcomeEmailProps) {
   `;
 
   return {
-    subject: `Welcome to HostelLo, ${firstName}!`,
+    subject: emailSubject(`Welcome to HostelLo, ${name.split(" ")[0]}!`),
     html: emailLayout(content, `Your HostelLo account is ready.`),
   };
 }

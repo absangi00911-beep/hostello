@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/new-listing.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailRow, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailRow, emailTheme, emailSubject } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 interface NewListingEmailProps {
@@ -43,7 +43,7 @@ export function newListingAdminEmail(props: NewListingEmailProps) {
         ${emailRow("City", escapedCity)}
         ${emailRow("Price", `${formatPrice(pricePerMonth)} / month`)}
         ${emailRow("Owner", escapedOwnerName)}
-        ${emailRow("Owner email", ownerEmail)}
+        ${emailRow("Owner email", escapeHtml(ownerEmail))}
       </tbody>
     </table>
 
@@ -57,7 +57,7 @@ export function newListingAdminEmail(props: NewListingEmailProps) {
 
   return {
     to: process.env.SUPPORT_EMAIL ?? "support@hostello.pk",
-    subject: `New listing pending review: ${escapedHostelName} (${escapedCity})`,
+    subject: emailSubject(`New listing pending review: ${hostelName} (${city})`),
     html: emailLayout(content, `${escapedHostelName} needs your review`),
   };
 }

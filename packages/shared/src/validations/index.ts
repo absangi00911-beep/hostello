@@ -235,10 +235,12 @@ export const searchParamsSchema = z.object({
   q: z.string().optional(),
   city: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE", "MIXED"]).optional(),
-  minPrice: z.coerce.number().optional(),
-  maxPrice: z.coerce.number().optional(),
+  minPrice: z.coerce.number().finite().nonnegative().optional(),
+  maxPrice: z.coerce.number().finite().nonnegative().optional(),
   amenities: z.array(z.string()).optional(),
-  verified: z.coerce.boolean().optional(),
+  // Not z.coerce.boolean(): that turns every non-empty string, including
+  // "false", into true.
+  verified: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
   sort: z.enum(["price_asc", "price_desc", "rating", "newest"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),

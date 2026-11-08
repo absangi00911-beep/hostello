@@ -1,6 +1,6 @@
 // Path: src/lib/email-templates/booking-status.ts
 import { escapeHtml } from "@/lib/email";
-import { emailLayout, emailButton, emailTheme } from "./layout";
+import { emailLayout, emailButton, emailTheme, emailSubject } from "./layout";
 import { getAppUrl } from "@/lib/app-url";
 
 const APP_URL = getAppUrl();
@@ -60,9 +60,11 @@ export function bookingStatusEmail({
 
   return {
     to:      studentEmail,
-    subject: confirmed
-      ? `Booking confirmed — ${escapedHostelName} (#${shortId})`
-      : `Booking request declined — ${escapedHostelName} (#${shortId})`,
+    subject: emailSubject(
+      confirmed
+        ? `Booking confirmed — ${hostelName} (#${shortId})`
+        : `Booking request declined — ${hostelName} (#${shortId})`,
+    ),
     html: emailLayout(content),
   };
 }
@@ -103,7 +105,7 @@ export function bookingRefundedEmail({
 
   return {
     to: studentEmail,
-    subject: `Refund processed — ${escapedHostelName} (#${shortId})`,
+    subject: emailSubject(`Refund processed — ${hostelName} (#${shortId})`),
     html: emailLayout(content),
   };
 }

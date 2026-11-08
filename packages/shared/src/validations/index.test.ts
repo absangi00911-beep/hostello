@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingSchema, hostelCreateSchema } from "./index";
+import { bookingSchema, hostelCreateSchema, searchParamsSchema } from "./index";
 
 const listing = {
   name: "Campus Hostel",
@@ -57,5 +57,24 @@ describe("hostelCreateSchema room totals", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+});
+
+describe("searchParamsSchema", () => {
+  it('treats verified="false" as false, not true', () => {
+    expect(searchParamsSchema.parse({ verified: "false" }).verified).toBe(false);
+    expect(searchParamsSchema.parse({ verified: "true" }).verified).toBe(true);
+    expect(searchParamsSchema.parse({}).verified).toBeUndefined();
+  });
+
+  it("rejects values that are not exactly true or false", () => {
+    expect(searchParamsSchema.safeParse({ verified: "0" }).success).toBe(false);
+    expect(searchParamsSchema.safeParse({ verified: "yes" }).success).toBe(false);
+  });
+
+  it("rejects non-finite or negative prices", () => {
+    expect(searchParamsSchema.safeParse({ minPrice: "Infinity" }).success).toBe(false);
+    expect(searchParamsSchema.safeParse({ maxPrice: "-5" }).success).toBe(false);
+    expect(searchParamsSchema.safeParse({ minPrice: "5000", maxPrice: "20000" }).success).toBe(true);
   });
 });

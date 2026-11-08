@@ -83,3 +83,13 @@ export function emailRow(label: string, value: string) {
     <td style="padding:6px 0;font-size:13px;color:${emailTheme.heading};font-weight:500;">${value}</td>
   </tr>`;
 }
+
+/**
+ * Builds a plain-text subject line. Subjects are not HTML, so values must be
+ * passed in raw (never through escapeHtml, which would show up as "&amp;" in
+ * the inbox). Newlines and other control characters are removed so a
+ * user-supplied name can never break out of the header line.
+ */
+export function emailSubject(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+}
