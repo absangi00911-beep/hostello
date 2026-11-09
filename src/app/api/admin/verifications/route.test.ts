@@ -252,6 +252,16 @@ describe("PUT /api/admin/verifications", () => {
     );
   });
 
+  it("reject: tells the student what to resubmit and never refers to feedback that does not exist", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    await PUT(putReq({ userId: "usr_1", action: "reject" }));
+    await new Promise((r) => setTimeout(r, 0));
+
+    const { message } = vi.mocked(createNotification).mock.calls[0][0];
+    expect(message).not.toMatch(/feedback/i);
+    expect(message).toMatch(/student ID or enrollment letter/);
+  });
+
   it("doesn't fail the request if the notification dispatch rejects", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
     vi.mocked(createNotification).mockRejectedValueOnce(new Error("down"));

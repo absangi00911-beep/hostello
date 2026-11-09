@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { rateLimit } from "@/lib/rate-limit";
+import { createOperationalLogContext, logOperationalEvent } from "@/lib/operational-logger";
 import { isBoundedRouteParam } from "@/lib/route-params";
 import {
   getVerificationDocument,
@@ -12,7 +13,7 @@ import {
 
 type Context = { params: Promise<{ userId: string }> };
 
-export async function GET(_req: NextRequest, { params }: Context) {
+export async function GET(req: NextRequest, { params }: Context) {
   const session = await auth();
   if (session?.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -44,6 +45,16 @@ export async function GET(_req: NextRequest, { params }: Context) {
     return NextResponse.json({ error: "Document not found." }, { status: 404 });
   }
 
+  // Identity documents are sensitive: record who opened whose, once the
+  // document is confirmed to exist and is about to be served.
+  const logView = () =>
+    logOperationalEvent(
+      "info",
+      "admin.verification_document.viewed",
+      { admin_id: session.user.id, student_id: userId },
+      createOperationalLogContext(req),
+    );
+
   try {
     if (isVerificationObjectKey(user.verificationDocUrl, userId)) {
       const object = await getVerificationDocument(user.verificationDocUrl);
@@ -52,6 +63,7 @@ export async function GET(_req: NextRequest, { params }: Context) {
       }
 
       const isPdf = object.ContentType === "application/pdf";
+      logView();
       return new Response(object.Body.transformToWebStream(), {
         headers: {
           "Content-Type": object.ContentType,
@@ -74,6 +86,7 @@ export async function GET(_req: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Document not found." }, { status: 404 });
     }
 
+    logView();
     return new Response(response.body, {
       headers: {
         "Content-Type": contentType,
