@@ -197,7 +197,7 @@ export async function PUT(req: NextRequest) {
       message:
         action === "approve"
           ? "Your student verification has been approved."
-          : "Your student verification was not approved. Please review the feedback and resubmit the correct document.",
+          : "Your student verification was not approved. Please upload a clear, readable photo or PDF of a valid student ID or enrollment letter, with your name visible, and submit it again.",
     }).catch(() => undefined);
 
     return NextResponse.json({ ok: true });

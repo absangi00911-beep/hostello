@@ -4,6 +4,11 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/db", () => ({ db: { user: { findFirst: vi.fn() } } }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
+const audit = vi.hoisted(() => ({ logOperationalEvent: vi.fn() }));
+vi.mock("@/lib/operational-logger", () => ({
+  logOperationalEvent: audit.logOperationalEvent,
+  createOperationalLogContext: () => ({ request_id: "req_test" }),
+}));
 vi.mock("@/lib/verification-storage", () => ({
   getVerificationDocument: vi.fn(),
   isVerificationContentType: (value: string) => ["image/jpeg", "image/png", "image/webp", "application/pdf"].includes(value),
@@ -54,6 +59,35 @@ describe("GET /api/admin/verifications/[userId]/document", () => {
     });
     expect(db.user.findFirst).not.toHaveBeenCalled();
     expect(getVerificationDocument).not.toHaveBeenCalled();
+  });
+
+  it("records who opened which student's document, only when it is actually served", async () => {
+    const response = await GET(request, context);
+
+    expect(response.status).toBe(200);
+    expect(audit.logOperationalEvent).toHaveBeenCalledTimes(1);
+    expect(audit.logOperationalEvent).toHaveBeenCalledWith(
+      "info",
+      "admin.verification_document.viewed",
+      { admin_id: "usr_admin_1", student_id: "usr_student_1" },
+      { request_id: "req_test" },
+    );
+  });
+
+  it("does not record a view when access is refused or the document is missing", async () => {
+    vi.mocked(auth).mockResolvedValueOnce({ user: { id: "usr_student_1", role: "STUDENT" } } as any);
+    expect((await GET(request, context)).status).toBe(403);
+
+    vi.mocked(rateLimit).mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: Date.now() + 30_000 });
+    expect((await GET(request, context)).status).toBe(429);
+
+    vi.mocked(db.user.findFirst).mockResolvedValueOnce(null);
+    expect((await GET(request, context)).status).toBe(404);
+
+    vi.mocked(getVerificationDocument).mockResolvedValueOnce({ Body: undefined, ContentType: "image/jpeg" } as any);
+    expect((await GET(request, context)).status).toBe(404);
+
+    expect(audit.logOperationalEvent).not.toHaveBeenCalled();
   });
 
   it("streams the private file through an admin-only, non-cacheable response", async () => {

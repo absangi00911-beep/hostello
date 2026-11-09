@@ -198,21 +198,38 @@ export function findExpiredVerificationUploadKeys(
   });
 }
 
+// S3 lists keys alphabetically, not by age, so expired uploads can sit behind
+// any number of fresh ones. Follow every page, with a hard cap so a runaway
+// listing cannot keep a cron invocation alive.
+const MAX_CLEANUP_PAGES = 50;
+
 export async function deleteExpiredVerificationUploads(): Promise<number> {
   const bucket = getBucketName();
   const s3 = getClient();
-  const listed = await s3.send(new ListObjectsV2Command({
-    Bucket: bucket,
-    Prefix: "student-verification-uploads/",
-    MaxKeys: 1000,
-  }));
-  const keys = findExpiredVerificationUploadKeys(listed.Contents ?? []);
-  if (keys.length === 0) return 0;
+  let deletedCount = 0;
+  let continuationToken: string | undefined;
 
-  const deleted = await s3.send(new DeleteObjectsCommand({
-    Bucket: bucket,
-    Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
-  }));
-  if (deleted.Errors?.length) throw new Error("Some expired verification uploads could not be deleted.");
-  return keys.length;
+  for (let page = 0; page < MAX_CLEANUP_PAGES; page += 1) {
+    const listed = await s3.send(new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: "student-verification-uploads/",
+      MaxKeys: 1000,
+      ContinuationToken: continuationToken,
+    }));
+
+    const keys = findExpiredVerificationUploadKeys(listed.Contents ?? []);
+    if (keys.length > 0) {
+      const deleted = await s3.send(new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+      }));
+      if (deleted.Errors?.length) throw new Error("Some expired verification uploads could not be deleted.");
+      deletedCount += keys.length;
+    }
+
+    if (!listed.IsTruncated || !listed.NextContinuationToken) break;
+    continuationToken = listed.NextContinuationToken;
+  }
+
+  return deletedCount;
 }
