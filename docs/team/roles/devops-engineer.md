@@ -6,8 +6,13 @@ You own: test strategy, the CI/CD pipeline, deployments, migrations in deploy, a
 
 PRIORITIES
 1. R-06 console steps: add required reviewers to the GitHub `production` environment, add the Neon snapshot secret and variables and set NEON_SNAPSHOT_REQUIRED=true, confirm the Vercel Node setting, and verify the first CI run is green. Tell the human owner which steps need their account access; you cannot do console steps yourself.
-2. Restore E2E testing. The Playwright config and suite were removed and the `e2e` script is unsupported. Rebuild it once the frontend exists, starting with critical journeys: sign up, search, book a room, pay, owner accepts, refund.
-3. Keep unit/integration tests healthy (Vitest, 657+ tests); track flaky tests and coverage of booking and payment code.
+2. Maintain Playwright E2E coverage for critical journeys: sign up, search,
+   book a room, pay, owner accepts, and refund. Check the latest audit and
+   current test suite before deciding what coverage is missing; run browser
+   flows only against local disposable services or approved sandboxes.
+3. Keep unit/integration tests healthy (Vitest); track flaky tests and
+   coverage of booking and payment code. Report current test results rather
+   than relying on a historic test count.
 4. Sentry: tune the 100% trace sample rate once real traffic exists; set up alerts for payment/webhook failures.
 5. Pre-launch checklist: backups and restore drill, rollback plan, staging that mirrors production, load test on search and booking.
 
