@@ -1,6 +1,10 @@
 # HostelLo: Shared Team Instructions
 
-Every role (Founder, Auditor, Tech Lead, Senior Frontend, Frontend, Backend/Integrations, Designer, QA/DevOps) reads this file first. Role-specific instructions live in each role's own Project; this file holds the rules that apply to all of them.
+Every role (Founder, Auditor, Tech Lead, Senior Frontend, Frontend,
+Backend/Integrations, Designer, QA/DevOps, Marketplace Operations & Trust/Safety,
+Growth & Partnerships, Security & Privacy Reviewer) reads this file first.
+Workspace Copilot agents live in `.github/agents/`; the role briefs live in
+[`roles/`](roles/README.md). This file holds the rules that apply to all roles.
 
 ## Project
 
@@ -20,7 +24,8 @@ The docs in this repo are known to be stale and to contradict each other (page c
 
 1. Read `AGENTS.md`. This Next.js version has breaking changes. Read the relevant guide in `node_modules/next/dist/docs/` before writing Next.js code.
 2. Read `PRODUCT.md`, `SYSTEM.md` (especially §16, the risk register R-01 to R-20), `HOSTELLO-CAPABILITY-MAP.md`, and the spec in `docs/superpowers/specs/` for the module you touch.
-3. Check `tasks/todo.md` and `tasks/plan.md` for current work. Do not duplicate or contradict them.
+3. Check the current work tracker when one exists. Do not assume a `tasks/`
+   directory or create one solely to track a one-off assignment.
 4. Read the latest report in `docs/audits/`.
 
 ## Product rules (non-negotiable)
@@ -33,20 +38,38 @@ The docs in this repo are known to be stale and to contradict each other (page c
 
 web-foundation, then room-inventory, then room-availability, then notification-center, then student-marketplace / owner-workspace / admin-console in parallel, then availability-alerts.
 
-## Distributed role handoffs
+## Local role assignments
 
-The seven role briefs represent separate Claude.ai project sections running on separate computers. They cannot push directly to GitHub. The Founder coordinates assignments and reports but cannot operate those projects or computers directly; the human owner relays each assignment and returned handoff.
+Roles work in this VS Code workspace through workspace Copilot agents. The
+Founder is the top project role and coordinates work through the specialist
+agents; the human owner remains the final authority. The team is not split
+across separate Claude projects or computers, and work is not relayed as patch
+files.
 
-For every assignment:
+For each assignment:
 
-1. The Founder prepares a bounded task packet with a unique task ID, role, objective, scope, acceptance criteria, dependencies, guardrails, and required checks. Do not send it until the human owner has approved the scope, unless the owner explicitly directs the assignment.
-2. Before starting, the assigned role clones the repository fresh from GitHub, reads the current shared instructions and role brief, and checks the relevant project instructions, tasks, latest audit report, and feature docs. Record the checked-out base commit in the task report.
-3. The role works only within the assigned scope, does not push, and returns a complete patch file plus a concise report. Include new and deleted files in the patch. The report states the task ID, base commit, files changed, checks run and results, blockers, and any decisions needed.
-4. The Founder reviews the report and patch against the stated base and current repository, reports findings and verification results to the human owner, and does not apply the patch.
-5. The human owner decides whether to approve, request revision, or reject the patch, and applies approved patches to the shared repository.
-6. Record progress in `tasks/team-assignments.md`, including the patch/report reference, the human owner's decision, the applied commit when available, and verification results. Do not mark a task verified until its acceptance criteria have been checked.
+1. The assigning role gives one specialist a bounded objective, scope,
+   acceptance criteria, dependencies, guardrails, and required checks. The
+   human owner's explicit task is approval for that scope; ask before making
+   additional product or policy decisions.
+2. The specialist reads this file, its role brief, the relevant current code
+   and tests, project instructions, and the latest audit report before relying
+   on documentation. Work in the existing checkout; do not clone or create a
+   second workspace for a normal assignment.
+3. The specialist makes the scoped changes and returns a concise report to its
+   assigner: task, files changed, checks run and results, blockers, risks, and
+   decisions needed. It reports what it actually verified and does not claim
+   success based on unrun checks.
+4. The assigner reviews the diff and verifies the acceptance criteria before
+   reporting completion. The Founder consolidates cross-role status and
+   reports it to the human owner.
+5. Keep concurrent assignments on non-overlapping files unless the owners
+   explicitly coordinate shared changes. Do not assume `tasks/` tracking files
+   exist; create persistent task records only when requested or needed by an
+   approved workflow.
 
-Keep tasks small and avoid assigning overlapping files concurrently unless the human owner approves the coordination plan. If the shared repository changes after a role records its base commit, review for conflicts before applying the patch; request a fresh clone and updated patch if needed.
+Agents do not commit, push, deploy, or make changes to shared/production data
+unless the human owner explicitly authorizes that action.
 
 ## Working rules
 
@@ -54,7 +77,9 @@ Keep tasks small and avoid assigning overlapping files concurrently unless the h
 - Run `npm run typecheck`, `npm run lint` and `npm run test -- --run` before calling work done.
 - Never commit secrets or edit `.env` files. Never apply migrations to a shared database without the Tech Lead's approval.
 - When you close or change a risk, update `SYSTEM.md` §16 and `CHANGELOG.md`.
-- Do not touch another role's area without a handoff note. Put handoffs in `tasks/`, one file per handoff: from, to, what changed, what you need.
+- Do not touch another role's area without coordinating ownership. Include
+  handoff details in the assignment report or the project's existing tracker;
+  do not create `tasks/` solely for a one-off handoff.
 - Do not guess. If a spec, API contract or product decision is missing, say so and ask the Founder. State assumptions explicitly.
 - Be honest about status: say what you ran and what you did not. Never claim something works without verifying it.
 
@@ -64,3 +89,8 @@ Keep tasks small and avoid assigning overlapping files concurrently unless the h
 - Production deploys, production data changes, turning on disabled providers (JazzCash, EasyPaisa).
 - Legal, privacy or terms content; handling of student ID documents.
 - Anything irreversible.
+
+Finance, legal, tax, and regulatory questions require qualified human or
+external advice. AI roles may organize questions and summarize verified
+materials, but must not represent their output as professional advice or
+approve policy, contracts, budgets, or compliance decisions.
