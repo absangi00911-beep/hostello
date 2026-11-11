@@ -2,7 +2,7 @@
 
 **Last updated:** October 19, 2026
 
-HostelLo uses [`@sentry/nextjs`](https://www.npmjs.com/package/@sentry/nextjs) (10.74.0 in the current lockfile) for error tracking across all three Next.js runtimes.
+HostelLo uses [`@sentry/nextjs`](https://www.npmjs.com/package/@sentry/nextjs) (v11 in the current lockfile) for error tracking across all three Next.js runtimes.
 
 ## How it's wired
 
@@ -47,3 +47,9 @@ interface is restored, re-check what appears in recordings before changing
 these privacy controls. Keep the 100% tracing sample rate temporary until
 production event volume and Sentry quota use are measured; sampling should
 preserve high-value API errors and critical payment traces.
+
+## Sentry 11 notes
+
+- Span streaming is the default in v11, so `beforeSendTransaction` is ignored and `beforeSendSpan` receives streamed spans (`name` / `attributes`). `scrubSentrySpan` in `src/lib/sentry-privacy.ts` handles both the streamed and the static (`description` / `data`) shapes.
+- v11 collects request and response data when `dataCollection` is unset. All three initializers set every `dataCollection` category explicitly; keep that when adding a new `Sentry.init`.
+- v11 requires Node.js 20.19+ (the repo pins Node 24).

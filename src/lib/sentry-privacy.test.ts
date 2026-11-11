@@ -43,4 +43,25 @@ describe("Sentry privacy scrubbing", () => {
     expect(serialized).not.toContain("user@example.com");
     expect(serialized).toContain("http.method");
   });
+
+  it("scrubs streamed spans (Sentry 11 default): name and attributes", () => {
+    const result = scrubSentrySpan({
+      name: "GET https://hostello.example/search?q=private-search",
+      attributes: {
+        "url.full": "https://hostello.example/search?q=private-search",
+        "http.target": "/search?q=private-search&token=private-token",
+        "url.query": "q=private-search",
+        "user.email": "user@example.com",
+        "http.request.method": { value: "GET", type: "string" },
+        "http.route": "/search",
+      },
+    }) as Record<string, unknown>;
+
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toContain("private-search");
+    expect(serialized).not.toContain("private-token");
+    expect(serialized).not.toContain("user@example.com");
+    expect(serialized).toContain("http.request.method");
+    expect(serialized).toContain('"http.route":"/search"');
+  });
 });
