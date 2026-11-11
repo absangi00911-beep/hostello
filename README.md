@@ -27,6 +27,7 @@ replace running the browser flows against disposable local services.
 ```bash
 npm install
 cp .env.example .env
+npx prisma generate   # the Prisma client is generated, not committed
 # Fill in DATABASE_URL, AUTH_SECRET, and the integrations you need — see SYSTEM.md §17.
 npx prisma migrate dev
 npm run dev

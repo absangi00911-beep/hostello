@@ -4,6 +4,7 @@ import { Client as TypesenseClient } from "typesense";
 import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
 import type { SearchParams } from "typesense/lib/Typesense/Documents";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent } from "@/lib/operational-logger";
 
 let typesenseClient: TypesenseClient | null = null;
 
@@ -136,12 +137,12 @@ export async function initializeHostelCollection() {
   try {
     // Try to get the collection first
     await getClient().collections(HOSTEL_COLLECTION_NAME).retrieve();
-    console.log(`✓ Collection "${HOSTEL_COLLECTION_NAME}" already exists`);
+    logOperationalEvent("info", "typesense.collection_exists", { collection: HOSTEL_COLLECTION_NAME });
     return;
   } catch (error: unknown) {
     if (error instanceof Error && getHttpStatus(error) === 404) {
       // Collection doesn't exist, create it
-      console.log(`Creating collection "${HOSTEL_COLLECTION_NAME}"...`);
+      logOperationalEvent("info", "typesense.collection_creating", { collection: HOSTEL_COLLECTION_NAME });
 
       const schema: CollectionCreateSchema = {
         name: HOSTEL_COLLECTION_NAME,
@@ -179,7 +180,7 @@ export async function initializeHostelCollection() {
       };
 
       await getClient().collections().create(schema);
-      console.log(`✓ Collection "${HOSTEL_COLLECTION_NAME}" created successfully`);
+      logOperationalEvent("info", "typesense.collection_created", { collection: HOSTEL_COLLECTION_NAME });
     } else {
       throw error;
     }
@@ -192,7 +193,7 @@ export async function initializeHostelCollection() {
 export async function indexHostel(document: HostelDocument) {
   try {
     await getClient().collections(HOSTEL_COLLECTION_NAME).documents().upsert(document);
-    console.log("✓ Indexed hostel");
+    logOperationalEvent("info", "typesense.hostel_indexed", { collection: HOSTEL_COLLECTION_NAME });
   } catch (error) {
     console.error("✗ Failed to index hostel:", getSafeErrorSummary(error));
     throw error;
@@ -213,7 +214,7 @@ export async function indexHostelsBatch(documents: HostelDocument[]) {
     if (failed.length > 0) {
       console.warn(`⚠ Failed to index ${failed.length}/${documents.length} documents`);
     } else {
-      console.log(`✓ Indexed ${documents.length} hostels`);
+      logOperationalEvent("info", "typesense.hostels_indexed", { collection: HOSTEL_COLLECTION_NAME, count: documents.length });
     }
 
     return results;
@@ -229,7 +230,7 @@ export async function indexHostelsBatch(documents: HostelDocument[]) {
 export async function removeHostelFromIndex(hostelId: string) {
   try {
     await getClient().collections(HOSTEL_COLLECTION_NAME).documents(hostelId).delete();
-    console.log("✓ Removed hostel from index");
+    logOperationalEvent("info", "typesense.hostel_removed", { collection: HOSTEL_COLLECTION_NAME });
   } catch (error) {
     console.error("✗ Failed to remove hostel from index:", getSafeErrorSummary(error));
     throw error;
@@ -346,7 +347,7 @@ export async function searchHostels(
 export async function deleteHostelCollection() {
   try {
     await getClient().collections(HOSTEL_COLLECTION_NAME).delete();
-    console.log(`✓ Deleted collection "${HOSTEL_COLLECTION_NAME}"`);
+    logOperationalEvent("info", "typesense.collection_deleted", { collection: HOSTEL_COLLECTION_NAME });
   } catch (error) {
     console.error("✗ Failed to delete collection:", getSafeErrorSummary(error));
     throw error;

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { indexHostel, indexHostelsBatch, removeHostelFromIndex } from "@/lib/typesense";
 import type { HostelDocument } from "@/lib/typesense";
 import { getSafeErrorSummary } from "@/lib/safe-error";
+import { logOperationalEvent } from "@/lib/operational-logger";
 
 const HOSTEL_INDEX_SELECT = {
   id: true,
@@ -139,7 +140,7 @@ export async function indexSingleHostel(hostelId: string) {
  * This should be run periodically or after data migrations
  */
 export async function syncAllHostelsToTypesense() {
-  console.log("Starting hostel sync to Typesense...");
+  logOperationalEvent("info", "typesense.sync_started");
 
   try {
     let lastId: string | undefined;
@@ -164,7 +165,7 @@ export async function syncAllHostelsToTypesense() {
       if (hostels.length < 100) break;
     }
 
-    console.log(`✓ Synced ${synced} active hostels`);
+    logOperationalEvent("info", "typesense.sync_completed", { count: synced });
   } catch (error) {
     console.error("✗ Sync failed:", getSafeErrorSummary(error));
     throw error;
