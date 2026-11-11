@@ -145,7 +145,7 @@ export function AvailabilityAlertCard({
               Create a new alert
             </button>
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-[#8b2525] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-danger disabled:opacity-60"
               disabled={pending}
               onClick={onDelete}
               type="button"
@@ -172,7 +172,7 @@ export function AvailabilityAlertCard({
               {alert.status === "ACTIVE" ? "Pause" : "Resume"}
             </button>
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-[#8b2525] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-danger disabled:opacity-60"
               disabled={pending}
               onClick={onDelete}
               type="button"

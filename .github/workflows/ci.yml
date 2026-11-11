@@ -94,6 +94,56 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+  # PostgreSQL-specific availability/concurrency tests run only against this
+  # disposable service and its dedicated *_test database.
+  postgres-integration:
+    name: PostgreSQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hostello
+          POSTGRES_PASSWORD: hostello
+          POSTGRES_DB: hostello_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hostello -d hostello_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://hostello:hostello@localhost:5432/hostello_test
+      HOSTELLO_TEST_DATABASE_URL: postgresql://hostello:hostello@localhost:5432/hostello_test
+      RUN_AVAILABILITY_ALERTS_POSTGRES_TESTS: "1"
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations to disposable test database
+        run: npx prisma migrate deploy
+
+      - name: Run guarded PostgreSQL integration test
+        run: npm test -- --run src/lib/availability-alerts.postgres.integration.test.ts
+
   # ─────────────────────────────────────────────
   # Job 3: Vercel preview deploy
   # Only runs on PRs (not on pushes to main — that's handled by production.yml).
@@ -106,7 +156,7 @@ jobs:
     # Only deploy previews for pull requests, not direct pushes to main
     if: github.event_name == 'pull_request'
     # Only deploy after all quality gates pass
-    needs: [web, shared]
+    needs: [web, shared, postgres-integration]
 
     permissions:
       contents: read        # job-level permissions replace the defaults, so checkout needs this

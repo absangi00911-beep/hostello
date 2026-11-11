@@ -28,6 +28,13 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/payouts", () => ({
   createPayoutBatch: vi.fn(),
+  PAYOUT_READINESS: {
+    liveTransfersEnabled: false,
+    custodyApproved: false,
+    independentApprovalReady: true,
+    settlementReconciliationReady: false,
+    ready: false,
+  },
   PayoutServiceError: mocks.PayoutServiceError,
   getEligiblePayoutBookingWhere: vi.fn(() => ({
     status: { in: ["CONFIRMED", "COMPLETED"] },
@@ -80,12 +87,12 @@ describe("GET /api/admin/payouts", () => {
     expect(res.status).toBe(403);
   });
 
-  it("returns 403 when there is no session", async () => {
+  it("returns 401 when there is no session", async () => {
     vi.mocked(auth).mockResolvedValue(null as any);
 
     const res = await GET(new NextRequest("https://hostello.test/api/admin/payouts"));
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
   });
 
   it("enforces the shared admin read quota before payout queries", async () => {
@@ -150,7 +157,19 @@ describe("GET /api/admin/payouts", () => {
       by: ["hostelId"],
       _sum: { total: true },
     }));
-    expect(body).toMatchObject({ total: 1, page: 1, limit: 25, hasMore: false });
+    expect(body).toMatchObject({
+      total: 1,
+      page: 1,
+      limit: 25,
+      hasMore: false,
+      payoutReadiness: {
+        liveTransfersEnabled: false,
+        custodyApproved: false,
+        independentApprovalReady: true,
+        settlementReconciliationReady: false,
+        ready: false,
+      },
+    });
   });
 
   it("still lists an owner with zero pending balance if they have payout history", async () => {

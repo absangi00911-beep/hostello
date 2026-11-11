@@ -47,6 +47,44 @@ jobs:
       - run: npm test -- --run
       - run: npm run lint
 
+  gate-postgres:
+    name: Gate — PostgreSQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hostello
+          POSTGRES_PASSWORD: hostello
+          POSTGRES_DB: hostello_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hostello -d hostello_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://hostello:hostello@localhost:5432/hostello_test
+      HOSTELLO_TEST_DATABASE_URL: postgresql://hostello:hostello@localhost:5432/hostello_test
+      RUN_AVAILABILITY_ALERTS_POSTGRES_TESTS: "1"
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      - run: npm test -- --run src/lib/availability-alerts.postgres.integration.test.ts
+
   # ─────────────────────────────────────────────────────────────────────────
   # Deploy: only runs after the gate jobs pass
   # ─────────────────────────────────────────────────────────────────────────
@@ -54,7 +92,7 @@ jobs:
     name: Deploy to production
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [gate-web]
+    needs: [gate-web, gate-postgres]
 
     # Approval gate: configure required reviewers on the "production"
     # environment in GitHub (Settings > Environments). Until that is set the

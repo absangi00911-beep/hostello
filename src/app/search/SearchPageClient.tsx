@@ -1177,7 +1177,6 @@ export default function SearchPageClient({
           </div>
         </div>
         <div className="search-footer-bottom flex justify-between gap-[18px] border-t border-line pt-[17px] text-[0.74rem] text-[#566158] [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-[6px]">
-          <span>© {new Date().getFullYear()} HostelLo</span>
           <span>Made for student stays in Pakistan</span>
         </div>
       </footer>

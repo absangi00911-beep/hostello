@@ -23,13 +23,23 @@ interface SendEmailOptions {
   html: string;
 }
 
+interface SendEmailDeliveryOptions {
+  /** Stable key used for provider-side deduplication on retries. */
+  idempotencyKey?: string;
+  /** Outbox callers persist only a safe code and must not log provider errors. */
+  suppressErrorLogs?: boolean;
+}
+
 /**
  * Send a transactional email via Resend.
  *
  * Always awaited server-side. Never call this from a client component.
  * Errors are caught and logged — a failed email never crashes the API route.
  */
-export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+export async function sendEmail(
+  { to, subject, html }: SendEmailOptions,
+  deliveryOptions: SendEmailDeliveryOptions = {},
+) {
   // Without a real API key, nothing can be sent. In development that is fine
   // (set RESEND_API_KEY in .env.local to send real emails). In production it is
   // a misconfiguration, and reporting success would hide that every password
@@ -37,7 +47,9 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key || key === "re_placeholder" || !key.startsWith("re_")) {
     if (isProductionDeployment()) {
-      console.error("[email] Resend is not configured in production; the message was not sent.");
+      if (!deliveryOptions.suppressErrorLogs) {
+        console.error("[email] Resend is not configured in production; the message was not sent.");
+      }
       return { success: false, error: "Email delivery is unavailable." };
     }
     return { success: true, dev: true };
@@ -58,7 +70,10 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
         to,
         subject,
         html,
-      }, { signal: controller.signal });
+      }, {
+        signal: controller.signal,
+        ...(deliveryOptions.idempotencyKey ? { idempotencyKey: deliveryOptions.idempotencyKey } : {}),
+      });
     } finally {
       clearTimeout(timeout);
     }
@@ -66,13 +81,17 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions) {
     const { data, error } = response;
 
     if (error) {
-      console.error("[email] Resend rejected a message:", getSafeErrorSummary(error));
+      if (!deliveryOptions.suppressErrorLogs) {
+        console.error("[email] Resend rejected a message:", getSafeErrorSummary(error));
+      }
       return { success: false, error: "Email delivery failed." };
     }
 
     return { success: true, id: data?.id };
   } catch (err) {
-    console.error("[email] Unexpected provider error:", getSafeErrorSummary(err));
+    if (!deliveryOptions.suppressErrorLogs) {
+      console.error("[email] Unexpected provider error:", getSafeErrorSummary(err));
+    }
     return { success: false, error: "Email delivery failed." };
   }
 }

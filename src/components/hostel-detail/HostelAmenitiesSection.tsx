@@ -45,7 +45,7 @@ export function HostelAmenitiesSection({
   return (
     <section
       aria-labelledby="hostel-amenities-title"
-      className="hostel-amenities-section border-t border-line pt-5 [@media(max-width:720px)]:order-1"
+      className="hostel-amenities-section border-t border-line pt-5"
       role="region"
     >
       <h2
@@ -60,7 +60,7 @@ export function HostelAmenitiesSection({
 
           return (
             <li
-              className="flex min-w-0 items-center gap-3 border-b border-line py-2.5 text-[0.94rem] text-ink [&:nth-last-child(-n+2)]:border-b-0"
+              className="flex min-w-0 items-center gap-3 border-b border-line py-2.5 text-base text-ink [&:nth-last-child(-n+2)]:border-b-0"
               key={amenity}
             >
               <Icon

@@ -131,7 +131,7 @@ export function ProfilePageContent({
           </section>
         ) : error ? (
           <section
-            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
             <p className="m-0 text-[0.95rem]">{error}</p>
@@ -222,7 +222,7 @@ export function ProfilePageContent({
               </Link>
             </section>
 
-            <section className="mt-5 flex items-center justify-between gap-6 rounded-[14px] border border-line bg-surface p-6">
+            <section className="mt-5 flex flex-col items-start justify-between gap-4 rounded-[14px] border border-line bg-surface p-6 sm:flex-row sm:items-center sm:gap-6">
               <div>
                 <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
                   Have a place to share?
@@ -241,7 +241,7 @@ export function ProfilePageContent({
           </>
         ) : (
           <section
-            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
             <p className="m-0 text-[0.95rem]">

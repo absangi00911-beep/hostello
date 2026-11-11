@@ -41,6 +41,8 @@ function transaction(overrides: {
             status: "ACTIVE",
             pricePerMonth: 10_000,
             cancellationPolicy: "STANDARD",
+            minStay: 1,
+            maxStay: null,
           }
         : overrides.hostel),
     },
@@ -139,6 +141,37 @@ describe("createBooking", () => {
         paymentStatus: "PENDING",
       }),
     }));
+  });
+
+  it("rejects non-whole-month and over-cap stays before opening a transaction", async () => {
+    await expect(createBooking(userId, bookingInput({
+      checkIn: new Date("2099-06-01T00:00:00.000Z"),
+      checkOut: new Date("2099-07-15T00:00:00.000Z"),
+    }))).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining("whole-month") });
+    await expect(createBooking(userId, bookingInput({
+      checkIn: new Date("2099-01-01T00:00:00.000Z"),
+      checkOut: new Date("2101-02-01T00:00:00.000Z"),
+    }))).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining("24 months") });
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["below the minimum", { minStay: 4, maxStay: null }],
+    ["above the listing maximum", { minStay: 1, maxStay: 2 }],
+  ])("rejects stays %s", async (_label, stayBounds) => {
+    const tx = transaction({ hostel: {
+      id: hostelId,
+      name: "Green Valley Hostel",
+      ownerId: "owner_1",
+      status: "ACTIVE",
+      pricePerMonth: 10_000,
+      cancellationPolicy: "STANDARD",
+      ...stayBounds,
+    } });
+
+    await expect(createBooking(userId, bookingInput()))
+      .rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining("minimum or maximum") });
+    expect(tx.booking.create).not.toHaveBeenCalled();
   });
 
   it("reevaluates availability alerts after the inventory transaction commits", async () => {

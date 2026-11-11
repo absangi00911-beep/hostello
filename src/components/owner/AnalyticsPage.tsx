@@ -112,7 +112,7 @@ function MetricsCard({
 }) {
   return (
     <article
-      className={`relative overflow-hidden rounded-2xl border border-line bg-[rgb(255_255_255_/_0.8)] p-6 backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-line bg-[rgb(255_255_255_/_0.8)] p-6 backdrop-blur-xl ${className}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex min-w-0 flex-1 flex-col">
@@ -166,7 +166,7 @@ function MonthlyChart({
               </div>
               <div className="relative h-2 rounded-full bg-surface-muted">
                 <div
-                  className="absolute left-0 top-0 h-2 rounded-full bg-brand transition-all duration-500 ease-out"
+                  className="absolute left-0 top-0 h-2 rounded-full bg-brand transition-all duration-500 ease-out motion-reduce:transition-none"
                   style={{ width: `${bookingHeight}%` }}
                 />
               </div>
@@ -211,7 +211,7 @@ export function AnalyticsPageContent({
           </section>
         ) : error ? (
           <section
-            className="rounded-2xl border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            className="rounded-2xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
             <p className="m-0 text-[0.95rem]">{error}</p>
@@ -261,7 +261,7 @@ export function AnalyticsPageContent({
           </>
         ) : (
           <section
-            className="rounded-2xl border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            className="rounded-2xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
             <p className="m-0 text-[0.95rem]">

@@ -1,14 +1,21 @@
 import { db } from "@/lib/db";
 import type { PlanKey } from "@/config/plans";
 import { canAddListing } from "@/config/plans";
+import { isProEntitled } from "@/lib/pro-subscription";
 
 /** Returns the owner's current plan from DB */
 export async function getOwnerPlan(userId: string): Promise<PlanKey> {
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { plan: true },
+    select: {
+      plan: true,
+      subscription: { select: { status: true, endDate: true } },
+    },
   });
-  return (user?.plan ?? "FREE") as PlanKey;
+  if (user?.plan !== "PRO" || !isProEntitled(user.subscription?.status, user.subscription?.endDate)) {
+    return "FREE";
+  }
+  return "PRO";
 }
 
 /**

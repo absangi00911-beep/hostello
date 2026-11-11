@@ -68,6 +68,25 @@ describe("sendEmail", () => {
     expect(sendMock).toHaveBeenCalledOnce();
   });
 
+  it("passes a stable idempotency key and does not log provider errors for outbox sends", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("RESEND_API_KEY", "re_sandbox_test_key");
+    sendMock.mockResolvedValue({ data: null, error: { message: "provider response must not be logged" } });
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await sendEmail(message, {
+      idempotencyKey: "payment-confirmation:test:owner",
+      suppressErrorLogs: true,
+    });
+
+    expect(result).toEqual({ success: false, error: "Email delivery failed." });
+    expect(sendMock).toHaveBeenCalledWith(expect.objectContaining({ to: message.to }), expect.objectContaining({
+      idempotencyKey: "payment-confirmation:test:owner",
+      signal: expect.any(AbortSignal),
+    }));
+    expect(log).not.toHaveBeenCalled();
+  });
+
   it("aborts a Resend request that exceeds the provider timeout", async () => {
     vi.useFakeTimers();
     vi.stubEnv("VERCEL_ENV", "production");

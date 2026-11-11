@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import {
   AdminPayoutsContent,
-  MarkPaidForm,
   VoidForm,
   type AdminPayoutsContentProps,
 } from "./AdminPayoutsPage";
@@ -13,6 +12,8 @@ const payout = (overrides: Partial<AdminPayout> = {}): AdminPayout => ({
   amount: 42000,
   status: "PENDING",
   reference: null,
+  approvedBy: null,
+  approvedAt: null,
   createdAt: "2026-11-01T10:00:00.000Z",
   paidAt: null,
   cancelledAt: null,
@@ -59,7 +60,7 @@ const base: AdminPayoutsContentProps = {
   onRetry: vi.fn(),
   onLoadMore: vi.fn(),
   onGenerate: vi.fn(),
-  onMarkPaid: vi.fn(),
+  onApprove: vi.fn(),
   onVoid: vi.fn(),
 };
 
@@ -67,8 +68,9 @@ const render = (overrides: Partial<AdminPayoutsContentProps> = {}) =>
   renderToStaticMarkup(<AdminPayoutsContent {...base} {...overrides} />);
 
 describe("AdminPayoutsContent", () => {
-  it("says the transfer happens outside the product", () => {
-    expect(render()).toContain("does not move the money");
+  it("states the second approval and settlement readiness gates", () => {
+    expect(render()).toContain("second admin must approve");
+    expect(render()).toContain("settlement remains disabled");
   });
 
   it("shows loading, error and empty states", () => {
@@ -83,12 +85,14 @@ describe("AdminPayoutsContent", () => {
     const markup = render({ owners: [owner()], total: 1 });
     expect(markup).toContain("Bilal");
     expect(markup).toContain("bilal@example.com");
-    expect(markup).toContain("Awaiting transfer");
+    expect(markup).toContain("Awaiting second approval");
     expect(markup).toContain("Standard Chartered");
     expect(markup).toContain("Show account number");
     expect(markup).not.toContain("PK36SCBL0000001123456702");
     expect(markup).toContain("Generate payout batch");
-    expect(markup).toContain("Mark as paid");
+    expect(markup).toContain("Approve payout");
+    expect(markup).toContain("this workflow cannot void an approved batch");
+    expect(markup).not.toContain("Mark as paid");
     expect(markup).toContain("Void batch");
     expect(markup).toContain("Batch created");
   });
@@ -162,20 +166,21 @@ describe("AdminPayoutsContent", () => {
   });
 });
 
-describe("MarkPaidForm", () => {
-  it("warns that it cannot be undone and asks for a reference", () => {
-    const markup = renderToStaticMarkup(
-      <MarkPaidForm busy={false} error={null} onCancel={vi.fn()} onConfirm={vi.fn()} />,
-    );
-    expect(markup).toContain("cannot be undone");
-    expect(markup).toContain("Transfer reference");
-  });
-
-  it("shows a server error", () => {
-    const markup = renderToStaticMarkup(
-      <MarkPaidForm busy={false} error="Cannot mark" onCancel={vi.fn()} onConfirm={vi.fn()} />,
-    );
-    expect(markup).toContain("Cannot mark");
+describe("approved payout state", () => {
+  it("shows the approval timestamp and blocks any transfer action", () => {
+    const markup = render({
+      owners: [owner({ payouts: [payout({
+        status: "APPROVED",
+        approvedBy: "admin-2",
+        approvedAt: "2026-11-02T08:00:00.000Z",
+      })] })],
+      total: 1,
+    });
+    expect(markup).toContain("Approved (settlement blocked)");
+    expect(markup).toContain("Approved by a second admin on");
+    expect(markup).toContain("do not send funds");
+    expect(markup).not.toContain("Mark as paid");
+    expect(markup).not.toContain("Void batch");
   });
 });
 

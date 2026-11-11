@@ -385,6 +385,7 @@ export type UserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   hostels?: Prisma.HostelListRelationFilter
@@ -432,6 +433,7 @@ export type UserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   subscription?: Prisma.SubscriptionOrderByWithRelationInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   hostels?: Prisma.HostelOrderByRelationAggregateInput
@@ -482,6 +484,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   hostels?: Prisma.HostelListRelationFilter
@@ -595,6 +598,7 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -642,6 +646,7 @@ export type UserUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -689,6 +694,7 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -736,6 +742,7 @@ export type UserUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -999,6 +1006,20 @@ export type UserUpdateOneRequiredWithoutSubscriptionNestedInput = {
   upsert?: Prisma.UserUpsertWithoutSubscriptionInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSubscriptionInput, Prisma.UserUpdateWithoutSubscriptionInput>, Prisma.UserUncheckedUpdateWithoutSubscriptionInput>
+}
+
+export type UserCreateNestedOneWithoutPaymentEmailOutboxInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedCreateWithoutPaymentEmailOutboxInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPaymentEmailOutboxInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPaymentEmailOutboxNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedCreateWithoutPaymentEmailOutboxInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPaymentEmailOutboxInput
+  upsert?: Prisma.UserUpsertWithoutPaymentEmailOutboxInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPaymentEmailOutboxInput, Prisma.UserUpdateWithoutPaymentEmailOutboxInput>, Prisma.UserUncheckedUpdateWithoutPaymentEmailOutboxInput>
 }
 
 export type UserCreateNestedOneWithoutPayoutsInput = {
@@ -1268,6 +1289,7 @@ export type UserCreateWithoutSubscriptionInput = {
   bankName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -1314,6 +1336,7 @@ export type UserUncheckedCreateWithoutSubscriptionInput = {
   bankName?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -1376,6 +1399,7 @@ export type UserUpdateWithoutSubscriptionInput = {
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -1422,6 +1446,211 @@ export type UserUncheckedUpdateWithoutSubscriptionInput = {
   bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUncheckedUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUncheckedUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUncheckedUpdateManyWithoutReporterNestedInput
+}
+
+export type UserCreateWithoutPaymentEmailOutboxInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportCreateNestedManyWithoutReporterInput
+}
+
+export type UserUncheckedCreateWithoutPaymentEmailOutboxInput = {
+  id?: string
+  email: string
+  emailVerified?: Date | string | null
+  password?: string | null
+  name: string
+  phone?: string | null
+  phoneVerified?: Date | string | null
+  avatar?: string | null
+  role?: $Enums.Role
+  bio?: string | null
+  city?: string | null
+  tokenVersion?: number
+  deletionRequestedAt?: Date | string | null
+  emailNotifications?: boolean
+  studentVerified?: boolean
+  verificationStatus?: $Enums.VerificationStatus
+  verificationDocUrl?: string | null
+  verificationSubmittedAt?: Date | string | null
+  verificationDecidedAt?: Date | string | null
+  verifiedById?: string | null
+  plan?: $Enums.OwnerPlan
+  bankAccountTitle?: string | null
+  bankAccountNumber?: string | null
+  bankName?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  payouts?: Prisma.PayoutUncheckedCreateNestedManyWithoutOwnerInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  favorites?: Prisma.FavoriteUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  conversationParticipants?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  priceAlerts?: Prisma.PriceAlertUncheckedCreateNestedManyWithoutUserInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUncheckedCreateNestedManyWithoutUserInput
+  roommmatePosts?: Prisma.RoommatePostUncheckedCreateNestedManyWithoutUserInput
+  roommateReports?: Prisma.RoommateReportUncheckedCreateNestedManyWithoutReporterInput
+}
+
+export type UserCreateOrConnectWithoutPaymentEmailOutboxInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedCreateWithoutPaymentEmailOutboxInput>
+}
+
+export type UserUpsertWithoutPaymentEmailOutboxInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedUpdateWithoutPaymentEmailOutboxInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedCreateWithoutPaymentEmailOutboxInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPaymentEmailOutboxInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPaymentEmailOutboxInput, Prisma.UserUncheckedUpdateWithoutPaymentEmailOutboxInput>
+}
+
+export type UserUpdateWithoutPaymentEmailOutboxInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
+  hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  payouts?: Prisma.PayoutUpdateManyWithoutOwnerNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  favorites?: Prisma.FavoriteUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  conversationParticipants?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  priceAlerts?: Prisma.PriceAlertUpdateManyWithoutUserNestedInput
+  availabilityAlerts?: Prisma.AvailabilityAlertUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  phoneVerificationTokens?: Prisma.PhoneVerificationTokenUpdateManyWithoutUserNestedInput
+  roommmatePosts?: Prisma.RoommatePostUpdateManyWithoutUserNestedInput
+  roommateReports?: Prisma.RoommateReportUpdateManyWithoutReporterNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPaymentEmailOutboxInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tokenVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  deletionRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  studentVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verificationStatus?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  verificationDocUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationSubmittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verificationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
+  bankAccountTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankAccountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bankName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -1469,6 +1698,7 @@ export type UserCreateWithoutPayoutsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -1515,6 +1745,7 @@ export type UserUncheckedCreateWithoutPayoutsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -1577,6 +1808,7 @@ export type UserUpdateWithoutPayoutsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -1623,6 +1855,7 @@ export type UserUncheckedUpdateWithoutPayoutsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -1669,6 +1902,7 @@ export type UserCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
   hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
@@ -1715,6 +1949,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
@@ -1777,6 +2012,7 @@ export type UserUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
@@ -1823,6 +2059,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
@@ -1869,6 +2106,7 @@ export type UserCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
   hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
@@ -1915,6 +2153,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
@@ -1977,6 +2216,7 @@ export type UserUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
@@ -2023,6 +2263,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
@@ -2069,6 +2310,7 @@ export type UserCreateWithoutPhoneVerificationTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -2115,6 +2357,7 @@ export type UserUncheckedCreateWithoutPhoneVerificationTokensInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -2177,6 +2420,7 @@ export type UserUpdateWithoutPhoneVerificationTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -2223,6 +2467,7 @@ export type UserUncheckedUpdateWithoutPhoneVerificationTokensInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -2269,6 +2514,7 @@ export type UserCreateWithoutHostelsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostResponseSummary?: Prisma.HostResponseSummaryCreateNestedOneWithoutHostInput
@@ -2315,6 +2561,7 @@ export type UserUncheckedCreateWithoutHostelsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedCreateNestedOneWithoutHostInput
@@ -2377,6 +2624,7 @@ export type UserUpdateWithoutHostelsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUpdateOneWithoutHostNestedInput
@@ -2423,6 +2671,7 @@ export type UserUncheckedUpdateWithoutHostelsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostResponseSummary?: Prisma.HostResponseSummaryUncheckedUpdateOneWithoutHostNestedInput
@@ -2469,6 +2718,7 @@ export type UserCreateWithoutBookingsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -2515,6 +2765,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -2577,6 +2828,7 @@ export type UserUpdateWithoutBookingsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -2623,6 +2875,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -2669,6 +2922,7 @@ export type UserCreateWithoutReviewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -2715,6 +2969,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -2777,6 +3032,7 @@ export type UserUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -2823,6 +3079,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -2869,6 +3126,7 @@ export type UserCreateWithoutPasswordResetsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -2915,6 +3173,7 @@ export type UserUncheckedCreateWithoutPasswordResetsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -2977,6 +3236,7 @@ export type UserUpdateWithoutPasswordResetsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -3023,6 +3283,7 @@ export type UserUncheckedUpdateWithoutPasswordResetsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -3069,6 +3330,7 @@ export type UserCreateWithoutFavoritesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -3115,6 +3377,7 @@ export type UserUncheckedCreateWithoutFavoritesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -3177,6 +3440,7 @@ export type UserUpdateWithoutFavoritesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -3223,6 +3487,7 @@ export type UserUncheckedUpdateWithoutFavoritesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -3269,6 +3534,7 @@ export type UserCreateWithoutHostResponseSummaryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -3315,6 +3581,7 @@ export type UserUncheckedCreateWithoutHostResponseSummaryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -3377,6 +3644,7 @@ export type UserUpdateWithoutHostResponseSummaryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -3423,6 +3691,7 @@ export type UserUncheckedUpdateWithoutHostResponseSummaryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -3469,6 +3738,7 @@ export type UserCreateWithoutConversationParticipantsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -3515,6 +3785,7 @@ export type UserUncheckedCreateWithoutConversationParticipantsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -3577,6 +3848,7 @@ export type UserUpdateWithoutConversationParticipantsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -3623,6 +3895,7 @@ export type UserUncheckedUpdateWithoutConversationParticipantsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -3669,6 +3942,7 @@ export type UserCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -3715,6 +3989,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -3777,6 +4052,7 @@ export type UserUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -3823,6 +4099,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -3869,6 +4146,7 @@ export type UserCreateWithoutPriceAlertsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -3915,6 +4193,7 @@ export type UserUncheckedCreateWithoutPriceAlertsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -3977,6 +4256,7 @@ export type UserUpdateWithoutPriceAlertsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -4023,6 +4303,7 @@ export type UserUncheckedUpdateWithoutPriceAlertsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -4069,6 +4350,7 @@ export type UserCreateWithoutAvailabilityAlertsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -4115,6 +4397,7 @@ export type UserUncheckedCreateWithoutAvailabilityAlertsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -4177,6 +4460,7 @@ export type UserUpdateWithoutAvailabilityAlertsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -4223,6 +4507,7 @@ export type UserUncheckedUpdateWithoutAvailabilityAlertsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -4269,6 +4554,7 @@ export type UserCreateWithoutNotificationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -4315,6 +4601,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -4377,6 +4664,7 @@ export type UserUpdateWithoutNotificationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -4423,6 +4711,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -4469,6 +4758,7 @@ export type UserCreateWithoutRoommmatePostsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -4515,6 +4805,7 @@ export type UserUncheckedCreateWithoutRoommmatePostsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -4577,6 +4868,7 @@ export type UserUpdateWithoutRoommmatePostsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -4623,6 +4915,7 @@ export type UserUncheckedUpdateWithoutRoommmatePostsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -4669,6 +4962,7 @@ export type UserCreateWithoutRoommateReportsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelCreateNestedManyWithoutOwnerInput
@@ -4715,6 +5009,7 @@ export type UserUncheckedCreateWithoutRoommateReportsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedCreateNestedManyWithoutRecipientInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   hostels?: Prisma.HostelUncheckedCreateNestedManyWithoutOwnerInput
@@ -4777,6 +5072,7 @@ export type UserUpdateWithoutRoommateReportsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUpdateManyWithoutOwnerNestedInput
@@ -4823,6 +5119,7 @@ export type UserUncheckedUpdateWithoutRoommateReportsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
+  paymentEmailOutbox?: Prisma.PaymentEmailOutboxUncheckedUpdateManyWithoutRecipientNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   hostels?: Prisma.HostelUncheckedUpdateManyWithoutOwnerNestedInput
@@ -4847,6 +5144,7 @@ export type UserUncheckedUpdateWithoutRoommateReportsInput = {
  */
 
 export type UserCountOutputType = {
+  paymentEmailOutbox: number
   accounts: number
   sessions: number
   hostels: number
@@ -4866,6 +5164,7 @@ export type UserCountOutputType = {
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  paymentEmailOutbox?: boolean | UserCountOutputTypeCountPaymentEmailOutboxArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   hostels?: boolean | UserCountOutputTypeCountHostelsArgs
@@ -4892,6 +5191,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Select specific fields to fetch from the UserCountOutputType
    */
   select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPaymentEmailOutboxArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentEmailOutboxWhereInput
 }
 
 /**
@@ -5035,6 +5341,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
+  paymentEmailOutbox?: boolean | Prisma.User$paymentEmailOutboxArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   hostels?: boolean | Prisma.User$hostelsArgs<ExtArgs>
@@ -5145,6 +5452,7 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "emailVerified" | "password" | "name" | "phone" | "phoneVerified" | "avatar" | "role" | "bio" | "city" | "tokenVersion" | "deletionRequestedAt" | "emailNotifications" | "studentVerified" | "verificationStatus" | "verificationDocUrl" | "verificationSubmittedAt" | "verificationDecidedAt" | "verifiedById" | "plan" | "bankAccountTitle" | "bankAccountNumber" | "bankName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.User$subscriptionArgs<ExtArgs>
+  paymentEmailOutbox?: boolean | Prisma.User$paymentEmailOutboxArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   hostels?: boolean | Prisma.User$hostelsArgs<ExtArgs>
@@ -5171,6 +5479,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
+    paymentEmailOutbox: Prisma.$PaymentEmailOutboxPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     hostels: Prisma.$HostelPayload<ExtArgs>[]
@@ -5611,6 +5920,7 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   subscription<T extends Prisma.User$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  paymentEmailOutbox<T extends Prisma.User$paymentEmailOutboxArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$paymentEmailOutboxArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentEmailOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hostels<T extends Prisma.User$hostelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$hostelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HostelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -6092,6 +6402,30 @@ export type User$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.SubscriptionInclude<ExtArgs> | null
   where?: Prisma.SubscriptionWhereInput
+}
+
+/**
+ * User.paymentEmailOutbox
+ */
+export type User$paymentEmailOutboxArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentEmailOutbox
+   */
+  select?: Prisma.PaymentEmailOutboxSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentEmailOutbox
+   */
+  omit?: Prisma.PaymentEmailOutboxOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentEmailOutboxInclude<ExtArgs> | null
+  where?: Prisma.PaymentEmailOutboxWhereInput
+  orderBy?: Prisma.PaymentEmailOutboxOrderByWithRelationInput | Prisma.PaymentEmailOutboxOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentEmailOutboxWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentEmailOutboxScalarFieldEnum | Prisma.PaymentEmailOutboxScalarFieldEnum[]
 }
 
 /**

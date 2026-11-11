@@ -46,6 +46,33 @@ describe("hostelCreateSchema room totals", () => {
     });
   });
 
+  it("accepts whole-month terms with month-end clamping", () => {
+    const result = bookingSchema.safeParse({
+      hostelId: "clh1234567890123456789012",
+      roomId: "room-1",
+      checkIn: "2099-01-31",
+      checkOut: "2099-02-28",
+      guests: 1,
+      paymentMethod: "safepay",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each([
+    ["partial month", "2099-01-01", "2099-02-28"],
+    ["too long", "2099-01-01", "2101-02-01"],
+  ])("rejects %s booking terms", (_label, checkIn, checkOut) => {
+    const result = bookingSchema.safeParse({
+      hostelId: "clh1234567890123456789012",
+      roomId: "room-1",
+      checkIn,
+      checkOut,
+      guests: 1,
+      paymentMethod: "safepay",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("does not add an undocumented aggregate capacity limit", () => {
     const result = hostelCreateSchema.safeParse({
       ...listing,

@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/db", () => ({ db: { cronLog: { findMany: mocks.cronLogFindMany } } }));
 
+import { CRON_SCHEDULES } from "@/lib/cron-schedules";
 import { GET } from "./route";
 
 const request = () => new Request("https://hostello.test/api/health/crons");
@@ -32,17 +33,7 @@ describe("GET /api/health/crons", () => {
     expect(mocks.cronLogFindMany).toHaveBeenCalledWith({
       where: {
         name: {
-          in: [
-            "cancel-abandoned-payments",
-            "sweep-cancelled-refunds",
-            "expire-unanswered-bookings",
-            "check-price-alerts",
-            "expire-availability-alerts",
-            "cleanup-tokens",
-            "cleanup-verification-uploads",
-            "mark-completed-stays",
-            "process-account-deletions",
-          ],
+          in: Object.keys(CRON_SCHEDULES),
         },
       },
       select: { name: true, ranAt: true, status: true, durationMs: true, error: true },

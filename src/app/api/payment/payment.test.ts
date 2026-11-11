@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   bookingUpdateMany: vi.fn(),
   notificationCreateMany: vi.fn(),
   notificationCreate: vi.fn(),
+  paymentEmailOutboxCreateMany: vi.fn().mockResolvedValue({ count: 2 }),
   resolveLatePayment: vi.fn(),
   subscriptionFindUnique: vi.fn(),
   subscriptionUpdateMany: vi.fn(),
@@ -87,6 +88,7 @@ vi.mock("@/lib/db", () => ({
     $transaction: vi.fn(async (work: (tx: unknown) => Promise<unknown>) => work({
       booking: { updateMany: mocks.bookingUpdateMany },
       notification: { createMany: mocks.notificationCreateMany, create: mocks.notificationCreate },
+      paymentEmailOutbox: { createMany: mocks.paymentEmailOutboxCreateMany },
       subscription: { updateMany: mocks.subscriptionUpdateMany },
       user: { update: mocks.userUpdate },
     })),
@@ -228,7 +230,16 @@ describe("JazzCash callback", () => {
       }),
     }));
     expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
-    expect(sendEmail).toHaveBeenCalledTimes(2);
+    expect(mocks.paymentEmailOutboxCreateMany).toHaveBeenCalledWith(expect.objectContaining({
+      skipDuplicates: true,
+      data: expect.arrayContaining([
+        expect.objectContaining({ bookingId: BOOKING_ID, recipientUserId: "owner-1", template: "BOOKING_REQUEST_EMAIL_TO_OWNER" }),
+        expect.objectContaining({ bookingId: BOOKING_ID, recipientUserId: "user-1", template: "BOOKING_REQUEST_EMAIL_TO_STUDENT" }),
+      ]),
+    }));
+    expect(JSON.stringify(mocks.paymentEmailOutboxCreateMany.mock.calls[0][0])).not.toContain("example.com");
+    expect(JSON.stringify(mocks.paymentEmailOutboxCreateMany.mock.calls[0][0])).not.toMatch(/subject|html|providerResponse/i);
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("rejects signed-provider callbacks while that payment method is disabled", async () => {
@@ -362,6 +373,7 @@ describe("Safepay webhook", () => {
     mocks.bookingFindUnique.mockResolvedValue(makeBooking());
     mocks.bookingUpdateMany.mockResolvedValue({ count: 1 });
     mocks.notificationCreateMany.mockResolvedValue({ count: 2 });
+    mocks.paymentEmailOutboxCreateMany.mockResolvedValue({ count: 2 });
     mocks.subscriptionFindUnique.mockResolvedValue({
       id: "sub-1",
       userId: "owner-1",
@@ -395,7 +407,14 @@ describe("Safepay webhook", () => {
       }),
     }));
     expect(mocks.bookingUpdateMany.mock.calls[0][0].data).not.toHaveProperty("status");
-    expect(sendEmail).toHaveBeenCalledTimes(2);
+    expect(mocks.paymentEmailOutboxCreateMany).toHaveBeenCalledWith(expect.objectContaining({
+      skipDuplicates: true,
+      data: expect.arrayContaining([
+        expect.objectContaining({ recipientUserId: "owner-1", template: "BOOKING_REQUEST_EMAIL_TO_OWNER" }),
+        expect.objectContaining({ recipientUserId: "user-1", template: "BOOKING_REQUEST_EMAIL_TO_STUDENT" }),
+      ]),
+    }));
+    expect(sendEmail).not.toHaveBeenCalled();
     const paymentEvent = log.mock.calls
       .map(([line]) => JSON.parse(String(line)))
       .find((record) => record.event === "booking.payment_confirmed");
@@ -409,38 +428,25 @@ describe("Safepay webhook", () => {
     log.mockRestore();
   });
 
-  it("logs email-provider rejections without recipient or tracker data", async () => {
+  it("keeps payment confirmation email content and recipient data out of the outbox and logs", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.mocked(sendEmail).mockResolvedValue({ success: false, error: "Email delivery failed." } as any);
-
     const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
-    await vi.waitFor(() => expect(log).toHaveBeenCalled());
+    const outboxData = mocks.paymentEmailOutboxCreateMany.mock.calls[0][0];
 
-    const events = log.mock.calls
-      .map(([line]) => JSON.parse(String(line)))
-      .filter((record) => record.event === "notification.dispatch_failed");
     expect(response.status).toBe(200);
-    expect(events).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        severity: "ERROR",
-        attributes: {
-          notification_type: "BOOKING_REQUEST_EMAIL_TO_OWNER",
-          booking_id: BOOKING_ID,
-          reason: "provider_rejected",
-        },
-      }),
-      expect.objectContaining({
-        severity: "ERROR",
-        attributes: {
-          notification_type: "BOOKING_REQUEST_EMAIL_TO_STUDENT",
-          booking_id: BOOKING_ID,
-          reason: "provider_rejected",
-        },
-      }),
-    ]));
-    expect(JSON.stringify(events)).not.toContain("ali@example.com");
-    expect(JSON.stringify(events)).not.toContain(TRACKER);
+    expect(outboxData.data).toHaveLength(2);
+    expect(JSON.stringify(outboxData)).not.toContain("ali@example.com");
+    expect(JSON.stringify(outboxData)).not.toContain("owner@example.com");
+    expect(JSON.stringify(outboxData)).not.toMatch(/subject|html|providerResponse|rawError/i);
+    expect(JSON.stringify(log.mock.calls)).not.toContain("example.com");
     log.mockRestore();
+  });
+
+  it("rolls back payment processing when the transactional email events cannot be enqueued", async () => {
+    mocks.paymentEmailOutboxCreateMany.mockRejectedValueOnce(new Error("database unavailable"));
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent()));
+    expect(response.status).toBe(500);
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it("rejects missing and invalid webhook signatures", async () => {
@@ -605,6 +611,54 @@ describe("Safepay webhook", () => {
     });
   });
 
+  it("requires an explicit new tracker after an initial Pro payment fails", async () => {
+    const failed = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      type: "payment.failed",
+      amount: 300_000,
+      orderId: "sub_sub-1",
+      state: "TRACKER_ENROLLED",
+    })));
+
+    expect(failed.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).toHaveBeenCalledWith({
+      where: { id: "sub-1", status: "PENDING", paymentRef: TRACKER },
+      data: { status: "CANCELLED", paymentRef: null },
+    });
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+
+    // An explicit retry creates and records a different tracker. A late success
+    // for the failed tracker must not silently activate the subscription.
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "CANCELLED",
+      paymentRef: null,
+    });
+    const staleSuccess = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      amount: 300_000,
+      orderId: "sub_sub-1",
+    })));
+    expect(staleSuccess.status).toBe(409);
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "PENDING",
+      paymentRef: "track_retry",
+    });
+    const retriedSuccess = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      amount: 300_000,
+      orderId: "sub_sub-1",
+      tracker: "track_retry",
+    })));
+    expect(retriedSuccess.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "sub-1", status: "PENDING", paymentRef: "track_retry" },
+    }));
+    expect(mocks.userUpdate).toHaveBeenCalledWith({ where: { id: "owner-1" }, data: { plan: "PRO" } });
+  });
+
   it("does not activate a subscription with the wrong amount or tracker", async () => {
     const wrongAmount = await webhookPOST(await safepayRequest(
       makeSafepayEvent({ amount: 299_900, orderId: "sub_sub-1" }),
@@ -618,10 +672,159 @@ describe("Safepay webhook", () => {
     const wrongTracker = await webhookPOST(await safepayRequest(
       makeSafepayEvent({ amount: 300_000, orderId: "sub_sub-1" }),
     ));
+    const mismatchBody = await wrongTracker.json();
     expect(wrongAmount.status).toBe(400);
     expect(wrongTracker.status).toBe(409);
+    expect(mismatchBody).toEqual({ error: "Subscription payment requires reconciliation." });
     expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
     expect(mocks.userUpdate).not.toHaveBeenCalled();
+  });
+
+  it("requires reconciliation for success on a tracker issued before a cancelled checkout restart", async () => {
+    const currentSubscription = {
+      id: "sub-1",
+      userId: "owner-1",
+      status: "PENDING",
+      paymentRef: "track-restarted",
+    };
+    mocks.subscriptionFindUnique.mockResolvedValue(currentSubscription);
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      amount: 300_000,
+      orderId: "sub_sub-1",
+      tracker: "track-issued-before-cancel",
+    })));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "Subscription payment requires reconciliation.",
+    });
+    expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(currentSubscription.paymentRef).toBe("track-restarted");
+  });
+
+  it("clamps the initial one-month period at the UTC month boundary", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2030-01-31T23:59:59.123Z"));
+    try {
+      const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+        amount: 300_000,
+        orderId: "sub_sub-1",
+      })));
+      expect(response.status).toBe(200);
+      expect(mocks.subscriptionUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+        data: {
+          status: "ACTIVE",
+          startDate: new Date("2030-01-31T23:59:59.123Z"),
+          endDate: new Date("2030-02-28T23:59:59.123Z"),
+        },
+      }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("anchors an explicit renewal paid during grace to the existing period end", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2030-07-04T12:00:00.000Z"));
+    const endDate = new Date("2030-06-30T12:00:00.000Z");
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1", userId: "owner-1", status: "ACTIVE", paymentRef: "track-initial",
+      renewalPaymentRef: TRACKER, endDate,
+    });
+    try {
+      const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+        amount: 300_000, orderId: "sub_sub-1",
+      })));
+      expect(response.status).toBe(200);
+      expect(mocks.subscriptionUpdateMany.mock.calls[0][0].data.endDate)
+        .toEqual(new Date("2030-07-30T12:00:00.000Z"));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("accepts an issued renewal callback after grace and starts a full month at receipt", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2030-07-08T12:00:00.000Z"));
+    const endDate = new Date("2030-06-30T12:00:00.000Z");
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1", userId: "owner-1", status: "ACTIVE", paymentRef: "track-initial",
+      renewalPaymentRef: TRACKER, endDate,
+    });
+    try {
+      const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+        amount: 300_000, orderId: "sub_sub-1",
+      })));
+      expect(response.status).toBe(200);
+      expect(mocks.subscriptionUpdateMany.mock.calls[0][0].where).toMatchObject({
+        status: "ACTIVE", renewalPaymentRef: TRACKER, endDate,
+      });
+      expect(mocks.subscriptionUpdateMany.mock.calls[0][0].data.endDate)
+        .toEqual(new Date("2030-08-08T12:00:00.000Z"));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("applies an issued renewal once and extends the current calendar term", async () => {
+    const endDate = new Date("2030-06-30T12:00:00.000Z");
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "ACTIVE",
+      paymentRef: "track-initial",
+      renewalPaymentRef: TRACKER,
+      endDate,
+    });
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      amount: 300_000,
+      orderId: "sub_sub-1",
+    })));
+
+    expect(response.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).toHaveBeenCalledWith({
+      where: {
+        id: "sub-1",
+        status: "ACTIVE",
+        renewalPaymentRef: TRACKER,
+        endDate,
+      },
+      data: {
+        paymentRef: TRACKER,
+        renewalPaymentRef: null,
+        startDate: endDate,
+        endDate: expect.any(Date),
+      },
+    });
+    expect(mocks.userUpdate).toHaveBeenCalledWith({ where: { id: "owner-1" }, data: { plan: "PRO" } });
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("requires reconciliation for a stale successful checkout after subscription expiry", async () => {
+    mocks.subscriptionFindUnique.mockResolvedValue({
+      id: "sub-1",
+      userId: "owner-1",
+      status: "EXPIRED",
+      paymentRef: "track-old-term",
+    });
+
+    const response = await webhookPOST(await safepayRequest(makeSafepayEvent({
+      amount: 300_000,
+      orderId: "sub_sub-1",
+      tracker: "track-old-term",
+    })));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "Subscription payment requires reconciliation.",
+    });
+    expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.userUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
   });
 
   it("treats an already-active subscription with the same tracker as an idempotent retry", async () => {
@@ -637,6 +840,19 @@ describe("Safepay webhook", () => {
     expect(response.status).toBe(200);
     expect(mocks.subscriptionUpdateMany).not.toHaveBeenCalled();
     expect(mocks.userUpdate).not.toHaveBeenCalled();
+  });
+
+  it("activates a Pro subscription only once when the same success callback is replayed", async () => {
+    const payload = makeSafepayEvent({ amount: 300_000, orderId: "sub_sub-1" });
+
+    const first = await webhookPOST(await safepayRequest(payload));
+    const replay = await webhookPOST(await safepayRequest(payload));
+
+    expect(first.status).toBe(200);
+    expect(replay.status).toBe(200);
+    expect(mocks.subscriptionUpdateMany).toHaveBeenCalledTimes(1);
+    expect(mocks.userUpdate).toHaveBeenCalledTimes(1);
+    expect(mocks.notificationCreate).toHaveBeenCalledTimes(1);
   });
 
   it("ignores unrelated signed events and rejects unknown bookings", async () => {

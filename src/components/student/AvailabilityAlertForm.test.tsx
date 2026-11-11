@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   AvailabilityAlertForm,
+  AvailabilityAlertError,
 } from "@/components/student/AvailabilityAlertForm";
 import { AvailabilityAlertsPage } from "@/components/student/AvailabilityAlertsPage";
 import {
@@ -121,6 +122,17 @@ describe("buildAvailabilityAlertInput", () => {
     expect(markup).toContain('value="2030-03-20"');
     expect(markup).toContain('value="2030-03-22"');
     expect(markup).toContain("Guests (1–4)");
+  });
+
+  it("renders form errors as semantic danger alerts without changing their copy", () => {
+    const markup = renderToStaticMarkup(
+      <AvailabilityAlertError message="Check the alert details and try again." />,
+    );
+
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("text-danger");
+    expect(markup).toContain("Check the alert details and try again.");
+    expect(markup).not.toContain("#8b2525");
   });
 
   it("renders the student management loading state and prefilled form", () => {

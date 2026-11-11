@@ -95,7 +95,7 @@ export function HostelHostSection({
               ) : (
                 <span
                   aria-hidden="true"
-                  className="hostel-host-avatar-fallback grid h-[88px] w-[88px] place-items-center rounded-full bg-brand-soft text-[1.5rem] font-bold text-brand-dark"
+                  className="hostel-host-avatar-fallback grid h-[88px] w-[88px] place-items-center rounded-full bg-brand-soft text-xl font-bold text-brand-dark"
                 >
                   {host.name
                     .trim()
@@ -119,13 +119,13 @@ export function HostelHostSection({
             >
               <div className="grid gap-[3px] py-2">
                 <dt className="text-[0.8125rem] leading-[1.3] text-muted">Hostel reviews</dt>
-                <dd className="m-0 flex items-center gap-1 text-[1.05rem] font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
+                <dd className="m-0 flex items-center gap-1 text-base font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
                   {reviewCount}
                 </dd>
               </div>
               <div className="grid gap-[3px] border-t border-line py-2">
                 <dt className="text-[0.8125rem] leading-[1.3] text-muted">Hostel rating</dt>
-                <dd className="m-0 flex items-center gap-1 text-[1.05rem] font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
+                <dd className="m-0 flex items-center gap-1 text-base font-semibold [font-variant-numeric:tabular-nums] [overflow-wrap:anywhere]">
                   {reviewCount > 0 ? rating.toFixed(1) : "—"}
                   {reviewCount > 0 && (
                     <Star aria-hidden="true" fill="currentColor" size={14} />
@@ -165,15 +165,15 @@ export function HostelHostSection({
           {responseRate !== null && (
             <dl aria-label="Host response details" className="hostel-host-metrics m-0 grid gap-1.5">
               <div className="flex flex-wrap gap-1">
-                <dt className="text-[0.92rem] leading-[1.4] text-ink after:content-[':']">Response rate</dt>
-                <dd className="m-0 text-[0.92rem] font-medium [font-variant-numeric:tabular-nums]">
+                <dt className="text-sm leading-[1.4] text-ink after:content-[':']">Response rate</dt>
+                <dd className="m-0 text-sm font-medium [font-variant-numeric:tabular-nums]">
                   {responseRate}%
                 </dd>
               </div>
               {medianResponseSeconds !== null && (
                 <div className="flex flex-wrap gap-1">
-                  <dt className="text-[0.92rem] leading-[1.4] text-ink after:content-[':']">Response time</dt>
-                  <dd className="m-0 text-[0.92rem] font-medium [font-variant-numeric:tabular-nums]">
+                  <dt className="text-sm leading-[1.4] text-ink after:content-[':']">Response time</dt>
+                  <dd className="m-0 text-sm font-medium [font-variant-numeric:tabular-nums]">
                     {formatResponseTime(medianResponseSeconds)}
                   </dd>
                 </div>
@@ -183,7 +183,7 @@ export function HostelHostSection({
 
           {showInquiryAction && (
             <details className="hostel-host-inquiry w-full max-w-[560px]">
-              <summary className="inline-flex min-h-[48px] cursor-pointer list-none items-center justify-center rounded-lg bg-surface-muted px-6 text-[0.94rem] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand-dark [&::-webkit-details-marker]:hidden">
+              <summary className="inline-flex min-h-[48px] cursor-pointer list-none items-center justify-center rounded-lg bg-surface-muted px-6 text-base font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand-dark [&::-webkit-details-marker]:hidden">
                 Message host
               </summary>
               <HostelInquiryForm

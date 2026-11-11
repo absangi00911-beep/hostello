@@ -19,7 +19,7 @@ export function HostelRoomSection({ rooms }: { rooms: HostelRoom[] }) {
   return (
     <section
       aria-labelledby="hostel-rooms-title"
-      className="hostel-room-section hostel-detail-overview-section [@media(max-width:720px)]:order-2"
+      className="hostel-room-section hostel-detail-overview-section"
     >
       <h2 id="hostel-rooms-title" className="mb-3 text-[1.25rem] font-semibold tracking-[-0.02em] text-ink">
         Where you’ll sleep
@@ -54,7 +54,7 @@ export function HostelRoomSection({ rooms }: { rooms: HostelRoom[] }) {
                   )}
                 </div>
                 <div className="hostel-room-info pt-2.5">
-                  <h3 className="m-0 text-[0.95rem] font-semibold leading-[1.35] text-ink [overflow-wrap:anywhere]">
+                  <h3 className="m-0 text-base font-semibold leading-[1.35] text-ink [overflow-wrap:anywhere]">
                     {room.name}
                   </h3>
                   <p className="hostel-room-capacity mt-1.5 text-[0.82rem] leading-[1.5] text-muted">

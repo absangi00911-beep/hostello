@@ -16,6 +16,7 @@ vi.mock("@/lib/auth/config", () => ({
 }));
 
 vi.mock("@/lib/payouts", () => ({
+  approvePayoutBatch: vi.fn(),
   markPayoutPaid: vi.fn(),
   PayoutServiceError: mocks.PayoutServiceError,
 }));
@@ -23,7 +24,7 @@ vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn() }));
 
 import { PATCH } from "./route";
 import { auth } from "@/lib/auth/config";
-import { markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
+import { approvePayoutBatch, markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
 import { rateLimit } from "@/lib/rate-limit";
 
 function adminSession() {
@@ -48,6 +49,15 @@ beforeEach(() => {
 });
 
 describe("PATCH /api/admin/payouts/[id]", () => {
+  it("returns 401 for an unauthenticated caller", async () => {
+    vi.mocked(auth).mockResolvedValue(null);
+    const res = await PATCH(patchRequest({ action: "approve" }), {
+      params: Promise.resolve({ id: "pay-1" }),
+    });
+    expect(res.status).toBe(401);
+    expect(approvePayoutBatch).not.toHaveBeenCalled();
+  });
+
   it("returns 403 for a non-admin session", async () => {
     vi.mocked(auth).mockResolvedValue(ownerSession());
 
@@ -59,13 +69,46 @@ describe("PATCH /api/admin/payouts/[id]", () => {
     expect(markPayoutPaid).not.toHaveBeenCalled();
   });
 
-  it("marks the payout paid with the given reference", async () => {
+  it("accepts approval and derives the approving admin from the authenticated session", async () => {
     vi.mocked(auth).mockResolvedValue(adminSession());
-    vi.mocked(markPayoutPaid).mockResolvedValue({
+    vi.mocked(approvePayoutBatch).mockResolvedValue({
       id: "pay-1",
-      status: "PAID",
-      reference: "BANK-1",
+      status: "APPROVED",
+      approvedBy: "usr_admin_1",
+      approvedAt: new Date("2026-11-09T12:00:00.000Z"),
+      destinationSnapshot: "encrypted-destination",
     } as any);
+
+    const res = await PATCH(patchRequest({ action: "approve" }), {
+      params: Promise.resolve({ id: "pay-1" }),
+    });
+    expect(res.status).toBe(200);
+    expect(approvePayoutBatch).toHaveBeenCalledWith("pay-1", "usr_admin_1");
+    expect(await res.json()).toEqual({
+      data: {
+        id: "pay-1",
+        status: "APPROVED",
+        approvedBy: "usr_admin_1",
+        approvedAt: "2026-11-09T12:00:00.000Z",
+      },
+    });
+  });
+
+  it("rejects invalid approval payloads and caller-supplied actor IDs", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    const res = await PATCH(patchRequest({ action: "approve", approverId: "usr_admin_2" }), {
+      params: Promise.resolve({ id: "pay-1" }),
+    });
+    expect(res.status).toBe(400);
+    expect(approvePayoutBatch).not.toHaveBeenCalled();
+  });
+
+  it("returns the disabled-settlement readiness error without marking a payout paid", async () => {
+    vi.mocked(auth).mockResolvedValue(adminSession());
+    vi.mocked(markPayoutPaid).mockRejectedValue(new PayoutServiceError(
+      "Payout settlement is disabled until custody, independent approval, and reconciliation are approved and ready.",
+      503,
+    ));
 
     const res = await PATCH(patchRequest({ reference: "BANK-1" }), {
       params: Promise.resolve({ id: "pay-1" }),
@@ -73,8 +116,8 @@ describe("PATCH /api/admin/payouts/[id]", () => {
     const body = await res.json();
 
     expect(markPayoutPaid).toHaveBeenCalledWith("pay-1", "usr_admin_1", "BANK-1");
-    expect(res.status).toBe(200);
-    expect(body.data.status).toBe("PAID");
+    expect(res.status).toBe(503);
+    expect(body.error).toContain("Payout settlement is disabled");
   });
 
   it("limits payout status changes before parsing or writing", async () => {

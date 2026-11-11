@@ -164,7 +164,7 @@ export function TripsPageContent({
           </section>
         ) : error && bookings.length === 0 ? (
           <section
-            className="rounded-[14px] border border-[#e7c9c4] bg-surface p-7 text-[#8c2822]"
+            className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
             <p className="m-0 text-[0.95rem]">{error}</p>
@@ -198,7 +198,7 @@ export function TripsPageContent({
           <>
             {error && (
               <p
-                className="mb-5 rounded-[14px] border border-[#e7c9c4] bg-surface p-3 text-[0.9rem] text-[#8c2822]"
+                className="mb-5 rounded-[14px] border border-danger bg-surface p-3 text-[0.9rem] text-danger"
                 role="alert"
               >
                 {error}{" "}

@@ -73,5 +73,44 @@ describe("TripsPage", () => {
     expect(emptyMarkup).toContain("No trips yet");
     expect(errorMarkup).toContain('role="alert"');
     expect(errorMarkup).toContain("Booking service unavailable.");
+    expect(errorMarkup).toContain("border-danger");
+    expect(errorMarkup).toContain("text-danger");
+    expect(errorMarkup).not.toContain("#e7c9c4");
+    expect(errorMarkup).not.toContain("#8c2822");
+  });
+
+  it("keeps cancelled booking status distinct from semantic load errors", () => {
+    const markup = renderToStaticMarkup(
+      <TripsPageContent
+        bookings={[
+          {
+            id: "booking-1",
+            checkIn: "2026-11-02T00:00:00.000Z",
+            checkOut: "2026-12-02T00:00:00.000Z",
+            status: "CANCELLED",
+            hostel: {
+              name: "Gulberg Student Stay",
+              slug: "gulberg-student-stay",
+              coverImage: null,
+              city: "Lahore",
+            },
+          },
+        ]}
+        error="Could not load additional trips."
+        hasMore={false}
+        isLoading={false}
+        isLoadingMore={false}
+        onLoadMore={() => {}}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).toContain('data-status="cancelled"');
+    expect(markup).toContain("bg-[#f5e6e3] text-[#8c2822]");
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("Could not load additional trips.");
+    expect(markup).toContain("border-danger");
+    expect(markup).toContain("text-danger");
+    expect(markup).not.toContain("#e7c9c4");
   });
 });

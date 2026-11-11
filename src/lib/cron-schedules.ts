@@ -52,6 +52,20 @@ export const CRON_SCHEDULES = {
     label: "Cleanup abandoned verification uploads",
     description: "Delete unsubmitted private verification uploads older than one hour",
   },
+  "expire-pro-subscriptions": {
+    cron: "0 2 * * *",
+    endpoint: "/api/cron/expire-pro-subscriptions",
+    maxAgeMs: 26 * 60 * 60 * 1000,
+    label: "Expire Pro subscriptions",
+    description: "Downgrade Pro owners after the monthly term and seven-day grace window",
+  },
+  "drain-payment-email-outbox": {
+    cron: "*/1 * * * *",
+    endpoint: "/api/cron/drain-payment-email-outbox",
+    maxAgeMs: 3 * 60 * 1000,
+    label: "Drain payment email outbox",
+    description: "Retry transactional booking-payment confirmation emails and expire retained rows",
+  },
   "mark-completed-stays": {
     cron: "0 0 * * *",
     endpoint: "/api/cron/mark-completed-stays",

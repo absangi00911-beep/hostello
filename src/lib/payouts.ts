@@ -4,6 +4,19 @@ import { db } from "@/lib/db";
 import { encryptPayoutDestinationSnapshot } from "@/lib/payout-destination";
 import type { Prisma } from "@/generated/client";
 
+/**
+ * Transfers remain off-provider. This records a manually reported settlement,
+ * not a provider-confirmed or independently reconciled bank movement. Full
+ * launch readiness therefore remains false even with dual control implemented.
+ */
+export const PAYOUT_READINESS = {
+  liveTransfersEnabled: false,
+  custodyApproved: false,
+  independentApprovalReady: true,
+  settlementReconciliationReady: false,
+  ready: false,
+} as const;
+
 export class PayoutServiceError extends Error {
   constructor(
     message: string,
@@ -146,53 +159,133 @@ export async function createPayoutBatch(ownerId: string, adminUserId: string) {
  * "mark paid" clicks on the same payout can't both succeed — matching the
  * idempotent-update pattern already used by the Safepay webhook handler.
  */
+async function assertPayoutBatchEligible(
+  tx: Prisma.TransactionClient,
+  payout: { id: string; ownerId: string; amount: number },
+) {
+  const linkedBookings = await tx.booking.aggregate({
+    where: { payoutId: payout.id },
+    _count: { _all: true },
+    _sum: { total: true },
+  });
+  const stillEligibleCount = await tx.booking.count({
+    where: {
+      payoutId: payout.id,
+      status: { in: ["CONFIRMED", "COMPLETED"] },
+      paymentStatus: "PAID",
+      checkOut: { lte: new Date() },
+      hostel: { ownerId: payout.ownerId },
+    },
+  });
+  const linkedAmount = Number(linkedBookings._sum.total ?? 0);
+  if (
+    linkedBookings._count._all === 0 ||
+    stillEligibleCount !== linkedBookings._count._all ||
+    linkedAmount <= 0 ||
+    payout.amount !== linkedAmount
+  ) {
+    throw new PayoutServiceError(
+      "This payout no longer matches its eligible booking claims. Do not transfer it; void the batch only if no transfer was sent, then investigate the difference.",
+      409,
+    );
+  }
+}
+
+/**
+ * The batch creator cannot approve their own batch. The conditional write is
+ * the authority (not the preliminary read), so a concurrent duplicate approval
+ * can append at most one immutable approval event.
+ */
+export async function approvePayoutBatch(payoutId: string, adminUserId: string) {
+  return db.$transaction(async (tx) => {
+    const batch = await tx.payout.findUnique({
+      where: { id: payoutId },
+      select: { id: true, status: true, createdBy: true, ownerId: true, amount: true, destinationSnapshot: true },
+    });
+    if (!batch) throw new PayoutServiceError("Payout not found.", 404);
+    if (batch.status !== "PENDING") {
+      throw new PayoutServiceError(`Cannot approve a ${batch.status} payout.`, 409);
+    }
+    if (batch.createdBy === adminUserId) {
+      throw new PayoutServiceError("A different admin must approve this payout batch.", 409);
+    }
+    if (!batch.destinationSnapshot) {
+      throw new PayoutServiceError("This payout has no destination snapshot and cannot be approved.", 409);
+    }
+    await assertPayoutBatchEligible(tx, batch);
+
+    const approvedAt = new Date();
+    const result = await tx.payout.updateMany({
+      where: { id: payoutId, status: "PENDING", createdBy: { not: adminUserId } },
+      data: { status: "APPROVED", approvedBy: adminUserId, approvedAt },
+    });
+    if (result.count === 0) {
+      const current = await tx.payout.findUnique({ where: { id: payoutId }, select: { status: true } });
+      if (!current) throw new PayoutServiceError("Payout not found.", 404);
+      throw new PayoutServiceError(`Cannot approve a ${current.status} payout.`, 409);
+    }
+
+    const payout = await tx.payout.findUniqueOrThrow({ where: { id: payoutId } });
+    await tx.payoutAuditEvent.create({
+      data: { payoutId, actorId: adminUserId, action: "APPROVED", amount: payout.amount },
+    });
+    return payout;
+  });
+}
+
+/**
+ * Records an off-platform transfer only after approval. The conditional update
+ * uses APPROVED plus the approval identity/time as its CAS predicate.
+ */
 export async function markPayoutPaid(payoutId: string, adminUserId: string, reference: string) {
   const transferReference = reference.trim();
   if (!transferReference || transferReference.length > 200) {
     throw new PayoutServiceError("Enter the bank or payment-provider transfer reference before marking this payout paid.", 409);
   }
-
   return db.$transaction(async (tx) => {
     const pendingBatch = await tx.payout.findUnique({
       where: { id: payoutId },
-      select: { id: true, ownerId: true, amount: true, status: true },
+      select: {
+        id: true,
+        ownerId: true,
+        amount: true,
+        status: true,
+        createdBy: true,
+        approvedBy: true,
+        approvedAt: true,
+      },
     });
     if (!pendingBatch) {
       throw new PayoutServiceError("Payout not found.", 404);
     }
-    if (pendingBatch.status !== "PENDING") {
-      throw new PayoutServiceError(`Cannot mark a ${pendingBatch.status} payout as paid.`, 409);
+    if (pendingBatch.status !== "APPROVED") {
+      throw new PayoutServiceError("A second admin must approve this payout before it can be marked paid.", 409);
     }
-
-    const linkedBookings = await tx.booking.aggregate({
-      where: { payoutId },
-      _count: { _all: true },
-      _sum: { total: true },
-    });
-    const stillEligibleCount = await tx.booking.count({
-      where: {
-        payoutId,
-        status: { in: ["CONFIRMED", "COMPLETED"] },
-        paymentStatus: "PAID",
-        checkOut: { lte: new Date() },
-        hostel: { ownerId: pendingBatch.ownerId },
-      },
-    });
-    const linkedAmount = Number(linkedBookings._sum.total ?? 0);
     if (
-      linkedBookings._count._all === 0 ||
-      stillEligibleCount !== linkedBookings._count._all ||
-      linkedAmount <= 0 ||
-      pendingBatch.amount !== linkedAmount
+      !pendingBatch.approvedBy || !pendingBatch.approvedAt ||
+      pendingBatch.approvedBy === pendingBatch.createdBy
     ) {
+      throw new PayoutServiceError("This payout has no valid independent approval.", 409);
+    }
+    // Recording a reported off-platform transfer remains disabled until custody
+    // and settlement-reconciliation controls are approved; approval alone cannot
+    // authorize an unverified transfer state.
+    if (!PAYOUT_READINESS.ready) {
       throw new PayoutServiceError(
-        "This payout no longer matches its eligible booking claims. Do not transfer it; void the batch only if no transfer was sent, then investigate the difference.",
-        409,
+        "Payout settlement is disabled until custody and settlement reconciliation are approved and ready.",
+        503,
       );
     }
 
+    await assertPayoutBatchEligible(tx, pendingBatch);
+
     const result = await tx.payout.updateMany({
-      where: { id: payoutId, status: "PENDING" },
+      where: {
+        id: payoutId,
+        status: "APPROVED",
+        approvedBy: pendingBatch.approvedBy,
+        approvedAt: pendingBatch.approvedAt,
+      },
       data: {
         status: "PAID",
         paidAt: new Date(),
@@ -224,7 +317,8 @@ export async function markPayoutPaid(payoutId: string, adminUserId: string, refe
 }
 
 /**
- * Voids a pending batch only after an admin confirms no transfer was sent.
+ * Voids an unapproved batch only after an admin confirms no transfer was sent.
+ * Approved batches cannot be voided because a transfer may have started off-platform.
  * The audit fields and booking release commit together, so a failed release
  * cannot leave a cancelled payout with bookings still locked (or vice versa).
  */

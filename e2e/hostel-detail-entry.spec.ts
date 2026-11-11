@@ -278,31 +278,10 @@ async function openExactRoomReview(page: Page) {
   return { checkIn, checkOut, roomId };
 }
 
-test("hostel detail header matches homepage size and wordmark alignment", async ({
+test("hostel detail header omits destination search", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-
-  const getHeaderMetrics = async (headerSelector: string) =>
-    page.locator(headerSelector).evaluate((header) => {
-      const brand = header.querySelector('a[aria-label="hostello home"]');
-      const headerBounds = header.getBoundingClientRect();
-      const brandBounds = brand?.getBoundingClientRect();
-
-      if (!brandBounds) {
-        throw new Error("Browse header wordmark is missing");
-      }
-
-      return {
-        height: headerBounds.height,
-        brandLeft: brandBounds.left,
-        brandCenterY: brandBounds.top + brandBounds.height / 2,
-      };
-    });
-
-  await page.goto("/");
-  const homepageHeader = await getHeaderMetrics("header");
-
   await page.goto(`/hostels/${hostelId}`);
   const detailHeader = page.locator(".hostel-detail-page > header");
   await expect(detailHeader).toBeVisible();
@@ -313,19 +292,7 @@ test("hostel detail header matches homepage size and wordmark alignment", async 
     detailHeader.getByRole("search", {
       name: "Search for hostels by destination",
     }),
-  ).toBeVisible();
-  const detailHeaderMetrics = await getHeaderMetrics(
-    ".hostel-detail-page > header",
-  );
-
-  expect(
-    Math.abs(detailHeaderMetrics.height - homepageHeader.height),
-  ).toBeLessThanOrEqual(1);
-  expect(detailHeaderMetrics.brandLeft).toBe(homepageHeader.brandLeft);
-  expect(detailHeaderMetrics.brandCenterY).toBeCloseTo(
-    homepageHeader.brandCenterY,
-    1,
-  );
+  ).toHaveCount(0);
 });
 
 test("hostel cards open their detail route from browse and search", async ({ page }) => {
@@ -418,7 +385,7 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   const search = page.getByRole("search", {
     name: "Search for hostels by destination",
   });
-  await expect(search).toBeVisible();
+  await expect(search).toHaveCount(0);
 
   const shell = page.locator(".hostel-detail-shell");
   const shellBounds = await shell.evaluate((element) => {
@@ -491,10 +458,12 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   await expect(photoDialog).not.toBeVisible();
 
   await page.setViewportSize({ width: 375, height: 812 });
-  await expect(search).toBeVisible();
+  const detailHeader = page.locator(".hostel-detail-page > header");
+  await expect(detailHeader).toBeHidden();
+  await expect(search).toHaveCount(0);
   await expect(
     page.getByRole("searchbox", { name: "Search by city" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   const [mobileOverview, mobileBooking, mobileRoom] = await Promise.all([
     overview.boundingBox(),
     bookingCard.boundingBox(),
@@ -511,9 +480,59 @@ test("hostel detail uses centered content and a responsive gallery of real hoste
   );
   expect(mobileBooking.y + mobileBooking.height).toBeLessThan(mobileRoom.y);
 
-  for (const width of [320, 768, 1024, 1440]) {
+  const hostColumn = page.locator(".hostel-detail-host-column");
+  const locationColumn = page.locator(".hostel-detail-location-column");
+  const amenitiesSection = page.locator(".hostel-amenities-section");
+  const calendarSection = page
+    .locator("#hostel-date-calendar-title")
+    .locator("xpath=ancestor::section[1]");
+  const reviewsSection = page.locator(".hostel-reviews-section");
+  const [mobileHost, mobileLocation, mobileAmenities, mobileCalendar, mobileReviews] =
+    await Promise.all([
+      hostColumn.boundingBox(),
+      locationColumn.boundingBox(),
+      amenitiesSection.boundingBox(),
+      calendarSection.boundingBox(),
+      reviewsSection.boundingBox(),
+    ]);
+  expect(mobileHost).not.toBeNull();
+  expect(mobileLocation).not.toBeNull();
+  expect(mobileAmenities).not.toBeNull();
+  expect(mobileCalendar).not.toBeNull();
+  expect(mobileReviews).not.toBeNull();
+  if (
+    !mobileHost ||
+    !mobileLocation ||
+    !mobileAmenities ||
+    !mobileCalendar ||
+    !mobileReviews
+  ) {
+    throw new Error("The mobile listing sections must be measurable.");
+  }
+  expect(mobileRoom.y).toBeLessThan(mobileAmenities.y);
+  expect(mobileAmenities.y).toBeLessThan(mobileCalendar.y);
+  expect(mobileCalendar.y).toBeLessThan(mobileReviews.y);
+  expect(mobileReviews.y).toBeLessThan(mobileLocation.y);
+  expect(mobileLocation.y + mobileLocation.height).toBeLessThanOrEqual(
+    mobileHost.y,
+  );
+  const narrowDateTargetWidths = await calendarSection
+    .getByRole("group")
+    .first()
+    .getByRole("button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getBoundingClientRect().width),
+    );
+  expect(Math.min(...narrowDateTargetWidths)).toBeGreaterThanOrEqual(43);
+
+  for (const width of [320, 360, 390, 430, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(search).toBeVisible();
+    if (width <= 720) {
+      await expect(detailHeader).toBeHidden();
+    } else {
+      await expect(detailHeader).toBeVisible();
+    }
+    await expect(search).toHaveCount(0);
     if (width === 768) {
       const tabletGalleryBounds = await gallery.boundingBox();
       expect(tabletGalleryBounds).not.toBeNull();

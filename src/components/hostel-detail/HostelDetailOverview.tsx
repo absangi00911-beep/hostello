@@ -85,7 +85,7 @@ export function HostelDetailOverview({
         <h2 className="m-0 mb-[14px] text-[1.3125rem] leading-[1.43] font-bold" id="hostel-about-title">
           About this hostel
         </h2>
-        <p className="m-0 max-w-[68ch] text-[0.92rem] leading-[1.7] whitespace-pre-line text-muted">
+        <p className="m-0 max-w-[68ch] text-base leading-[1.7] whitespace-pre-line text-muted">
           {descriptionText}
         </p>
       </section>

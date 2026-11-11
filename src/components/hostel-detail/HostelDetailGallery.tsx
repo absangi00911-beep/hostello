@@ -156,7 +156,7 @@ export function HostelDetailGallery({
       >
         <div className="hostel-detail-title-row flex items-center justify-between gap-5 [@media(max-width:720px)]:absolute [@media(max-width:720px)]:inset-x-0 [@media(max-width:720px)]:bottom-0 [@media(max-width:720px)]:z-10 [@media(max-width:720px)]:rounded-t-[24px] [@media(max-width:720px)]:bg-white [@media(max-width:720px)]:px-5 [@media(max-width:720px)]:pt-5 [@media(max-width:720px)]:pb-3">
           <h1
-            className="m-0 min-w-0 max-w-full text-xl leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-[1.65rem] [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
+            className="m-0 min-w-0 max-w-full text-xl leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-[1.75rem] [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
             id="hostel-detail-title"
           >
             {name}
@@ -216,7 +216,7 @@ export function HostelDetailGallery({
           ) : (
             <div
               aria-label="Photos are not available for this hostel yet."
-              className="hostel-detail-photo-fallback col-span-full row-span-full grid place-items-center p-6 text-center text-[0.92rem] text-muted [@media(max-width:720px)]:col-start-1 [@media(max-width:720px)]:row-start-1"
+              className="hostel-detail-photo-fallback col-span-full row-span-full grid place-items-center p-6 text-center text-sm text-muted [@media(max-width:720px)]:col-start-1 [@media(max-width:720px)]:row-start-1"
               role="img"
             >
               Photos are not available for this hostel yet.
@@ -261,7 +261,7 @@ export function HostelDetailGallery({
           ) : (
             <div
               aria-label="Photos are not available for this hostel yet."
-              className="grid h-full w-full shrink-0 place-items-center p-6 text-center text-[0.92rem] text-muted"
+              className="grid h-full w-full shrink-0 place-items-center p-6 text-center text-sm text-muted"
               role="img"
             >
               Photos are not available for this hostel yet.

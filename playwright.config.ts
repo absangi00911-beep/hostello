@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { resolvePlaywrightTarget } from "./e2e/playwright-target-guard.mjs";
 
+const target = resolvePlaywrightTarget();
 const localBaseURL = "http://127.0.0.1:3100";
 
 export default defineConfig({
@@ -9,7 +11,7 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   reporter: "list",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? localBaseURL,
+    baseURL: target.baseURL,
     trace: "retain-on-failure",
   },
   projects: [
@@ -18,11 +20,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: process.env.PLAYWRIGHT_BASE_URL
-    ? undefined
-    : {
+  webServer: target.isLocal
+    ? {
         command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
-        url: "http://127.0.0.1:3100",
+        url: localBaseURL,
         env: {
           AUTH_URL: localBaseURL,
           NEXT_PUBLIC_APP_URL: localBaseURL,
@@ -31,5 +32,6 @@ export default defineConfig({
         reuseExistingServer: false,
         stdout: "pipe",
         timeout: 120_000,
-      },
+      }
+    : undefined,
 });

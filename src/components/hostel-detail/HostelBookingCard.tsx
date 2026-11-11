@@ -3,9 +3,12 @@
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { calculateMonths } from "@/lib/utils";
-import { getPakistanCalendarDate } from "@hostello/shared";
-import { isStayWithinBounds } from "@/lib/hostel-date-selection";
+import { getPakistanCalendarDate, MAX_BOOKING_MONTHS } from "@hostello/shared";
+import {
+  areStayBoundsValid,
+  getWholeMonthTerm,
+  isStayWithinBounds,
+} from "@/lib/hostel-date-selection";
 import { buildHostelAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
@@ -37,7 +40,8 @@ export function buildExactAvailabilityUrl(
   checkIn: string,
   checkOut: string,
   guests: number,
-): string {
+): string | null {
+  if (!isStayWithinBounds(checkIn, checkOut, 1, null)) return null;
   const query = new URLSearchParams({
     checkIn,
     checkOut,
@@ -187,6 +191,16 @@ function todayDateInputValue(): string {
   return getPakistanCalendarDate().toISOString().slice(0, 10);
 }
 
+function formatDateOnlyForDisplay(value: string): string {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return new Intl.DateTimeFormat("en-PK", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 function maxGuestsFor(room: BookableRoom | undefined): number {
   return room ? Math.min(4, room.capacity) : 0;
 }
@@ -221,19 +235,13 @@ export function HostelBookingCard({
   const room = rooms.find((candidate) => candidate.id === roomId);
   const selectedAvailability =
     availability?.find((candidate) => candidate.roomId === roomId) ?? null;
-  const stayMonths =
-    checkIn && checkOut && checkOut > checkIn
-      ? calculateMonths(
-          new Date(`${checkIn}T00:00:00.000Z`),
-          new Date(`${checkOut}T00:00:00.000Z`),
-        )
-      : 0;
-  const stayIsValid = isStayWithinBounds(
-    checkIn,
-    checkOut,
-    minStay,
-    maxStay,
-  );
+  const stayTerm = getWholeMonthTerm(checkIn, checkOut);
+  const stayMonths = stayTerm?.months ?? 0;
+  const stayBoundsAreValid = areStayBoundsValid(minStay, maxStay);
+  const stayIsValid =
+    stayBoundsAreValid &&
+    checkIn >= todayDateInputValue() &&
+    isStayWithinBounds(checkIn, checkOut, minStay, maxStay);
   const estimatedTotal =
     room && stayIsValid ? room.pricePerMonth * stayMonths * guests : null;
   const canBook =
@@ -272,7 +280,20 @@ export function HostelBookingCard({
   });
 
   useEffect(() => {
-    if (bookingOutcome || !checkIn || !checkOut || checkOut <= checkIn) {
+    if (bookingOutcome || !stayIsValid) {
+      setAvailabilityLoading(false);
+      setAvailability(null);
+      setAvailabilityError("");
+      return;
+    }
+
+    const availabilityUrl = buildExactAvailabilityUrl(
+      hostelId,
+      checkIn,
+      checkOut,
+      guests,
+    );
+    if (!availabilityUrl) {
       setAvailabilityLoading(false);
       setAvailability(null);
       setAvailabilityError("");
@@ -284,12 +305,9 @@ export function HostelBookingCard({
     setAvailabilityLoading(true);
     setAvailabilityError("");
 
-    async function loadAvailability() {
+    async function loadAvailability(url: string) {
       try {
-        const response = await fetch(
-          buildExactAvailabilityUrl(hostelId, checkIn, checkOut, guests),
-          { signal: controller.signal },
-        );
+        const response = await fetch(url, { signal: controller.signal });
         const result: unknown = await response.json();
         if (!response.ok) {
           setAvailabilityError(
@@ -312,9 +330,17 @@ export function HostelBookingCard({
       }
     }
 
-    void loadAvailability();
+    void loadAvailability(availabilityUrl);
     return () => controller.abort();
-  }, [hostelId, checkIn, checkOut, guests, availabilityRefresh, bookingOutcome]);
+  }, [
+    hostelId,
+    checkIn,
+    checkOut,
+    guests,
+    availabilityRefresh,
+    bookingOutcome,
+    stayIsValid,
+  ]);
 
   function handleQuickReserve() {
     if (canBook) return;
@@ -471,13 +497,13 @@ export function HostelBookingCard({
       <div className="mb-3 text-[0.8125rem] text-muted">
         {room ? (
           <>
-            <strong className="text-[1.2rem] leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+            <strong className="text-xl leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
               PKR {formatPrice(room.pricePerMonth)}
             </strong>
             <span> / month</span>
           </>
         ) : (
-          <strong className="text-[1.2rem] leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+          <strong className="text-xl leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
             Monthly rate
           </strong>
         )}
@@ -526,7 +552,11 @@ export function HostelBookingCard({
                 ref={moveInInputRef}
                 min={todayDateInputValue()}
                 onChange={(event) => {
-                  setMoveIn(event.target.value);
+                  const nextCheckIn = event.target.value;
+                  if (checkOut && !isStayWithinBounds(nextCheckIn, checkOut, minStay, maxStay)) {
+                    setMoveOut("");
+                  }
+                  setMoveIn(nextCheckIn);
                   setShowReview(false);
                   setMessage("");
                 }}
@@ -544,7 +574,17 @@ export function HostelBookingCard({
                 disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 min={checkIn || todayDateInputValue()}
                 onChange={(event) => {
-                  setMoveOut(event.target.value);
+                  const nextCheckOut = event.target.value;
+                  if (
+                    !isStayWithinBounds(checkIn, nextCheckOut, minStay, maxStay) ||
+                    checkIn < todayDateInputValue()
+                  ) {
+                    setMessage(
+                      `Move-out must match a whole-month term within this listing's ${minStay} to ${Math.min(maxStay ?? MAX_BOOKING_MONTHS, MAX_BOOKING_MONTHS)} month stay limits and the ${MAX_BOOKING_MONTHS}-month global maximum. Choose an eligible date from the calendar.`,
+                    );
+                    return;
+                  }
+                  setMoveOut(nextCheckOut);
                   setShowReview(false);
                   setMessage("");
                 }}
@@ -604,13 +644,25 @@ export function HostelBookingCard({
                   : "No room seats are available for the selected dates and guest count. Change dates or choose another room."}
               </p>
             )}
-          {checkIn && checkOut && !stayIsValid && (
+          {!stayBoundsAreValid && (
+            <p className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]" role="alert">
+              This listing's stay requirements are invalid, so booking is unavailable.
+            </p>
+          )}
+          {checkIn && checkOut && stayIsValid && stayTerm && (
+            <p className="m-0 text-[0.8125rem] leading-[1.5] text-muted" aria-live="polite" role="status">
+              Selected term: {stayTerm.months} {stayTerm.months === 1 ? "month" : "months"}.
+              {stayTerm.isMonthEndClamped && (
+                <> Move-out is clamped to {formatDateOnlyForDisplay(checkOut)} because the target month has fewer days than your move-in date.</>
+              )}
+            </p>
+          )}
+          {checkIn && checkOut && !stayIsValid && stayBoundsAreValid && (
             <p
               className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
               role="status"
             >
-              Stay must be {minStay}
-              {maxStay === null ? " or more" : `–${maxStay}`} months.
+              Stay must be a whole-month term from {minStay} to {Math.min(maxStay ?? MAX_BOOKING_MONTHS, MAX_BOOKING_MONTHS)} months (global maximum: {MAX_BOOKING_MONTHS} months).
             </p>
           )}
           {estimatedTotal !== null && (

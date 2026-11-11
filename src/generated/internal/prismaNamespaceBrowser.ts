@@ -54,6 +54,7 @@ export const ModelName = {
   User: 'User',
   AccountDeletionJob: 'AccountDeletionJob',
   Subscription: 'Subscription',
+  PaymentEmailOutbox: 'PaymentEmailOutbox',
   Payout: 'Payout',
   PayoutAuditEvent: 'PayoutAuditEvent',
   Account: 'Account',
@@ -158,6 +159,7 @@ export const SubscriptionScalarFieldEnum = {
   plan: 'plan',
   status: 'status',
   paymentRef: 'paymentRef',
+  renewalPaymentRef: 'renewalPaymentRef',
   startDate: 'startDate',
   endDate: 'endDate',
   createdAt: 'createdAt',
@@ -165,6 +167,26 @@ export const SubscriptionScalarFieldEnum = {
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const PaymentEmailOutboxScalarFieldEnum = {
+  id: 'id',
+  recipientUserId: 'recipientUserId',
+  bookingId: 'bookingId',
+  template: 'template',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  attemptCount: 'attemptCount',
+  nextAttemptAt: 'nextAttemptAt',
+  lastAttemptAt: 'lastAttemptAt',
+  sentAt: 'sentAt',
+  expiresAt: 'expiresAt',
+  lastErrorCode: 'lastErrorCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentEmailOutboxScalarFieldEnum = (typeof PaymentEmailOutboxScalarFieldEnum)[keyof typeof PaymentEmailOutboxScalarFieldEnum]
 
 
 export const PayoutScalarFieldEnum = {
@@ -178,6 +200,8 @@ export const PayoutScalarFieldEnum = {
   createdBy: 'createdBy',
   paidAt: 'paidAt',
   paidBy: 'paidBy',
+  approvedAt: 'approvedAt',
+  approvedBy: 'approvedBy',
   cancelledAt: 'cancelledAt',
   cancelledBy: 'cancelledBy',
   cancellationReason: 'cancellationReason'
