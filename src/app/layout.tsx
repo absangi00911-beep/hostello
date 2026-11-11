@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { LoginDialogProvider } from "@/components/auth/LoginDialogProvider";
 import { getConfiguredSignInMethods } from "@/lib/auth/sign-in-methods";
+import { buildRootMetadata } from "@/lib/site-metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,14 +19,7 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export const metadata: Metadata = {
-  title: "HostelLo",
-  description: "Student-first hostel discovery, booking, and owner listings.",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/logo.png",
-  },
-};
+export const metadata: Metadata = buildRootMetadata();
 
 export default function RootLayout({
   children,

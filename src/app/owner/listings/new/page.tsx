@@ -4,7 +4,7 @@ import { ListingForm } from "@/components/owner/ListingForm";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Add a listing | HostelLo" };
+export const metadata: Metadata = { title: "Add a listing" };
 
 export default async function NewListingRoute() {
   const session = await auth();

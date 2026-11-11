@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminRefundsPage } from "@/components/admin/AdminRefundsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Refunds | HostelLo" };
+export const metadata: Metadata = { title: "Refunds" };
 
 export default async function AdminRefundsRoute() {
   const session = await auth();

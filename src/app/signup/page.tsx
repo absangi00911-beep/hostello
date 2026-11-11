@@ -4,7 +4,7 @@ import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Create account | HostelLo" };
+export const metadata: Metadata = { title: "Create account" };
 
 export default async function SignupPage({
   searchParams,

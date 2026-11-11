@@ -4,7 +4,7 @@ import { OwnerEarningsPage } from "@/components/owner/OwnerEarningsPage";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Earnings | HostelLo" };
+export const metadata: Metadata = { title: "Earnings" };
 
 export default async function OwnerEarningsRoute() {
   const session = await auth();

@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminVerificationsPage } from "@/components/admin/AdminVerificationsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Student verification | HostelLo" };
+export const metadata: Metadata = { title: "Student verification" };
 
 export default async function AdminVerificationsRoute() {
   const session = await auth();

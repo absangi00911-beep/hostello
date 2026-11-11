@@ -5,7 +5,7 @@ import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { StudentVerificationPage } from "@/components/student/StudentVerificationPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Student verification | HostelLo" };
+export const metadata: Metadata = { title: "Student verification" };
 
 export default async function StudentVerificationRoute() {
   const session = await auth();

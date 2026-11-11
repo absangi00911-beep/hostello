@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminRoommateReportsPage } from "@/components/admin/AdminRoommateReportsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Roommate reports | HostelLo" };
+export const metadata: Metadata = { title: "Roommate reports" };
 
 export default async function AdminRoommateReportsRoute() {
   const session = await auth();

@@ -4,7 +4,7 @@ import { OwnerBookingsPage } from "@/components/owner/OwnerBookingsPage";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Bookings | HostelLo" };
+export const metadata: Metadata = { title: "Bookings" };
 
 export default async function OwnerBookingsRoute() {
   const session = await auth();

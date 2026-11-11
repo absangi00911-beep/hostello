@@ -5,7 +5,7 @@ import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { BookingDetailPage } from "@/components/student/BookingDetailPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Booking | HostelLo" };
+export const metadata: Metadata = { title: "Booking" };
 
 export default async function BookingDetailRoute({
   params,

@@ -4,7 +4,7 @@ import { AdminBookingDetailPage } from "@/components/admin/AdminBookingDetailPag
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Booking detail | HostelLo" };
+export const metadata: Metadata = { title: "Booking detail" };
 
 export default async function AdminBookingDetailRoute({
   params,

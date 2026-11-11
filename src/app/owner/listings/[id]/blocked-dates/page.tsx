@@ -5,7 +5,7 @@ import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { auth } from "@/lib/auth/config";
 import { getOwnerListingSummary } from "@/lib/owner-listing";
 
-export const metadata: Metadata = { title: "Blocked dates | HostelLo" };
+export const metadata: Metadata = { title: "Blocked dates" };
 
 export default async function OwnerBlockedDatesRoute({
   params,
