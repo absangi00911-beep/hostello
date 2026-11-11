@@ -9,6 +9,11 @@ import { rateLimit } from "@/lib/rate-limit";
 import { hasVerificationFileSignature } from "@/lib/verification-storage";
 import { readBoundedFormData } from "@/lib/bounded-json";
 import { isBoundedRouteParam } from "@/lib/route-params";
+import {
+  isPublicListingImageContentType,
+  PublicListingImageError,
+  sanitizePublicListingImage,
+} from "@/lib/public-listing-image";
 
 /**
  * POST /api/upload
@@ -163,7 +168,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Type validation
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type) || !isPublicListingImageContentType(file.type)) {
       return NextResponse.json(
         { error: `File type not allowed. Use JPEG, PNG, or WebP.` },
         { status: 400 }
@@ -182,10 +187,14 @@ export async function POST(req: NextRequest) {
     if (!hasVerificationFileSignature(file.type, buffer)) {
       return NextResponse.json({ error: "Image content does not match its declared file type." }, { status: 400 });
     }
-    const url = await uploadToR2(buffer, file.name, file.type);
+    const sanitized = await sanitizePublicListingImage(buffer, file.type);
+    const url = await uploadToR2(sanitized, file.name, file.type);
 
     return NextResponse.json({ url }, { status: 201 });
   } catch (err) {
+    if (err instanceof PublicListingImageError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     if (err instanceof UploadStorageNotConfiguredError) {
       console.error("[POST /api/upload] Public image storage is not configured.");
       return NextResponse.json({ error: "Image storage is unavailable." }, { status: 503 });
