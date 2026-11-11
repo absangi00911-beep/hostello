@@ -58,16 +58,49 @@ export function scrubSentryEvent(event: unknown): unknown {
   return record;
 }
 
-/** Scrub span descriptions and attributes, which can carry URL or request data. */
+const QUERY_ATTRIBUTE_KEY = /(?:^|[._-])(?:query|search|fragment)(?:$|[._-])/i;
+const PATH_WITH_QUERY = /^(\/[^?#\s]*)\?[^#\s]*/;
+
+/**
+ * Scrub the attributes of a streamed span (Sentry 11 default). Values can be raw
+ * primitives or typed objects like `{ value, unit }`, and URL-ish attributes such
+ * as `http.target` can carry a bare path plus query string.
+ */
+function scrubSpanAttributes(value: unknown, depth = 0): unknown {
+  if (depth > 8) return "[Filtered]";
+  if (typeof value === "string") {
+    return scrubText(value).replace(PATH_WITH_QUERY, "$1?[Filtered]");
+  }
+  if (Array.isArray(value)) return value.map((item) => scrubSpanAttributes(item, depth + 1));
+
+  const record = asRecord(value);
+  if (!record) return value;
+
+  return Object.fromEntries(
+    Object.entries(record).map(([key, item]) => [
+      key,
+      SENSITIVE_KEY.test(key) || QUERY_ATTRIBUTE_KEY.test(key)
+        ? "[Filtered]"
+        : scrubSpanAttributes(item, depth + 1),
+    ]),
+  );
+}
+
+/**
+ * Scrub span names and attributes, which can carry URL or request data.
+ * Handles both the streamed span shape (`name` / `attributes`, the Sentry 11
+ * default) and the static shape (`description` / `data`).
+ */
 export function scrubSentrySpan(span: unknown): unknown {
   const record = asRecord(span);
   if (!record) return span;
 
-  if (typeof record.description === "string") {
-    record.description = scrubText(record.description);
+  for (const key of ["name", "description"]) {
+    if (typeof record[key] === "string") record[key] = scrubText(record[key] as string);
   }
-  if (record.data !== undefined) record.data = scrubValue(record.data);
-  if (record.links !== undefined) record.links = scrubValue(record.links);
+  if (record.attributes !== undefined) record.attributes = scrubSpanAttributes(record.attributes);
+  if (record.data !== undefined) record.data = scrubSpanAttributes(record.data);
+  if (record.links !== undefined) record.links = scrubSpanAttributes(record.links);
 
   return record;
 }
