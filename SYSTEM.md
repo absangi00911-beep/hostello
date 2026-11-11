@@ -175,12 +175,12 @@ The application is intentionally one deployable unit: route handlers, business l
 
 ### 3.4 Deployment and environments
 
-- **Toolchain:** Node 24 (`.nvmrc`, and `engines.node` in `package.json`, which Vercel also reads) and npm 10.9 or newer. CI and Vercel therefore run the same Node major. The committed lockfile must pass `npm ci`.
+- **Toolchain:** Node 26 (`.nvmrc`, and `engines.node` in `package.json`, which Vercel also reads) and npm 12.2.2 or newer. CI and Vercel therefore run the same Node major. The committed lockfile must pass `npm ci`.
 - **Pull requests:** CI installs with `npm ci`, then runs the documentation drift check, script tests, type check, Vitest suite and lint, and type-checks the shared package on its own. A Preview is deployed only after those pass.
 - **Production:** a push to `main` runs its own gate (the same checks), then the `deploy` job. The job runs in the GitHub Environment `production`, which is where required reviewers are configured, so a deploy can wait for approval. It then creates a Neon branch of the production database (a snapshot, expiring after 14 days by default), applies migrations with `prisma migrate deploy` against Vercel's Production environment, builds, and deploys. The Vercel build never applies migrations.
 - **Preview schema changes:** a manually dispatched workflow checks the Preview database host and name against GitHub Environment variables before migrating.
 - **Weekly dependency audit:** `audit.yml` blocks on production dependencies and reports development-only findings without failing.
-- **Pinned tooling and permissions:** the Vercel CLI is pinned to a release older than two weeks, and every workflow runs with read-only repository permissions unless a job declares more.
+- **Pinned tooling and permissions:** the Vercel CLI is pinned to 65.14.0 for Node 26 support, and every workflow runs with read-only repository permissions unless a job declares more.
 
 GitHub configuration the pipeline reads (set in the `production` environment):
 
