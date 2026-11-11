@@ -45,6 +45,8 @@ export type PayoutMinAggregateOutputType = {
   createdBy: string | null
   paidAt: Date | null
   paidBy: string | null
+  approvedAt: Date | null
+  approvedBy: string | null
   cancelledAt: Date | null
   cancelledBy: string | null
   cancellationReason: string | null
@@ -61,6 +63,8 @@ export type PayoutMaxAggregateOutputType = {
   createdBy: string | null
   paidAt: Date | null
   paidBy: string | null
+  approvedAt: Date | null
+  approvedBy: string | null
   cancelledAt: Date | null
   cancelledBy: string | null
   cancellationReason: string | null
@@ -77,6 +81,8 @@ export type PayoutCountAggregateOutputType = {
   createdBy: number
   paidAt: number
   paidBy: number
+  approvedAt: number
+  approvedBy: number
   cancelledAt: number
   cancelledBy: number
   cancellationReason: number
@@ -103,6 +109,8 @@ export type PayoutMinAggregateInputType = {
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  approvedAt?: true
+  approvedBy?: true
   cancelledAt?: true
   cancelledBy?: true
   cancellationReason?: true
@@ -119,6 +127,8 @@ export type PayoutMaxAggregateInputType = {
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  approvedAt?: true
+  approvedBy?: true
   cancelledAt?: true
   cancelledBy?: true
   cancellationReason?: true
@@ -135,6 +145,8 @@ export type PayoutCountAggregateInputType = {
   createdBy?: true
   paidAt?: true
   paidBy?: true
+  approvedAt?: true
+  approvedBy?: true
   cancelledAt?: true
   cancelledBy?: true
   cancellationReason?: true
@@ -238,6 +250,8 @@ export type PayoutGroupByOutputType = {
   createdBy: string
   paidAt: Date | null
   paidBy: string | null
+  approvedAt: Date | null
+  approvedBy: string | null
   cancelledAt: Date | null
   cancelledBy: string | null
   cancellationReason: string | null
@@ -277,6 +291,8 @@ export type PayoutWhereInput = {
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
@@ -296,6 +312,8 @@ export type PayoutOrderByWithRelationInput = {
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paidBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledBy?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -318,6 +336,8 @@ export type PayoutWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
@@ -337,6 +357,8 @@ export type PayoutOrderByWithAggregationInput = {
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paidBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledBy?: Prisma.SortOrderInput | Prisma.SortOrder
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -361,6 +383,8 @@ export type PayoutScalarWhereWithAggregatesInput = {
   createdBy?: Prisma.StringWithAggregatesFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
+  approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
   cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payout"> | Date | string | null
   cancelledBy?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
   cancellationReason?: Prisma.StringNullableWithAggregatesFilter<"Payout"> | string | null
@@ -376,6 +400,8 @@ export type PayoutCreateInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -395,6 +421,8 @@ export type PayoutUncheckedCreateInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -412,6 +440,8 @@ export type PayoutUpdateInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -431,6 +461,8 @@ export type PayoutUncheckedUpdateInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -449,6 +481,8 @@ export type PayoutCreateManyInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -464,6 +498,8 @@ export type PayoutUpdateManyMutationInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -480,6 +516,8 @@ export type PayoutUncheckedUpdateManyInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -506,6 +544,8 @@ export type PayoutCountOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledBy?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
@@ -526,6 +566,8 @@ export type PayoutMaxOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledBy?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
@@ -542,6 +584,8 @@ export type PayoutMinOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
   paidBy?: Prisma.SortOrder
+  approvedAt?: Prisma.SortOrder
+  approvedBy?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledBy?: Prisma.SortOrder
   cancellationReason?: Prisma.SortOrder
@@ -647,6 +691,8 @@ export type PayoutCreateWithoutOwnerInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -664,6 +710,8 @@ export type PayoutUncheckedCreateWithoutOwnerInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -711,6 +759,8 @@ export type PayoutScalarWhereInput = {
   createdBy?: Prisma.StringFilter<"Payout"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   paidBy?: Prisma.StringNullableFilter<"Payout"> | string | null
+  approvedAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
+  approvedBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Payout"> | Date | string | null
   cancelledBy?: Prisma.StringNullableFilter<"Payout"> | string | null
   cancellationReason?: Prisma.StringNullableFilter<"Payout"> | string | null
@@ -726,6 +776,8 @@ export type PayoutCreateWithoutAuditEventsInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -744,6 +796,8 @@ export type PayoutUncheckedCreateWithoutAuditEventsInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -776,6 +830,8 @@ export type PayoutUpdateWithoutAuditEventsInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -794,6 +850,8 @@ export type PayoutUncheckedUpdateWithoutAuditEventsInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -810,6 +868,8 @@ export type PayoutCreateWithoutBookingsInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -828,6 +888,8 @@ export type PayoutUncheckedCreateWithoutBookingsInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -860,6 +922,8 @@ export type PayoutUpdateWithoutBookingsInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -878,6 +942,8 @@ export type PayoutUncheckedUpdateWithoutBookingsInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -894,6 +960,8 @@ export type PayoutCreateManyOwnerInput = {
   createdBy: string
   paidAt?: Date | string | null
   paidBy?: string | null
+  approvedAt?: Date | string | null
+  approvedBy?: string | null
   cancelledAt?: Date | string | null
   cancelledBy?: string | null
   cancellationReason?: string | null
@@ -909,6 +977,8 @@ export type PayoutUpdateWithoutOwnerInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -926,6 +996,8 @@ export type PayoutUncheckedUpdateWithoutOwnerInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -943,6 +1015,8 @@ export type PayoutUncheckedUpdateManyWithoutOwnerInput = {
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paidBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -999,6 +1073,8 @@ export type PayoutSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   cancelledAt?: boolean
   cancelledBy?: boolean
   cancellationReason?: boolean
@@ -1019,6 +1095,8 @@ export type PayoutSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   cancelledAt?: boolean
   cancelledBy?: boolean
   cancellationReason?: boolean
@@ -1036,6 +1114,8 @@ export type PayoutSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   cancelledAt?: boolean
   cancelledBy?: boolean
   cancellationReason?: boolean
@@ -1053,12 +1133,14 @@ export type PayoutSelectScalar = {
   createdBy?: boolean
   paidAt?: boolean
   paidBy?: boolean
+  approvedAt?: boolean
+  approvedBy?: boolean
   cancelledAt?: boolean
   cancelledBy?: boolean
   cancellationReason?: boolean
 }
 
-export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "amount" | "status" | "reference" | "destinationSnapshot" | "createdAt" | "createdBy" | "paidAt" | "paidBy" | "cancelledAt" | "cancelledBy" | "cancellationReason", ExtArgs["result"]["payout"]>
+export type PayoutOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerId" | "amount" | "status" | "reference" | "destinationSnapshot" | "createdAt" | "createdBy" | "paidAt" | "paidBy" | "approvedAt" | "approvedBy" | "cancelledAt" | "cancelledBy" | "cancellationReason", ExtArgs["result"]["payout"]>
 export type PayoutInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Payout$bookingsArgs<ExtArgs>
@@ -1090,6 +1172,8 @@ export type $PayoutPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     createdBy: string
     paidAt: Date | null
     paidBy: string | null
+    approvedAt: Date | null
+    approvedBy: string | null
     cancelledAt: Date | null
     cancelledBy: string | null
     cancellationReason: string | null
@@ -1529,6 +1613,8 @@ export interface PayoutFieldRefs {
   readonly createdBy: Prisma.FieldRef<"Payout", 'String'>
   readonly paidAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly paidBy: Prisma.FieldRef<"Payout", 'String'>
+  readonly approvedAt: Prisma.FieldRef<"Payout", 'DateTime'>
+  readonly approvedBy: Prisma.FieldRef<"Payout", 'String'>
   readonly cancelledAt: Prisma.FieldRef<"Payout", 'DateTime'>
   readonly cancelledBy: Prisma.FieldRef<"Payout", 'String'>
   readonly cancellationReason: Prisma.FieldRef<"Payout", 'String'>

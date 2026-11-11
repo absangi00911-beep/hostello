@@ -11,6 +11,7 @@
 export type * from './models/User'
 export type * from './models/AccountDeletionJob'
 export type * from './models/Subscription'
+export type * from './models/PaymentEmailOutbox'
 export type * from './models/Payout'
 export type * from './models/PayoutAuditEvent'
 export type * from './models/Account'

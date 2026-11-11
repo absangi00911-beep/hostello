@@ -137,6 +137,7 @@ export type SafepayWebhookEventStatus = (typeof SafepayWebhookEventStatus)[keyof
 
 export const PayoutStatus = {
   PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
   PAID: 'PAID',
   CANCELLED: 'CANCELLED'
 } as const
@@ -146,6 +147,7 @@ export type PayoutStatus = (typeof PayoutStatus)[keyof typeof PayoutStatus]
 
 export const PayoutAuditAction = {
   BATCH_CREATED: 'BATCH_CREATED',
+  APPROVED: 'APPROVED',
   MARKED_PAID: 'MARKED_PAID',
   VOIDED: 'VOIDED'
 } as const
@@ -188,3 +190,22 @@ export const AvailabilityAlertType = {
 } as const
 
 export type AvailabilityAlertType = (typeof AvailabilityAlertType)[keyof typeof AvailabilityAlertType]
+
+
+export const PaymentEmailTemplate = {
+  BOOKING_REQUEST_EMAIL_TO_OWNER: 'BOOKING_REQUEST_EMAIL_TO_OWNER',
+  BOOKING_REQUEST_EMAIL_TO_STUDENT: 'BOOKING_REQUEST_EMAIL_TO_STUDENT'
+} as const
+
+export type PaymentEmailTemplate = (typeof PaymentEmailTemplate)[keyof typeof PaymentEmailTemplate]
+
+
+export const PaymentEmailOutboxStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  RETRY: 'RETRY',
+  SENT: 'SENT',
+  DEAD: 'DEAD'
+} as const
+
+export type PaymentEmailOutboxStatus = (typeof PaymentEmailOutboxStatus)[keyof typeof PaymentEmailOutboxStatus]

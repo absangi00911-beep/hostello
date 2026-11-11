@@ -30,6 +30,7 @@ export type SubscriptionMinAggregateOutputType = {
   plan: $Enums.OwnerPlan | null
   status: $Enums.SubscriptionStatus | null
   paymentRef: string | null
+  renewalPaymentRef: string | null
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
@@ -42,6 +43,7 @@ export type SubscriptionMaxAggregateOutputType = {
   plan: $Enums.OwnerPlan | null
   status: $Enums.SubscriptionStatus | null
   paymentRef: string | null
+  renewalPaymentRef: string | null
   startDate: Date | null
   endDate: Date | null
   createdAt: Date | null
@@ -54,6 +56,7 @@ export type SubscriptionCountAggregateOutputType = {
   plan: number
   status: number
   paymentRef: number
+  renewalPaymentRef: number
   startDate: number
   endDate: number
   createdAt: number
@@ -68,6 +71,7 @@ export type SubscriptionMinAggregateInputType = {
   plan?: true
   status?: true
   paymentRef?: true
+  renewalPaymentRef?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -80,6 +84,7 @@ export type SubscriptionMaxAggregateInputType = {
   plan?: true
   status?: true
   paymentRef?: true
+  renewalPaymentRef?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -92,6 +97,7 @@ export type SubscriptionCountAggregateInputType = {
   plan?: true
   status?: true
   paymentRef?: true
+  renewalPaymentRef?: true
   startDate?: true
   endDate?: true
   createdAt?: true
@@ -177,6 +183,7 @@ export type SubscriptionGroupByOutputType = {
   plan: $Enums.OwnerPlan
   status: $Enums.SubscriptionStatus
   paymentRef: string | null
+  renewalPaymentRef: string | null
   startDate: Date | null
   endDate: Date | null
   createdAt: Date
@@ -210,6 +217,7 @@ export type SubscriptionWhereInput = {
   plan?: Prisma.EnumOwnerPlanFilter<"Subscription"> | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFilter<"Subscription"> | $Enums.SubscriptionStatus
   paymentRef?: Prisma.StringNullableFilter<"Subscription"> | string | null
+  renewalPaymentRef?: Prisma.StringNullableFilter<"Subscription"> | string | null
   startDate?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
   endDate?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Subscription"> | Date | string
@@ -223,6 +231,7 @@ export type SubscriptionOrderByWithRelationInput = {
   plan?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  renewalPaymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -239,6 +248,7 @@ export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
   plan?: Prisma.EnumOwnerPlanFilter<"Subscription"> | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFilter<"Subscription"> | $Enums.SubscriptionStatus
   paymentRef?: Prisma.StringNullableFilter<"Subscription"> | string | null
+  renewalPaymentRef?: Prisma.StringNullableFilter<"Subscription"> | string | null
   startDate?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
   endDate?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Subscription"> | Date | string
@@ -252,6 +262,7 @@ export type SubscriptionOrderByWithAggregationInput = {
   plan?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  renewalPaymentRef?: Prisma.SortOrderInput | Prisma.SortOrder
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -270,6 +281,7 @@ export type SubscriptionScalarWhereWithAggregatesInput = {
   plan?: Prisma.EnumOwnerPlanWithAggregatesFilter<"Subscription"> | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusWithAggregatesFilter<"Subscription"> | $Enums.SubscriptionStatus
   paymentRef?: Prisma.StringNullableWithAggregatesFilter<"Subscription"> | string | null
+  renewalPaymentRef?: Prisma.StringNullableWithAggregatesFilter<"Subscription"> | string | null
   startDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
@@ -281,6 +293,7 @@ export type SubscriptionCreateInput = {
   plan: $Enums.OwnerPlan
   status?: $Enums.SubscriptionStatus
   paymentRef?: string | null
+  renewalPaymentRef?: string | null
   startDate?: Date | string | null
   endDate?: Date | string | null
   createdAt?: Date | string
@@ -294,6 +307,7 @@ export type SubscriptionUncheckedCreateInput = {
   plan: $Enums.OwnerPlan
   status?: $Enums.SubscriptionStatus
   paymentRef?: string | null
+  renewalPaymentRef?: string | null
   startDate?: Date | string | null
   endDate?: Date | string | null
   createdAt?: Date | string
@@ -305,6 +319,7 @@ export type SubscriptionUpdateInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -318,6 +333,7 @@ export type SubscriptionUncheckedUpdateInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -330,6 +346,7 @@ export type SubscriptionCreateManyInput = {
   plan: $Enums.OwnerPlan
   status?: $Enums.SubscriptionStatus
   paymentRef?: string | null
+  renewalPaymentRef?: string | null
   startDate?: Date | string | null
   endDate?: Date | string | null
   createdAt?: Date | string
@@ -341,6 +358,7 @@ export type SubscriptionUpdateManyMutationInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -353,6 +371,7 @@ export type SubscriptionUncheckedUpdateManyInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -370,6 +389,7 @@ export type SubscriptionCountOrderByAggregateInput = {
   plan?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  renewalPaymentRef?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -382,6 +402,7 @@ export type SubscriptionMaxOrderByAggregateInput = {
   plan?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  renewalPaymentRef?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -394,6 +415,7 @@ export type SubscriptionMinOrderByAggregateInput = {
   plan?: Prisma.SortOrder
   status?: Prisma.SortOrder
   paymentRef?: Prisma.SortOrder
+  renewalPaymentRef?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -441,6 +463,7 @@ export type SubscriptionCreateWithoutUserInput = {
   plan: $Enums.OwnerPlan
   status?: $Enums.SubscriptionStatus
   paymentRef?: string | null
+  renewalPaymentRef?: string | null
   startDate?: Date | string | null
   endDate?: Date | string | null
   createdAt?: Date | string
@@ -452,6 +475,7 @@ export type SubscriptionUncheckedCreateWithoutUserInput = {
   plan: $Enums.OwnerPlan
   status?: $Enums.SubscriptionStatus
   paymentRef?: string | null
+  renewalPaymentRef?: string | null
   startDate?: Date | string | null
   endDate?: Date | string | null
   createdAt?: Date | string
@@ -479,6 +503,7 @@ export type SubscriptionUpdateWithoutUserInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -490,6 +515,7 @@ export type SubscriptionUncheckedUpdateWithoutUserInput = {
   plan?: Prisma.EnumOwnerPlanFieldUpdateOperationsInput | $Enums.OwnerPlan
   status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   paymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  renewalPaymentRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -504,6 +530,7 @@ export type SubscriptionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   plan?: boolean
   status?: boolean
   paymentRef?: boolean
+  renewalPaymentRef?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
@@ -517,6 +544,7 @@ export type SubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   plan?: boolean
   status?: boolean
   paymentRef?: boolean
+  renewalPaymentRef?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
@@ -530,6 +558,7 @@ export type SubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   plan?: boolean
   status?: boolean
   paymentRef?: boolean
+  renewalPaymentRef?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
@@ -543,13 +572,14 @@ export type SubscriptionSelectScalar = {
   plan?: boolean
   status?: boolean
   paymentRef?: boolean
+  renewalPaymentRef?: boolean
   startDate?: boolean
   endDate?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "plan" | "status" | "paymentRef" | "startDate" | "endDate" | "createdAt" | "updatedAt", ExtArgs["result"]["subscription"]>
+export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "plan" | "status" | "paymentRef" | "renewalPaymentRef" | "startDate" | "endDate" | "createdAt" | "updatedAt", ExtArgs["result"]["subscription"]>
 export type SubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -571,6 +601,7 @@ export type $SubscriptionPayload<ExtArgs extends runtime.Types.Extensions.Intern
     plan: $Enums.OwnerPlan
     status: $Enums.SubscriptionStatus
     paymentRef: string | null
+    renewalPaymentRef: string | null
     startDate: Date | null
     endDate: Date | null
     createdAt: Date
@@ -1004,6 +1035,7 @@ export interface SubscriptionFieldRefs {
   readonly plan: Prisma.FieldRef<"Subscription", 'OwnerPlan'>
   readonly status: Prisma.FieldRef<"Subscription", 'SubscriptionStatus'>
   readonly paymentRef: Prisma.FieldRef<"Subscription", 'String'>
+  readonly renewalPaymentRef: Prisma.FieldRef<"Subscription", 'String'>
   readonly startDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Subscription", 'DateTime'>

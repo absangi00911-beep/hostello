@@ -243,6 +243,40 @@ export type EnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
 }
 
+export type EnumPaymentEmailTemplateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailTemplate | Prisma.EnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel> | $Enums.PaymentEmailTemplate
+}
+
+export type EnumPaymentEmailOutboxStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailOutboxStatus | Prisma.EnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel> | $Enums.PaymentEmailOutboxStatus
+}
+
+export type EnumPaymentEmailTemplateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailTemplate | Prisma.EnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailTemplateWithAggregatesFilter<$PrismaModel> | $Enums.PaymentEmailTemplate
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel>
+}
+
+export type EnumPaymentEmailOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailOutboxStatus | Prisma.EnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailOutboxStatusWithAggregatesFilter<$PrismaModel> | $Enums.PaymentEmailOutboxStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel>
+}
+
 export type EnumPayoutStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.PayoutStatus | Prisma.EnumPayoutStatusFieldRefInput<$PrismaModel>
   in?: $Enums.PayoutStatus[] | Prisma.ListEnumPayoutStatusFieldRefInput<$PrismaModel>
@@ -866,6 +900,40 @@ export type NestedEnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPaymentEmailTemplateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailTemplate | Prisma.EnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel> | $Enums.PaymentEmailTemplate
+}
+
+export type NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailOutboxStatus | Prisma.EnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel> | $Enums.PaymentEmailOutboxStatus
+}
+
+export type NestedEnumPaymentEmailTemplateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailTemplate | Prisma.EnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailTemplate[] | Prisma.ListEnumPaymentEmailTemplateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailTemplateWithAggregatesFilter<$PrismaModel> | $Enums.PaymentEmailTemplate
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPaymentEmailTemplateFilter<$PrismaModel>
+}
+
+export type NestedEnumPaymentEmailOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PaymentEmailOutboxStatus | Prisma.EnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PaymentEmailOutboxStatus[] | Prisma.ListEnumPaymentEmailOutboxStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPaymentEmailOutboxStatusWithAggregatesFilter<$PrismaModel> | $Enums.PaymentEmailOutboxStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPaymentEmailOutboxStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumPayoutStatusFilter<$PrismaModel = never> = {
