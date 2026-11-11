@@ -32,11 +32,11 @@ function genderNoun(gender: string): string {
   }
 }
 
-function formatPkr(amount: number): string {
+export function formatPkr(amount: number): string {
   return `PKR ${new Intl.NumberFormat("en-US").format(Math.round(amount))}`;
 }
 
-function truncate(text: string, max: number): string {
+export function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   const cut = text.slice(0, max - 1);
   const lastSpace = cut.lastIndexOf(" ");
