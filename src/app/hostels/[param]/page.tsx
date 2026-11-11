@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
 import { HostelAmenitiesSection } from "@/components/hostel-detail/HostelAmenitiesSection";
@@ -22,7 +23,9 @@ import {
   projectPublicHostelDetail,
 } from "@/lib/hostel-detail";
 import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
+import { buildHostelJsonLd } from "@/lib/hostel-jsonld";
 import { buildHostelMetadata, buildHostelNotFoundMetadata } from "@/lib/hostel-metadata";
+import { getSiteUrl } from "@/lib/site-metadata";
 
 function genderLabel(gender: string): string {
   switch (gender) {
@@ -81,8 +84,11 @@ export default async function HostelDetailPage({
     hostel.rooms_rel,
   );
 
+  const jsonLd = buildHostelJsonLd(publicHostel, getSiteUrl());
+
   return (
     <div className="hostel-detail-page min-h-dvh bg-white text-ink">
+      {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <ScrollAwareSurface
         as="header"
         className="sticky top-0 z-30 bg-white [@media(max-width:720px)]:hidden"

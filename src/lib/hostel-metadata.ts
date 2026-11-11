@@ -14,6 +14,8 @@ export interface HostelMetadataInput {
   amenities: string[];
   coverImage: string | null;
   images: string[];
+  /** Per-room prices, when the listing has rooms. */
+  rooms_rel?: readonly { pricePerMonth: number }[];
 }
 
 const MAX_DESCRIPTION_LENGTH = 160;
@@ -41,6 +43,15 @@ function truncate(text: string, max: number): string {
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}\u2026`;
 }
 
+/** The lowest advertised monthly price: the cheapest room, else the listing price. */
+export function getStartingPrice(
+  hostel: Pick<HostelMetadataInput, "pricePerMonth" | "rooms_rel">,
+): number {
+  const prices = [hostel.pricePerMonth, ...(hostel.rooms_rel ?? []).map((room) => room.pricePerMonth)]
+    .filter((price) => Number.isFinite(price) && price > 0);
+  return prices.length > 0 ? Math.min(...prices) : 0;
+}
+
 export function getHostelLocation(hostel: Pick<HostelMetadataInput, "area" | "city">): string {
   const area = hostel.area?.trim();
   return area ? `${area}, ${hostel.city}` : hostel.city;
@@ -55,8 +66,9 @@ export function getHostelCanonicalPath(hostel: Pick<HostelMetadataInput, "id" | 
 export function buildHostelDescription(hostel: HostelMetadataInput): string {
   const parts = [`${genderNoun(hostel.gender)} in ${getHostelLocation(hostel)}.`];
 
-  if (hostel.pricePerMonth > 0) {
-    parts.push(`Rooms from ${formatPkr(hostel.pricePerMonth)}/month.`);
+  const startingPrice = getStartingPrice(hostel);
+  if (startingPrice > 0) {
+    parts.push(`Rooms from ${formatPkr(startingPrice)}/month.`);
   }
   if (hostel.reviewCount > 0 && hostel.rating && hostel.rating > 0) {
     const reviews = hostel.reviewCount === 1 ? "1 review" : `${hostel.reviewCount} reviews`;

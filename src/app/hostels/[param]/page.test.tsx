@@ -113,6 +113,7 @@ describe("HostelDetailPage", () => {
     mocks.auth.mockResolvedValue(null);
     mocks.getPublicHostelDetail.mockResolvedValue(hostel);
     mocks.projectPublicHostelDetail.mockReturnValue({
+      ...hostel,
       latitude: null,
       longitude: null,
     });
@@ -166,5 +167,11 @@ describe("HostelDetailPage", () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ param: "gone" }) });
 
     expect(metadata.robots).toMatchObject({ index: false });
+  });
+
+  it("embeds structured data for the hostel", async () => {
+    const page = await HostelDetailPage({ params: Promise.resolve({ param: hostel.slug }) });
+
+    expect(JSON.stringify(page)).toContain('"@type":"Hostel"');
   });
 });
