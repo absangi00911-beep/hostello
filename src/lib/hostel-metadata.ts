@@ -84,14 +84,14 @@ export function buildHostelDescription(hostel: HostelMetadataInput): string {
   return truncate(parts.join(" "), MAX_DESCRIPTION_LENGTH);
 }
 
+/**
+ * No explicit images here: the sibling opengraph-image and twitter-image routes
+ * generate the share card, and Next.js lets those file conventions win anyway.
+ */
 export function buildHostelMetadata(hostel: HostelMetadataInput): Metadata {
   const title = `${hostel.name} in ${getHostelLocation(hostel)}`;
   const description = buildHostelDescription(hostel);
   const canonical = getHostelCanonicalPath(hostel);
-  const image = [hostel.coverImage, ...hostel.images]
-    .map((src) => src?.trim())
-    .find((src): src is string => Boolean(src));
-  const images = image ? [{ url: image, alt: hostel.name }] : undefined;
 
   return {
     title,
@@ -102,13 +102,11 @@ export function buildHostelMetadata(hostel: HostelMetadataInput): Metadata {
       title,
       description,
       url: canonical,
-      ...(images ? { images } : {}),
     },
     twitter: {
-      card: images ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title,
       description,
-      ...(images ? { images: [images[0].url] } : {}),
     },
   };
 }
