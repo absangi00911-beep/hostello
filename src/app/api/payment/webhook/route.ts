@@ -7,13 +7,13 @@ import { toSafepayMinorUnits, verifyWebhookSignature } from "@/lib/safepay";
 import { getAppUrl } from "@/lib/app-url";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { safeSecretEqual } from "@/lib/secret-compare";
-import { sendEmail } from "@/lib/email";
-import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
 import { PLANS } from "@/config/plans";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedText } from "@/lib/bounded-json";
 import { createOperationalLogContext, logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
 import { resolveLatePayment } from "@/lib/late-payment-resolution";
+import { getProGraceEndDate, getProTermEndDate } from "@/lib/pro-subscription";
+import { enqueuePaymentConfirmationEmails } from "@/lib/payment-email-outbox";
 
 const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
 const MAX_ORDER_ID_LENGTH = 128;
@@ -210,6 +210,51 @@ async function finishSafepayEvent(
   return response;
 }
 
+async function handleFailedSubscriptionPayment(
+  orderId: string,
+  tracker: string,
+  event: SafepayEvent,
+  logContext: OperationalLogContext,
+) {
+  const subscriptionId = orderId.slice("sub_".length);
+  if (!subscriptionId || !isValidPkrAmount(event, toSafepayMinorUnits(PLANS.PRO.price))) {
+    return NextResponse.json({ error: "Subscription payment amount or reference is invalid." }, { status: 400 });
+  }
+
+  const subscription = await db.subscription.findUnique({
+    where: { id: subscriptionId },
+    select: { id: true, status: true, paymentRef: true, renewalPaymentRef: true },
+  });
+  if (!subscription) return NextResponse.json({ error: "Subscription not found." }, { status: 404 });
+
+  const initialPayment = subscription.status === "PENDING" && subscription.paymentRef === tracker;
+  const renewalPayment = subscription.status === "ACTIVE" && subscription.renewalPaymentRef === tracker;
+  if (!initialPayment && !renewalPayment) {
+    logOperationalEvent("warn", "subscription.payment_failed_stale", {
+      subscription_id: subscriptionId,
+      reason: "tracker_mismatch",
+    }, logContext);
+    return NextResponse.json({ received: true });
+  }
+
+  const result = initialPayment
+    ? await db.subscription.updateMany({
+        where: { id: subscriptionId, status: "PENDING", paymentRef: tracker },
+        data: { status: "CANCELLED", paymentRef: null },
+      })
+    : await db.subscription.updateMany({
+        where: { id: subscriptionId, status: "ACTIVE", renewalPaymentRef: tracker },
+        data: { renewalPaymentRef: null },
+      });
+  logOperationalEvent(result.count === 1 ? "info" : "warn", result.count === 1
+    ? "subscription.payment_failed"
+    : "subscription.payment_failed_stale", {
+    subscription_id: subscriptionId,
+    reason: result.count === 1 ? (initialPayment ? "initial_payment_failed" : "renewal_payment_failed") : "subscription_state_changed",
+  }, logContext);
+  return NextResponse.json({ received: true });
+}
+
 async function handleSubscriptionPayment(
   orderId: string,
   tracker: string,
@@ -228,7 +273,14 @@ async function handleSubscriptionPayment(
 
   const subscription = await db.subscription.findUnique({
     where: { id: subscriptionId },
-    select: { id: true, userId: true, status: true, paymentRef: true },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      paymentRef: true,
+      renewalPaymentRef: true,
+      endDate: true,
+    },
   });
   if (!subscription) {
     logOperationalEvent("error", "payment.reconciliation_required", {
@@ -242,7 +294,9 @@ async function handleSubscriptionPayment(
   if (subscription.status === "ACTIVE" && subscription.paymentRef === tracker) {
     return NextResponse.json({ received: true });
   }
-  if (subscription.status !== "PENDING" || subscription.paymentRef !== tracker) {
+  const initialPayment = subscription.status === "PENDING" && subscription.paymentRef === tracker;
+  const renewalPayment = subscription.status === "ACTIVE" && subscription.renewalPaymentRef === tracker;
+  if (!initialPayment && !renewalPayment) {
     logOperationalEvent("error", "payment.reconciliation_required", {
       entity_type: "subscription",
       entity_id: subscriptionId,
@@ -252,34 +306,66 @@ async function handleSubscriptionPayment(
   }
 
   const now = new Date();
-  const endDate = new Date(now);
-  endDate.setMonth(endDate.getMonth() + 1);
-
+  const renewalAnchor = subscription.endDate && getProGraceEndDate(subscription.endDate) > now
+    ? subscription.endDate
+    : now;
+  const nextEndDate = getProTermEndDate(initialPayment ? now : renewalAnchor);
   const activated = await db.$transaction(async (tx) => {
-    const result = await tx.subscription.updateMany({
-      where: { id: subscriptionId, status: "PENDING", paymentRef: tracker },
-      data: { status: "ACTIVE", startDate: now, endDate },
-    });
+    const result = initialPayment
+      ? await tx.subscription.updateMany({
+          where: { id: subscriptionId, status: "PENDING", paymentRef: tracker },
+          data: { status: "ACTIVE", startDate: now, endDate: nextEndDate },
+        })
+      : await tx.subscription.updateMany({
+          where: {
+            id: subscriptionId,
+            status: "ACTIVE",
+            renewalPaymentRef: tracker,
+            endDate: subscription.endDate,
+          },
+          data: {
+            paymentRef: tracker,
+            renewalPaymentRef: null,
+            startDate: renewalAnchor,
+            endDate: nextEndDate,
+          },
+        });
     if (result.count === 0) return false;
+
     await tx.user.update({ where: { id: subscription.userId }, data: { plan: "PRO" } });
-    // Written in the same transaction, so the notice exists if and only if the plan was activated.
-    await tx.notification.create({
-      data: {
-        userId: subscription.userId,
-        type: "HOSTEL_APPROVED",
-        title: "Welcome to HostelLo Pro 🎉",
-        message: "Your Pro subscription is now active. Unlimited listings and featured placement are enabled.",
-      },
-    });
+    if (initialPayment) {
+      // Written with the paid period so retries cannot duplicate the notice.
+      await tx.notification.create({
+        data: {
+          userId: subscription.userId,
+          type: "HOSTEL_APPROVED",
+          title: "Welcome to HostelLo Pro!",
+          message: "Your Pro subscription is now active. Unlimited listings and featured placement are enabled.",
+        },
+      });
+    }
     return true;
   });
 
-  if (activated) {
-    logOperationalEvent("info", "subscription.payment_activated", {
-      subscription_id: subscriptionId,
+  if (!activated) {
+    const current = await db.subscription.findUnique({
+      where: { id: subscriptionId },
+      select: { status: true, paymentRef: true },
+    });
+    if (current?.status === "ACTIVE" && current.paymentRef === tracker) {
+      return NextResponse.json({ received: true });
+    }
+    logOperationalEvent("error", "payment.reconciliation_required", {
+      entity_type: "subscription",
+      entity_id: subscriptionId,
+      reason: "subscription_changed_during_activation",
     }, logContext);
+    return NextResponse.json({ error: "Subscription payment requires reconciliation." }, { status: 409 });
   }
 
+  logOperationalEvent("info", initialPayment ? "subscription.payment_activated" : "subscription.payment_renewed", {
+    subscription_id: subscriptionId,
+  }, logContext);
   return NextResponse.json({ received: true });
 }
 
@@ -297,7 +383,9 @@ async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: 
     }
 
     if (event.type === "payment.failed") {
-      if (orderId.startsWith("sub_")) return NextResponse.json({ received: true });
+      if (orderId.startsWith("sub_")) {
+        return handleFailedSubscriptionPayment(orderId, tracker, event, logContext);
+      }
 
       const booking = await db.booking.findUnique({
         where: { id: orderId },
@@ -481,8 +569,13 @@ async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: 
           ownerResponseReminderSentAt: null,
         },
       });
-      if (updated.count > 0 && notificationRows.length > 0) {
+      if (updated.count > 0) {
         await tx.notification.createMany({ data: notificationRows });
+        await enqueuePaymentConfirmationEmails(tx, {
+          bookingId: booking.id,
+          studentUserId: booking.userId,
+          ownerUserId: booking.hostel.owner.id,
+        });
       }
       return updated;
     });
@@ -546,37 +639,6 @@ async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: 
       owner_response_due_at: responseDueAt.toISOString(),
     }, logContext);
 
-    const bookingEmailProps = {
-      studentName: booking.user.name,
-      studentEmail: booking.user.email,
-      ownerName: booking.hostel.owner.name,
-      ownerEmail: booking.hostel.owner.email,
-      hostelName: booking.hostel.name,
-      hostelSlug: booking.hostel.slug,
-      bookingId: booking.id,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      months: booking.months,
-      total: booking.total,
-      paymentMethod: booking.paymentMethod ?? "Safepay",
-    };
-
-    const emailTypes = ["BOOKING_REQUEST_EMAIL_TO_OWNER", "BOOKING_REQUEST_EMAIL_TO_STUDENT"] as const;
-    const emailResults = await Promise.allSettled([
-      sendEmail(bookingNotificationEmail(bookingEmailProps)),
-      sendEmail(bookingConfirmationEmail(bookingEmailProps)),
-    ]);
-    emailResults.forEach((result, index) => {
-      if (result.status === "fulfilled" && result.value.success) return;
-      const summary = result.status === "rejected" ? getSafeErrorSummary(result.reason) : null;
-      logOperationalEvent("error", "notification.dispatch_failed", {
-        notification_type: emailTypes[index],
-        booking_id: booking.id,
-        ...(summary
-          ? { error_name: summary.name, ...(summary.code ? { error_code: summary.code } : {}) }
-          : { reason: "provider_rejected" }),
-      }, logContext);
-    });
 
     return NextResponse.json({ received: true });
   } catch (err) {

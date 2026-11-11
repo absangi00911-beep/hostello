@@ -25,13 +25,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAppOrigin } from "@/lib/app-url";
 import { parseJazzCashCallback } from "@/lib/jazzcash";
-import { sendEmail } from "@/lib/email";
-import { bookingConfirmationEmail, bookingNotificationEmail } from "@/lib/email-templates/booking";
 import { createNotification } from "@/lib/notifications";
 import { verifyGatewayIp } from "@/lib/gateway-ip-allowlist";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedText } from "@/lib/bounded-json";
 import { PAYMENT_METHODS } from "@/lib/payment-methods";
+import { enqueuePaymentConfirmationEmails } from "@/lib/payment-email-outbox";
 
 const MAX_CALLBACK_BODY_BYTES = 16 * 1024;
 
@@ -100,12 +99,12 @@ async function confirmBooking(
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     include: {
-      user:   { select: { name: true, email: true } },
+      user:   { select: { name: true } },
       hostel: {
         select: {
           name: true,
           slug: true,
-          owner: { select: { id: true, name: true, email: true } },
+          owner: { select: { id: true, name: true } },
         },
       },
     },
@@ -145,20 +144,30 @@ async function confirmBooking(
 
   const statusBeforePayment = booking.status;
   const responseDueAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const result = await db.booking.updateMany({
-    where: {
-      id: bookingId,
-      paymentMethod: provider,
-      paymentStatus: "PENDING",
-      status: statusBeforePayment,
-    },
-    data: {
-      paymentStatus: "PAID",
-      ...(statusBeforePayment === "PENDING"
-        ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
-        : {}),
-      transactionId: transactionId || null,
-    },
+  const result = await db.$transaction(async (tx) => {
+    const updated = await tx.booking.updateMany({
+      where: {
+        id: bookingId,
+        paymentMethod: provider,
+        paymentStatus: "PENDING",
+        status: statusBeforePayment,
+      },
+      data: {
+        paymentStatus: "PAID",
+        ...(statusBeforePayment === "PENDING"
+          ? { ownerResponseDueAt: responseDueAt, ownerResponseReminderSentAt: null }
+          : {}),
+        transactionId,
+      },
+    });
+    if (updated.count === 1 && statusBeforePayment === "PENDING") {
+      await enqueuePaymentConfirmationEmails(tx, {
+        bookingId: booking.id,
+        studentUserId: booking.userId,
+        ownerUserId: booking.hostel.owner.id,
+      });
+    }
+    return updated;
   });
 
   if (result.count === 0) {
@@ -170,31 +179,6 @@ async function confirmBooking(
   // A delayed success after cancellation is recorded as paid but does not
   // revive the booking; this leaves it visible to the admin refund queue.
   if (statusBeforePayment === "PENDING") {
-    const emailProps = {
-      studentName: booking.user.name,
-      studentEmail: booking.user.email,
-      ownerName: booking.hostel.owner.name,
-      ownerEmail: booking.hostel.owner.email,
-      hostelName: booking.hostel.name,
-      hostelSlug: booking.hostel.slug,
-      bookingId: booking.id,
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      months: booking.months,
-      total: booking.total,
-      paymentMethod: booking.paymentMethod ?? "Payment gateway",
-    };
-    const emailResults = await Promise.allSettled([
-      sendEmail(bookingNotificationEmail(emailProps)),
-      sendEmail(bookingConfirmationEmail(emailProps)),
-    ]);
-    for (const [index, result] of emailResults.entries()) {
-      if (result.status === "fulfilled" && result.value.success) continue;
-      console.error(
-        `[callback] Booking email ${index === 0 ? "to owner" : "to student"} failed:`,
-        result.status === "rejected" ? getSafeErrorSummary(result.reason) : { name: "EmailProviderRejected" },
-      );
-    }
     await createNotification({
       userId: booking.hostel.owner.id,
       type: "BOOKING_REQUEST",

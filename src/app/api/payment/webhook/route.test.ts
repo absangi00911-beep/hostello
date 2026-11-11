@@ -10,7 +10,7 @@ vi.mock("node:crypto", async (importOriginal) => {
 vi.mock("@/lib/db", () => ({
   db: {
     booking: { findUnique: vi.fn(), updateMany: vi.fn() },
-    subscription: { findUnique: vi.fn() },
+    subscription: { findUnique: vi.fn(), updateMany: vi.fn() },
     user: { update: vi.fn() },
     safepayWebhookEvent: {
       createMany: vi.fn(),
@@ -59,7 +59,10 @@ beforeEach(() => {
   vi.mocked(sendEmail).mockResolvedValue({ success: true } as Awaited<ReturnType<typeof sendEmail>>);
   vi.mocked(resolveLatePayment).mockResolvedValue({ outcome: "REINSTATED" });
 });
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllEnvs();
+});
 
 const booking = {
   id: "booking_1",
@@ -112,10 +115,55 @@ function successEvent(overrides: {
   return { event };
 }
 
+function subscriptionSuccessEvent(tracker: string) {
+  const event = {
+    type: "payment.succeeded",
+    merchant_api_key: "sec_test",
+    data: {
+      tracker,
+      state: "TRACKER_ENDED",
+      amount: 300_000,
+      currency: "PKR",
+      metadata: { order_id: "sub_subscription_1" },
+    },
+  };
+  vi.mocked(db.safepayWebhookEvent.findUnique).mockResolvedValue({
+    id: "event_subscription_1",
+    status: "RECEIVED",
+    processingStartedAt: null,
+    payloadEvidence: JSON.stringify(event),
+  } as never);
+  vi.mocked(db.safepayWebhookEvent.updateMany).mockResolvedValue({ count: 1 } as never);
+  return event;
+}
+
+function subscriptionFailedEvent(tracker: string) {
+  const event = {
+    type: "payment.failed",
+    merchant_api_key: "sec_test",
+    data: {
+      tracker,
+      amount: 300_000,
+      currency: "PKR",
+      metadata: { order_id: "sub_subscription_1" },
+    },
+  };
+  vi.mocked(db.safepayWebhookEvent.createMany).mockResolvedValue({ count: 1 } as never);
+  vi.mocked(db.safepayWebhookEvent.findUnique).mockResolvedValue({
+    id: `event_${tracker}`,
+    status: "RECEIVED",
+    processingStartedAt: null,
+    payloadEvidence: JSON.stringify(event),
+  } as never);
+  vi.mocked(db.safepayWebhookEvent.updateMany).mockResolvedValue({ count: 1 } as never);
+  return event;
+}
+
 function transactionWithPaymentResult(count: number) {
   const tx = {
     booking: { updateMany: vi.fn().mockResolvedValue({ count }) },
     notification: { createMany: vi.fn().mockResolvedValue({ count: 2 }) },
+    paymentEmailOutbox: { createMany: vi.fn().mockResolvedValue({ count: 2 }) },
   };
   vi.mocked(db.$transaction).mockImplementation(((callback: (client: typeof db) => Promise<unknown>) =>
     callback(tx as unknown as typeof db)) as typeof db.$transaction);
@@ -400,4 +448,133 @@ describe("POST /api/payment/webhook", () => {
     releaseFirstRead();
     expect((await firstRequest).status).toBe(200);
   });
+
+  it("releases a failed initial Pro tracker so an explicit retry can start", async () => {
+    const event = subscriptionFailedEvent("failed-initial-tracker");
+    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+      id: "subscription_1", status: "PENDING", paymentRef: "failed-initial-tracker", renewalPaymentRef: null,
+    } as never);
+    vi.mocked(db.subscription.updateMany).mockResolvedValue({ count: 1 } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(db.subscription.updateMany).toHaveBeenCalledWith({
+      where: { id: "subscription_1", status: "PENDING", paymentRef: "failed-initial-tracker" },
+      data: { status: "CANCELLED", paymentRef: null },
+    });
+  });
+
+  it("clears a failed renewal reference while preserving the active Pro period", async () => {
+    const event = subscriptionFailedEvent("failed-renewal-tracker");
+    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+      id: "subscription_1", status: "ACTIVE", paymentRef: "previous-tracker", renewalPaymentRef: "failed-renewal-tracker",
+    } as never);
+    vi.mocked(db.subscription.updateMany).mockResolvedValue({ count: 1 } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(db.subscription.updateMany).toHaveBeenCalledWith({
+      where: { id: "subscription_1", status: "ACTIVE", renewalPaymentRef: "failed-renewal-tracker" },
+      data: { renewalPaymentRef: null },
+    });
+  });
+
+  it("renews from the recorded month-end during grace with a clamped UTC month", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2030-02-05T13:15:00.000Z"));
+    const event = subscriptionSuccessEvent("renewal-tracker");
+    const endDate = new Date("2030-01-31T13:15:00.000Z");
+    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+      id: "subscription_1",
+      userId: "owner_1",
+      status: "ACTIVE",
+      paymentRef: "previous-tracker",
+      renewalPaymentRef: "renewal-tracker",
+      endDate,
+    } as never);
+    const tx = {
+      subscription: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      user: { update: vi.fn() },
+    };
+    vi.mocked(db.$transaction).mockImplementation((async (callback: (client: typeof db) => Promise<unknown>) =>
+      callback(tx as unknown as typeof db)) as typeof db.$transaction);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(tx.subscription.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "subscription_1",
+        status: "ACTIVE",
+        renewalPaymentRef: "renewal-tracker",
+        endDate,
+      },
+      data: {
+        paymentRef: "renewal-tracker",
+        renewalPaymentRef: null,
+        startDate: endDate,
+        endDate: new Date("2030-02-28T13:15:00.000Z"),
+      },
+    });
+    expect(tx.user.update).toHaveBeenCalledWith({ where: { id: "owner_1" }, data: { plan: "PRO" } });
+  });
+
+  it("starts a new monthly term at receipt time for a renewal callback after grace", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2030-02-07T13:15:00.000Z"));
+    const event = subscriptionSuccessEvent("late-renewal-tracker");
+    const endDate = new Date("2030-01-31T13:15:00.000Z");
+    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+      id: "subscription_1",
+      userId: "owner_1",
+      status: "ACTIVE",
+      paymentRef: "previous-tracker",
+      renewalPaymentRef: "late-renewal-tracker",
+      endDate,
+    } as never);
+    const tx = {
+      subscription: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      user: { update: vi.fn() },
+    };
+    vi.mocked(db.$transaction).mockImplementation((async (callback: (client: typeof db) => Promise<unknown>) =>
+      callback(tx as unknown as typeof db)) as typeof db.$transaction);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(tx.subscription.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "subscription_1",
+        status: "ACTIVE",
+        renewalPaymentRef: "late-renewal-tracker",
+        endDate,
+      },
+      data: {
+        paymentRef: "late-renewal-tracker",
+        renewalPaymentRef: null,
+        startDate: new Date("2030-02-07T13:15:00.000Z"),
+        endDate: new Date("2030-03-07T13:15:00.000Z"),
+      },
+    });
+  });
+
+  it("acknowledges a duplicate renewal callback without extending the term twice", async () => {
+    const event = subscriptionSuccessEvent("already-paid-renewal");
+    vi.mocked(db.subscription.findUnique).mockResolvedValue({
+      id: "subscription_1",
+      userId: "owner_1",
+      status: "ACTIVE",
+      paymentRef: "already-paid-renewal",
+      renewalPaymentRef: null,
+      endDate: new Date("2030-03-07T13:15:00.000Z"),
+    } as never);
+
+    const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+    expect(response.status).toBe(200);
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
 });
