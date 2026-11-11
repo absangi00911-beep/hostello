@@ -80,3 +80,7 @@ e2e/.auth/
 e2e/.test-state.json
 
 .tmp-vitest/
+# Agent tooling (local only). Vendored skills are reproducible from skills-lock.json.
+.agents/
+.claude/skills/
+.superpowers/
