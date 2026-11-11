@@ -2,6 +2,21 @@
 
 Revision history of the HostelLo system design document and repository audits. Entries 1.4 to 3.127 were moved verbatim from `SYSTEM.md` §19 on October 20, 2026; rows 3.127, 3.115 and 3.114 were out of order in the original and are preserved as found. From version 4.0 on, add new entries at the top.
 
+## Unreleased (November 9, 2026)
+
+Project-health remediation follow-up (G-001, G-005, G-007, G-008–G-011).
+
+- **Payments:** Pro checkout retries reuse the pending tracker, and competing initiations use conditional persistence so an active checkout tracker is not replaced. Stale success callbacks require reconciliation; no provider behavior is assumed.
+- **Pro subscription policy:** founder launch default is a one-calendar-month paid term plus seven days of entitlement grace. A scheduled idempotent expiry sweep downgrades owners after grace; separately tracked renewal checkout success extends from the later of term end or payment time. No live provider enablement was added.
+- **Booking policy:** booking requests require exact whole-calendar-month terms (with month-end clamping), enforce hostel min/max stay and the 24-month global cap, and price from the validated month count.
+- **Payout readiness:** live transfer, custody, settlement-reconciliation, and overall-ready flags remain false; a different admin must approve each batch. Settlement is blocked, and the current workflow has no safe void/release path for approved batches?do not stage or approve operational batches. No live payout call was made.
+- **Email retention:** booking-payment confirmation emails use a typed reference-only outbox with bounded retries; pending and retry rows expire within 30 days, successful rows after 24 hours, and terminal failures after 30 days. No email payload or recipient address is persisted.
+- **Launch approval:** recorded selected defaults, schema/data-model impacts, external blockers and evidence requirements in `docs/FINAL-LAUNCH-APPROVAL-SPEC.md`; this is not go-live authorization.
+- **CI and uploads:** CI and production workflows are configured with isolated PostgreSQL integration gates. Public listing images are re-encoded in their accepted format with source metadata removed.
+- **Operations and documentation:** Added source-backed operations, launch, and CI/CD guidance; corrected upload-access/rate-limit and verification documentation. The unhealthy-job guidance requires checking the specific handler before reruns.
+- **Local verification:** 251 Vitest files passed, 2 skipped; 1,684 tests passed, 10 skipped; 27 script tests passed. Typecheck, lint, docs check, Prisma generation/validation, and `git diff --check` passed.
+- **Not verified:** Remote CI, build, provider, staging, and production checks were not run. The PostgreSQL CI gate's remote execution remains unverified.
+
 ## Unreleased (November 6, 2026)
 
 B-008: date-aware availability alerts and completion verification.

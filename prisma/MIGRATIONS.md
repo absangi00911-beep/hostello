@@ -38,18 +38,21 @@ corresponding new file in `prisma/migrations/`.
 
 ## Production migration deployment
 
-```bash
-npm run db:migrate:deploy
-```
+The production GitHub Actions workflow runs `npm run db:migrate:deploy` after its quality gates,
+build, and pre-migration snapshot step. The migration command receives
+`HOSTELLO_PRODUCTION_DATABASE_URL` from GitHub Actions secrets. `vercel pull` supplies the Vercel
+production build environment; it does not supply the database URL used by the migration step.
+Whether the Neon snapshot step is a hard gate depends on the external GitHub Actions variable
+`NEON_SNAPSHOT_REQUIRED` being exactly `true`. See [the CI/CD guide](../docs/CI-CD-GUIDE.md) for
+the release sequence and settings that must be verified by an owner.
 
-The production GitHub Actions workflow runs this command after the quality gate using
-`vercel env run -e production`, so the database URL stays in Vercel's Production environment.
 Preview builds never apply migrations. To migrate Preview, manually dispatch
 `.github/workflows/migrate-preview.yml` from the `preview` branch. The workflow compares the
 injected Preview database host and name with the configured `preview-migrations` GitHub Environment
 variables and refuses to run if they do not match or match the configured Production identity.
 `prisma migrate deploy` applies pending migrations in `prisma/migrations/`; it does **not**
-generate new migrations.
+generate new migrations. In production, run it through the protected workflow rather than an
+operator shell so the approved database target and release gates are used.
 
 The migration command is declared in `package.json` as `db:migrate:deploy`. Vercel's build command
 remains `npm run build`, which performs Prisma Client generation and the Next.js artifact build.
@@ -67,13 +70,14 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
    - A `NOT NULL` column was added without a `DEFAULT` and existing rows cannot be backfilled
    - A unique constraint conflicts with existing data
 
-3. **If the migration has not been applied at all** (it failed before touching the database):
-   Fix the SQL in the migration file, or create a corrective migration locally with
-   `npm run migrate:new`, then redeploy.
+3. **If evidence confirms the migration did not change the database:** correct the migration
+   locally or create a corrective migration with `npm run migrate:new`, then review and redeploy
+   through the normal workflow. Never edit a migration that has already been applied.
 
-4. **If the migration was partially applied** (the DB is in an unknown state): mark it as
-   rolled back manually in the `_prisma_migrations` table, then redeploy with the fixed SQL.
-   Tag the Lead/DBA before touching the `_prisma_migrations` table directly.
+4. **If the migration was partially applied or the state is unknown:** stop. Do not update
+   `_prisma_migrations` directly and do not retry until the incident owner and a qualified
+   database operator have inspected the target and approved a recovery plan. See the
+   [operations runbook](../docs/OPERATIONS-RUNBOOK.md).
 
 5. **Never delete or rename a migration file that has already been applied to production.**
    Prisma tracks applied migrations by filename checksum. Deleting or renaming one breaks
@@ -83,7 +87,7 @@ remains `npm run build`, which performs Prisma Client generation and the Next.js
 
 ## Existing migrations (do not touch)
 
-**Last audited:** November 6, 2026. The repository currently has 35 migration
+**Last audited:** November 6, 2026. The repository currently has 36 migration
 folders under `prisma/migrations/`. Keep this ledger in sync whenever a new
 migration is committed.
 
@@ -124,6 +128,7 @@ migration is committed.
 | 20261105000000 | add_seat_holds |
 | 20261105100000 | add_late_payment_resolution |
 | 20261105210000 | add_availability_alerts |
+| 20261109160000 | launch_defaults_reliability |
 
 Applied-production status must be confirmed per environment before release.
 Once a migration has been applied to any shared or production database, its SQL
@@ -133,6 +138,12 @@ The seat-hold migration adds date-bounded inventory and refuses to backfill
 until active legacy bookings pass its mapping and capacity preflight. The late
 payment migration adds immutable resolution evidence and refund-sweep
 indexing. The availability-alert migration adds date-aware alert state and
-transition notification identifiers. None of these entries implies that a
+transition notification identifiers. The launch-defaults migration adds an
+independent payout approval actor/time and append-only event, a separate Pro
+renewal tracker, and a reference-only payment confirmation outbox. The outbox
+stores no recipient email or rendered/provider payload: successful rows expire
+after 24 hours; terminal failed rows expire 30 days after the final failed
+attempt. The new migration is authored only and has not been applied locally,
+to shared databases, or to production. None of these entries implies that a
 migration was applied to a particular database; verify each target separately
 before release.
