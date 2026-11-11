@@ -40,6 +40,10 @@ describe("AvailabilityAlertCard", () => {
     expect(markup).toContain(">Edit</button>");
     expect(markup).toContain(">Pause</button>");
     expect(markup).toContain(">Delete</button>");
+    expect(markup).toMatch(
+      /<button class="[^"]*text-danger[^"]*"[^>]*>Delete<\/button>/,
+    );
+    expect(markup).not.toContain("#8b2525");
   });
 
   it("offers create-new and delete actions for expired alerts", () => {
@@ -56,6 +60,10 @@ describe("AvailabilityAlertCard", () => {
     expect(markup).not.toContain(">Edit</button>");
     expect(markup).not.toContain(">Pause</button>");
     expect(markup).toContain(">Delete</button>");
+    expect(markup).toMatch(
+      /<button class="[^"]*text-danger[^"]*"[^>]*>Delete<\/button>/,
+    );
+    expect(markup).not.toContain("#8b2525");
   });
 
   it("uses a safe detail route for the associated hostel", () => {

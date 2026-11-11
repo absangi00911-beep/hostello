@@ -44,6 +44,28 @@ describe("ProfilePage", () => {
     expect(markup).not.toContain("03001234567");
   });
 
+  it("stacks the host promotion content on narrow screens", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        onRetry={() => {}}
+        profile={{
+          name: "Alex Student",
+          avatar: null,
+          city: "Lahore",
+          createdAt: "2024-06-10T00:00:00.000Z",
+          counts: { bookings: 2, favorites: 5, reviews: 1 },
+        }}
+        isLoading={false}
+      />,
+    );
+
+    expect(markup).toContain(
+      "flex flex-col items-start justify-between gap-4 rounded-[14px]",
+    );
+    expect(markup).toContain("sm:flex-row sm:items-center sm:gap-6");
+  });
+
   it("shows a profile retry action after an API error", () => {
     const markup = renderToStaticMarkup(
       <ProfilePageContent
@@ -56,7 +78,28 @@ describe("ProfilePage", () => {
 
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("Profile service unavailable.");
+    expect(markup).toContain("border-danger");
+    expect(markup).toContain("text-danger");
+    expect(markup).not.toContain("#e7c9c4");
+    expect(markup).not.toContain("#8c2822");
     expect(markup).toContain("Try again");
+  });
+
+  it("uses the semantic danger pattern for the missing-profile fallback", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        onRetry={() => {}}
+        profile={null}
+        isLoading={false}
+      />,
+    );
+
+    expect(markup).toContain("Could not load your profile. Please try again.");
+    expect(markup).toContain("border-danger");
+    expect(markup).toContain("text-danger");
+    expect(markup).not.toContain("#e7c9c4");
+    expect(markup).not.toContain("#8c2822");
   });
 
   it("keeps private profile fields out of the student profile model", () => {

@@ -48,6 +48,43 @@ describe("WishlistsPage", () => {
 
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("Saved-hostel service unavailable.");
+    expect(markup).toContain("border-danger");
+    expect(markup).toContain("text-danger");
+    expect(markup).not.toContain("#e7c9c4");
+    expect(markup).not.toContain("#8c2822");
+    expect(markup).toContain("Try again");
+  });
+
+  it("uses the semantic danger pattern for pagination errors", () => {
+    const markup = renderToStaticMarkup(
+      <WishlistsPageContent
+        error="More saved hostels could not be loaded."
+        hasMore={false}
+        hostels={[
+          {
+            id: "hostel-1",
+            slug: "gulberg-student-stay",
+            name: "Gulberg Student Stay",
+            city: "Lahore",
+            area: "Gulberg",
+            pricePerMonth: 18_000,
+            coverImage: null,
+            images: [],
+            rating: 4.5,
+            reviewCount: 12,
+          },
+        ]}
+        isLoading={false}
+        isLoadingMore={false}
+        onLoadMore={() => {}}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).toContain("border-danger");
+    expect(markup).toContain("text-danger");
+    expect(markup).not.toContain("#e7c9c4");
+    expect(markup).not.toContain("#8c2822");
     expect(markup).toContain("Try again");
   });
 

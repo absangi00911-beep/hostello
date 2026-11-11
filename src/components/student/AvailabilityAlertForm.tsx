@@ -27,6 +27,14 @@ function readError(result: unknown) {
     : null;
 }
 
+export function AvailabilityAlertError({ message }: { message: string }) {
+  return (
+    <p className="m-0 text-sm text-danger" role="alert">
+      {message}
+    </p>
+  );
+}
+
 export function AvailabilityAlertForm({
   initial,
   onCancel,
@@ -141,9 +149,7 @@ export function AvailabilityAlertForm({
       <AvailabilityAlertStayFields values={values} update={update} />
 
       {error && (
-        <p className="m-0 text-sm text-[#8b2525]" role="alert">
-          {error}
-        </p>
+        <AvailabilityAlertError message={error} />
       )}
       <div className="flex flex-wrap gap-2">
         <button
