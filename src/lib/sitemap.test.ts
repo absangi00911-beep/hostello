@@ -38,4 +38,30 @@ describe("buildSitemapEntries", () => {
     }));
     expect(buildSitemapEntries(SITE, many)).toHaveLength(MAX_SITEMAP_URLS);
   });
+
+  it("lists city pages after the static pages and before hostels", () => {
+    const updatedAt = new Date("2026-11-01T00:00:00Z");
+    const urls = buildSitemapEntries(
+      SITE,
+      [{ slug: "green-view-hostel", updatedAt }],
+      [{ slug: "lahore" }, { slug: "dera-ghazi-khan" }, { slug: "" }],
+    ).map((entry) => entry.url);
+
+    expect(urls.slice(-3)).toEqual([
+      `${SITE}/hostels-in/lahore`,
+      `${SITE}/hostels-in/dera-ghazi-khan`,
+      `${SITE}/hostels/green-view-hostel`,
+    ]);
+  });
+
+  it("counts city pages toward the 50,000 URL limit", () => {
+    const hostels = Array.from({ length: MAX_SITEMAP_URLS }, (_, i) => ({
+      slug: `h-${i}`,
+      updatedAt: new Date(),
+    }));
+    const entries = buildSitemapEntries(SITE, hostels, [{ slug: "lahore" }]);
+
+    expect(entries).toHaveLength(MAX_SITEMAP_URLS);
+    expect(entries.map((entry) => entry.url)).toContain(`${SITE}/hostels-in/lahore`);
+  });
 });

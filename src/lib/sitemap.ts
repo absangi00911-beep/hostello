@@ -12,10 +12,16 @@ export interface SitemapHostel {
   updatedAt: Date;
 }
 
-/** Pure builder: absolute URLs from the site origin plus active listings. */
+/** A city landing page (`/hostels-in/<slug>`); the slug is already URL-safe. */
+export interface SitemapCity {
+  slug: string;
+}
+
+/** Pure builder: absolute URLs from the site origin, city pages and active listings. */
 export function buildSitemapEntries(
   siteUrl: string | undefined,
   hostels: readonly SitemapHostel[],
+  cities: readonly SitemapCity[] = [],
 ): MetadataRoute.Sitemap {
   if (!siteUrl) return [];
 
@@ -23,13 +29,18 @@ export function buildSitemapEntries(
     url: path === "/" ? siteUrl : `${siteUrl}${path}`,
   }));
 
+  const cityEntries: MetadataRoute.Sitemap = cities
+    .filter((city) => city.slug.length > 0)
+    .slice(0, MAX_SITEMAP_URLS - staticEntries.length)
+    .map((city) => ({ url: `${siteUrl}/hostels-in/${city.slug}` }));
+
   const hostelEntries: MetadataRoute.Sitemap = hostels
     .filter((hostel) => hostel.slug.length > 0)
-    .slice(0, MAX_SITEMAP_URLS - staticEntries.length)
+    .slice(0, MAX_SITEMAP_URLS - staticEntries.length - cityEntries.length)
     .map((hostel) => ({
       url: `${siteUrl}/hostels/${encodeURIComponent(hostel.slug)}`,
       lastModified: hostel.updatedAt,
     }));
 
-  return [...staticEntries, ...hostelEntries];
+  return [...staticEntries, ...cityEntries, ...hostelEntries];
 }
