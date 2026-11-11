@@ -4,7 +4,7 @@ import { OwnerDashboard } from "@/components/owner/OwnerDashboard";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Host dashboard | HostelLo" };
+export const metadata: Metadata = { title: "Host dashboard" };
 
 export default async function OwnerDashboardRoute() {
   const session = await auth();

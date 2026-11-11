@@ -8,7 +8,7 @@ import { getListingStatusLabel } from "@/components/owner/ownerListings";
 import { auth } from "@/lib/auth/config";
 import { getOwnerListingForEdit } from "@/lib/owner-listing";
 
-export const metadata: Metadata = { title: "Edit listing | HostelLo" };
+export const metadata: Metadata = { title: "Edit listing" };
 
 export default async function EditListingRoute({
   params,

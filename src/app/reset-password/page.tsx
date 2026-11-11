@@ -3,7 +3,7 @@ import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 
 export const metadata: Metadata = {
-  title: "Choose a new password | HostelLo",
+  title: "Choose a new password",
   // Keep the one-time token out of the Referer header sent to other sites.
   referrer: "no-referrer",
   robots: { index: false, follow: false },

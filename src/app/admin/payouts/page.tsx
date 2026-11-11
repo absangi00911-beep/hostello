@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminPayoutsPage } from "@/components/admin/AdminPayoutsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Owner payouts | HostelLo" };
+export const metadata: Metadata = { title: "Owner payouts" };
 
 export default async function AdminPayoutsRoute() {
   const session = await auth();

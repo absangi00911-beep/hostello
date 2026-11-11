@@ -5,7 +5,7 @@ import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { RoommatesPage } from "@/components/roommates/RoommatesPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Roommates | HostelLo" };
+export const metadata: Metadata = { title: "Roommates" };
 
 export default async function RoommatesRoute({
   params,

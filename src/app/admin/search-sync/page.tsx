@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminSearchSyncPage } from "@/components/admin/AdminSearchSyncPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Search index | HostelLo" };
+export const metadata: Metadata = { title: "Search index" };
 
 export default async function AdminSearchSyncRoute() {
   const session = await auth();

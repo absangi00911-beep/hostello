@@ -5,7 +5,7 @@ import { OwnerSubscriptionPage } from "@/components/owner/OwnerSubscriptionPage"
 import { parseReturnState } from "@/components/owner/ownerSubscription";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Subscription | HostelLo" };
+export const metadata: Metadata = { title: "Subscription" };
 
 export default async function OwnerSubscriptionRoute({
   searchParams,

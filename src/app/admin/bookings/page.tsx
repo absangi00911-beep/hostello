@@ -4,7 +4,7 @@ import { AdminBookingsPage } from "@/components/admin/AdminBookingsPage";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Bookings | HostelLo" };
+export const metadata: Metadata = { title: "Bookings" };
 
 export default async function AdminBookingsRoute() {
   const session = await auth();

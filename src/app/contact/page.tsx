@@ -3,7 +3,7 @@ import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { ContactForm } from "@/components/auth/ContactForm";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Contact us | HostelLo" };
+export const metadata: Metadata = { title: "Contact us" };
 
 export default async function ContactPage() {
   const session = await auth();

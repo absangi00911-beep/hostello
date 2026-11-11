@@ -4,7 +4,7 @@ import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { OwnerReviewsPage } from "@/components/owner/OwnerReviewsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Reviews | HostelLo" };
+export const metadata: Metadata = { title: "Reviews" };
 
 export default async function OwnerReviewsRoute() {
   const session = await auth();

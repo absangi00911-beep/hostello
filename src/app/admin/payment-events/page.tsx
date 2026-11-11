@@ -4,7 +4,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminPaymentEventsPage } from "@/components/admin/AdminPaymentEventsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Payment events | HostelLo" };
+export const metadata: Metadata = { title: "Payment events" };
 
 export default async function AdminPaymentEventsRoute() {
   const session = await auth();

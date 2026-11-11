@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 
-export const metadata: Metadata = { title: "Reset password | HostelLo" };
+export const metadata: Metadata = { title: "Reset password" };
 
 export default function ForgotPasswordPage() {
   return (

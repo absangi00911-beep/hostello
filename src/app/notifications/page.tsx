@@ -4,7 +4,7 @@ import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { NotificationsPage } from "@/components/notifications/NotificationsPage";
 import { auth } from "@/lib/auth/config";
 
-export const metadata: Metadata = { title: "Notifications | HostelLo" };
+export const metadata: Metadata = { title: "Notifications" };
 
 export default async function NotificationsRoute() {
   const session = await auth();
