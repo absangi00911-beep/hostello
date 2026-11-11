@@ -7,20 +7,17 @@ import {
   FormSection,
   controlProps,
   fieldClassName,
-  primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/owner/ListingFormFields";
 import { AdminUncertainActionNotice } from "./AdminUncertainActionNotice";
 import { isUncertainAdminActionStatus } from "./adminActionState";
 import { readAdminError } from "./adminListings";
 import {
-  REFERENCE_MAX,
   VOID_REASON_MAX,
   auditActionLabel,
   canGenerateBatch,
   generateBlockedReason,
   parseAdminPayoutsPage,
-  validateReference,
   validateVoidReason,
   type AdminPayout,
   type AdminPayoutOwner,
@@ -46,12 +43,14 @@ const dangerButtonClassName =
 
 const STATUS_STYLES: Record<AdminPayout["status"], string> = {
   PENDING: "bg-warn-soft text-warn-ink",
+  APPROVED: "bg-brand-soft text-brand-dark",
   PAID: "bg-brand-soft text-brand-dark",
   CANCELLED: "bg-surface-muted text-muted",
 };
 
 const STATUS_LABELS: Record<AdminPayout["status"], string> = {
-  PENDING: "Awaiting transfer",
+  PENDING: "Awaiting second approval",
+  APPROVED: "Approved (settlement blocked)",
   PAID: "Paid",
   CANCELLED: "Voided",
 };
@@ -65,10 +64,9 @@ export interface PayoutActionResult {
 export type GenerateBatchAction = (
   owner: AdminPayoutOwner,
 ) => Promise<PayoutActionResult>;
-export type MarkPaidAction = (
+export type ApproveAction = (
   owner: AdminPayoutOwner,
   payout: AdminPayout,
-  reference: string,
 ) => Promise<PayoutActionResult>;
 export type VoidAction = (
   owner: AdminPayoutOwner,
@@ -127,70 +125,6 @@ function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
         ? "No bank details were saved with this batch. Void it and generate a new one after the owner completes their bank details."
         : "The saved bank details could not be decrypted. Void this batch and generate a new one."}
     </p>
-  );
-}
-
-export function MarkPaidForm({
-  busy,
-  error,
-  onConfirm,
-  onCancel,
-}: {
-  busy: boolean;
-  error: string | null;
-  onConfirm: (reference: string) => void;
-  onCancel: () => void;
-}) {
-  const [reference, setReference] = useState("");
-  const [touched, setTouched] = useState(false);
-  const fieldError = touched ? validateReference(reference) : null;
-
-  return (
-    <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-      <p className="m-0 text-[0.9rem] text-ink">
-        Only mark this paid after the transfer has left your bank. The owner is
-        told the money is on its way, and this cannot be undone.
-      </p>
-      <Field
-        error={fieldError ?? undefined}
-        id="payout-reference"
-        label="Transfer reference"
-      >
-        <input
-          {...controlProps("payout-reference", fieldError ?? undefined)}
-          className={fieldClassName}
-          maxLength={REFERENCE_MAX}
-          onChange={(event) => setReference(event.target.value)}
-          value={reference}
-        />
-      </Field>
-      {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
-          {error}
-        </p>
-      ) : null}
-      <div className="flex flex-wrap gap-2">
-        <button
-          className={primaryButtonClassName}
-          disabled={busy}
-          onClick={() => {
-            setTouched(true);
-            if (!validateReference(reference)) onConfirm(reference.trim());
-          }}
-          type="button"
-        >
-          {busy ? "Working…" : "Mark as paid"}
-        </button>
-        <button
-          className={secondaryButtonClassName}
-          disabled={busy}
-          onClick={onCancel}
-          type="button"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -273,15 +207,15 @@ export function VoidForm({
 function PayoutRow({
   owner,
   payout,
-  onMarkPaid,
+  onApprove,
   onVoid,
 }: {
   owner: AdminPayoutOwner;
   payout: AdminPayout;
-  onMarkPaid: MarkPaidAction;
+  onApprove: ApproveAction;
   onVoid: VoidAction;
 }) {
-  const [mode, setMode] = useState<"paid" | "void" | null>(null);
+  const [mode, setMode] = useState<"void" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uncertain, setUncertain] = useState(false);
@@ -323,6 +257,12 @@ function PayoutRow({
           {payout.reference ? ` · reference ${payout.reference}` : ""}
         </p>
       ) : null}
+      {payout.status === "APPROVED" ? (
+        <p className="m-0 rounded-[12px] bg-surface-muted p-3 text-[0.85rem] text-ink" role="status">
+          Approved by a second admin{payout.approvedAt ? ` on ${dateFormatter.format(new Date(payout.approvedAt))}` : ""}.
+          Settlement is currently disabled: do not send funds or record a transfer until custody and independent settlement reconciliation are approved.
+        </p>
+      ) : null}
       {payout.status === "CANCELLED" ? (
         <p className="m-0 text-[0.85rem] text-muted">
           Voided
@@ -349,19 +289,24 @@ function PayoutRow({
       {uncertain ? <AdminUncertainActionNotice /> : null}
       {payout.status === "PENDING" && !uncertain ? (
         <>
+          <p className="m-0 text-[0.85rem] text-muted">
+            A different admin must review and approve this batch before any transfer. Approval does not move money, but it locks the booking claims and this workflow cannot void an approved batch. Settlement is disabled; do not approve operational batches until a safe recovery path and settlement controls are ready.
+          </p>
           <div className="flex flex-wrap gap-2">
             <button
               className={secondaryButtonClassName}
+              disabled={busy}
               onClick={() => {
                 setError(null);
-                setMode(mode === "paid" ? null : "paid");
+                void run(() => onApprove(owner, payout));
               }}
               type="button"
             >
-              Mark as paid
+              {busy ? "Approving..." : "Approve payout"}
             </button>
             <button
               className={secondaryButtonClassName}
+              disabled={busy}
               onClick={() => {
                 setError(null);
                 setMode(mode === "void" ? null : "void");
@@ -371,16 +316,6 @@ function PayoutRow({
               Void batch
             </button>
           </div>
-          {mode === "paid" ? (
-            <MarkPaidForm
-              busy={busy}
-              error={error}
-              onCancel={() => setMode(null)}
-              onConfirm={(reference) =>
-                void run(() => onMarkPaid(owner, payout, reference))
-              }
-            />
-          ) : null}
           {mode === "void" ? (
             <VoidForm
               busy={busy}
@@ -401,13 +336,13 @@ function OwnerCard({
   owner,
   payoutHistoryPerOwner,
   onGenerate,
-  onMarkPaid,
+  onApprove,
   onVoid,
 }: {
   owner: AdminPayoutOwner;
   payoutHistoryPerOwner: number;
   onGenerate: GenerateBatchAction;
-  onMarkPaid: MarkPaidAction;
+  onApprove: ApproveAction;
   onVoid: VoidAction;
 }) {
   const [busy, setBusy] = useState(false);
@@ -468,7 +403,7 @@ function OwnerCard({
             {owner.payouts.map((payout) => (
               <PayoutRow
                 key={payout.id}
-                onMarkPaid={onMarkPaid}
+                onApprove={onApprove}
                 onVoid={onVoid}
                 owner={owner}
                 payout={payout}
@@ -499,7 +434,7 @@ export interface AdminPayoutsContentProps {
   onRetry: () => void;
   onLoadMore: () => void;
   onGenerate: GenerateBatchAction;
-  onMarkPaid: MarkPaidAction;
+  onApprove: ApproveAction;
   onVoid: VoidAction;
 }
 
@@ -516,7 +451,7 @@ export function AdminPayoutsContent({
   onRetry,
   onLoadMore,
   onGenerate,
-  onMarkPaid,
+  onApprove,
   onVoid,
 }: AdminPayoutsContentProps) {
   return (
@@ -531,8 +466,7 @@ export function AdminPayoutsContent({
         Owner payouts
       </h1>
       <p className="mb-6 mt-2 text-[0.95rem] text-muted">
-        Generate a payout batch for an owner, send the bank transfer yourself,
-        then record the reference here. HostelLo does not move the money.
+        A second admin must approve each payout batch before any transfer. Transfers are manual and off-platform; settlement remains disabled until custody and independent reconciliation are approved. Do not send funds based on a batch or approval alone.
       </p>
 
       <div className="grid gap-5">
@@ -575,7 +509,7 @@ export function AdminPayoutsContent({
                   <OwnerCard
                     key={owner.id}
                     onGenerate={onGenerate}
-                    onMarkPaid={onMarkPaid}
+                    onApprove={onApprove}
                     onVoid={onVoid}
                     owner={owner}
                     payoutHistoryPerOwner={payoutHistoryPerOwner}
@@ -738,14 +672,14 @@ export function AdminPayoutsPage() {
     [send],
   );
 
-  const markPaid = useCallback<MarkPaidAction>(
-    (owner, payout, reference) =>
+  const approve = useCallback<ApproveAction>(
+    (owner, payout) =>
       send(
         `/api/admin/payouts/${encodeURIComponent(payout.id)}`,
         "PATCH",
-        { action: "mark-paid", reference },
-        `Payout to ${owner.name} marked as paid.`,
-        "We couldn't mark this payout as paid. Please try again.",
+        { action: "approve" },
+        `Payout batch for ${owner.name} approved by a second admin. No transfer was sent.`,
+        "We couldn't approve this payout. Please try again.",
       ),
     [send],
   );
@@ -772,7 +706,7 @@ export function AdminPayoutsPage() {
       notice={notice}
       onGenerate={generate}
       onLoadMore={() => void loadMore()}
-      onMarkPaid={markPaid}
+      onApprove={approve}
       onRetry={() => setRetryCount((count) => count + 1)}
       onVoid={voidBatch}
       owners={owners}

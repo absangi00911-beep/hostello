@@ -1,4 +1,4 @@
-export type PayoutStatus = "PENDING" | "PAID" | "CANCELLED";
+export type PayoutStatus = "PENDING" | "APPROVED" | "PAID" | "CANCELLED";
 export type DestinationStatus =
   | "available"
   | "missing"
@@ -24,6 +24,8 @@ export interface AdminPayout {
   amount: number;
   status: PayoutStatus;
   reference: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
   createdAt: string;
   paidAt: string | null;
   cancelledAt: string | null;
@@ -67,7 +69,7 @@ function optionalString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
-const STATUSES: readonly string[] = ["PENDING", "PAID", "CANCELLED"];
+const STATUSES: readonly string[] = ["PENDING", "APPROVED", "PAID", "CANCELLED"];
 const DESTINATION_STATUSES: readonly string[] = [
   "available",
   "missing",
@@ -130,6 +132,8 @@ function parsePayout(value: unknown): AdminPayout | null {
     amount: value.amount,
     status: value.status as PayoutStatus,
     reference: optionalString(value.reference),
+    approvedBy: optionalString(value.approvedBy),
+    approvedAt: isValidDateString(value.approvedAt) ? value.approvedAt : null,
     createdAt: value.createdAt,
     paidAt: isValidDateString(value.paidAt) ? value.paidAt : null,
     cancelledAt: isValidDateString(value.cancelledAt) ? value.cancelledAt : null,
@@ -225,6 +229,7 @@ export function validateVoidReason(reason: string): string | null {
 
 export function auditActionLabel(action: string): string {
   if (action === "BATCH_CREATED") return "Batch created";
+  if (action === "APPROVED") return "Approved by a second admin";
   if (action === "MARKED_PAID") return "Marked paid";
   if (action === "VOIDED") return "Voided";
   return action;

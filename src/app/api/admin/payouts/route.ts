@@ -3,7 +3,7 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
-import { createPayoutBatch, getEligiblePayoutBookingWhere, PayoutServiceError } from "@/lib/payouts";
+import { createPayoutBatch, getEligiblePayoutBookingWhere, PAYOUT_READINESS, PayoutServiceError } from "@/lib/payouts";
 import { decryptPayoutDestinationSnapshot } from "@/lib/payout-destination";
 import { parsePagination } from "@/lib/pagination";
 import type { Prisma } from "@/generated/client";
@@ -22,7 +22,8 @@ const PAYOUT_HISTORY_PER_OWNER = 20;
 // this is the admin queue, not a generic "all owners" listing.
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -71,6 +72,8 @@ export async function GET(req: NextRequest) {
               reference: true,
               createdAt: true,
               paidAt: true,
+              approvedAt: true,
+              approvedBy: true,
               cancelledAt: true,
               cancelledBy: true,
               cancellationReason: true,
@@ -130,7 +133,7 @@ export async function GET(req: NextRequest) {
           pendingBalance: balances.get(owner.id) ?? 0,
           payouts: owner.payouts.map((payout) => {
             const auditEvents = payout.auditEvents ?? [];
-            if (payout.status !== "PENDING") {
+            if (!["PENDING", "APPROVED"].includes(payout.status)) {
               return {
                 ...payout,
                 destinationSnapshot: null,
@@ -175,6 +178,7 @@ export async function GET(req: NextRequest) {
         limit,
         hasMore: skip + owners.length < total,
         payoutHistoryPerOwner: PAYOUT_HISTORY_PER_OWNER,
+        payoutReadiness: PAYOUT_READINESS,
       },
       { headers: { "Cache-Control": "private, no-store" } },
     );
@@ -187,7 +191,8 @@ export async function GET(req: NextRequest) {
 // Generates a batch: claims every currently-eligible booking for one owner.
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

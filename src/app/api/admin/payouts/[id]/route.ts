@@ -2,24 +2,31 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/admin/payouts/[id]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
-import { cancelPayoutBatch, markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
+import { approvePayoutBatch, cancelPayoutBatch, markPayoutPaid, PayoutServiceError } from "@/lib/payouts";
 import { z } from "zod";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { rateLimit } from "@/lib/rate-limit";
 import { isBoundedRouteParam } from "@/lib/route-params";
 
 const updatePayoutSchema = z.object({
-  action: z.enum(["mark-paid", "void"]).optional(),
+  action: z.enum(["approve", "mark-paid", "void"]).optional(),
   reference: z.string().trim().min(1).max(200).optional(),
   reason: z.string().trim().min(10).max(500).optional(),
   confirmTransferNotSent: z.literal(true).optional(),
-}).superRefine((data, context) => {
-  if (data.action === "void") {
+}).strict().superRefine((data, context) => {
+  if (data.action === "approve") {
+    if (data.reference || data.reason || data.confirmTransferNotSent) {
+      context.addIssue({ code: "custom", path: ["action"], message: "Approval accepts no transfer or void fields." });
+    }
+  } else if (data.action === "void") {
     if (!data.reason) {
       context.addIssue({ code: "custom", path: ["reason"], message: "A reason is required." });
     }
     if (data.confirmTransferNotSent !== true) {
       context.addIssue({ code: "custom", path: ["confirmTransferNotSent"], message: "Confirmation is required." });
+    }
+    if (data.reference) {
+      context.addIssue({ code: "custom", path: ["reference"], message: "A void cannot include a transfer reference." });
     }
   } else if (!data.reference) {
     context.addIssue({ code: "custom", path: ["reference"], message: "A transfer reference is required." });
@@ -31,7 +38,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -63,15 +71,32 @@ export async function PATCH(
   }
 
   try {
-    const payout = parsed.data.action === "void"
-      ? await cancelPayoutBatch(
-          id,
-          session.user.id,
-          parsed.data.reason!,
-          parsed.data.confirmTransferNotSent === true,
-        )
-      : await markPayoutPaid(id, session.user.id, parsed.data.reference!);
-    return NextResponse.json({ data: payout });
+    const payout = parsed.data.action === "approve"
+      ? await approvePayoutBatch(id, session.user.id)
+      : parsed.data.action === "void"
+        ? await cancelPayoutBatch(
+            id,
+            session.user.id,
+            parsed.data.reason!,
+            parsed.data.confirmTransferNotSent === true,
+          )
+        : await markPayoutPaid(id, session.user.id, parsed.data.reference!);
+    if (parsed.data.action === "approve") {
+      // Small API contract: approval identity and time only; never return the
+      // encrypted payout destination or unrelated payout internals here.
+      return NextResponse.json(
+        {
+          data: {
+            id: payout.id,
+            status: payout.status,
+            approvedBy: payout.approvedBy,
+            approvedAt: payout.approvedAt,
+          },
+        },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
+    }
+    return NextResponse.json({ data: payout }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (err) {
     console.error("[PATCH /api/admin/payouts/[id]]", getSafeErrorSummary(err));
     if (err instanceof PayoutServiceError) {

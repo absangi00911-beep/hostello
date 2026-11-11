@@ -14,6 +14,8 @@ const apiPayout = (overrides: Record<string, unknown> = {}) => ({
   amount: 42000,
   status: "PENDING",
   reference: null,
+  approvedBy: null,
+  approvedAt: null,
   createdAt: "2026-11-01T10:00:00.000Z",
   paidAt: null,
   cancelledAt: null,
@@ -67,6 +69,21 @@ describe("parseAdminPayoutsPage", () => {
     expect(payout?.destination?.bankName).toBe("Standard Chartered");
     expect(payout?.destinationStatus).toBe("available");
     expect(payout?.auditEvents[0].action).toBe("BATCH_CREATED");
+  });
+
+  it("parses an approved status and approval metadata", () => {
+    const parsed = parseAdminPayoutsPage(page([apiOwner({
+      payouts: [apiPayout({
+        status: "APPROVED",
+        approvedBy: "admin-2",
+        approvedAt: "2026-11-02T08:00:00.000Z",
+      })],
+    })]));
+    expect(parsed?.data[0].payouts[0]).toMatchObject({
+      status: "APPROVED",
+      approvedBy: "admin-2",
+      approvedAt: "2026-11-02T08:00:00.000Z",
+    });
   });
 
   it("keeps a missing destination as null", () => {
@@ -136,6 +153,7 @@ describe("validation and labels", () => {
 
   it("labels audit actions", () => {
     expect(auditActionLabel("MARKED_PAID")).toBe("Marked paid");
+    expect(auditActionLabel("APPROVED")).toBe("Approved by a second admin");
     expect(auditActionLabel("OTHER")).toBe("OTHER");
   });
 });
