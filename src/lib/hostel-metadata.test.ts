@@ -74,4 +74,13 @@ describe("hostel metadata", () => {
       robots: { index: false, follow: false },
     });
   });
+
+  it("quotes the cheapest room as the starting price", () => {
+    const description = buildHostelDescription({
+      ...hostel,
+      pricePerMonth: 15000,
+      rooms_rel: [{ pricePerMonth: 9000 }, { pricePerMonth: 20000 }],
+    });
+    expect(description).toContain("Rooms from PKR 9,000/month.");
+  });
 });
