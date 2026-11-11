@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
 import type { PrismaClient } from "@/generated/client";
-import { calculateMonths } from "@/lib/utils";
 import {
   getPakistanCalendarDate,
   isEnabledPaymentMethod,
+  isWholeMonthStay,
+  calculateMonths,
+  MAX_BOOKING_MONTHS,
   type BookingInput,
 } from "@hostello/shared";
 import { getSafeErrorSummary } from "@/lib/safe-error";
@@ -61,6 +63,12 @@ function validateBookingInput(input: BookingInput) {
   ) {
     throw new BookingServiceError("Select a valid future stay with check-out after check-in.", 409);
   }
+  if (!isWholeMonthStay(input.checkIn, input.checkOut)) {
+    throw new BookingServiceError("Choose a whole-month stay; check-out must match the monthly term from check-in.", 409);
+  }
+  if (calculateMonths(input.checkIn, input.checkOut) > MAX_BOOKING_MONTHS) {
+    throw new BookingServiceError(`A stay cannot exceed ${MAX_BOOKING_MONTHS} months.`, 409);
+  }
   if (!Number.isInteger(input.guests) || input.guests < 1 || input.guests > 4) {
     throw new BookingServiceError("The guest count is invalid.", 409);
   }
@@ -96,6 +104,8 @@ export async function createBooking(
           status: true,
           pricePerMonth: true,
           cancellationPolicy: true,
+          minStay: true,
+          maxStay: true,
         },
       });
       if (!hostel || hostel.status !== "ACTIVE") {
@@ -104,6 +114,14 @@ export async function createBooking(
       if (!hostel.cancellationPolicy) {
         throw new BookingServiceError(
           "This hostel is updating its cancellation terms and is temporarily unavailable for booking.",
+          409,
+        );
+      }
+
+      const months = calculateMonths(input.checkIn, input.checkOut);
+      if (months < hostel.minStay || (hostel.maxStay !== null && months > hostel.maxStay)) {
+        throw new BookingServiceError(
+          "The selected stay does not meet this hostel's minimum or maximum stay requirement.",
           409,
         );
       }
@@ -137,7 +155,6 @@ export async function createBooking(
         );
       }
 
-      const months = calculateMonths(input.checkIn, input.checkOut);
       const total = room.pricePerMonth * months * input.guests;
       const booking = await tx.booking.create({
         data: {

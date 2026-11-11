@@ -14,6 +14,7 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { getIp, rateLimit } from "@/lib/rate-limit";
 import { createOperationalLogContext } from "@/lib/operational-logger";
+import { isProEntitled } from "@/lib/pro-subscription";
 
 // This file was missing entirely — SearchPageClient.tsx has always called
 // fetch(`/api/hostels?...`), but nothing implemented that endpoint. The
@@ -100,13 +101,23 @@ export async function POST(req: NextRequest) {
         result = await db.$transaction(async (tx) => {
           const owner = await tx.user.findUnique({
             where: { id: session.user.id },
-            select: { name: true, email: true, plan: true, deletionRequestedAt: true },
+            select: {
+              name: true,
+              email: true,
+              plan: true,
+              deletionRequestedAt: true,
+              subscription: { select: { status: true, endDate: true } },
+            },
           });
           if (!owner) return { kind: "owner_missing" } as const;
           if (owner.deletionRequestedAt) return { kind: "deleting" } as const;
 
           const listingCount = await tx.hostel.count({ where: { ownerId: session.user.id } });
-          if (listingCount >= PLANS[owner.plan].maxListings) {
+          const effectivePlan = owner.plan === "PRO" && isProEntitled(
+            owner.subscription?.status,
+            owner.subscription?.endDate,
+          ) ? "PRO" : "FREE";
+          if (listingCount >= PLANS[effectivePlan].maxListings) {
             return { kind: "limit_reached" } as const;
           }
 

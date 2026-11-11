@@ -233,7 +233,13 @@ describe("POST /api/hostels", () => {
     });
     expect(db.user.findUnique).toHaveBeenCalledWith({
       where: { id: "owner_1" },
-      select: { name: true, email: true, plan: true, deletionRequestedAt: true },
+      select: {
+        name: true,
+        email: true,
+        plan: true,
+        deletionRequestedAt: true,
+        subscription: { select: { status: true, endDate: true } },
+      },
     });
     expect(db.hostel.count).toHaveBeenCalledWith({ where: { ownerId: "owner_1" } });
     expect(createHostelRecord).toHaveBeenCalledWith(expect.anything(), "owner_1", expect.objectContaining(validListing));

@@ -18,7 +18,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { GET } from "./route";
 
 const checkIn = "2099-03-10";
-const checkOut = "2099-03-13";
+const checkOut = "2099-04-10";
 const tx = {
   $queryRaw: vi.fn().mockResolvedValue([]),
   hostel: { findFirst: vi.fn() },

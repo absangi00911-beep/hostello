@@ -161,7 +161,7 @@ export function HostelReviewsSection({
                   </span>
                 </p>
                 {review.title && (
-                  <h3 className="hostel-review-title mb-1.5 text-[0.95rem] font-bold leading-[1.45] text-ink">
+                  <h3 className="hostel-review-title mb-1.5 text-base font-bold leading-[1.45] text-ink">
                     {review.title}
                   </h3>
                 )}

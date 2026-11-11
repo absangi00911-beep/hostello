@@ -82,12 +82,45 @@ describe("HostelBookingCard", () => {
     expect(markup).toMatch(/<option[^>]*disabled[^>]*value=""[^>]*>Choose a room<\/option>/);
   });
 
-  it("requests exact availability for the selected hostel, stay, and guests", () => {
+  it("requests exact availability only for a valid whole-month term", () => {
     expect(
-      buildExactAvailabilityUrl("green view", "2099-03-10", "2099-03-13", 2),
+      buildExactAvailabilityUrl("green view", "2099-03-10", "2099-04-10", 2),
     ).toBe(
-      "/api/hostels/green%20view/availability/exact?checkIn=2099-03-10&checkOut=2099-03-13&guests=2",
+      "/api/hostels/green%20view/availability/exact?checkIn=2099-03-10&checkOut=2099-04-10&guests=2",
     );
+    expect(
+      buildExactAvailabilityUrl("hostel-1", "2099-03-10", "2099-03-13", 2),
+    ).toBeNull();
+    expect(
+      buildExactAvailabilityUrl("hostel-1", "2099-01-31", "2099-02-28", 2),
+    ).not.toBeNull();
+    expect(
+      buildExactAvailabilityUrl("hostel-1", "2099-01-31", "2101-02-28", 2),
+    ).toBeNull();
+  });
+
+  it("tells students when owner stay bounds make the listing unbookable", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={2}
+          minStay={3}
+          rooms={[
+            {
+              id: "room-1",
+              name: "Twin room",
+              pricePerMonth: 25000,
+              capacity: 2,
+            },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("stay requirements are invalid");
   });
 
   it("accepts only server-shaped room availability and does not infer a fit", () => {

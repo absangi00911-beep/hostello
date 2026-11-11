@@ -1,15 +1,17 @@
 "use client";
 
 import {
-  addMonths,
-  endOfMonth,
-  format,
-  getDay,
-  startOfMonth,
-} from "date-fns";
+  addCalendarMonths,
+  getPakistanCalendarDate,
+  MAX_BOOKING_MONTHS,
+} from "@hostello/shared";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { isStayWithinBounds } from "@/lib/hostel-date-selection";
+import {
+  areStayBoundsValid,
+  getEffectiveMaxStay,
+  isStayWithinBounds,
+} from "@/lib/hostel-date-selection";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
 
 interface HostelDateCalendarProps {
@@ -19,12 +21,33 @@ interface HostelDateCalendarProps {
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function startOfUtcMonth(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+}
+
 function toDateInputValue(date: Date): string {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
-  ].join("-");
+  return date.toISOString().slice(0, 10);
+}
+
+function formatUtcMonth(date: Date): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatUtcDate(date: Date): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function monthStartPlus(month: Date, offset: number): Date {
+  return addCalendarMonths(startOfUtcMonth(month), offset);
 }
 
 export function HostelDateCalendar({
@@ -33,37 +56,36 @@ export function HostelDateCalendar({
 }: HostelDateCalendarProps) {
   const { checkIn, checkOut, selectMoveIn, setMoveOut } =
     useHostelDateSelection();
-  const [firstMonth, setFirstMonth] = useState(() => startOfMonth(new Date()));
-  const [today] = useState(() => {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    return date;
-  });
-  const todayValue = toDateInputValue(today);
+  const [firstMonth, setFirstMonth] = useState(() =>
+    startOfUtcMonth(getPakistanCalendarDate()),
+  );
+  const todayValue = toDateInputValue(getPakistanCalendarDate());
+  const validStayBounds = areStayBoundsValid(minStay, maxStay);
+  const effectiveMaxStay = getEffectiveMaxStay(minStay, maxStay);
   const minimumStay = `${minStay} ${minStay === 1 ? "month" : "months"}`;
-  const maximumStay =
-    maxStay === null
-      ? null
-      : `${maxStay} ${maxStay === 1 ? "month" : "months"}`;
+  const maximumStay = effectiveMaxStay === null
+    ? null
+    : `${effectiveMaxStay} ${effectiveMaxStay === 1 ? "month" : "months"}`;
 
   function renderMonth(month: Date) {
-    const monthStart = startOfMonth(month);
-    const monthEnd = endOfMonth(month);
-    const leadingDays = getDay(monthStart);
-    const monthDays = monthEnd.getDate();
-    const days = Array.from({ length: monthDays }, (_, index) => index + 1);
+    const monthStart = startOfUtcMonth(month);
+    const leadingDays = monthStart.getUTCDay();
+    const monthDays = new Date(
+      Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0),
+    ).getUTCDate();
     const dateCells = [
       ...Array.from({ length: leadingDays }, () => null),
-      ...days,
+      ...Array.from({ length: monthDays }, (_, index) => index + 1),
     ];
+    const monthLabel = formatUtcMonth(monthStart);
 
     return (
       <div
-        className=""
-        key={monthStart.toISOString()}
+        className="[@media(max-width:720px)]:-mx-5 [@media(max-width:720px)]:w-[calc(100%_+_40px)]"
+        key={toDateInputValue(monthStart)}
       >
-        <h3 className="m-0 mb-4 text-base leading-6 font-[650]">
-          {format(monthStart, "MMMM yyyy")}
+        <h3 className="m-0 mb-4 px-5 text-base leading-6 font-[650]">
+          {monthLabel}
         </h3>
         <div
           aria-hidden="true"
@@ -76,7 +98,7 @@ export function HostelDateCalendar({
           ))}
         </div>
         <div
-          aria-label={`${format(monthStart, "MMMM yyyy")} dates`}
+          aria-label={`${monthLabel} dates`}
           className="grid grid-cols-7 justify-items-center gap-y-1"
           role="group"
         >
@@ -92,23 +114,17 @@ export function HostelDateCalendar({
             }
 
             const date = new Date(
-              monthStart.getFullYear(),
-              monthStart.getMonth(),
-              day,
+              Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), day),
             );
             const dateValue = toDateInputValue(date);
             const isWaitingForMoveOut = Boolean(checkIn && !checkOut);
             const canChooseMoveIn =
               !isWaitingForMoveOut || dateValue <= checkIn;
             const canChooseMoveOut =
+              validStayBounds &&
               isWaitingForMoveOut &&
               dateValue > checkIn &&
-              isStayWithinBounds(
-                checkIn,
-                dateValue,
-                minStay,
-                maxStay,
-              );
+              isStayWithinBounds(checkIn, dateValue, minStay, maxStay);
             const action = canChooseMoveIn ? "move-in" : "move-out";
             const isDisabled =
               dateValue < todayValue ||
@@ -137,7 +153,7 @@ export function HostelDateCalendar({
             return (
               <button
                 aria-current={dateValue === todayValue ? "date" : undefined}
-                aria-label={`Select ${action} date ${format(date, "MMMM d, yyyy")}`}
+                aria-label={`Select ${action} date ${formatUtcDate(date)}`}
                 aria-pressed={isMoveIn || isMoveOut}
                 className={className}
                 disabled={isDisabled}
@@ -175,9 +191,16 @@ export function HostelDateCalendar({
             Choose your dates
           </h2>
           <p className="mt-[6px] mb-0 text-sm leading-[1.5] text-muted">
-            Select move-in and move-out dates. Minimum stay: {minimumStay}
-            {maximumStay ? `; maximum stay: ${maximumStay}` : ""}.
+            Choose move-in first, then a move-out date exactly {minimumStay} or
+            more later. Monthly anniversaries clamp to the last day of shorter
+            months; maximum stay: {maximumStay ?? `${MAX_BOOKING_MONTHS} months`}.
+            Global maximum: {MAX_BOOKING_MONTHS} months.
           </p>
+          {!validStayBounds && (
+            <p className="mt-2 mb-0 text-sm leading-[1.5] text-[#8b2525]" role="alert">
+              This listing&apos;s stay requirements are invalid, so booking is unavailable.
+            </p>
+          )}
         </div>
         <div className="flex flex-[0_0_auto] items-center gap-2 [@media(max-width:720px)]:w-full [@media(max-width:720px)]:justify-end">
           {(checkIn || checkOut) && (
@@ -193,11 +216,11 @@ export function HostelDateCalendar({
             aria-label="Previous month"
             className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:enabled:border-line-strong hover:enabled:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 btn-secondary"
             disabled={
-              firstMonth.getFullYear() === today.getFullYear() &&
-              firstMonth.getMonth() <= today.getMonth()
+              firstMonth.getUTCFullYear() === Number(todayValue.slice(0, 4)) &&
+              firstMonth.getUTCMonth() <= Number(todayValue.slice(5, 7)) - 1
             }
             onClick={() =>
-              setFirstMonth((month) => startOfMonth(addMonths(month, -1)))
+              setFirstMonth((month) => addCalendarMonths(month, -1))
             }
             type="button"
           >
@@ -207,7 +230,7 @@ export function HostelDateCalendar({
             aria-label="Next month"
             className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
             onClick={() =>
-              setFirstMonth((month) => startOfMonth(addMonths(month, 1)))
+              setFirstMonth((month) => addCalendarMonths(month, 1))
             }
             type="button"
           >
@@ -217,7 +240,7 @@ export function HostelDateCalendar({
       </div>
       <div className="grid grid-cols-2 gap-6 [@media(max-width:720px)]:grid-cols-1">
         {[0, 1].map((offset) =>
-          renderMonth(addMonths(firstMonth, offset)),
+          renderMonth(monthStartPlus(firstMonth, offset)),
         )}
       </div>
     </section>
