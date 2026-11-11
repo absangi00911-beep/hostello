@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
@@ -20,6 +22,7 @@ import {
   projectPublicHostelDetail,
 } from "@/lib/hostel-detail";
 import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
+import { buildHostelMetadata, buildHostelNotFoundMetadata } from "@/lib/hostel-metadata";
 
 function genderLabel(gender: string): string {
   switch (gender) {
@@ -32,13 +35,26 @@ function genderLabel(gender: string): string {
   }
 }
 
+// One lookup per request, shared by generateMetadata and the page itself.
+const getHostel = cache(getPublicHostelDetail);
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ param: string }>;
+}): Promise<Metadata> {
+  const { param } = await params;
+  const hostel = await getHostel(param);
+  return hostel ? buildHostelMetadata(hostel) : buildHostelNotFoundMetadata();
+}
+
 export default async function HostelDetailPage({
   params,
 }: {
   params: Promise<{ param: string }>;
 }) {
   const { param } = await params;
-  const hostel = await getPublicHostelDetail(param);
+  const hostel = await getHostel(param);
   if (!hostel) notFound();
   const publicHostel = projectPublicHostelDetail(hostel);
 

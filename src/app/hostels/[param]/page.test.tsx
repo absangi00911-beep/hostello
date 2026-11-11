@@ -20,7 +20,7 @@ vi.mock("@/lib/hostel-gallery", () => ({
   getHostelGalleryPhotos: () => [],
 }));
 
-import HostelDetailPage from "./page";
+import HostelDetailPage, { generateMetadata } from "./page";
 
 const hostel = {
   id: "hostel-1",
@@ -149,5 +149,22 @@ describe("HostelDetailPage", () => {
       "[@media(min-width:721px)_and_(max-width:900px)]:row-start-5",
     );
     expect(locationColumn).toContain("[@media(max-width:720px)]:row-start-4");
+  });
+
+  it("generates listing-specific metadata", async () => {
+    mocks.getPublicHostelDetail.mockResolvedValue({ ...hostel, pricePerMonth: 9000 });
+
+    const metadata = await generateMetadata({ params: Promise.resolve({ param: "test-hostel" }) });
+
+    expect(metadata.title).toBe("Test hostel in Quetta");
+    expect(metadata.alternates?.canonical).toBe("/hostels/test-hostel");
+  });
+
+  it("does not index a missing hostel", async () => {
+    mocks.getPublicHostelDetail.mockResolvedValue(null);
+
+    const metadata = await generateMetadata({ params: Promise.resolve({ param: "gone" }) });
+
+    expect(metadata.robots).toMatchObject({ index: false });
   });
 });
