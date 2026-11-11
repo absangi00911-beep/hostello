@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { getPakistanCalendarDate } from "../utils/dates";
+import { getPakistanCalendarDate, isWholeMonthStay } from "../utils/dates";
+import { MAX_BOOKING_MONTHS } from "../constants/config";
 import { ENABLED_PAYMENT_METHODS } from "../constants/payment-methods";
 
 // -- Sanitization --
@@ -184,6 +185,12 @@ function validateStayDates(
   data: { checkIn: Date; checkOut: Date },
   context: z.RefinementCtx,
 ) {
+  // Invalid date-only strings already carry parser issues; avoid touching a
+  // z.NEVER placeholder during the cross-field refinement.
+  if (!(data.checkIn instanceof Date) || !(data.checkOut instanceof Date) ||
+      !Number.isFinite(data.checkIn.getTime()) || !Number.isFinite(data.checkOut.getTime())) {
+    return;
+  }
   if (data.checkIn < getPakistanCalendarDate()) {
     context.addIssue({
       code: "custom",
@@ -195,6 +202,25 @@ function validateStayDates(
     context.addIssue({
       code: "custom",
       message: "Check-out must be after check-in.",
+      path: ["checkOut"],
+    });
+    return;
+  }
+
+  const monthDifference =
+    (data.checkOut.getUTCFullYear() - data.checkIn.getUTCFullYear()) * 12 +
+    (data.checkOut.getUTCMonth() - data.checkIn.getUTCMonth());
+  if (monthDifference > MAX_BOOKING_MONTHS) {
+    context.addIssue({
+      code: "custom",
+      message: `A stay cannot exceed ${MAX_BOOKING_MONTHS} months.`,
+      path: ["checkOut"],
+    });
+  }
+  if (!isWholeMonthStay(data.checkIn, data.checkOut)) {
+    context.addIssue({
+      code: "custom",
+      message: "Choose a whole-month stay; check-out must match the monthly term from check-in.",
       path: ["checkOut"],
     });
   }
