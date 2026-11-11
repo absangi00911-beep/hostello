@@ -40,13 +40,12 @@ describe("hostel metadata", () => {
     );
   });
 
-  it("uses the cover photo for social previews", () => {
+  it("leaves the share image to the opengraph-image route", () => {
     const metadata = buildHostelMetadata(hostel);
-    expect(metadata.openGraph).toMatchObject({
-      url: "/hostels/green-view-hostel",
-      images: [{ url: "https://cdn.example/cover.jpg", alt: "Green View Hostel" }],
-    });
+    expect(metadata.openGraph).toMatchObject({ url: "/hostels/green-view-hostel" });
+    expect(metadata.openGraph).not.toHaveProperty("images");
     expect(metadata.twitter).toMatchObject({ card: "summary_large_image" });
+    expect(metadata.twitter).not.toHaveProperty("images");
   });
 
   it("falls back gracefully without area, photos, reviews or amenities", () => {
@@ -54,8 +53,6 @@ describe("hostel metadata", () => {
     const metadata = buildHostelMetadata(bare);
     expect(metadata.title).toBe("Green View Hostel in Lahore");
     expect(metadata.description).toBe("Student hostel in Lahore. Rooms from PKR 12,000/month. Book online on HostelLo.");
-    expect(metadata.twitter).toMatchObject({ card: "summary" });
-    expect(metadata.openGraph).not.toHaveProperty("images");
   });
 
   it("truncates very long descriptions at a word boundary", () => {
