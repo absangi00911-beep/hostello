@@ -121,6 +121,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
   basePath: "/api/auth",
   session: { strategy: "jwt" },
+  // The app runs behind Vercel's proxy, so the forwarded Host header is trusted.
+  // Keep AUTH_URL set to the canonical https origin (required by env-validation.ts)
+  // and review this flag before hosting anywhere that does not sanitise Host headers.
   trustHost: true,
 
   pages: {

@@ -1,14 +1,12 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
 
-// Dev-only allowance so impeccable live mode can load. Guarded by NODE_ENV.
-const __impeccableLiveDev =
-  process.env.NODE_ENV === "development" ? " http://localhost:8400" : "";
-
 // The project's own public image bucket, taken from R2_PUBLIC_URL. When it is
 // set, only that exact host may serve images. A wildcard on r2.dev would also
 // allow every other Cloudflare user's public bucket, and would block a custom
-// domain. When it is not set, keep the previous wildcard so nothing regresses.
+// domain. The wildcard is kept only for local development and Vercel Preview;
+// a real production deployment (VERCEL_ENV=production) refuses to build without
+// a valid https R2_PUBLIC_URL, matching the runtime check in env-validation.ts.
 function getR2ImageSource(): { host: string; hostname: string; port: string } | null {
   try {
     const url = new URL(process.env.R2_PUBLIC_URL ?? "");
@@ -20,6 +18,12 @@ function getR2ImageSource(): { host: string; hostname: string; port: string } | 
 }
 
 const r2Image = getR2ImageSource();
+if (!r2Image && process.env.VERCEL_ENV === "production") {
+  throw new Error(
+    "R2_PUBLIC_URL must be set to the https URL of the public image bucket for production builds. " +
+      "Without it the image allowlist would fall back to every r2.dev bucket.",
+  );
+}
 const r2CspSource = r2Image ? `https://${r2Image.host}` : "https://*.r2.dev";
 
 // Environment-aware CSP configuration
@@ -65,7 +69,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src ${getScriptSrc()}${__impeccableLiveDev}`,
+      `script-src ${getScriptSrc()}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       `img-src 'self' blob: data: https://images.unsplash.com ${r2CspSource} https://*.cloudflare.com https://*.tile.openstreetmap.org`,
@@ -82,7 +86,7 @@ const securityHeaders = [
         "https://easypaisasandbox.pk",
         "https://easypaisa.com.pk",
         "https://*.sentry.io",
-      ].join(" ") + `${__impeccableLiveDev}`,
+      ].join(" "),
       // Allow POSTing to payment gateway checkout pages from this origin
       [
         "form-action 'self'",
@@ -104,9 +108,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
-  deprecated: {
-    looseRouteMatching: true,
-  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
