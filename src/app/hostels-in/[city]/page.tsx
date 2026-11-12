@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { auth } from "@/lib/auth/config";
@@ -12,7 +13,9 @@ import {
   getCityCanonicalPath,
   getCityPage,
 } from "@/lib/city-pages";
+import { buildCityJsonLd } from "@/lib/city-jsonld";
 import { formatPkr, getStartingPrice } from "@/lib/hostel-metadata";
+import { getSiteUrl } from "@/lib/site-metadata";
 
 // One lookup per request, shared by generateMetadata and the page itself.
 const getCity = cache(getCityPage);
@@ -57,8 +60,11 @@ export default async function CityHostelsPage({
       }
     : null;
 
+  const jsonLd = buildCityJsonLd(city, getSiteUrl());
+
   return (
     <>
+      {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <SiteHeader user={user} />
       <main className="mx-auto w-[min(960px,calc(100%-2.5rem))] py-8 text-ink">
         <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">

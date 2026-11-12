@@ -1,6 +1,7 @@
 // Path: src/lib/city-pages.ts
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
+import { isCityIndexable } from "@/lib/city-indexing";
 import { formatPkr, getStartingPrice, truncate } from "@/lib/hostel-metadata";
 import { isBoundedRouteParam } from "@/lib/route-params";
 import { SITE_SHARE_IMAGE } from "@/lib/site-metadata";
@@ -161,6 +162,8 @@ export function buildCityMetadata(city: string, slug: string, facts: CityFacts):
     title,
     description,
     alternates: { canonical },
+    // Thin pages stay reachable and pass links on, but are kept out of the index.
+    ...(isCityIndexable(facts.hostelCount) ? {} : { robots: { index: false, follow: true } }),
     openGraph: { type: "website", title, description, url: canonical, images: [SITE_SHARE_IMAGE] },
     twitter: { card: "summary", title, description, images: [SITE_SHARE_IMAGE.url] },
   };

@@ -44,7 +44,11 @@ describe("buildSitemapEntries", () => {
     const urls = buildSitemapEntries(
       SITE,
       [{ slug: "green-view-hostel", updatedAt }],
-      [{ slug: "lahore" }, { slug: "dera-ghazi-khan" }, { slug: "" }],
+      [
+        { slug: "lahore", hostelCount: 20 },
+        { slug: "dera-ghazi-khan", hostelCount: 3 },
+        { slug: "", hostelCount: 9 },
+      ],
     ).map((entry) => entry.url);
 
     expect(urls.slice(-3)).toEqual([
@@ -59,9 +63,25 @@ describe("buildSitemapEntries", () => {
       slug: `h-${i}`,
       updatedAt: new Date(),
     }));
-    const entries = buildSitemapEntries(SITE, hostels, [{ slug: "lahore" }]);
+    const entries = buildSitemapEntries(SITE, hostels, [{ slug: "lahore", hostelCount: 20 }]);
 
     expect(entries).toHaveLength(MAX_SITEMAP_URLS);
     expect(entries.map((entry) => entry.url)).toContain(`${SITE}/hostels-in/lahore`);
+  });
+
+  it("leaves thin cities out of the sitemap", () => {
+    const urls = buildSitemapEntries(
+      SITE,
+      [],
+      [
+        { slug: "lahore", hostelCount: 3 },
+        { slug: "chiniot", hostelCount: 2 },
+        { slug: "sibi", hostelCount: 1 },
+      ],
+    ).map((entry) => entry.url);
+
+    expect(urls).toContain(`${SITE}/hostels-in/lahore`);
+    expect(urls).not.toContain(`${SITE}/hostels-in/chiniot`);
+    expect(urls).not.toContain(`${SITE}/hostels-in/sibi`);
   });
 });
