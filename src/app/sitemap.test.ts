@@ -72,7 +72,7 @@ describe("sitemap.xml route", () => {
     expect(urls.some((url) => url.includes("/hostels-in/"))).toBe(false);
 
     findMany.mockRejectedValue(new Error("db down"));
-    groupBy.mockResolvedValue([{ city: "Lahore", _count: { _all: 1 } }]);
+    groupBy.mockResolvedValue([{ city: "Lahore", _count: { _all: 5 } }]);
     urls = (await sitemap()).map((entry) => entry.url);
     expect(urls).toContain("https://hostello.example/hostels-in/lahore");
     expect(urls.some((url) => url.includes("/hostels/"))).toBe(false);

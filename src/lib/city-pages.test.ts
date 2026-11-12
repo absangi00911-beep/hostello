@@ -163,3 +163,16 @@ describe("getCityPathForName", () => {
     expect(getCityPathForName("x".repeat(80))).toBeNull();
   });
 });
+
+describe("buildCityMetadata indexing", () => {
+  const facts = (hostelCount: number) => ({ ...buildCityFacts([hostel()]), hostelCount });
+
+  it("keeps thin cities out of the index but still follows their links", () => {
+    expect(buildCityMetadata("Chiniot", "chiniot", facts(2)).robots).toEqual({ index: false, follow: true });
+    expect(buildCityMetadata("Sibi", "sibi", facts(1)).robots).toEqual({ index: false, follow: true });
+  });
+
+  it("indexes cities with enough listings", () => {
+    expect(buildCityMetadata("Lahore", "lahore", facts(3)).robots).toBeUndefined();
+  });
+});

@@ -1,30 +1,42 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth/config";
+import { buildSearchMetadata } from "@/lib/search-metadata";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { AMENITIES } from "@hostello/shared";
 import SearchPageClient from "./SearchPageClient";
 import { isNearbyCoordinates, type NearbyCoordinates } from "@/lib/nearby-search";
 
+type SearchPageSearchParams = Promise<{
+  city?: string | string[];
+  q?: string | string[];
+  nearby?: string | string[];
+  latitude?: string | string[];
+  longitude?: string | string[];
+  checkIn?: string | string[];
+  checkOut?: string | string[];
+  moveInDate?: string | string[];
+  guests?: string | string[];
+  gender?: string | string[];
+  minPrice?: string | string[];
+  maxPrice?: string | string[];
+  amenities?: string | string[];
+  verified?: string | string[];
+  sort?: string | string[];
+  page?: string | string[];
+}>;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchPageSearchParams;
+}): Promise<Metadata> {
+  return buildSearchMetadata(await searchParams);
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    city?: string | string[];
-    q?: string | string[];
-    nearby?: string | string[];
-    latitude?: string | string[];
-    longitude?: string | string[];
-    checkIn?: string | string[];
-    checkOut?: string | string[];
-    moveInDate?: string | string[];
-    guests?: string | string[];
-    gender?: string | string[];
-    minPrice?: string | string[];
-    maxPrice?: string | string[];
-    amenities?: string | string[];
-    verified?: string | string[];
-    sort?: string | string[];
-    page?: string | string[];
-  }>;
+  searchParams: SearchPageSearchParams;
 }) {
   const [params, session] = await Promise.all([searchParams, auth()]);
   const firstString = (value: string | string[] | undefined) =>

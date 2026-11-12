@@ -86,4 +86,12 @@ describe("CityHostelsPage", () => {
     expect(metadata.title).toBe("Student hostels in Lahore");
     expect(metadata.alternates?.canonical).toBe("/hostels-in/lahore");
   });
+
+  it("embeds breadcrumb and hostel-list structured data", async () => {
+    const tree = JSON.stringify(await CityHostelsPage(params("lahore")));
+
+    expect(tree).toContain('"@type":"ItemList"');
+    expect(tree).toContain('"@type":"BreadcrumbList"');
+    expect(tree).toContain("/hostels/green-view");
+  });
 });
