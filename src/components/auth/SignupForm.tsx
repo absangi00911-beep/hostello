@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { isCommonPassword } from "@hostello/shared/validations";
 import {
   AuthNotice,
   authButtonClassName,
@@ -37,6 +38,7 @@ export function validateSignupPassword(password: string): string | null {
   if (password.length < 8) return "Password must be at least 8 characters.";
   if (!/[A-Z]/.test(password)) return "Include at least one uppercase letter.";
   if (!/[0-9]/.test(password)) return "Include at least one number.";
+  if (isCommonPassword(password)) return "That password is too common. Choose a different one.";
   return null;
 }
 
@@ -200,7 +202,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
             value={password}
           />
           <span className="text-[0.8rem] font-normal text-muted">
-            At least 8 characters, with one uppercase letter and one number.
+            At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
           </span>
         </label>
 

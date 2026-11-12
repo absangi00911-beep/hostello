@@ -3,6 +3,7 @@ import { getSafeErrorSummary } from "@/lib/safe-error";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hash } from "bcryptjs";
+import { BCRYPT_COST } from "@/lib/password-hash";
 import { hashPasswordResetToken } from "@/lib/password-reset-token";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hashed = await hash(password, 12);
+    const hashed = await hash(password, BCRYPT_COST);
 
     const usedAt = new Date();
     const updated = await db.$transaction(async (tx) => {

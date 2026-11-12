@@ -135,6 +135,13 @@ describe("newPasswordSchema", () => {
     expect(newPasswordSchema.safeParse(`A1${"x".repeat(71)}`).success).toBe(false);
     expect(newPasswordSchema.safeParse(`A1${"é".repeat(36)}`).success).toBe(false);
   });
+
+  it("rejects the most guessed passwords even though they meet the composition rules", () => {
+    const result = newPasswordSchema.safeParse("Password1");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0].message).toMatch(/too common/);
+    expect(newPasswordSchema.safeParse("Mango7Lantern").success).toBe(true);
+  });
 });
 
 describe("sanitizeString", () => {

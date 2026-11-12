@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCommonPassword } from "./common-passwords";
 import { getPakistanCalendarDate, isWholeMonthStay } from "../utils/dates";
 import { MAX_BOOKING_MONTHS } from "../constants/config";
 import { ENABLED_PAYMENT_METHODS } from "../constants/payment-methods";
@@ -97,7 +98,10 @@ export const newPasswordSchema = z
   .refine(
     (password) => new TextEncoder().encode(password).byteLength <= 72,
     "Password must be no more than 72 UTF-8 bytes",
-  );
+  )
+  .refine((password) => !isCommonPassword(password), "That password is too common. Choose a different one.");
+
+export { isCommonPassword } from "./common-passwords";
 
 export const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
