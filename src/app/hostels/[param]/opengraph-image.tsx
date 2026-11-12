@@ -9,10 +9,13 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: Promise<{ param: string }> }) {
   const { param } = await params;
   let card = null;
+  let lookupFailed = false;
   try {
     card = await getHostelShareCard(param);
   } catch {
-    // A database error should still return a valid branded image, not a 500.
+    // A database error should still return a valid branded image, not a 500,
+    // but one that is never cached (see renderHostelShareImage).
+    lookupFailed = true;
   }
-  return renderHostelShareImage(card);
+  return renderHostelShareImage(card, { lookupFailed });
 }

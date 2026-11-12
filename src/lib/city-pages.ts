@@ -59,6 +59,18 @@ export function slugifyCity(city: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Display name for a city. All-lowercase or all-uppercase entries ("lahore", "LAHORE",
+ * "dera ghazi khan") are title-cased; anything with mixed case was typed on purpose.
+ */
+export function formatCityName(raw: string): string {
+  const name = raw.trim().replace(/\s+/g, " ");
+  if (name !== name.toLowerCase() && name !== name.toUpperCase()) return name;
+  return name.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (_, separator: string, letter: string) => {
+    return `${separator}${letter.toUpperCase()}`;
+  });
+}
+
 export function getCityCanonicalPath(slug: string): string {
   return `/hostels-in/${slug}`;
 }
@@ -90,19 +102,26 @@ function topValues(values: readonly (string | null | undefined)[], limit: number
     .map((entry) => entry.label);
 }
 
-/** Pure. `total` can exceed `hostels.length` when the page list is capped. */
+/**
+ * Pure. `total` can exceed `hostels.length` when the page list is capped. Price range,
+ * verified count and gender mix are only known for the listed hostels, so for a capped
+ * city they are left out rather than presented as city-wide facts.
+ */
 export function buildCityFacts(hostels: readonly CityHostel[], total = hostels.length): CityFacts {
+  const complete = total <= hostels.length;
   const prices = hostels.map(getStartingPrice).filter((price) => price > 0);
   const genders = { MALE: 0, FEMALE: 0, MIXED: 0 };
-  for (const hostel of hostels) {
-    if (hostel.gender === "MALE" || hostel.gender === "FEMALE") genders[hostel.gender] += 1;
-    else genders.MIXED += 1;
+  if (complete) {
+    for (const hostel of hostels) {
+      if (hostel.gender === "MALE" || hostel.gender === "FEMALE") genders[hostel.gender] += 1;
+      else genders.MIXED += 1;
+    }
   }
   return {
     hostelCount: total,
-    minPrice: prices.length > 0 ? Math.min(...prices) : 0,
-    maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
-    verifiedCount: hostels.filter((hostel) => hostel.verified).length,
+    minPrice: complete && prices.length > 0 ? Math.min(...prices) : 0,
+    maxPrice: complete && prices.length > 0 ? Math.max(...prices) : 0,
+    verifiedCount: complete ? hostels.filter((hostel) => hostel.verified).length : 0,
     areas: topValues(hostels.map((hostel) => hostel.area), 4),
     amenities: topValues(hostels.flatMap((hostel) => hostel.amenities), 4),
     genders,
@@ -187,7 +206,7 @@ export function groupCitySummaries(rows: readonly { city: string; count: number 
       const ordered = [...group].sort((a, b) => b.count - a.count || a.city.localeCompare(b.city));
       return {
         slug,
-        name: ordered[0].city.trim(),
+        name: formatCityName(ordered[0].city),
         spellings: ordered.map((row) => row.city),
         hostelCount: ordered.reduce((sum, row) => sum + row.count, 0),
       };

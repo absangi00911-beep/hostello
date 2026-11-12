@@ -15,6 +15,7 @@ import {
   buildCityFacts,
   buildCityIntro,
   buildCityMetadata,
+  formatCityName,
   getCityPage,
   getCityPathForName,
   groupCitySummaries,
@@ -66,14 +67,30 @@ describe("buildCityFacts and buildCityIntro", () => {
     });
   });
 
-  it("writes copy from those facts, and uses the total when the list is capped", () => {
-    const intro = buildCityIntro("Lahore", buildCityFacts(hostels, 140));
-    expect(intro).toEqual([
-      "140 student hostels are listed in Lahore on HostelLo. Monthly rent runs from PKR 6,500 to PKR 12,000.",
+  it("writes copy from those facts", () => {
+    expect(buildCityIntro("Lahore", buildCityFacts(hostels))).toEqual([
+      "3 student hostels are listed in Lahore on HostelLo. Monthly rent runs from PKR 6,500 to PKR 12,000.",
       "Popular areas include Gulberg and DHA. 2 verified listings.",
       "The mix is 1 men\u2019s, 1 women\u2019s and 1 mixed.",
       "Common facilities: WiFi, Gym and Meals.",
     ]);
+  });
+
+  it("uses the total when the list is capped, but drops figures it cannot know city-wide", () => {
+    const facts = buildCityFacts(hostels, 140);
+    expect(facts).toMatchObject({ hostelCount: 140, minPrice: 0, maxPrice: 0, verifiedCount: 0 });
+    expect(facts.genders).toEqual({ MALE: 0, FEMALE: 0, MIXED: 0 });
+    expect(buildCityIntro("Lahore", facts)).toEqual([
+      "140 student hostels are listed in Lahore on HostelLo.",
+      "Popular areas include Gulberg and DHA.",
+      "Common facilities: WiFi, Gym and Meals.",
+    ]);
+  });
+
+  it("does not claim a starting price in metadata for a capped city", () => {
+    const description = String(buildCityMetadata("Lahore", "lahore", buildCityFacts(hostels, 140)).description);
+    expect(description).toContain("140 student hostels");
+    expect(description).not.toContain("PKR");
   });
 
   it("stays sensible for a single bare listing", () => {
@@ -174,5 +191,25 @@ describe("buildCityMetadata indexing", () => {
 
   it("indexes cities with enough listings", () => {
     expect(buildCityMetadata("Lahore", "lahore", facts(3)).robots).toBeUndefined();
+  });
+});
+
+describe("formatCityName", () => {
+  it("title-cases all-lowercase and all-uppercase names", () => {
+    expect(formatCityName("lahore")).toBe("Lahore");
+    expect(formatCityName("LAHORE")).toBe("Lahore");
+    expect(formatCityName("  dera  ghazi khan ")).toBe("Dera Ghazi Khan");
+    expect(formatCityName("rawalpindi-cantt")).toBe("Rawalpindi-Cantt");
+  });
+
+  it("leaves mixed-case names as typed", () => {
+    expect(formatCityName("Lahore")).toBe("Lahore");
+    expect(formatCityName("D.I. Khan")).toBe("D.I. Khan");
+  });
+
+  it("uses the formatted name as the city display name", () => {
+    const [city] = groupCitySummaries([{ city: "lahore", count: 4 }]);
+    expect(city.name).toBe("Lahore");
+    expect(city.spellings).toEqual(["lahore"]);
   });
 });
