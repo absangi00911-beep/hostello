@@ -30,7 +30,7 @@ function accountExistsThrottleKey(email: string): string {
 
 export async function POST(req: NextRequest) {
   // 5 signups per IP per hour
-  const rl = await rateLimit(`signup:${getIp(req)}`, { limit: 5, windowMs: 60 * 60 * 1000 });
+  const rl = await rateLimit(`signup:${getIp(req)}`, { limit: 5, windowMs: 60 * 60 * 1000, failClosed: true });
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
         const limit = await rateLimit(accountExistsThrottleKey(existing.email), {
           limit: 1,
           windowMs: 60 * 60 * 1000,
+          failClosed: true,
         });
         if (limit.ok) await sendEmail({ to: existing.email, ...notice });
       });

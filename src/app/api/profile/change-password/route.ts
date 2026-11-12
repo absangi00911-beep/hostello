@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
     const rl = await rateLimit(`change-password:${session.user.id}`, {
       limit: 5,
       windowMs: 15 * 60 * 1000,
+      failClosed: true,
     });
     if (!rl.ok) {
       return NextResponse.json(

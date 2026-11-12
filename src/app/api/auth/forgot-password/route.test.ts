@@ -77,6 +77,7 @@ describe("POST /api/auth/forgot-password", () => {
     expect(mocks.rateLimit).toHaveBeenNthCalledWith(2, "reset-account:user-1", {
       limit: 3,
       windowMs: 60 * 60 * 1000,
+      failClosed: true,
     });
     expect(mocks.resetTokenCreate).not.toHaveBeenCalled();
     expect(mocks.sendEmail).not.toHaveBeenCalled();

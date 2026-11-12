@@ -15,7 +15,7 @@ const schema = z.object({ email: z.string().email() });
 
 export async function POST(req: NextRequest) {
   // 3 reset requests per IP per 15 minutes
-  const rl = await rateLimit(`reset:${getIp(req)}`, { limit: 3, windowMs: 15 * 60 * 1000 });
+  const rl = await rateLimit(`reset:${getIp(req)}`, { limit: 3, windowMs: 15 * 60 * 1000, failClosed: true });
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
   }
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     const accountRl = await rateLimit(`reset-account:${user.id}`, {
       limit: 3,
       windowMs: 60 * 60 * 1000,
+      failClosed: true,
     });
     if (!accountRl.ok) {
       return NextResponse.json({ message: "If that email exists, a reset link has been sent." });

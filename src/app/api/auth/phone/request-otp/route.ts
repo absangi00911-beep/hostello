@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     const ipLimit = await rateLimit(`otp-ip:${getIp(req)}`, {
       limit: 10,
       windowMs: 60 * 60 * 1000,
+      failClosed: true,
     });
     if (!ipLimit.ok) {
       return NextResponse.json(
@@ -76,7 +77,8 @@ export async function POST(req: NextRequest) {
     // Rate limit: 5 OTP requests per phone per day
     const rl = await rateLimit(`otp:${normalized}`, {
       limit: 5,
-      windowMs: 24 * 60 * 60 * 1000, // 24 hours
+      windowMs: 24 * 60 * 60 * 1000, // 24 hours,
+      failClosed: true,
     });
 
     if (!rl.ok) {

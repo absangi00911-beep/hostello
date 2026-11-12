@@ -61,6 +61,7 @@ describe("authorizeCredentials", () => {
     expect(rateLimit).toHaveBeenCalledWith("login-ip:203.0.113.10", {
       limit: 10,
       windowMs: 15 * 60 * 1000,
+      failClosed: true,
     });
     expect(rateLimit).toHaveBeenCalledTimes(1);
     expect(db.user.findUnique).not.toHaveBeenCalled();
@@ -82,10 +83,12 @@ describe("authorizeCredentials", () => {
     expect(rateLimit).toHaveBeenNthCalledWith(1, "login-ip:203.0.113.10", {
       limit: 10,
       windowMs: 15 * 60 * 1000,
+      failClosed: true,
     });
     expect(rateLimit).toHaveBeenNthCalledWith(2, `login-account:${accountKey}`, {
       limit: 5,
       windowMs: 15 * 60 * 1000,
+      failClosed: true,
     });
     expect(JSON.stringify(vi.mocked(rateLimit).mock.calls)).not.toContain(user.email);
   });
@@ -105,6 +108,7 @@ describe("authorizeCredentials", () => {
     expect(rateLimit).toHaveBeenNthCalledWith(2, `login-account:${secondIpKey}`, {
       limit: 5,
       windowMs: 15 * 60 * 1000,
+      failClosed: true,
     });
   });
 
@@ -187,7 +191,7 @@ describe("authorizeCredentials", () => {
 
     const emailCalls = vi.mocked(rateLimit).mock.calls.filter(([key]) => String(key).startsWith("login-email:"));
     expect(emailCalls).toHaveLength(2);
-    expect(emailCalls[0]).toEqual([`login-email:${emailKey}`, { limit: 30, windowMs: 15 * 60 * 1000 }]);
+    expect(emailCalls[0]).toEqual([`login-email:${emailKey}`, { limit: 30, windowMs: 15 * 60 * 1000, failClosed: true }]);
     // Same key from two different IPs: the bucket is shared, and never contains the raw email.
     expect(emailCalls[1][0]).toBe(emailCalls[0][0]);
     expect(String(emailCalls[0][0])).not.toContain("student");

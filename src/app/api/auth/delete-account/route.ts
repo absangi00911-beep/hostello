@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const limit = await rateLimit(`delete-account:${session.user.id}`, {
       limit: 3,
       windowMs: 60 * 60 * 1000,
+      failClosed: true,
     });
     if (!limit.ok) {
       return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
