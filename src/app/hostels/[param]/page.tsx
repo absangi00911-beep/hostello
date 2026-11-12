@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { CityLinks } from "@/components/city/CityLinks";
+import { HostelBreadcrumb } from "@/components/city/HostelBreadcrumb";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
@@ -23,6 +25,8 @@ import {
   projectPublicHostelDetail,
 } from "@/lib/hostel-detail";
 import { getHostelGalleryPhotos } from "@/lib/hostel-gallery";
+import { getCityLinks } from "@/lib/city-links";
+import { slugifyCity } from "@/lib/city-pages";
 import { buildHostelJsonLd } from "@/lib/hostel-jsonld";
 import { buildHostelMetadata, buildHostelNotFoundMetadata } from "@/lib/hostel-metadata";
 import { getSiteUrl } from "@/lib/site-metadata";
@@ -61,7 +65,10 @@ export default async function HostelDetailPage({
   if (!hostel) notFound();
   const publicHostel = projectPublicHostelDetail(hostel);
 
-  const session = await auth();
+  const [session, cityLinks] = await Promise.all([
+    auth(),
+    getCityLinks({ prioritySlug: slugifyCity(hostel.city) }),
+  ]);
   const isSaved =
     session?.user.role === "STUDENT"
       ? Boolean(
@@ -114,6 +121,7 @@ export default async function HostelDetailPage({
 
       <main className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-0 [@media(max-width:720px)]:pb-[calc(96px+env(safe-area-inset-bottom))]">
         <div className="hostel-detail-shell mx-auto w-[min(1120px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1120px)] [@media(max-width:720px)]:w-full!">
+          <HostelBreadcrumb city={hostel.city} name={hostel.name} />
           <HostelDetailGallery
             initiallySaved={isSaved}
             name={hostel.name}
@@ -199,6 +207,7 @@ export default async function HostelDetailPage({
               </div>
             </div>
           </HostelDateSelectionProvider>
+          <CityLinks cities={cityLinks} heading="Explore more student hostels" />
         </div>
       </main>
     </div>

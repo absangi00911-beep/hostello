@@ -6,9 +6,11 @@ const mocks = vi.hoisted(() => ({
   getPublicHostelDetail: vi.fn(),
   projectPublicHostelDetail: vi.fn(),
   findUnique: vi.fn(),
+  getCityLinks: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
+vi.mock("@/lib/city-links", () => ({ getCityLinks: mocks.getCityLinks }));
 vi.mock("@/lib/db", () => ({
   db: { favorite: { findUnique: mocks.findUnique } },
 }));
@@ -111,6 +113,7 @@ function findClassName(node: ReactNode, className: string): string | undefined {
 describe("HostelDetailPage", () => {
   beforeEach(() => {
     mocks.auth.mockResolvedValue(null);
+    mocks.getCityLinks.mockResolvedValue([{ slug: "quetta", name: "Quetta", hostelCount: 4 }]);
     mocks.getPublicHostelDetail.mockResolvedValue(hostel);
     mocks.projectPublicHostelDetail.mockReturnValue({
       ...hostel,
@@ -173,5 +176,14 @@ describe("HostelDetailPage", () => {
     const page = await HostelDetailPage({ params: Promise.resolve({ param: hostel.slug }) });
 
     expect(JSON.stringify(page)).toContain('"@type":"Hostel"');
+  });
+
+  it("links the hostel's city page from a breadcrumb and from the city links, city first", async () => {
+    const page = await HostelDetailPage({ params: Promise.resolve({ param: hostel.slug }) });
+    const tree = JSON.stringify(page);
+
+    expect(tree).toContain('"city":"Quetta"');
+    expect(tree).toContain('"slug":"quetta"');
+    expect(mocks.getCityLinks).toHaveBeenCalledWith({ prioritySlug: "quetta" });
   });
 });

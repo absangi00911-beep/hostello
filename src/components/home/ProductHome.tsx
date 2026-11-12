@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { BrowseHeader, type Category } from "./BrowseHeader";
@@ -133,8 +133,11 @@ export async function fetchSavedHostelSlugs(
 
 export default function ProductHome({
   accountUser,
+  cityLinks,
 }: {
   accountUser: BrowseAccountUser | null;
+  /** Server-rendered, crawlable links to the city pages. */
+  cityLinks?: ReactNode;
 }) {
   const router = useRouter();
   const showsStudentNavigation =
@@ -381,6 +384,7 @@ export default function ProductHome({
                 />
               ))}
           </section>
+          {cityLinks}
         </div>
       </main>
       {showsStudentNavigation && (

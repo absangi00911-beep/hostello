@@ -1,8 +1,10 @@
+import { CityLinks } from "@/components/city/CityLinks";
 import ProductHome from "@/components/home/ProductHome";
 import { auth } from "@/lib/auth/config";
+import { getCityLinks } from "@/lib/city-links";
 
 export default async function HomePage() {
-  const session = await auth();
+  const [session, cities] = await Promise.all([auth(), getCityLinks()]);
   const accountUser = session?.user
     ? {
         name: session.user.name,
@@ -12,5 +14,5 @@ export default async function HomePage() {
       }
     : null;
 
-  return <ProductHome accountUser={accountUser} />;
+  return <ProductHome accountUser={accountUser} cityLinks={<CityLinks cities={cities} />} />;
 }
