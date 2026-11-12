@@ -38,7 +38,8 @@ describe("image host allowlist in next.config", () => {
     expect(hostnames).toContain("cdn.hostello.example");
   });
 
-  it("keeps the previous wildcard when R2_PUBLIC_URL is unset or not https", async () => {
+  it("keeps the wildcard for local development and Preview when R2_PUBLIC_URL is unset or not https", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
     for (const value of ["", "http://insecure.example", "not a url"]) {
       vi.stubEnv("R2_PUBLIC_URL", value);
 
@@ -47,5 +48,38 @@ describe("image host allowlist in next.config", () => {
       expect(imgSrc).toContain("https://*.r2.dev");
       expect(hostnames).toContain("pub-*.r2.dev");
     }
+  });
+
+  it("refuses to build a production deployment without a valid https R2_PUBLIC_URL", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    for (const value of ["", "http://insecure.example", "not a url"]) {
+      vi.stubEnv("R2_PUBLIC_URL", value);
+      vi.resetModules();
+      await expect(import("../../next.config")).rejects.toThrow(/R2_PUBLIC_URL must be set/);
+    }
+  });
+
+  it("builds a production deployment that has the bucket URL", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("R2_PUBLIC_URL", "https://pub-abc123.r2.dev");
+
+    const { imgSrc } = await loadConfig();
+
+    expect(imgSrc).not.toContain("*.r2.dev");
+  });
+});
+
+describe("security-relevant next.config defaults", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("does not carry design-tool allowances or legacy routing flags", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("R2_PUBLIC_URL", "https://pub-abc123.r2.dev");
+    vi.resetModules();
+    const config = (await import("../../next.config")).default;
+    const csp = (await config.headers!())[0].headers.find((h) => h.key === "Content-Security-Policy")!.value;
+
+    expect(csp).not.toContain("localhost:8400");
+    expect(config.deprecated?.looseRouteMatching).toBeUndefined();
   });
 });
