@@ -62,6 +62,12 @@ export function getCityCanonicalPath(slug: string): string {
   return `/hostels-in/${slug}`;
 }
 
+/** The city page path for a `Hostel.city` value, or null when that city has no page (e.g. non-Latin names). */
+export function getCityPathForName(city: string): string | null {
+  const slug = slugifyCity(city);
+  return slug && slug.length <= MAX_CITY_SLUG_LENGTH ? getCityCanonicalPath(slug) : null;
+}
+
 function joinList(items: readonly string[]): string {
   if (items.length <= 1) return items.join("");
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;

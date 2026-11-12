@@ -16,6 +16,7 @@ import {
   buildCityIntro,
   buildCityMetadata,
   getCityPage,
+  getCityPathForName,
   groupCitySummaries,
   slugifyCity,
   type CityHostel,
@@ -147,5 +148,18 @@ describe("getCityPage", () => {
   it("returns null when the city has no active listings left", async () => {
     findMany.mockResolvedValue([]);
     expect(await getCityPage("lahore")).toBeNull();
+  });
+});
+
+describe("getCityPathForName", () => {
+  it("maps any spelling of a city onto its canonical page", () => {
+    expect(getCityPathForName("Lahore")).toBe("/hostels-in/lahore");
+    expect(getCityPathForName(" LAHORE ")).toBe("/hostels-in/lahore");
+    expect(getCityPathForName("Rawalpindi Cantt")).toBe("/hostels-in/rawalpindi-cantt");
+  });
+
+  it("returns null for names that have no page", () => {
+    expect(getCityPathForName("\u0644\u0627\u06c1\u0648\u0631")).toBeNull();
+    expect(getCityPathForName("x".repeat(80))).toBeNull();
   });
 });

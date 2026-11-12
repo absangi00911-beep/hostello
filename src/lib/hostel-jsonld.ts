@@ -1,4 +1,5 @@
 // Path: src/lib/hostel-jsonld.ts
+import { getCityPathForName } from "@/lib/city-pages";
 import { buildHostelDescription, getHostelCanonicalPath, getStartingPrice } from "@/lib/hostel-metadata";
 import type { HostelMetadataInput } from "@/lib/hostel-metadata";
 
@@ -86,6 +87,8 @@ export function buildHostelJsonLd(hostel: HostelJsonLdInput, siteUrl: string | u
     };
   }
 
+  // Link the city page when it exists; otherwise fall back to filtered search.
+  const cityPath = getCityPathForName(hostel.city) ?? `/search?city=${encodeURIComponent(hostel.city)}`;
   const breadcrumbs = {
     "@type": "BreadcrumbList",
     itemListElement: [
@@ -94,7 +97,7 @@ export function buildHostelJsonLd(hostel: HostelJsonLdInput, siteUrl: string | u
         "@type": "ListItem",
         position: 2,
         name: `Hostels in ${hostel.city}`,
-        item: `${siteUrl}/search?city=${encodeURIComponent(hostel.city)}`,
+        item: `${siteUrl}${cityPath}`,
       },
       { "@type": "ListItem", position: 3, name: hostel.name, item: url },
     ],

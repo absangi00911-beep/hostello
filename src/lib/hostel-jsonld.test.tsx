@@ -68,7 +68,15 @@ describe("buildHostelJsonLd", () => {
       [2, "Hostels in Lahore"],
       [3, "Green View Hostel"],
     ]);
-    expect(items[1].item).toBe(`${SITE}/search?city=Lahore`);
+    expect(items[1].item).toBe(`${SITE}/hostels-in/lahore`);
+  });
+});
+
+describe("breadcrumb for cities without a landing page", () => {
+  it("falls back to filtered search", () => {
+    const breadcrumbs = (buildHostelJsonLd({ ...hostel, city: "\u0644\u0627\u06c1\u0648\u0631" }, SITE) as Graph)["@graph"][1];
+    const items = breadcrumbs.itemListElement as { item: string }[];
+    expect(items[1].item).toContain("/search?city=");
   });
 });
 
