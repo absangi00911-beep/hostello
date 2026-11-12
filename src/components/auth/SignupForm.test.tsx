@@ -3,7 +3,7 @@ import { validateSignupPassword } from "./SignupForm";
 
 describe("validateSignupPassword", () => {
   it("accepts a password that meets the server rules", () => {
-    expect(validateSignupPassword("Hostel123")).toBeNull();
+    expect(validateSignupPassword("Mango7Lantern")).toBeNull();
   });
 
   it("rejects short passwords", () => {
@@ -13,5 +13,10 @@ describe("validateSignupPassword", () => {
   it("requires an uppercase letter and a number", () => {
     expect(validateSignupPassword("hostel123")).toMatch(/uppercase/);
     expect(validateSignupPassword("Hostelabc")).toMatch(/number/);
+  });
+
+  it("rejects very common passwords", () => {
+    expect(validateSignupPassword("Password1")).toMatch(/too common/);
+    expect(validateSignupPassword("P@ssw0rd")).toMatch(/too common/);
   });
 });

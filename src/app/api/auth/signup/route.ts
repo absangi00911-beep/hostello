@@ -3,6 +3,7 @@ import { runAfterResponse } from "@/lib/background";
 // Path: src/app/api/auth/signup/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
+import { BCRYPT_COST } from "@/lib/password-hash";
 import { db } from "@/lib/db";
 import { signupSchema } from "@/lib/validations";
 import { sendEmail } from "@/lib/email";
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (existing) {
       // Do the same expensive hash as a real signup so response time does not
       // reveal that the address is registered.
-      await hash(password, 12);
+      await hash(password, BCRYPT_COST);
 
       // Tell the real owner instead of the requester. Limited to one notice
       // per address per hour so signup cannot be used to spam someone's inbox.
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: SIGNUP_OK_MESSAGE }, { status: 201 });
     }
 
-    const hashed = await hash(password, 12);
+    const hashed = await hash(password, BCRYPT_COST);
 
     const user = await db.user.create({
       data: {

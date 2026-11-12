@@ -101,7 +101,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
             value={password}
           />
           <span className="text-[0.8rem] font-normal text-muted">
-            At least 8 characters, with one uppercase letter and one number.
+            At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
           </span>
         </label>
         <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">

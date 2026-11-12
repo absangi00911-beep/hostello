@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { compare, hash } from "bcryptjs";
+import { BCRYPT_COST } from "@/lib/password-hash";
 import { z } from "zod";
 import { invalidateLocalSessionCache } from "@/lib/auth/config";
 import { rateLimit } from "@/lib/rate-limit";
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash new password
-    const hashedPassword = await hash(newPassword, 12);
+    const hashedPassword = await hash(newPassword, BCRYPT_COST);
 
     // Update password and increment tokenVersion to revoke all sessions.
     // See comment block at top of file for mechanism and why this is needed.
