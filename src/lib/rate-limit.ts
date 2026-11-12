@@ -13,13 +13,26 @@ interface Entry {
 interface RateLimitOptions {
   limit?: number;
   windowMs?: number;
+  /**
+   * Refuse the request when the shared limiter (Redis) is unreachable in production,
+   * instead of falling back to a per-instance counter. Use for brute-force and
+   * abuse-sensitive routes (login, OTP, password reset, signup): on serverless every
+   * instance has its own memory, so the fallback would give an attacker a fresh budget
+   * per instance. Costs availability during a Redis outage.
+   */
+  failClosed?: boolean;
 }
 
 interface RateLimitResult {
   ok: boolean;
   remaining: number;
   resetAt: number;
+  /** True when the request was refused only because the limiter was unavailable. */
+  unavailable?: boolean;
 }
+
+/** Suggested retry delay reported when a fail-closed limit cannot be checked. */
+const FAIL_CLOSED_RETRY_MS = 30_000;
 
 const store = new Map<string, Entry>();
 const limiters = new Map<string, Ratelimit>();
@@ -104,7 +117,7 @@ function rateLimitInMemory(
 
 export async function rateLimit(
   key: string,
-  { limit = 10, windowMs = 60_000 }: RateLimitOptions = {},
+  { limit = 10, windowMs = 60_000, failClosed = false }: RateLimitOptions = {},
 ): Promise<RateLimitResult> {
   const limiter = getUpstashLimiter(limit, windowMs);
 
@@ -124,6 +137,16 @@ export async function rateLimit(
     console.error("[rate-limit] Upstash request failed:", getSafeErrorSummary(error));
 
     if (process.env.NODE_ENV === "production") {
+      if (failClosed) {
+        console.error("[rate-limit] Redis unavailable — refusing a fail-closed request");
+        return {
+          ok: false,
+          remaining: 0,
+          resetAt: Date.now() + Math.min(windowMs, FAIL_CLOSED_RETRY_MS),
+          unavailable: true,
+        };
+      }
+
       // Redis is unavailable. Fall back to per-instance in-memory rate limiting
       // rather than completely bypassing rate limits. This provides defense against
       // abuse on individual server instances during Redis outages.

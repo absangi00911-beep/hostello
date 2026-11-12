@@ -69,6 +69,7 @@ export async function checkCredentialLoginIpLimit(
   const result = await rateLimit(loginIpLimitKey(clientIp), {
     limit: LOGIN_IP_LIMIT,
     windowMs: LOGIN_WINDOW_MS,
+    failClosed: true,
   });
 
   if (!result.ok) {
@@ -89,6 +90,7 @@ export async function checkCredentialLoginAccountLimit(
   const result = await rateLimit(`login-account:${hashLoginAccount(email, getIp(request))}`, {
     limit: LOGIN_ACCOUNT_LIMIT,
     windowMs: LOGIN_WINDOW_MS,
+    failClosed: true,
   });
 
   if (!result.ok) {
@@ -109,6 +111,7 @@ export async function checkCredentialLoginEmailLimit(
   const result = await rateLimit(`login-email:${hashLoginEmail(email)}`, {
     limit: LOGIN_EMAIL_GLOBAL_LIMIT,
     windowMs: LOGIN_WINDOW_MS,
+    failClosed: true,
   });
 
   if (!result.ok) {

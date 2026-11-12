@@ -51,6 +51,7 @@ export async function authorizeEmailOtp(
   const ipLimit = await rateLimit(`email-otp-login-ip:${clientIp}`, {
     limit: 10,
     windowMs: EMAIL_OTP_WINDOW_MS,
+    failClosed: true,
   });
   if (!ipLimit.ok) {
     logOperationalEvent("warn", "auth.login.throttled", {
@@ -62,7 +63,7 @@ export async function authorizeEmailOtp(
 
   const accountLimit = await rateLimit(
     `email-otp-login-account:${hashEmailLoginIdentifier(email)}`,
-    { limit: 5, windowMs: EMAIL_OTP_WINDOW_MS },
+    { limit: 5, windowMs: EMAIL_OTP_WINDOW_MS, failClosed: true },
   );
   if (!accountLimit.ok) {
     logOperationalEvent("warn", "auth.login.throttled", {

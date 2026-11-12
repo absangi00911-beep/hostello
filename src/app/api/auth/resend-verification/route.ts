@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
   const rl = await rateLimit(`resend-verify:${getIp(req)}`, {
     limit: 3,
     windowMs: 15 * 60 * 1000,
+    failClosed: true,
   });
   if (!rl.ok) {
     return NextResponse.json(

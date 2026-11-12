@@ -36,10 +36,11 @@ export async function POST(req: NextRequest) {
     const ipLimit = await rateLimit(`email-otp-request-ip:${getIp(req)}`, {
       limit: 10,
       windowMs: REQUEST_WINDOW_MS,
+      failClosed: true,
     });
     const emailLimit = await rateLimit(
       `email-otp-request-account:${hashEmailLoginIdentifier(email)}`,
-      { limit: 3, windowMs: REQUEST_WINDOW_MS },
+      { limit: 3, windowMs: REQUEST_WINDOW_MS, failClosed: true },
     );
     if (!ipLimit.ok || !emailLimit.ok) {
       return NextResponse.json(

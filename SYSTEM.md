@@ -38,7 +38,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | API route handler files | 82 |
 | Prisma models | 33 |
 | Prisma migrations | 36 |
-| Vitest test files | 270 |
+| Vitest test files | 271 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -166,7 +166,7 @@ The application is intentionally one deployable unit: route handlers, business l
 ### 3.3 Request lifecycle
 
 1. **Origin check** (`src/proxy.ts`). In production, a state-changing `/api` request must carry an `Origin` header equal to the configured app URL. Auth.js sign-in, callback and sign-out, cron, and payment webhook/callback routes are exempt. This is not the authorization boundary.
-2. **Rate limit.** Upstash sliding window keyed by the Vercel-trusted client IP or by user. If Redis fails in production, a per-instance in-memory limiter takes over. It does not coordinate across instances.
+2. **Rate limit.** Upstash sliding window keyed by the Vercel-trusted client IP or by user. If Redis fails in production, most routes fall back to a per-instance in-memory limiter that does not coordinate across instances. Login, OTP, signup, password reset/change and account deletion pass `failClosed: true` and refuse requests instead (`unavailable: true`), so an outage cannot hand an attacker a fresh budget per instance.
 3. **Authentication.** `auth()` verifies the JWT and checks `tokenVersion` against a Redis cache (5-minute TTL, database fallback). A stale or malformed token returns no session.
 4. **Validation.** The body is streamed through a byte cap, then parsed with Zod. Query strings and path identifiers have length caps.
 5. **Service function.** Role and ownership are enforced again in the write predicate. State changes use conditional updates so concurrent requests cannot both win.
@@ -629,7 +629,7 @@ Implemented controls are described in §§3, 6–8, and 12–14; open gaps are t
 | **CSRF and session riding** | Auth.js cookie defaults and the Origin check | Breaks every non-same-origin client; see D-1 |
 | **Supply chain** | Lockfile, weekly audit, production audit clean | Lockfile fails `npm ci`; about 30 unused dependencies; beta auth library (R-06, R-18) |
 | **Admin or insider misuse** | Audit events for refunds, payouts and webhook retries | Booking and listing admin actions go only to stdout logs (R-10) |
-| **Provider outage** (Redis, Typesense, QStash) | In-memory limiter, database search fallback, QStash retries | Unawaited side effects; no alerts (R-07, R-17) |
+| **Provider outage** (Redis, Typesense, QStash) | In-memory limiter (auth routes fail closed), database search fallback, QStash retries | Unawaited side effects; no alerts (R-07, R-17) |
 
 ### 13.2 Principles
 

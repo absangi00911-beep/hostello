@@ -182,7 +182,7 @@ describe("POST /api/auth/signup", () => {
       const [key, options] = vi.mocked(rateLimit).mock.calls[1];
       expect(String(key)).toMatch(/^signup-exists:[a-f0-9]{64}$/);
       expect(String(key)).not.toContain("student");
-      expect(options).toEqual({ limit: 1, windowMs: 60 * 60 * 1000 });
+      expect(options).toEqual({ limit: 1, windowMs: 60 * 60 * 1000, failClosed: true });
     });
   });
 });

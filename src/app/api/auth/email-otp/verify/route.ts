@@ -50,10 +50,11 @@ export async function POST(req: NextRequest) {
     const ipLimit = await rateLimit(`email-otp-verify-ip:${getIp(req)}`, {
       limit: 10,
       windowMs: VERIFY_WINDOW_MS,
+      failClosed: true,
     });
     const emailLimit = await rateLimit(
       `email-otp-verify-account:${hashEmailLoginIdentifier(email)}`,
-      { limit: 5, windowMs: VERIFY_WINDOW_MS },
+      { limit: 5, windowMs: VERIFY_WINDOW_MS, failClosed: true },
     );
     if (!ipLimit.ok || !emailLimit.ok) {
       return NextResponse.json(
