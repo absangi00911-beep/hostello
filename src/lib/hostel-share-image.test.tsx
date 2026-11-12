@@ -21,4 +21,15 @@ describe("renderHostelShareImage", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
   });
+
+  it("caches the missing-hostel fallback only briefly", () => {
+    const response = renderHostelShareImage(null);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=300");
+  });
+
+  it("never caches the fallback served after a lookup failure", () => {
+    const response = renderHostelShareImage(null, { lookupFailed: true });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+  });
 });
