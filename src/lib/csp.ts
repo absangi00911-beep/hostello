@@ -77,6 +77,15 @@ export function getNonceScriptSrc(nonce: string, isDevelopment: boolean): string
   return ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(isDevelopment ? ["'unsafe-eval'"] : [])];
 }
 
+/**
+ * Whether the nonce policy is enforced (CSP_ENFORCE=true) or only reported.
+ * Read at build time as well as request time: enforcing needs every page rendered per
+ * request (see the root layout), so set it before the build that should enforce.
+ */
+export function isCspEnforced(env: Record<string, string | undefined> = process.env): boolean {
+  return env.CSP_ENFORCE === "true";
+}
+
 /** A fresh, unguessable, base64 nonce for one response. */
 export function generateNonce(): string {
   return btoa(crypto.randomUUID());

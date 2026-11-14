@@ -5,6 +5,7 @@ import {
   getEnforcedScriptSrc,
   getNonceScriptSrc,
   getR2CspSource,
+  isCspEnforced,
 } from "@/lib/csp";
 
 const directive = (policy: string, name: string) =>
@@ -63,6 +64,15 @@ describe("generateNonce", () => {
     for (const nonce of nonces) {
       expect(nonce).toMatch(/^[A-Za-z0-9+/]+=*$/);
       expect(nonce.length).toBeGreaterThanOrEqual(32);
+    }
+  });
+});
+
+describe("isCspEnforced", () => {
+  it("is on only for the exact value true", () => {
+    expect(isCspEnforced({ CSP_ENFORCE: "true" })).toBe(true);
+    for (const value of [undefined, "", "false", "1", "TRUE", "yes"]) {
+      expect(isCspEnforced({ CSP_ENFORCE: value })).toBe(false);
     }
   });
 });
