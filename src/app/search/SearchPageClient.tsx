@@ -20,95 +20,25 @@ import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
-import {
-  isNearbyCoordinates,
-  NEARBY_COORDINATES_SESSION_KEY,
-  type NearbyCoordinates,
-} from "@/lib/nearby-search";
+import { NEARBY_COORDINATES_SESSION_KEY, type NearbyCoordinates } from "@/lib/nearby-search";
 import { buildSearchAvailabilityAlertHref } from "@/lib/availability-alert-links";
+import {
+  PAGE_SIZE,
+  readNearbyCoordinates,
+  type HostelSearchResult,
+} from "./load-hostel-search";
 import {
   buildSearchParams,
   type HostelSearchSort,
 } from "./search-params";
+import { useHostelSearch } from "./useHostelSearch";
 
-interface HostelSearchResult {
-  id: string;
-  name: string;
-  city: string;
-  area: string | null;
-  pricePerMonth: number;
-  coverImage: string | null;
-  images: string[];
-  rating: number;
-  reviewCount: number;
-}
-
-interface HostelSearchResponse {
-  data: HostelSearchResult[];
-  total: number;
-  error?: string;
-}
-
-const PAGE_SIZE = 20;
 const mapPinPositions = [
   { top: "23%", left: "24%" },
   { top: "39%", left: "69%" },
   { top: "57%", left: "45%" },
   { top: "72%", left: "79%" },
 ];
-
-function readNearbyCoordinates(
-  fallback: NearbyCoordinates | null = null,
-): NearbyCoordinates | null {
-  const raw = window.sessionStorage.getItem(NEARBY_COORDINATES_SESSION_KEY);
-  if (!raw) return fallback;
-
-  try {
-    const coordinates: unknown = JSON.parse(raw);
-    return isNearbyCoordinates(coordinates) ? coordinates : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function isHostelSearchResult(value: unknown): value is HostelSearchResult {
-  if (typeof value !== "object" || value === null) return false;
-  return (
-    "id" in value &&
-    typeof value.id === "string" &&
-    "name" in value &&
-    typeof value.name === "string" &&
-    "city" in value &&
-    typeof value.city === "string" &&
-    "area" in value &&
-    (typeof value.area === "string" || value.area === null) &&
-    "pricePerMonth" in value &&
-    typeof value.pricePerMonth === "number" &&
-    "coverImage" in value &&
-    (typeof value.coverImage === "string" || value.coverImage === null) &&
-    "images" in value &&
-    Array.isArray(value.images) &&
-    value.images.every((image: unknown) => typeof image === "string") &&
-    "rating" in value &&
-    typeof value.rating === "number" &&
-    "reviewCount" in value &&
-    typeof value.reviewCount === "number"
-  );
-}
-
-function isHostelSearchResponse(value: unknown): value is HostelSearchResponse {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "data" in value &&
-    Array.isArray(value.data) &&
-    value.data.every(isHostelSearchResult) &&
-    "total" in value &&
-    typeof value.total === "number" &&
-    Number.isSafeInteger(value.total) &&
-    value.total >= value.data.length
-  );
-}
 
 function MapPreview({
   city,
@@ -328,12 +258,18 @@ export default function SearchPageClient({
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
   const [filterError, setFilterError] = useState<string | null>(null);
-  const [hostels, setHostels] = useState<HostelSearchResult[]>([]);
-  const [totalHostels, setTotalHostels] = useState(0);
   const [page, setPage] = useState(initialPage);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [searchReload, setSearchReload] = useState(0);
+  const { hostels, totalHostels, isLoading, searchError, retry } = useHostelSearch({
+    query: appliedQuery,
+    city: appliedCity,
+    moveInDate: appliedMoveInDate,
+    checkOutDate: appliedCheckOutDate,
+    guests: appliedGuests,
+    nearby: appliedNearby,
+    filters: appliedFilters,
+    page,
+    initialNearbyCoordinates,
+  });
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
   const availabilityAlertHref = buildSearchAvailabilityAlertHref({
     q: appliedQuery,
@@ -373,119 +309,6 @@ export default function SearchPageClient({
       setAlertNearbyCoordinatesLoaded(true);
     }
   }, [appliedNearby, initialNearbyCoordinates]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadHostels() {
-      setIsLoading(true);
-      setSearchError(null);
-      const query = buildSearchParams({
-        q: appliedQuery,
-        city: appliedCity,
-        moveInDate: appliedMoveInDate,
-        checkOut: appliedCheckOutDate || undefined,
-        guests: Number(appliedGuests),
-        gender: appliedFilters.gender || undefined,
-        minPrice: appliedFilters.minPrice
-          ? Number(appliedFilters.minPrice)
-          : undefined,
-        maxPrice: appliedFilters.maxPrice
-          ? Number(appliedFilters.maxPrice)
-          : undefined,
-        amenities: appliedFilters.amenities,
-        verified: appliedFilters.verified,
-        sort: appliedFilters.sort,
-        page,
-        limit: PAGE_SIZE,
-      });
-
-      try {
-        let response: Response;
-        if (appliedNearby) {
-          const coordinates = readNearbyCoordinates(initialNearbyCoordinates);
-          if (!coordinates) {
-            setHostels([]);
-            setTotalHostels(0);
-            setSearchError(
-              "Your nearby location is no longer available in this tab. Start a new search and choose Nearby again.",
-            );
-            return;
-          }
-          const body: {
-            latitude: number;
-            longitude: number;
-            moveInDate?: string;
-            checkOut?: string;
-            guests?: number;
-          } = {
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude,
-          };
-          if (appliedMoveInDate) {
-            body.moveInDate = appliedMoveInDate;
-            if (appliedCheckOutDate) body.checkOut = appliedCheckOutDate;
-            body.guests = Number(appliedGuests);
-          }
-          response = await fetch(`/api/hostels/nearby?${query}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-            signal: controller.signal,
-          });
-        } else {
-          response = await fetch(`/api/hostels?${query}`, {
-            signal: controller.signal,
-          });
-        }
-        const result: unknown = await response.json();
-
-        if (!response.ok) {
-          setHostels([]);
-          setTotalHostels(0);
-          setSearchError(
-            typeof result === "object" &&
-              result !== null &&
-              "error" in result &&
-              typeof result.error === "string"
-              ? result.error
-              : "Unable to load hostels. Please try again.",
-          );
-          return;
-        }
-        if (!isHostelSearchResponse(result)) {
-          setHostels([]);
-          setTotalHostels(0);
-          setSearchError("Unable to load hostels. Please try again.");
-          return;
-        }
-
-        setHostels(result.data);
-        setTotalHostels(result.total);
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") return;
-        setHostels([]);
-        setTotalHostels(0);
-        setSearchError("Unable to load hostels. Please try again.");
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    }
-
-    void loadHostels();
-    return () => controller.abort();
-  }, [
-    appliedCity,
-    appliedGuests,
-    appliedMoveInDate,
-    appliedCheckOutDate,
-    appliedNearby,
-    appliedFilters,
-    appliedQuery,
-    page,
-    searchReload,
-    initialNearbyCoordinates,
-  ]);
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1057,7 +880,7 @@ export default function SearchPageClient({
                 <p className="m-0">{searchError}</p>
                 <button
                   className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
-                  onClick={() => setSearchReload((current) => current + 1)}
+                  onClick={retry}
                   type="button"
                 >
                   Try again
