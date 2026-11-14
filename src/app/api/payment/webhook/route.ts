@@ -3,33 +3,21 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { Client } from "@upstash/qstash";
 import { db } from "@/lib/db";
-import { toSafepayMinorUnits, verifyWebhookSignature } from "@/lib/safepay";
+import { toSafepayMinorUnits } from "@/lib/safepay";
 import { getAppUrl } from "@/lib/app-url";
-import { verifyUpstashRequest } from "@/lib/verify-upstash";
-import { safeSecretEqual } from "@/lib/secret-compare";
 import { PLANS } from "@/config/plans";
 import { getSafeErrorSummary } from "@/lib/safe-error";
-import { readBoundedText } from "@/lib/bounded-json";
+import {
+  MAX_ORDER_ID_LENGTH,
+  MAX_TRACKER_LENGTH,
+  authenticateQueuedSafepayRequest,
+  authenticateSafepayWebhook,
+  type SafepayEvent,
+} from "@/lib/safepay-webhook-auth";
 import { createOperationalLogContext, logOperationalEvent, type OperationalLogContext } from "@/lib/operational-logger";
 import { resolveLatePayment } from "@/lib/late-payment-resolution";
 import { getProGraceEndDate, getProTermEndDate } from "@/lib/pro-subscription";
 import { enqueuePaymentConfirmationEmails } from "@/lib/payment-email-outbox";
-
-const MAX_WEBHOOK_BODY_BYTES = 64 * 1024;
-const MAX_ORDER_ID_LENGTH = 128;
-const MAX_TRACKER_LENGTH = 256;
-
-type SafepayEvent = {
-  type?: unknown;
-  merchant_api_key?: unknown;
-  data?: {
-    tracker?: unknown;
-    state?: unknown;
-    amount?: unknown;
-    currency?: unknown;
-    metadata?: { order_id?: unknown };
-  };
-};
 
 function parseOrderId(event: SafepayEvent): string | null {
   const orderId = event.data?.metadata?.order_id;
@@ -653,37 +641,9 @@ async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: 
 }
 
 async function processQueuedSafepayEvent(req: NextRequest) {
-  const boundedBody = req.body
-    ? await readBoundedText(req, 4 * 1024)
-    : { ok: true as const, text: "" };
-  if (!boundedBody.ok) {
-    return NextResponse.json({ error: boundedBody.error }, { status: boundedBody.status });
-  }
-
-  try {
-    await verifyUpstashRequest(req, {
-      acceptBearerToken: false,
-      body: boundedBody.text,
-    });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let eventId: string;
-  try {
-    const parsed: unknown = JSON.parse(boundedBody.text);
-    if (
-      !parsed || typeof parsed !== "object" || Array.isArray(parsed) ||
-      typeof (parsed as { eventId?: unknown }).eventId !== "string" ||
-      (parsed as { eventId: string }).eventId.length === 0 ||
-      (parsed as { eventId: string }).eventId.length > 128
-    ) {
-      return NextResponse.json({ error: "Invalid queued event." }, { status: 400 });
-    }
-    eventId = (parsed as { eventId: string }).eventId;
-  } catch {
-    return NextResponse.json({ error: "Invalid queued event." }, { status: 400 });
-  }
+  const auth = await authenticateQueuedSafepayRequest(req);
+  if (!auth.ok) return auth.response;
+  const { eventId } = auth;
 
   let claimToken: Date | null = null;
   try {
@@ -729,40 +689,9 @@ async function processQueuedSafepayEvent(req: NextRequest) {
 
 /** Persist each authenticated event before queuing its payment-state changes. */
 async function receiveSafepayWebhook(req: NextRequest) {
-  const boundedBody = await readBoundedText(req.clone(), MAX_WEBHOOK_BODY_BYTES);
-  if (!boundedBody.ok) {
-    return NextResponse.json({ error: boundedBody.error }, { status: boundedBody.status });
-  }
-
-  const rawBody = boundedBody.text;
-  const signature = req.headers.get("x-sfpy-signature") ?? "";
-  if (!(await verifyWebhookSignature(rawBody, signature))) {
-    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
-  }
-
-  let event: SafepayEvent;
-  try {
-    const parsed: unknown = JSON.parse(rawBody);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return NextResponse.json({ error: "Invalid webhook event." }, { status: 400 });
-    }
-    event = parsed as SafepayEvent;
-  } catch {
-    return NextResponse.json({ error: "Invalid webhook event." }, { status: 400 });
-  }
-
-  if (!safeSecretEqual(event.merchant_api_key, process.env.SAFEPAY_API_KEY)) {
-    return NextResponse.json({ error: "Merchant key mismatch." }, { status: 401 });
-  }
-
-  const orderId = event.data?.metadata?.order_id;
-  const tracker = event.data?.tracker;
-  if (
-    (typeof orderId === "string" && orderId.length > MAX_ORDER_ID_LENGTH) ||
-    (typeof tracker === "string" && tracker.length > MAX_TRACKER_LENGTH)
-  ) {
-    return NextResponse.json({ error: "Invalid webhook event." }, { status: 400 });
-  }
+  const auth = await authenticateSafepayWebhook(req);
+  if (!auth.ok) return auth.response;
+  const { rawBody, event } = auth;
 
   let reservation: SafepayEventReservation | null = null;
   let claimToken: Date | null = null;
