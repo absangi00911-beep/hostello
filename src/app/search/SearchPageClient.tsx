@@ -25,6 +25,7 @@ import { buildSearchAvailabilityAlertHref } from "@/lib/availability-alert-links
 import {
   PAGE_SIZE,
   readNearbyCoordinates,
+  type HostelSearchInitialResults,
   type HostelSearchResult,
 } from "./load-hostel-search";
 import {
@@ -200,6 +201,7 @@ export default function SearchPageClient({
   initialGuests,
   initialFilters,
   initialPage,
+  initialResults = null,
 }: {
   accountUser: BrowseAccountUser | null;
   initialQuery: string;
@@ -218,6 +220,8 @@ export default function SearchPageClient({
     sort: HostelSearchSort;
   };
   initialPage: number;
+  /** Server-rendered results for the first search, or null to load them in the browser. */
+  initialResults?: HostelSearchInitialResults | null;
 }) {
   const router = useRouter();
   const [appliedQuery] = useState(initialQuery);
@@ -259,17 +263,20 @@ export default function SearchPageClient({
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
   const [filterError, setFilterError] = useState<string | null>(null);
   const [page, setPage] = useState(initialPage);
-  const { hostels, totalHostels, isLoading, searchError, retry } = useHostelSearch({
-    query: appliedQuery,
-    city: appliedCity,
-    moveInDate: appliedMoveInDate,
-    checkOutDate: appliedCheckOutDate,
-    guests: appliedGuests,
-    nearby: appliedNearby,
-    filters: appliedFilters,
-    page,
-    initialNearbyCoordinates,
-  });
+  const { hostels, totalHostels, isLoading, searchError, retry } = useHostelSearch(
+    {
+      query: appliedQuery,
+      city: appliedCity,
+      moveInDate: appliedMoveInDate,
+      checkOutDate: appliedCheckOutDate,
+      guests: appliedGuests,
+      nearby: appliedNearby,
+      filters: appliedFilters,
+      page,
+      initialNearbyCoordinates,
+    },
+    initialResults,
+  );
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
   const availabilityAlertHref = buildSearchAvailabilityAlertHref({
     q: appliedQuery,

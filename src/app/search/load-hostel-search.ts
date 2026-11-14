@@ -69,7 +69,7 @@ function isHostelSearchResult(value: unknown): value is HostelSearchResult {
   );
 }
 
-function isHostelSearchResponse(value: unknown): value is HostelSearchResponse {
+export function isHostelSearchResponse(value: unknown): value is HostelSearchResponse {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -108,16 +108,9 @@ export type HostelSearchOutcome =
   | { status: "error"; message: string }
   | { status: "aborted" };
 
-const GENERIC_ERROR = "Unable to load hostels. Please try again.";
-const NEARBY_UNAVAILABLE_ERROR =
-  "Your nearby location is no longer available in this tab. Start a new search and choose Nearby again.";
-
-/** Load one page of results. Never throws; an aborted request is reported, not an error. */
-export async function loadHostelSearch(
-  request: HostelSearchRequest,
-  signal: AbortSignal,
-): Promise<HostelSearchOutcome> {
-  const query = buildSearchParams({
+/** The query string for a search. The server-rendered page and the client use this same builder. */
+export function buildHostelSearchQuery(request: HostelSearchRequest): URLSearchParams {
+  return buildSearchParams({
     q: request.query,
     city: request.city,
     moveInDate: request.moveInDate,
@@ -132,6 +125,53 @@ export async function loadHostelSearch(
     page: request.page,
     limit: PAGE_SIZE,
   });
+}
+
+/** Results rendered on the server for the first request, so the client need not fetch them. */
+export interface HostelSearchInitialResults {
+  hostels: HostelSearchResult[];
+  total: number;
+}
+
+/** Identifies the search a set of results belongs to. */
+export function hostelSearchRequestKey(request: HostelSearchRequest): string {
+  // Everything that changes the answer. The coordinates are deliberately not part of it:
+  // they only matter for "nearby" searches, which never have server-rendered results.
+  return JSON.stringify([
+    request.query,
+    request.city,
+    request.moveInDate,
+    request.checkOutDate,
+    request.guests,
+    request.nearby,
+    request.filters,
+    request.page,
+  ]);
+}
+
+/**
+ * True when the results already on screen are the answer to this search, so fetching
+ * again would only repeat the work. `loaded` describes what is on screen: the search it
+ * answers and the retry count it was fetched at (a retry always fetches).
+ */
+export function shouldSkipHostelSearchLoad(
+  loaded: { key: string; reload: number } | null,
+  key: string,
+  reload: number,
+): boolean {
+  return loaded !== null && loaded.key === key && loaded.reload === reload;
+}
+
+const GENERIC_ERROR = "Unable to load hostels. Please try again.";
+const NEARBY_UNAVAILABLE_ERROR =
+  "Your nearby location is no longer available in this tab. Start a new search and choose Nearby again.";
+
+/** Load one page of results. Never throws; an aborted request is reported, not an error. */
+export async function loadHostelSearch(
+  request: HostelSearchRequest,
+  signal: AbortSignal,
+): Promise<HostelSearchOutcome> {
+  const query = buildHostelSearchQuery(request);
 
   try {
     let response: Response;

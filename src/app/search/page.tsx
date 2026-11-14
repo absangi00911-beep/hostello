@@ -4,6 +4,7 @@ import { buildSearchMetadata } from "@/lib/search-metadata";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { AMENITIES } from "@hostello/shared";
 import SearchPageClient from "./SearchPageClient";
+import { loadInitialHostelSearch } from "./load-initial-hostel-search";
 import { isNearbyCoordinates, type NearbyCoordinates } from "@/lib/nearby-search";
 
 type SearchPageSearchParams = Promise<{
@@ -125,6 +126,29 @@ export default async function SearchPage({
       }
     : null;
 
+  const initialFilters = {
+    gender,
+    minPrice: validPriceRange ? minPrice : "",
+    maxPrice: validPriceRange ? maxPrice : "",
+    amenities,
+    verified: firstString(params.verified) === "true",
+    sort,
+  } as const;
+
+  // The first results, rendered on the server so they are in the HTML. This is exactly the
+  // search the client would otherwise request on load (same fields, same builder).
+  const initialResults = await loadInitialHostelSearch({
+    query,
+    city,
+    moveInDate,
+    checkOutDate: checkOut,
+    guests: String(guests),
+    nearby,
+    filters: initialFilters,
+    page,
+    initialNearbyCoordinates,
+  });
+
   return (
     <SearchPageClient
       accountUser={accountUser}
@@ -135,15 +159,9 @@ export default async function SearchPage({
       initialMoveInDate={moveInDate}
       initialCheckOut={checkOut}
       initialGuests={guests}
-      initialFilters={{
-        gender,
-        minPrice: validPriceRange ? minPrice : "",
-        maxPrice: validPriceRange ? maxPrice : "",
-        amenities,
-        verified: firstString(params.verified) === "true",
-        sort,
-      }}
+      initialFilters={initialFilters}
       initialPage={page}
+      initialResults={initialResults}
     />
   );
 }
