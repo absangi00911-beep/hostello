@@ -1,6 +1,12 @@
 // Path: src/proxy.ts
 
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  buildContentSecurityPolicy,
+  generateNonce,
+  getNonceScriptSrc,
+  getR2CspSource,
+} from "@/lib/csp";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { validateEnvironmentOnce } from "@/lib/env-validation";
 
@@ -18,6 +24,7 @@ const CSRF_EXEMPT: string[] = [
   "/api/auth/providers",    // NextAuth providers list
   "/api/cron/",             // Upstash QStash — Bearer token auth
   "/api/payment/webhook",   // Safepay — HMAC signature auth
+  "/api/csp-report",        // Browser-sent CSP violation reports: no cookies/Origin, logs only
 ];
 
 const METHOD_BASED_CSRF_EXEMPT: { path: string; methods: string[] }[] = [
@@ -42,11 +49,29 @@ export function proxy(req: NextRequest) {
     if (csrfError) return csrfError;
   }
 
-  return NextResponse.next({
-    request: {
-      headers: new Headers(req.headers),
-    },
+  // API routes return JSON, so they get no page policy.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next({ request: { headers: new Headers(req.headers) } });
+  }
+
+  // -- Nonce-based CSP, report-only --
+  // A fresh nonce per request. Next.js reads it from the request's script-src and stamps
+  // it on its own inline scripts. The policy is only reported (to /api/csp-report) while
+  // the enforced policy in next.config.ts still allows 'unsafe-inline'; once reports are
+  // clean, this one is enforced instead.
+  const policy = buildContentSecurityPolicy({
+    scriptSrc: getNonceScriptSrc(generateNonce(), process.env.NODE_ENV === "development"),
+    r2Source: getR2CspSource(process.env.R2_PUBLIC_URL),
+    reportUri: "/api/csp-report",
   });
+  const requestHeaders = new Headers(req.headers);
+  // A client must not choose the nonce its own response is rendered with.
+  requestHeaders.delete("content-security-policy");
+  requestHeaders.set("content-security-policy-report-only", policy);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Content-Security-Policy-Report-Only", policy);
+  return response;
 }
 
 export const config = {

@@ -35,10 +35,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 40 |
-| API route handler files | 82 |
+| API route handler files | 83 |
 | Prisma models | 33 |
 | Prisma migrations | 36 |
-| Vitest test files | 271 |
+| Vitest test files | 274 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -469,6 +469,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Uploads | `/api/upload` (listing images; Owner or Admin with or without `hostelId`; per-user limit of 20 uploads per 10 minutes, R-11) | Owner / Admin |
 | Support | `/api/contact`, `/api/report` | Signed in |
 | Health | `/api/health/crons`, `/api/health/payments` | Admin or internal `x-cron-health-secret` |
+| Security reports | `/api/csp-report` (browser Content-Security-Policy violation reports; logs sanitized summaries only, always 204, 20 per minute per IP, exempt from the CSRF Origin check because browsers send no Origin) | Public |
 | Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/drain-payment-email-outbox`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-availability-alerts`, `/api/cron/expire-pro-subscriptions`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions`, `/api/cron/sweep-cancelled-refunds` | QStash |
 
 ---

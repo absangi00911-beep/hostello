@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
+import { buildContentSecurityPolicy, getEnforcedScriptSrc, getR2CspSource } from "./src/lib/csp";
 
 // The project's own public image bucket, taken from R2_PUBLIC_URL. When it is
 // set, only that exact host may serve images. A wildcard on r2.dev would also
@@ -24,21 +25,7 @@ if (!r2Image && process.env.VERCEL_ENV === "production") {
       "Without it the image allowlist would fall back to every r2.dev bucket.",
   );
 }
-const r2CspSource = r2Image ? `https://${r2Image.host}` : "https://*.r2.dev";
-
-// Environment-aware CSP configuration
-// In development: Allow unsafe-eval and unsafe-inline (required for Next.js HMR)
-// In production: Allow unsafe-inline for Next.js internal scripts (hydration, error boundaries)
-const getScriptSrc = (): string => {
-  const base = ["'self'", "'unsafe-inline'"];
-  
-  // Also allow unsafe-eval in development for HMR
-  if (process.env.NODE_ENV === "development") {
-    base.push("'unsafe-eval'");
-  }
-  
-  return base.join(" ");
-};
+const r2CspSource = getR2CspSource(process.env.R2_PUBLIC_URL);
 
 const securityHeaders = [
   {
@@ -67,42 +54,12 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      `script-src ${getScriptSrc()}`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      `img-src 'self' blob: data: https://images.unsplash.com ${r2CspSource} https://*.cloudflare.com https://*.tile.openstreetmap.org`,
-      // API connections — includes Safepay, JazzCash, and EasyPaisa
-      [
-        "connect-src 'self'",
-        "https://*.neon.tech",
-        "https://*.upstash.io",
-        "https://api.resend.com",
-        "https://*.getsafepay.com",
-        "https://sandbox.api.getsafepay.com",
-        "https://sandbox.jazzcash.com.pk",
-        "https://payments.jazzcash.com.pk",
-        "https://easypaisasandbox.pk",
-        "https://easypaisa.com.pk",
-        "https://*.sentry.io",
-      ].join(" "),
-      // Allow POSTing to payment gateway checkout pages from this origin
-      [
-        "form-action 'self'",
-        "https://sandbox.jazzcash.com.pk",
-        "https://payments.jazzcash.com.pk",
-        "https://easypaisasandbox.pk",
-        "https://easypaisa.com.pk",
-        "https://sandbox.getsafepay.com",
-        "https://getsafepay.com",
-      ].join(" "),
-      // Allow OpenStreetMap embeds for the hostel location map
-      "frame-src https://www.openstreetmap.org",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "upgrade-insecure-requests",
-    ].join("; "),
+    // Still 'unsafe-inline' for scripts. src/proxy.ts also sends a nonce-based policy as
+    // Content-Security-Policy-Report-Only; it replaces this one once reports are clean.
+    value: buildContentSecurityPolicy({
+      scriptSrc: getEnforcedScriptSrc(process.env.NODE_ENV === "development"),
+      r2Source: r2CspSource,
+    }),
   },
 ];
 
