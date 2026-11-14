@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@/generated/client";
 import { db } from "@/lib/db";
 import { getEligiblePayoutBookingWhere } from "@/lib/payouts";
+import { deleteLegacyPublicVerificationDocument, isLegacyPublicDocumentUrl } from "@/lib/legacy-verification-docs";
 import { deleteVerificationDocument, isVerificationObjectKey } from "@/lib/verification-storage";
 import { removeHostelIndex } from "@/lib/typesense-sync";
 import { getSafeErrorSummary } from "@/lib/safe-error";
@@ -143,8 +144,11 @@ export async function enqueueAccountDeletion(userId: string): Promise<AccountDel
     ]);
 
     const subjectHash = createHash("sha256").update(userId).digest("hex");
+    // Either a private-bucket object key or, for old accounts, a public document URL.
+    // The job column holds whichever it is; the PRIVATE_DOCUMENT phase tells them apart.
     const verificationObjectKey = user.verificationDocUrl &&
-      isVerificationObjectKey(user.verificationDocUrl, userId)
+      (isVerificationObjectKey(user.verificationDocUrl, userId) ||
+        isLegacyPublicDocumentUrl(user.verificationDocUrl))
       ? user.verificationDocUrl
       : null;
 
@@ -270,7 +274,11 @@ async function processOneAccountDeletion(jobId: string): Promise<"batch" | "comp
 
       if (phase === "PRIVATE_DOCUMENT") {
         if (job.verificationObjectKey) {
-          await deleteVerificationDocument(job.verificationObjectKey);
+          if (isLegacyPublicDocumentUrl(job.verificationObjectKey)) {
+            await deleteLegacyPublicVerificationDocument(job.verificationObjectKey);
+          } else {
+            await deleteVerificationDocument(job.verificationObjectKey);
+          }
           await db.$transaction(async (tx) => {
             if (job.userId) {
               await tx.user.updateMany({
