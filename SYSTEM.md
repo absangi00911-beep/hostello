@@ -38,7 +38,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | API route handler files | 83 |
 | Prisma models | 33 |
 | Prisma migrations | 36 |
-| Vitest test files | 279 |
+| Vitest test files | 280 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -335,7 +335,7 @@ Every transition is a conditional update that names the state it expects, so two
 
 Payment status is `PENDING`, `PAID`, `FAILED`, `PARTIALLY_REFUNDED` or `REFUNDED`. A failed payment can be retried; a retry creates a new Safepay tracker. A successful payment after cancellation is recorded as a late-payment resolution: the booking is reinstated only if all required seats can be acquired for the full stay in the same transaction; otherwise the booking remains cancelled and a full refund is requested through the audited refund flow. Provider uncertainty remains in the existing health and admin reconciliation paths.
 
-Code layout of `/api/payment/webhook`: `src/lib/safepay-webhook-auth.ts` is the authentication boundary for both kinds of request (Safepay's HMAC-signed event, with a body-size bound, signature over the raw bytes, then the merchant key; and QStash's own queued delivery, signature-verified, never the shared cron secret). It touches no database. `route.ts` holds the inbox, claim and payment-state handlers and only runs after authentication succeeds.
+Code layout of `/api/payment/webhook` (`route.ts` is about 150 lines: it receives, enqueues and acknowledges): `src/lib/safepay-webhook-auth.ts` is the authentication boundary for both request kinds (Safepay's HMAC-signed event with a body-size bound, signature over the raw bytes, then the merchant key; and QStash's own queued delivery, signature-verified, never the shared cron secret) and touches no database. `safepay-webhook-inbox.ts` is the durable inbox and its state machine. `safepay-payment-events.ts` applies a claimed event to bookings, with `safepay-subscription-events.ts` for Pro subscriptions and `safepay-event-fields.ts` for pure field validation. Handlers only run after authentication succeeds.
 
 ```mermaid
 sequenceDiagram
