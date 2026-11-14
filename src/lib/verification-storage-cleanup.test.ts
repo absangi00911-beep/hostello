@@ -18,7 +18,7 @@ vi.mock("@aws-sdk/client-s3", () => {
   };
 });
 
-import { deleteExpiredVerificationUploads } from "./verification-storage";
+import { deleteExpiredVerificationUploads, listVerificationDocuments } from "./verification-storage";
 
 const HOUR = 60 * 60 * 1000;
 const hex = (n: number) => n.toString(16).padStart(32, "0");
@@ -78,5 +78,42 @@ describe("deleteExpiredVerificationUploads", () => {
         : { Errors: [{ Key: key("aaa", 1), Code: "AccessDenied" }] });
 
     await expect(deleteExpiredVerificationUploads()).rejects.toThrow("could not be deleted");
+  });
+});
+
+describe("listVerificationDocuments", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("R2_ACCOUNT_ID", "acct");
+    vi.stubEnv("R2_VERIFICATION_ACCESS_KEY_ID", "id");
+    vi.stubEnv("R2_VERIFICATION_SECRET_ACCESS_KEY", "secret");
+    vi.stubEnv("R2_VERIFICATION_BUCKET_NAME", "private-bucket");
+  });
+
+  const docKey = (user: string, n: number) => `student-verifications/${user}/${hex(n)}.pdf`;
+
+  it("follows every page and returns only well-formed submitted-document keys", async () => {
+    const seen: Array<string | undefined> = [];
+    s3.send.mockImplementation(async (command: { input: Record<string, any> }) => {
+      seen.push(command.input.ContinuationToken);
+      return command.input.ContinuationToken === "page-2"
+        ? { Contents: [obj(docKey("u2", 2), HOUR)], IsTruncated: false }
+        : {
+            Contents: [
+              obj(docKey("u1", 1), HOUR),
+              obj("student-verifications/u1/not-a-document.txt", HOUR),
+              obj(key("u1", 9), HOUR),
+              { Key: docKey("u3", 3) },
+            ],
+            IsTruncated: true,
+            NextContinuationToken: "page-2",
+          };
+    });
+
+    const documents = await listVerificationDocuments();
+
+    expect(documents.map((d) => d.key)).toEqual([docKey("u1", 1), docKey("u2", 2)]);
+    expect(seen).toEqual([undefined, "page-2"]);
+    expect(documents[0].lastModified).toBeInstanceOf(Date);
   });
 });

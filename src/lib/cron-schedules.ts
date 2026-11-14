@@ -49,8 +49,8 @@ export const CRON_SCHEDULES = {
     cron: "0 * * * *",
     endpoint: "/api/cron/cleanup-verification-uploads",
     maxAgeMs: 2 * 60 * 60 * 1000,
-    label: "Cleanup abandoned verification uploads",
-    description: "Delete unsubmitted private verification uploads older than one hour",
+    label: "Cleanup verification documents",
+    description: "Delete abandoned private uploads (1 hour), unreferenced stored documents, and documents of requests left unreviewed for 60 days",
   },
   "expire-pro-subscriptions": {
     cron: "0 2 * * *",

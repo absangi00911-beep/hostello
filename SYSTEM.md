@@ -38,7 +38,7 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | API route handler files | 83 |
 | Prisma models | 33 |
 | Prisma migrations | 36 |
-| Vitest test files | 277 |
+| Vitest test files | 278 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -552,7 +552,7 @@ Eleven jobs run on QStash schedules. The schedule, endpoint and health-freshness
 | `check-price-alerts` | every 6 hours | Emails users when an active hostel's price drops to their target | 8 hours |
 | `expire-availability-alerts` | every 5 minutes | Expires active date-bound alerts when their check-in date begins | 10 minutes |
 | `cleanup-tokens` | daily at 01:00 | Deletes expired password-reset, verification and phone tokens | 26 hours |
-| `cleanup-verification-uploads` | hourly | Deletes abandoned temporary uploads from the private verification bucket | 2 hours |
+| `cleanup-verification-uploads` | hourly | Deletes abandoned temporary uploads (1 hour) from the private verification bucket; sweeps stored documents that no account references (older than 24 hours; aborts if most of the bucket looks unreferenced, e.g. wrong database); expires pending requests unreviewed for 60 days (deletes the document, resets the student to not submitted, notifies them). Steps run independently; any failure fails the run | 2 hours |
 | `expire-pro-subscriptions` | daily at 02:00 | Downgrades owners after the monthly Pro term and seven-day grace window | 26 hours |
 | `drain-payment-email-outbox` | every minute | Retries transactional booking-payment confirmation emails and expires retained rows | 3 minutes |
 | `mark-completed-stays` | daily at 00:00 | Moves `CONFIRMED` and `PAID` bookings past check-out to `COMPLETED`; completion notifications are written in the same transaction | 26 hours |

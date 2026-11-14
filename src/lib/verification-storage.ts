@@ -233,3 +233,35 @@ export async function deleteExpiredVerificationUploads(): Promise<number> {
 
   return deletedCount;
 }
+
+export interface StoredVerificationDocument {
+  key: string;
+  lastModified: Date;
+}
+
+const DOCUMENT_KEY_PATTERN = /^student-verifications\/[^/]+\/[a-f0-9]{32}\.(jpg|png|webp|pdf)$/;
+
+/** Every submitted (promoted) document, for retention checks. Follows all pages up to a hard cap. */
+export async function listVerificationDocuments(): Promise<StoredVerificationDocument[]> {
+  const bucket = getBucketName();
+  const s3 = getClient();
+  const documents: StoredVerificationDocument[] = [];
+  let continuationToken: string | undefined;
+
+  for (let page = 0; page < MAX_CLEANUP_PAGES; page += 1) {
+    const listed = await s3.send(new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: "student-verifications/",
+      MaxKeys: 1000,
+      ContinuationToken: continuationToken,
+    }));
+    for (const { Key, LastModified } of listed.Contents ?? []) {
+      if (Key && DOCUMENT_KEY_PATTERN.test(Key) && LastModified instanceof Date) {
+        documents.push({ key: Key, lastModified: LastModified });
+      }
+    }
+    if (!listed.IsTruncated || !listed.NextContinuationToken) break;
+    continuationToken = listed.NextContinuationToken;
+  }
+  return documents;
+}

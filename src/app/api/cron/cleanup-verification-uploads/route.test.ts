@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 vi.mock("@/lib/verify-upstash", () => ({ verifyUpstashRequest: vi.fn() }));
 vi.mock("@/lib/verification-storage", () => ({ deleteExpiredVerificationUploads: vi.fn() }));
+vi.mock("@/lib/verification-retention", () => ({
+  sweepOrphanedVerificationDocuments: vi.fn(),
+  expireStalePendingVerifications: vi.fn(),
+}));
 vi.mock("@/lib/cron-utils", () => ({
   runCronJob: vi.fn(async (
     _name: string,
@@ -15,6 +19,7 @@ import { POST } from "./route";
 import { runCronJob } from "@/lib/cron-utils";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { deleteExpiredVerificationUploads } from "@/lib/verification-storage";
+import { expireStalePendingVerifications, sweepOrphanedVerificationDocuments } from "@/lib/verification-retention";
 
 function request() {
   return new NextRequest("https://hostello.test/api/cron/cleanup-verification-uploads", { method: "POST" });
@@ -24,6 +29,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(verifyUpstashRequest).mockResolvedValue(true as any);
   vi.mocked(deleteExpiredVerificationUploads).mockResolvedValue(2);
+  vi.mocked(sweepOrphanedVerificationDocuments).mockResolvedValue(1);
+  vi.mocked(expireStalePendingVerifications).mockResolvedValue(3);
 });
 
 describe("POST /api/cron/cleanup-verification-uploads", () => {
@@ -36,16 +43,31 @@ describe("POST /api/cron/cleanup-verification-uploads", () => {
     expect(runCronJob).not.toHaveBeenCalled();
   });
 
-  it("runs the bounded abandoned-upload cleanup through cron tracking", async () => {
+  it("runs all three cleanup steps through cron tracking and reports each count", async () => {
     const response = await POST(request());
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ message: "Expired private verification uploads cleaned up", count: 2 });
+    expect(await response.json()).toEqual({
+      message: "Verification uploads, orphaned documents and stale requests cleaned up",
+      count: 6,
+      abandonedUploads: 2,
+      orphanedDocuments: 1,
+      expiredPending: 3,
+    });
     expect(runCronJob).toHaveBeenCalledWith(
       "cleanup-verification-uploads",
       expect.any(Function),
       expect.objectContaining({ request_id: expect.any(String) }),
     );
+  });
+
+  it("still runs the other steps when one fails, then fails the run so health reports it", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(sweepOrphanedVerificationDocuments).mockRejectedValue(new Error("looks like the wrong database"));
+
+    await expect(POST(request())).rejects.toThrow(/orphanedDocuments/);
+
     expect(deleteExpiredVerificationUploads).toHaveBeenCalledOnce();
+    expect(expireStalePendingVerifications).toHaveBeenCalledOnce();
   });
 });
