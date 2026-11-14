@@ -8,7 +8,7 @@
 // hostelId, a verification notification would break that assumption. Tests
 // below cover current behavior as-is.
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
 vi.mock("@/lib/auth/config", () => ({ auth: vi.fn() }));
@@ -23,7 +23,18 @@ vi.mock("@/lib/notifications", () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/legacy-verification-docs", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/legacy-verification-docs")>()),
+  deleteLegacyPublicVerificationDocument: vi.fn().mockResolvedValue(true),
+}));
+vi.mock("@/lib/verification-storage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/verification-storage")>()),
+  deleteVerificationDocument: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, PUT } from "./route";
+import { deleteLegacyPublicVerificationDocument } from "@/lib/legacy-verification-docs";
+import { deleteVerificationDocument } from "@/lib/verification-storage";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createNotification } from "@/lib/notifications";
@@ -279,5 +290,56 @@ describe("PUT /api/admin/verifications", () => {
 
     expect(res.status).toBe(409);
     expect(createNotification).not.toHaveBeenCalled();
+  });
+
+  describe("documents from before the private bucket", () => {
+    const legacyUrl = "https://pub-abc.r2.dev/hostels/1700000000-deadbeef-student_id.jpg";
+
+    beforeEach(() => {
+      vi.stubEnv("R2_PUBLIC_URL", "https://pub-abc.r2.dev");
+      vi.mocked(auth).mockResolvedValue(adminSession());
+      vi.mocked(db.user.findUnique).mockResolvedValue({ verificationDocUrl: legacyUrl } as any);
+    });
+    afterEach(() => vi.unstubAllEnvs());
+
+    it.each(["approve", "reject"] as const)("%s: deletes the public file before recording the decision", async (action) => {
+      const order: string[] = [];
+      vi.mocked(deleteLegacyPublicVerificationDocument).mockImplementationOnce(async () => {
+        order.push("delete");
+        return true;
+      });
+      vi.mocked(db.user.updateMany).mockImplementationOnce((async () => {
+        order.push("update");
+        return { count: 1 };
+      }) as any);
+
+      const res = await PUT(putReq({ userId: "usr_1", action }));
+
+      expect(res.status).toBe(200);
+      expect(deleteLegacyPublicVerificationDocument).toHaveBeenCalledWith(legacyUrl);
+      expect(order).toEqual(["delete", "update"]);
+      expect(deleteVerificationDocument).not.toHaveBeenCalled();
+    });
+
+    it("does not record the decision when the public file cannot be deleted, so it can be retried", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(deleteLegacyPublicVerificationDocument).mockRejectedValueOnce(new Error("r2 down"));
+
+      const res = await PUT(putReq({ userId: "usr_1", action: "approve" }));
+
+      expect(res.status).toBe(500);
+      expect(db.user.updateMany).not.toHaveBeenCalled();
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it("leaves private-bucket documents on the existing delete-after-decision path", async () => {
+      const privateKey = `student-verifications/usr_1/${"a".repeat(32)}.jpg`;
+      vi.mocked(db.user.findUnique).mockResolvedValue({ verificationDocUrl: privateKey } as any);
+
+      await PUT(putReq({ userId: "usr_1", action: "approve" }));
+
+      expect(deleteLegacyPublicVerificationDocument).not.toHaveBeenCalled();
+      expect(deleteVerificationDocument).toHaveBeenCalledWith(privateKey);
+    });
   });
 });

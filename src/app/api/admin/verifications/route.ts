@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { readBoundedJson } from "@/lib/bounded-json";
 import { parsePagination } from "@/lib/pagination";
+import { deleteLegacyPublicVerificationDocument, isLegacyPublicDocumentUrl } from "@/lib/legacy-verification-docs";
 import { createNotification } from "@/lib/notifications";
 import { rateLimit } from "@/lib/rate-limit";
 import { enforceAdminReadLimit } from "@/lib/admin-read-limit";
@@ -172,6 +173,13 @@ export async function PUT(req: NextRequest) {
         };
 
   try {
+    // A document from before the private bucket is a publicly readable file. Remove it
+    // first: once the decision clears the stored URL there is no way left to find it, so
+    // a failed delete must stop the decision and be retried, not be logged and forgotten.
+    if (existing?.verificationDocUrl && isLegacyPublicDocumentUrl(existing.verificationDocUrl)) {
+      await deleteLegacyPublicVerificationDocument(existing.verificationDocUrl);
+    }
+
     const decision = await db.user.updateMany({
       where: { id: userId, role: "STUDENT", verificationStatus: "PENDING" },
       data: updateData,
