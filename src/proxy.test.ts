@@ -103,3 +103,41 @@ describe("proxy nonce CSP (report-only)", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 });
+
+describe("proxy nonce CSP when CSP_ENFORCE=true", () => {
+  beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://hostello.test");
+    vi.stubEnv("CSP_ENFORCE", "true");
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  const page = (headers: Record<string, string> = {}) =>
+    proxy(new NextRequest("https://hostello.test/hostels/green-view", { headers }));
+
+  it("enforces the nonce policy instead of only reporting it", () => {
+    const response = page();
+    const policy = response.headers.get("content-security-policy");
+
+    expect(policy).toContain("script-src 'self' 'nonce-");
+    expect(policy?.split("; ").find((part) => part.startsWith("script-src"))).not.toContain("unsafe-inline");
+    expect(policy).toContain("report-uri /api/csp-report");
+    expect(response.headers.get("content-security-policy-report-only")).toBeNull();
+  });
+
+  it("forwards the enforced policy so Next.js stamps its scripts, and drops client-supplied ones", () => {
+    const response = page({
+      "content-security-policy": "script-src 'nonce-attacker'",
+      "content-security-policy-report-only": "script-src 'nonce-attacker'",
+    });
+    const forwarded = response.headers.get("x-middleware-request-content-security-policy");
+
+    expect(forwarded).toBe(response.headers.get("content-security-policy"));
+    expect(forwarded).not.toContain("attacker");
+    expect(response.headers.get("x-middleware-request-content-security-policy-report-only")).toBeNull();
+  });
+
+  it("still leaves API responses alone", () => {
+    const response = proxy(new NextRequest("https://hostello.test/api/hostels"));
+    expect(response.headers.get("content-security-policy")).toBeNull();
+  });
+});

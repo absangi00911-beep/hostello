@@ -6,6 +6,7 @@ import {
   generateNonce,
   getNonceScriptSrc,
   getR2CspSource,
+  isCspEnforced,
 } from "@/lib/csp";
 import { verifyCsrfOrigin } from "@/lib/csrf";
 import { validateEnvironmentOnce } from "@/lib/env-validation";
@@ -54,11 +55,13 @@ export function proxy(req: NextRequest) {
     return NextResponse.next({ request: { headers: new Headers(req.headers) } });
   }
 
-  // -- Nonce-based CSP, report-only --
+  // -- Nonce-based CSP --
   // A fresh nonce per request. Next.js reads it from the request's script-src and stamps
-  // it on its own inline scripts. The policy is only reported (to /api/csp-report) while
-  // the enforced policy in next.config.ts still allows 'unsafe-inline'; once reports are
-  // clean, this one is enforced instead.
+  // it on its own inline scripts. By default the policy is only reported (to
+  // /api/csp-report) while next.config.ts still enforces its 'unsafe-inline' policy.
+  // With CSP_ENFORCE=true it is enforced as well, and the browser applies both policies:
+  // a script must satisfy each, so the nonce policy is the stricter one in effect.
+  const headerName = isCspEnforced() ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only";
   const policy = buildContentSecurityPolicy({
     scriptSrc: getNonceScriptSrc(generateNonce(), process.env.NODE_ENV === "development"),
     r2Source: getR2CspSource(process.env.R2_PUBLIC_URL),
@@ -67,10 +70,11 @@ export function proxy(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   // A client must not choose the nonce its own response is rendered with.
   requestHeaders.delete("content-security-policy");
-  requestHeaders.set("content-security-policy-report-only", policy);
+  requestHeaders.delete("content-security-policy-report-only");
+  requestHeaders.set(headerName, policy);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Content-Security-Policy-Report-Only", policy);
+  response.headers.set(headerName, policy);
   return response;
 }
 
