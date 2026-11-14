@@ -51,4 +51,49 @@ describe("SearchPageClient footer", () => {
     expect(markup).toContain("Made for student stays in Pakistan");
     expect(markup.match(/© \d{4} HostelLo/g)).toHaveLength(1);
   });
+
+  it("puts server-rendered results in the HTML, so crawlers and slow phones see listings immediately", () => {
+    const markup = renderToStaticMarkup(
+      <SearchPageClient
+        accountUser={null}
+        initialQuery=""
+        initialCity="Lahore"
+        initialNearby={false}
+        initialNearbyCoordinates={null}
+        initialMoveInDate=""
+        initialCheckOut=""
+        initialGuests={1}
+        initialFilters={{ gender: "", minPrice: "", maxPrice: "", amenities: [], verified: false, sort: "newest" }}
+        initialPage={1}
+        initialResults={{
+          hostels: [
+            { id: "h1", name: "Green View Hostel", city: "Lahore", area: "Gulberg", pricePerMonth: 12000, coverImage: null, images: [], rating: 4.5, reviewCount: 3 },
+          ],
+          total: 1,
+        }}
+      />,
+    );
+
+    expect(markup).toContain("Green View Hostel");
+    expect(markup).toContain("Gulberg");
+  });
+
+  it("renders no listings until the browser loads them when there are no server results", () => {
+    const markup = renderToStaticMarkup(
+      <SearchPageClient
+        accountUser={null}
+        initialQuery=""
+        initialCity="Lahore"
+        initialNearby={false}
+        initialNearbyCoordinates={null}
+        initialMoveInDate=""
+        initialCheckOut=""
+        initialGuests={1}
+        initialFilters={{ gender: "", minPrice: "", maxPrice: "", amenities: [], verified: false, sort: "newest" }}
+        initialPage={1}
+      />,
+    );
+
+    expect(markup).not.toContain("Green View Hostel");
+  });
 });

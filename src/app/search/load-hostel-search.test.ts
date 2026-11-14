@@ -2,8 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NEARBY_COORDINATES_SESSION_KEY } from "@/lib/nearby-search";
 import {
   PAGE_SIZE,
+  buildHostelSearchQuery,
+  hostelSearchRequestKey,
   loadHostelSearch,
   readNearbyCoordinates,
+  shouldSkipHostelSearchLoad,
   type HostelSearchRequest,
 } from "./load-hostel-search";
 
@@ -239,5 +242,52 @@ describe("readNearbyCoordinates", () => {
     }
     getItem.mockReturnValue(null);
     expect(readNearbyCoordinates()).toBeNull();
+  });
+});
+
+describe("buildHostelSearchQuery", () => {
+  it("is the query string loadHostelSearch sends", async () => {
+    fetchMock.mockResolvedValue(json({ data: [], total: 0 }));
+    const search = request({ city: "Quetta", page: 2, filters: { gender: "MALE", minPrice: "100", maxPrice: "", amenities: ["wifi"], verified: true, sort: "price_desc" } });
+
+    await loadHostelSearch(search, signal());
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`/api/hostels?${buildHostelSearchQuery(search)}`);
+  });
+});
+
+describe("hostelSearchRequestKey", () => {
+  it("is the same for the same search and different when anything that changes the answer differs", () => {
+    expect(hostelSearchRequestKey(request())).toBe(hostelSearchRequestKey(request()));
+    const variants: Partial<HostelSearchRequest>[] = [
+      { query: "other" },
+      { city: "Karachi" },
+      { moveInDate: "2026-12-01" },
+      { checkOutDate: "2027-01-01" },
+      { guests: "2" },
+      { nearby: true },
+      { page: 2 },
+      { filters: { ...request().filters, verified: true } },
+      { filters: { ...request().filters, sort: "rating" } },
+      { filters: { ...request().filters, amenities: ["wifi"] } },
+    ];
+    for (const variant of variants) {
+      expect(hostelSearchRequestKey(request(variant)), JSON.stringify(variant)).not.toBe(hostelSearchRequestKey(request()));
+    }
+  });
+
+  it("ignores the nearby coordinates", () => {
+    expect(hostelSearchRequestKey(request({ initialNearbyCoordinates: { latitude: 1, longitude: 2 } }))).toBe(
+      hostelSearchRequestKey(request()),
+    );
+  });
+});
+
+describe("shouldSkipHostelSearchLoad", () => {
+  it("skips only when the results on screen answer exactly this search and this retry count", () => {
+    expect(shouldSkipHostelSearchLoad({ key: "a", reload: 0 }, "a", 0)).toBe(true);
+    expect(shouldSkipHostelSearchLoad({ key: "a", reload: 0 }, "b", 0)).toBe(false);
+    expect(shouldSkipHostelSearchLoad({ key: "a", reload: 0 }, "a", 1)).toBe(false);
+    expect(shouldSkipHostelSearchLoad(null, "a", 0)).toBe(false);
   });
 });
