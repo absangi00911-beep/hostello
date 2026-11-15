@@ -8,6 +8,7 @@ import {
   NEARBY_COORDINATES_SESSION_KEY,
   type NearbyCoordinates,
 } from "@/lib/nearby-search";
+import { isLoadedResultsCurrent } from "@/lib/loaded-results";
 import { buildSearchParams, type HostelSearchSort } from "./search-params";
 
 export interface HostelSearchResult {
@@ -149,18 +150,8 @@ export function hostelSearchRequestKey(request: HostelSearchRequest): string {
   ]);
 }
 
-/**
- * True when the results already on screen are the answer to this search, so fetching
- * again would only repeat the work. `loaded` describes what is on screen: the search it
- * answers and the retry count it was fetched at (a retry always fetches).
- */
-export function shouldSkipHostelSearchLoad(
-  loaded: { key: string; reload: number } | null,
-  key: string,
-  reload: number,
-): boolean {
-  return loaded !== null && loaded.key === key && loaded.reload === reload;
-}
+/** True when the results on screen already answer this search; see isLoadedResultsCurrent. */
+export const shouldSkipHostelSearchLoad = isLoadedResultsCurrent;
 
 const GENERIC_ERROR = "Unable to load hostels. Please try again.";
 const NEARBY_UNAVAILABLE_ERROR =

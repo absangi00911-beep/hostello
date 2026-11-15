@@ -1,10 +1,15 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
+// Rendering the page without the app's provider: the login dialog is not under test here.
+vi.mock("@/components/auth/LoginDialogProvider", () => ({
+  useLoginDialog: () => ({ openLogin: vi.fn() }),
+}));
 
-import { fetchSavedHostelSlugs } from "./ProductHome";
+import ProductHome, { fetchSavedHostelSlugs } from "./ProductHome";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -49,5 +54,30 @@ describe("fetchSavedHostelSlugs", () => {
     await expect(
       fetchSavedHostelSlugs(new AbortController().signal),
     ).rejects.toThrow("Favorites unavailable.");
+  });
+});
+
+describe("ProductHome server rendering", () => {
+  const listing = {
+    id: "h1",
+    slug: "green-view",
+    name: "Green View Hostel",
+    city: "Lahore",
+    area: "Gulberg",
+    pricePerMonth: 12000,
+    coverImage: null,
+    images: [],
+    rating: 4.5,
+    reviewCount: 3,
+  };
+
+  it("puts the server-rendered listings in the HTML", () => {
+    const markup = renderToStaticMarkup(<ProductHome accountUser={null} initialHostels={[listing]} />);
+    expect(markup).toContain("Green View Hostel");
+  });
+
+  it("renders no listings until the browser loads them when there are none from the server", () => {
+    const markup = renderToStaticMarkup(<ProductHome accountUser={null} initialHostels={null} />);
+    expect(markup).not.toContain("Green View Hostel");
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { BrowseHeader, type Category } from "./BrowseHeader";
@@ -8,14 +8,10 @@ import { BrowseCategoryNav } from "./BrowseCategoryNav";
 import { HostelSearchBar } from "./HostelSearchBar";
 import type { HostelSearchFilters } from "./HostelSearchBar";
 import { HostelRow, type HostelListing } from "./HostelRow";
+import { buildHomeListingsQuery, INITIAL_HOME_CATEGORY, isHostelSearchResponse } from "./home-listings";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
+import { isLoadedResultsCurrent, type LoadedResults } from "@/lib/loaded-results";
 import { NEARBY_COORDINATES_SESSION_KEY } from "@/lib/nearby-search";
-
-interface HostelSearchResponse {
-  data: HostelListing[];
-  total: number;
-  error?: string;
-}
 
 interface FavoritePage {
   data: { slug: string }[];
@@ -33,34 +29,6 @@ function readErrorMessage(value: unknown): string | undefined {
   }
 }
 
-function isHostelListing(value: unknown): value is HostelListing {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "id" in value &&
-    typeof value.id === "string" &&
-    "slug" in value &&
-    typeof value.slug === "string" &&
-    "name" in value &&
-    typeof value.name === "string" &&
-    "city" in value &&
-    typeof value.city === "string" &&
-    "area" in value &&
-    (typeof value.area === "string" || value.area === null) &&
-    "pricePerMonth" in value &&
-    typeof value.pricePerMonth === "number" &&
-    "coverImage" in value &&
-    (typeof value.coverImage === "string" || value.coverImage === null) &&
-    "images" in value &&
-    Array.isArray(value.images) &&
-    value.images.every((image: unknown) => typeof image === "string") &&
-    "rating" in value &&
-    typeof value.rating === "number" &&
-    "reviewCount" in value &&
-    typeof value.reviewCount === "number"
-  );
-}
-
 function isFavoritePage(value: unknown): value is FavoritePage {
   return (
     typeof value === "object" &&
@@ -76,25 +44,6 @@ function isFavoritePage(value: unknown): value is FavoritePage {
     ) &&
     "hasMore" in value &&
     typeof value.hasMore === "boolean"
-  );
-}
-
-function isHostelSearchResponse(value: unknown): value is HostelSearchResponse {
-  if (
-    typeof value !== "object" ||
-    value === null ||
-    !("data" in value) ||
-    !("total" in value)
-  ) {
-    return false;
-  }
-
-  return (
-    Array.isArray(value.data) &&
-    typeof value.total === "number" &&
-    Number.isSafeInteger(value.total) &&
-    value.total >= value.data.length &&
-    value.data.every(isHostelListing)
   );
 }
 
@@ -134,18 +83,21 @@ export async function fetchSavedHostelSlugs(
 export default function ProductHome({
   accountUser,
   cityLinks,
+  initialHostels = null,
 }: {
   accountUser: BrowseAccountUser | null;
   /** Server-rendered, crawlable links to the city pages. */
   cityLinks?: ReactNode;
+  /** Server-rendered listings for the opening tab, or null to load them in the browser. */
+  initialHostels?: HostelListing[] | null;
 }) {
   const router = useRouter();
   const showsStudentNavigation =
     !accountUser ||
     accountUser.role === "STUDENT";
-  const [category, setCategory] = useState<Category>("all");
-  const [hostels, setHostels] = useState<HostelListing[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [category, setCategory] = useState<Category>(INITIAL_HOME_CATEGORY);
+  const [hostels, setHostels] = useState<HostelListing[]>(initialHostels ?? []);
+  const [isLoading, setIsLoading] = useState(initialHostels === null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [savedSlugs, setSavedSlugs] = useState<Set<string>>(new Set());
   const [favoriteStateReady, setFavoriteStateReady] = useState(
@@ -154,8 +106,15 @@ export default function ProductHome({
   const [favoriteError, setFavoriteError] = useState<string | null>(null);
   const [favoriteReload, setFavoriteReload] = useState(0);
   const [searchReload, setSearchReload] = useState(0);
+  // Which tab (and retry count) the listings on screen answer. A ref that the skip below
+  // never changes, so React's development double-run of effects behaves like production.
+  const loadedRef = useRef<LoadedResults>(
+    initialHostels ? { key: INITIAL_HOME_CATEGORY, reload: 0 } : null,
+  );
 
   useEffect(() => {
+    if (isLoadedResultsCurrent(loadedRef.current, category, searchReload)) return;
+
     const controller = new AbortController();
 
     async function loadHostels() {
@@ -163,13 +122,7 @@ export default function ProductHome({
       setSearchError(null);
 
       try {
-        const params = new URLSearchParams({
-          sort: category === "top-rated" ? "rating" : "newest",
-          page: "1",
-          limit: "50",
-        });
-        if (category === "women") params.set("gender", "FEMALE");
-        if (category === "budget") params.set("maxPrice", "20000");
+        const params = buildHomeListingsQuery(category);
 
         const response = await fetch(`/api/hostels?${params}`, {
           signal: controller.signal,
@@ -177,6 +130,7 @@ export default function ProductHome({
         const result: unknown = await response.json();
 
         if (!response.ok) {
+          loadedRef.current = null;
           setHostels([]);
           setSearchError(
             readErrorMessage(result) ?? "Unable to load hostels. Please try again.",
@@ -184,14 +138,17 @@ export default function ProductHome({
           return;
         }
         if (!isHostelSearchResponse(result)) {
+          loadedRef.current = null;
           setHostels([]);
           setSearchError("Unable to load hostels. Please try again.");
           return;
         }
 
+        loadedRef.current = { key: category, reload: searchReload };
         setHostels(result.data);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
+        loadedRef.current = null;
         setHostels([]);
         setSearchError("Unable to load hostels. Please try again.");
       } finally {
