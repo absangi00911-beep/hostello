@@ -83,3 +83,16 @@ describe("security-relevant next.config defaults", () => {
     expect(config.deprecated?.looseRouteMatching).toBeUndefined();
   });
 });
+
+describe("image optimizer cache lifetime", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("keeps resized photos for a week, since listing photo URLs never change", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("R2_PUBLIC_URL", "https://pub-abc123.r2.dev");
+    vi.resetModules();
+    const config = (await import("../../next.config")).default;
+
+    expect(config.images?.minimumCacheTTL).toBe(7 * 24 * 60 * 60);
+  });
+});

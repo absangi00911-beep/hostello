@@ -91,7 +91,6 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
             fill
             sizes="144px"
             src={listing.coverImage}
-            unoptimized
           />
         ) : null}
       </div>

@@ -136,3 +136,46 @@ describe("HostelRow favorite action", () => {
     expect(markup).not.toContain("LoginDialogTrigger");
   });
 });
+
+describe("HostelRow image loading", () => {
+  const many = Array.from({ length: 10 }, (_, index) => ({
+    ...hostel,
+    id: `hostel-${index}`,
+    slug: `hostel-${index}`,
+    name: `Hostel ${index}`,
+    coverImage: `https://images.example.com/${index}.jpg`,
+  }));
+
+  const renderMany = (isAboveFold: boolean) =>
+    renderToStaticMarkup(
+      <HostelRow
+        accountRole="STUDENT"
+        city="Lahore"
+        favoriteError={null}
+        favoriteStateReady
+        hostels={many}
+        isAboveFold={isAboveFold}
+        onFavoriteChange={vi.fn()}
+        savedSlugs={new Set()}
+      />,
+    );
+  const cardImages = (markup: string) => markup.match(/<img[^>]*data-nimg="fill"[^>]*>/g) ?? [];
+  const eager = (markup: string) => cardImages(markup).filter((tag) => !tag.includes('loading="lazy"'));
+
+  it("loads only the first four cards of a visible row eagerly, the rest as the row scrolls", () => {
+    const markup = renderMany(true);
+
+    expect(cardImages(markup)).toHaveLength(10);
+    expect(eager(markup)).toHaveLength(4);
+    expect(eager(markup).map((tag) => /alt="([^"]*)"/.exec(tag)?.[1])).toEqual([
+      "Hostel 0",
+      "Hostel 1",
+      "Hostel 2",
+      "Hostel 3",
+    ]);
+  });
+
+  it("loads nothing eagerly in a row below the fold", () => {
+    expect(eager(renderMany(false))).toHaveLength(0);
+  });
+});

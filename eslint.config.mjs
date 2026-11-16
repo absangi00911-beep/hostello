@@ -8,6 +8,7 @@ const eslintConfig = [
       ".claude/**",
       ".code-review-graph/**",
       ".cursor/**",
+      ".github/skills/impeccable/scripts/modern-screenshot.umd.js",
       ".impeccable-live/**",
       ".kiro/**",
       ".next/**",
