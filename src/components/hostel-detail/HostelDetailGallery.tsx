@@ -56,6 +56,17 @@ function getPhotoTileClasses(photoCount: number, index: number): string {
   }
 }
 
+// The desktop mosaic and the mobile carousel both render the first photo with `priority`,
+// and CSS hides one of them. A preload ignores CSS, so each tag preloads the photo at the
+// width its own `sizes` implies: with different strings a desktop visitor would also
+// download the full-width mobile version. One shared string makes both resolve to the same
+// file at every viewport width. The carousel is only visible up to 720px, where this
+// string says 100vw, which is what it needs.
+const HERO_PHOTO_SIZES = "(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 34vw";
+
+// The "all photos" dialog: one column on phones, two on larger screens.
+const DIALOG_PHOTO_SIZES = "(max-width: 720px) 100vw, 50vw";
+
 export function HostelDetailGallery({
   slug,
   name,
@@ -208,7 +219,7 @@ export function HostelDetailGallery({
                   className="object-cover"
                   fill
                   priority={index === 0}
-                  sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 34vw"
+                  sizes={HERO_PHOTO_SIZES}
                   src={photo.src}
                 />
               </div>
@@ -253,7 +264,7 @@ export function HostelDetailGallery({
                   className="object-cover"
                   fill
                   priority={index === 0}
-                  sizes="100vw"
+                  sizes={HERO_PHOTO_SIZES}
                   src={photo.src}
                 />
               </div>
@@ -357,6 +368,7 @@ export function HostelDetailGallery({
                 className="h-auto w-full rounded-lg object-cover"
                 height={720}
                 key={`${photo.src}-all-${index}`}
+                sizes={DIALOG_PHOTO_SIZES}
                 src={photo.src}
                 width={960}
               />

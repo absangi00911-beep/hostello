@@ -66,6 +66,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   images: {
+    // Uploaded listing photos get a new, unique URL every time, so a given URL never changes:
+    // keep the resized copies for a week instead of Next's default of four hours. Avatars,
+    // whose URLs can stay the same while the picture changes, are rendered unoptimized.
+    minimumCacheTTL: 60 * 60 * 24 * 7,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       r2Image

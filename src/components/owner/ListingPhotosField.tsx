@@ -105,7 +105,6 @@ export function ListingPhotosField({
                   fill
                   sizes="200px"
                   src={url}
-                  unoptimized
                 />
                 {index === 0 ? (
                   <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-[0.8125rem] font-bold text-ink">

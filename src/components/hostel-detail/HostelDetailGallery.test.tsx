@@ -98,4 +98,42 @@ describe("HostelDetailGallery", () => {
 
     expect(markup).toContain(classes);
   });
+
+  describe("image loading", () => {
+    const photos = Array.from({ length: 6 }, (_, index) => ({
+      src: `/hostel-photo-${index + 1}.jpg`,
+      alt: `Sample Hostel photo ${index + 1}`,
+    }));
+    const markup = () => renderToStaticMarkup(<HostelDetailGallery {...baseProps} photos={photos} />);
+    const sizesOf = (html: string) =>
+      [...html.matchAll(/<img[^>]*\ssizes="([^"]*)"/g)].map((match) => match[1]);
+
+    it("gives the desktop mosaic and the mobile carousel the same sizes, so a preload downloads one file", () => {
+      const heroSizes = "(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 34vw";
+      const all = sizesOf(markup());
+
+      // 5 mosaic photos + 6 carousel photos use the hero string; the dialog has its own.
+      expect(all.filter((sizes) => sizes === heroSizes)).toHaveLength(11);
+      expect(all.filter((sizes) => sizes === "100vw")).toHaveLength(0);
+    });
+
+    it("tells the browser how wide the photos in the all-photos dialog are", () => {
+      expect(sizesOf(markup()).filter((sizes) => sizes === "(max-width: 720px) 100vw, 50vw")).toHaveLength(6);
+    });
+
+    it("preloads the first photo once, not once per layout", () => {
+      const preloads = markup().match(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/g) ?? [];
+      // Identical srcset and sizes in both layouts: React keeps a single preload.
+      expect(preloads).toHaveLength(1);
+    });
+
+    it("loads only the first photo of each layout eagerly", () => {
+      const fillImages = markup().match(/<img[^>]*data-nimg="fill"[^>]*>/g) ?? [];
+      const eager = fillImages.filter((tag) => !tag.includes('loading="lazy"'));
+
+      // 5 mosaic + 6 carousel photos; one eager photo in each layout.
+      expect(fillImages).toHaveLength(11);
+      expect(eager).toHaveLength(2);
+    });
+  });
 });

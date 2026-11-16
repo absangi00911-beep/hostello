@@ -170,6 +170,11 @@ function HostelFavoriteControl({
   );
 }
 
+// A row scrolls sideways: a phone shows about two and a half cards (40vw each), a desktop
+// about seven. Loading ten per row eagerly queued images nobody could see yet behind the
+// ones that decide how fast the page looks ready; the rest load as the row is scrolled.
+const EAGER_CARD_IMAGES = 4;
+
 export function HostelRow({
   city,
   hostels,
@@ -256,7 +261,7 @@ export function HostelRow({
                       alt={hostel.name}
                       className={hostelCardImageClassName}
                       fill
-                      loading={isAboveFold && index < 10 ? "eager" : "lazy"}
+                      loading={isAboveFold && index < EAGER_CARD_IMAGES ? "eager" : "lazy"}
                       sizes="(max-width: 720px) 40vw, (max-width: 1100px) 23vw, 12vw"
                       src={image}
                     />
