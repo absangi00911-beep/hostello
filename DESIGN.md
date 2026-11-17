@@ -551,3 +551,14 @@ Primary actions also use a subtle top-to-bottom sheen, a thin inset top highligh
 - **Map view styling:** the search-results map uses Mapbox-tinted tiles with custom Rausch markers; not captured here.
 - **Form input error states:** error text color (`{colors.primary-error-text}`) is documented, but the full input outline + helper-text combination on validation failure was not visible in the captured surfaces.
 - **Sub-brand palettes:** Luxe (`{colors.luxe}`) and Plus (`{colors.plus}`) are documented as tokens, but their full sub-system (typography overrides, surface treatment) lives on separate sub-domains and is not captured here.
+
+## Accessibility conventions
+
+Enforced by `src/test-support/accessibility-policy.test.ts` and `src/components/image-policy.test.ts`; a new exception has to be added there on purpose.
+
+- **Skip link.** `SkipLink` is the first focusable element in the root layout. Every page's `<main>` has `id="main-content"`.
+- **Touch targets.** Interactive elements are 44px or larger, the project's own bar (WCAG 2.2 AA asks for 24px). A control that looks smaller, such as the 36px pagination buttons, keeps a 44px hit area with `before:absolute before:-inset-1`. The one exception is the calendar day cell (36px, in a 7-column grid).
+- **Reduced motion.** Scrolling goes through `getScrollBehavior()`, never `behavior: "smooth"`. Skeleton pulses use `motion-safe:animate-pulse`. Transitions that move things carry `motion-reduce:` variants.
+- **Colour contrast.** Text tokens pass AA on every surface they are used on (the muted text token is 5.9:1 on white). Input borders use `border-muted`, not the hairline `line` tokens, which are decorative only.
+- **Focus.** Visible focus uses `outline-brand`. A bare `outline-none` input is only allowed inside a container that shows the focus ring through `focus-within`, as the search pill does.
+- **Labels.** Form controls are labelled through the shared `Field` component (`<label htmlFor>`), or carry an `aria-label`.

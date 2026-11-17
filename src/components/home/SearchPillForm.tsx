@@ -123,7 +123,7 @@ export function SearchPillForm({
         </button>
         <button
           aria-label="Search hostels"
-          className="search-pill-submit grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-[background-color,transform] duration-[160ms] hover:scale-[1.04] hover:bg-brand-dark active:scale-[0.94] [@media(max-width:720px)]:h-10 [@media(max-width:720px)]:w-10 motion-reduce:hover:transform-none! motion-reduce:active:transform-none!"
+          className="search-pill-submit grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-brand text-white transition-[background-color,transform] duration-[160ms] hover:scale-[1.04] hover:bg-brand-dark active:scale-[0.94] [@media(max-width:720px)]:h-11 [@media(max-width:720px)]:w-10 motion-reduce:hover:transform-none! motion-reduce:active:transform-none!"
           type="submit"
         >
           <Search aria-hidden="true" size={18} />

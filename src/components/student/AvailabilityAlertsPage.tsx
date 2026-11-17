@@ -84,7 +84,7 @@ export function AvailabilityAlertsPage({
   }
 
   return (
-    <main className="mx-auto w-[min(100%-32px,880px)] pb-28 pt-8 text-ink sm:w-[min(100%-48px,880px)] sm:pt-12">
+    <main id="main-content" className="mx-auto w-[min(100%-32px,880px)] pb-28 pt-8 text-ink sm:w-[min(100%-48px,880px)] sm:pt-12">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="m-0 text-xs font-bold uppercase tracking-[0.1em] text-brand">

@@ -30,7 +30,7 @@ export function SearchStudentPicker({
         <div className="flex items-center gap-3">
           <button
             aria-label="Decrease students"
-            className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
             disabled={count <= 1}
             onClick={() => onChange(Math.max(1, count - 1))}
             type="button"
@@ -42,7 +42,7 @@ export function SearchStudentPicker({
           </span>
           <button
             aria-label="Increase students"
-            className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
             disabled={count >= 8}
             onClick={() => onChange(Math.min(8, count + 1))}
             type="button"
@@ -53,7 +53,7 @@ export function SearchStudentPicker({
       </div>
       <p className="mt-3 mb-4 text-xs text-muted">Search for 1-8 students.</p>
       <button
-        className="ml-auto block min-h-9 rounded-full bg-brand px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
+        className="ml-auto block min-h-11 rounded-full bg-brand px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
         onClick={onDone}
         type="button"
       >

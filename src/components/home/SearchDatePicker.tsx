@@ -46,7 +46,7 @@ export function SearchDatePicker({
         {(["dates", "flexible"] as const).map((option) => (
           <button
             aria-selected={mode === option}
-            className="min-h-9 rounded-full px-4 text-sm font-medium capitalize transition-colors aria-selected:bg-white aria-selected:text-ink aria-selected:shadow-[0_1px_3px_rgb(0_0_0_/_10%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+            className="min-h-11 rounded-full px-4 text-sm font-medium capitalize transition-colors aria-selected:bg-white aria-selected:text-ink aria-selected:shadow-[0_1px_3px_rgb(0_0_0_/_10%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
             key={option}
             onClick={() => setMode(option)}
             role="tab"
@@ -64,7 +64,7 @@ export function SearchDatePicker({
             <div className="flex gap-2">
               <button
                 aria-label="Previous month"
-                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 disabled={monthOffset === 0}
                 onClick={() => setMonthOffset((offset) => offset - 1)}
                 type="button"
@@ -73,7 +73,7 @@ export function SearchDatePicker({
               </button>
               <button
                 aria-label="Next month"
-                className="grid size-9 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={() => setMonthOffset((offset) => offset + 1)}
                 type="button"
               >
@@ -131,7 +131,7 @@ export function SearchDatePicker({
           ) : (
             <div>
               <button
-                className="mb-3 min-h-9 rounded-full border border-line px-3 text-xs font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="mb-3 min-h-11 rounded-full border border-line px-3 text-xs font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={() => setFlexibleMonth(null)}
                 type="button"
               >

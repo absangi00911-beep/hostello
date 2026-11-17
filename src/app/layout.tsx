@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { connection } from "next/server";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SkipLink } from "@/components/layout/SkipLink";
 import { LoginDialogProvider } from "@/components/auth/LoginDialogProvider";
 import { getConfiguredSignInMethods } from "@/lib/auth/sign-in-methods";
 import { isCspEnforced } from "@/lib/csp";
@@ -37,6 +38,7 @@ export default async function RootLayout({
   return (
     <html className={inter.variable} lang="en">
       <body className="min-h-dvh bg-canvas text-ink">
+        <SkipLink />
         <LoginDialogProvider
           emailCodeEnabled={signInMethods.emailCode}
           googleEnabled={signInMethods.google}

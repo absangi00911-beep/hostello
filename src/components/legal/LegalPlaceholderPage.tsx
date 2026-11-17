@@ -12,7 +12,7 @@ export function LegalPlaceholderPage({
   return (
     <div className="min-h-dvh bg-canvas">
       <SiteHeader hideOnMobile={false} user={user} />
-      <main className="mx-auto max-w-[720px] px-4 pb-16 pt-6">
+      <main id="main-content" className="mx-auto max-w-[720px] px-4 pb-16 pt-6">
         <h1 className="m-0 text-[2rem] font-bold text-ink">{title}</h1>
         <p
           className="mt-4 rounded-[14px] bg-surface-muted px-4 py-3 text-[0.95rem] text-ink"

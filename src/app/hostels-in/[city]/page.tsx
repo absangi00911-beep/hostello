@@ -66,7 +66,7 @@ export default async function CityHostelsPage({
     <>
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <SiteHeader user={user} />
-      <main className="mx-auto w-[min(960px,calc(100%-2.5rem))] py-8 text-ink">
+      <main id="main-content" className="mx-auto w-[min(960px,calc(100%-2.5rem))] py-8 text-ink">
         <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
           <Link className="hover:underline" href="/">
             Home

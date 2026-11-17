@@ -33,6 +33,7 @@ import {
   type HostelSearchSort,
 } from "./search-params";
 import { useHostelSearch } from "./useHostelSearch";
+import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 const mapPinPositions = [
   { top: "23%", left: "24%" },
@@ -497,7 +498,7 @@ export default function SearchPageClient({
     if (appliedNearby) params.set("nearby", "true");
     const query = params.toString();
     router.replace(`/search${query ? `?${query}` : ""}`, { scroll: false });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: getScrollBehavior() });
   }
 
   const pageTitle = appliedNearby
@@ -808,7 +809,7 @@ export default function SearchPageClient({
         </div>
       </div>
 
-      <main className="search-results-main mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] pt-[30px] pb-16 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:pt-6">
+      <main id="main-content" className="search-results-main mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] pt-[30px] pb-16 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:pt-6">
         <div className="search-results-layout grid grid-cols-[minmax(0,1.3fr)_minmax(340px,0.9fr)] items-start gap-[clamp(24px,3vw,42px)] [@media(max-width:1020px)]:grid-cols-[minmax(0,1.25fr)_minmax(290px,0.85fr)] [@media(max-width:1020px)]:gap-[22px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)]">
           <section
             aria-label="Hostel listings"
@@ -922,11 +923,11 @@ export default function SearchPageClient({
                 </div>
                 <nav
                   aria-label="Listing pages"
-                  className="search-pagination mt-[42px] flex items-center justify-center gap-2"
+                  className="search-pagination mt-[42px] flex flex-wrap items-center justify-center gap-2"
                 >
                   <button
                     aria-label="Previous page"
-                    className="grid size-[34px] min-w-[34px] cursor-pointer place-items-center rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === 1}
                     onClick={() => selectPage(page - 1)}
                     type="button"
@@ -940,7 +941,7 @@ export default function SearchPageClient({
                     <button
                       aria-current={pageNumber === page ? "page" : undefined}
                       aria-label={`Page ${pageNumber}`}
-                      className={`grid size-[34px] min-w-[34px] cursor-pointer place-items-center rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
+                      className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
                         pageNumber === page
                           ? "bg-ink text-white"
                           : "bg-transparent text-ink hover:bg-surface-muted"
@@ -958,7 +959,7 @@ export default function SearchPageClient({
                       <button
                         aria-current={page === pageCount ? "page" : undefined}
                         aria-label={`Page ${pageCount}`}
-                        className={`grid size-[34px] min-w-[34px] cursor-pointer place-items-center rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
+                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
                           page === pageCount
                             ? "bg-ink text-white"
                             : "bg-transparent text-ink hover:bg-surface-muted"
@@ -972,7 +973,7 @@ export default function SearchPageClient({
                   )}
                   <button
                     aria-label="Next page"
-                    className="grid size-[34px] min-w-[34px] cursor-pointer place-items-center rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === pageCount}
                     onClick={() => selectPage(page + 1)}
                     type="button"

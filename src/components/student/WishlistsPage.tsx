@@ -94,7 +94,7 @@ function LoadingCards() {
       className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-x-4 gap-y-6 [@media(max-width:720px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:720px)]:gap-5"
     >
       {Array.from({ length: 3 }, (_, index) => (
-        <div className="min-w-0 animate-pulse" key={index}>
+        <div className="min-w-0 motion-safe:animate-pulse" key={index}>
           <div className="mb-3 aspect-[1.18] rounded-[14px] bg-surface-muted" />
           <div className="mb-2 h-[14px] w-[76%] rounded-lg bg-surface-muted" />
           <div className="h-[11px] w-[48%] rounded-lg bg-surface-muted" />
@@ -122,7 +122,7 @@ export function WishlistsPageContent({
   onRetry: () => void;
 }) {
   return (
-    <main className="min-h-dvh bg-canvas py-12 md:py-16">
+    <main id="main-content" className="min-h-dvh bg-canvas py-12 md:py-16">
       <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),600px)] md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">
         <header className="mb-7 md:mb-8">
           <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">

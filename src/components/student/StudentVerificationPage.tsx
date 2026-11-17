@@ -127,7 +127,7 @@ export function StudentVerificationPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[640px] px-4 pb-28 pt-8">
+    <main id="main-content" className="mx-auto w-full max-w-[640px] px-4 pb-28 pt-8">
       <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/profile">
         ← Back to profile
       </Link>

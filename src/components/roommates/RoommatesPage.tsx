@@ -262,7 +262,7 @@ export function RoommatesPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-4 pb-28 pt-8">
+    <main id="main-content" className="mx-auto w-full max-w-[760px] px-4 pb-28 pt-8">
       <Link
         className="text-[0.9rem] font-semibold text-brand hover:underline"
         href={`/hostels/${encodeURIComponent(hostelParam)}`}

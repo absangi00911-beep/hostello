@@ -32,7 +32,7 @@ export function AdminBookingDetailContent({
   onRetry,
 }: AdminBookingDetailContentProps) {
   return (
-    <main className="mx-auto grid w-[min(760px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
+    <main id="main-content" className="mx-auto grid w-[min(760px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         <Link
           className="text-[0.85rem] font-semibold text-brand hover:underline"

@@ -109,7 +109,7 @@ export function AdminBookingsContent({
   onLoadMore,
 }: AdminBookingsContentProps) {
   return (
-    <main className="mx-auto grid w-[min(900px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
+    <main id="main-content" className="mx-auto grid w-[min(900px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
       <Link
         className="text-[0.85rem] font-semibold text-brand hover:underline"
         href="/admin"
