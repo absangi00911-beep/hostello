@@ -26,7 +26,7 @@ export function StatePanel({
   title: string;
 }) {
   return (
-    <main className="mx-auto flex min-h-[60dvh] w-full max-w-[560px] flex-col items-start justify-center px-5 py-16">
+    <main id="main-content" className="mx-auto flex min-h-[60dvh] w-full max-w-[560px] flex-col items-start justify-center px-5 py-16">
       <h1 className="m-0 text-[1.75rem] font-bold leading-tight text-ink">
         {title}
       </h1>

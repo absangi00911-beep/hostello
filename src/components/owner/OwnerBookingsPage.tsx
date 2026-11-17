@@ -230,7 +230,7 @@ export function OwnerBookingsContent({
   onDecline,
 }: OwnerBookingsContentProps) {
   return (
-    <main className="mx-auto w-[min(860px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
+    <main id="main-content" className="mx-auto w-[min(860px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
         className="text-[0.85rem] font-semibold text-brand hover:underline"
         href="/owner"

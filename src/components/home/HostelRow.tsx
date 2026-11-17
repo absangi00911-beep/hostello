@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 export interface HostelListing {
   id: string;
@@ -200,12 +201,9 @@ export function HostelRow({
     const carousel = carouselRef.current;
     if (!carousel) return;
 
-    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? "instant"
-      : "smooth";
     carousel.scrollBy({
       left: direction * carousel.clientWidth * 0.85,
-      behavior,
+      behavior: getScrollBehavior(),
     });
   }
 
@@ -218,7 +216,7 @@ export function HostelRow({
         <div className="flex flex-[0_0_auto] gap-2">
           <button
             aria-label={`Scroll ${city} listings left`}
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
             onClick={() => scrollCarousel(-1)}
             type="button"
           >
@@ -226,7 +224,7 @@ export function HostelRow({
           </button>
           <button
             aria-label={`Scroll ${city} listings right`}
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-ink hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 btn-secondary"
             onClick={() => scrollCarousel(1)}
             type="button"
           >

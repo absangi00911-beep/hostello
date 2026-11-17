@@ -9,7 +9,7 @@ export function AvailabilityAlertsLoading() {
     >
       {[0, 1, 2].map((item) => (
         <div
-          className="h-32 animate-pulse rounded-xl bg-surface-muted"
+          className="h-32 rounded-xl bg-surface-muted motion-safe:animate-pulse"
           key={item}
         />
       ))}

@@ -176,7 +176,7 @@ export function OwnerDashboardContent({
   onRetry,
 }: OwnerDashboardContentProps) {
   return (
-    <main className="mx-auto w-[min(1100px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
+    <main id="main-content" className="mx-auto w-[min(1100px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <header className="mb-6">
         <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
           Host dashboard

@@ -261,7 +261,7 @@ export default function ProductHome({
         onSelectCategory={setCategory}
       />
 
-      <main>
+      <main id="main-content">
         <h1 className="sr-only">
           Hostels and student stays across Pakistan
         </h1>

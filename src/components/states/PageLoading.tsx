@@ -3,7 +3,7 @@ import { siteCopy } from "@/lib/site-copy";
 /** Lightweight skeleton shown while a route segment streams in. */
 export function PageLoading() {
   return (
-    <main
+    <main id="main-content"
       aria-busy="true"
       className="mx-auto w-[min(1120px,calc(100%-40px))] py-10"
       role="status"

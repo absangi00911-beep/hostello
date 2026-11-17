@@ -71,7 +71,7 @@ function ConversationListHeader({
             aria-controls="conversation-search"
             aria-expanded={searchOpen}
             aria-label="Search conversations"
-            className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
             onClick={() => {
               if (searchOpen) onSearchChange("");
               setSearchOpen((open) => !open);
@@ -85,7 +85,7 @@ function ConversationListHeader({
               aria-controls="inbox-settings"
               aria-expanded={settingsOpen}
               aria-label="Inbox settings"
-              className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
+              className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-surface text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
               onClick={() => setSettingsOpen((open) => !open)}
               type="button"
             >
@@ -164,7 +164,7 @@ function ConversationListEmptyState({
           When you contact a hostel, your conversations will appear here.
         </p>
         <Link
-          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
           href="/search"
         >
           Get started

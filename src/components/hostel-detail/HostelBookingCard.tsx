@@ -12,6 +12,7 @@ import {
 import { buildHostelAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
+import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 interface BookableRoom {
   id: string;
@@ -346,7 +347,7 @@ export function HostelBookingCard({
     if (canBook) return;
 
     bookingCardRef.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior: getScrollBehavior(),
       block: "center",
     });
     (room ? moveInInputRef.current : roomSelectRef.current)?.focus({

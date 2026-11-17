@@ -316,7 +316,7 @@ export function BookingDetailPage({
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
+      <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
         <p className="text-muted">Loading booking...</p>
       </main>
     );
@@ -324,7 +324,7 @@ export function BookingDetailPage({
 
   if (loadError || !booking) {
     return (
-      <main className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
+      <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
         <p
           className="rounded-[14px] bg-surface-muted p-4 text-danger"
           role="alert"
@@ -351,7 +351,7 @@ export function BookingDetailPage({
   const place = [booking.hostel.area, booking.hostel.city].filter(Boolean).join(", ");
 
   return (
-    <main className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
+    <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
       <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/trips">
         ← Back to trips
       </Link>

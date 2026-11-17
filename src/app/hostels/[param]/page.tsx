@@ -119,7 +119,7 @@ export default async function HostelDetailPage({
         </div>
       </ScrollAwareSurface>
 
-      <main className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-0 [@media(max-width:720px)]:pb-[calc(96px+env(safe-area-inset-bottom))]">
+      <main id="main-content" className="hostel-detail-main bg-white pt-[22px] pb-[72px] [@media(max-width:720px)]:pt-0 [@media(max-width:720px)]:pb-[calc(96px+env(safe-area-inset-bottom))]">
         <div className="hostel-detail-shell mx-auto w-[min(1120px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1120px)] [@media(max-width:720px)]:w-full!">
           <HostelBreadcrumb city={hostel.city} name={hostel.name} />
           <HostelDetailGallery

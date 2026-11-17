@@ -367,7 +367,7 @@ export function NotificationsPage({ role }: { role: Role }) {
   }
 
   return (
-    <main
+    <main id="main-content"
       aria-busy={isLoading || isLoadingMore}
       className="mx-auto w-full max-w-[760px] px-4 pb-24 pt-8"
     >
