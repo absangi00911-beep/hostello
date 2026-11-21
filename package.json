@@ -23,6 +23,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "schedule-cron": "tsx scripts/schedule-cron-jobs.ts",
     "e2e": "playwright test",
+    "e2e:payments": "playwright test -c playwright.payments.config.ts",
     "migrate:new": "prisma migrate dev",
     "prepare": "simple-git-hooks",
     "typesense:setup": "tsx scripts/setup-typesense.ts",
