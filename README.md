@@ -48,6 +48,7 @@ application and API handlers are served by the same app.
 | `npm run test:scripts` | Run deployment and operational script tests |
 | `npm run docs:check` | Validate documented routes, cron jobs, environment variables, and Markdown links |
 | `npm run e2e -- --list` | Discover Playwright tests without running a browser flow |
+| `npm run e2e:payments` | Run the paid-booking journey in a real browser against a disposable `_test` database, with Safepay faked (see below) |
 | `npm run migrate:new` | Create a Prisma migration |
 | `npm run db:migrate:deploy` | Apply committed migrations to the configured database |
 | `npm run db:studio` | Start Prisma Studio |
@@ -57,6 +58,23 @@ PostgreSQL integration tests require an explicitly configured disposable
 loopback test database. Browser E2E, provider sandbox, QStash retry, and
 database restore validation are separate release checks; do not point local
 test commands at shared or production services.
+
+### Paid-booking end-to-end test
+
+`npm run e2e:payments` drives the real app through booking a room, paying through
+Safepay, and the cases around it: a duplicate confirmation, a failed payment that is
+retried, a Safepay outage, forged or mismatched confirmations, and an abandoned checkout
+that is cancelled and later paid. It needs `DATABASE_URL` pointing at a loopback Postgres
+database whose name ends in `_test`, with the migrations applied, and a Playwright
+browser (`npx playwright install chromium`).
+
+Only Safepay is replaced. The test starts its own dev server on port 3101 with fake
+merchant credentials, every request to a `getsafepay.com` host is redirected to a fake
+Safepay inside the test, and the test posts correctly signed webhooks as Safepay would.
+Email, queue, cache, search and the other providers are switched off for that server. It
+never accepts a remote target, so it cannot be pointed at a deployed environment. A test
+that produces a late-payment record leaves its hostel behind as `SUSPENDED`, because that
+table is append-only by design.
 
 ## Where to look next
 

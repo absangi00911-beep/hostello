@@ -6,6 +6,9 @@ const localBaseURL = "http://127.0.0.1:3100";
 
 export default defineConfig({
   testDir: "./e2e",
+  // The payment specs need their own server, fake credentials and a fake Safepay:
+  // run them with `npm run e2e:payments` (playwright.payments.config.ts).
+  testIgnore: "**/payments/**",
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),

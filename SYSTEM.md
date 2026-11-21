@@ -161,7 +161,7 @@ The application is intentionally one deployable unit: route handlers, business l
 | Email, SMS | Resend, Twilio |
 | Payments | Safepay (enabled). JazzCash and EasyPaisa code is present but disabled |
 | Observability | Sentry (data minimized) and structured JSON events from `src/lib/operational-logger.ts` with request correlation and HMAC pseudonyms |
-| Tests | Vitest; Playwright E2E specs are present, but browser-runtime flows remain unverified |
+| Tests | Vitest; Playwright E2E specs are present. The paid-booking journey (`npm run e2e:payments`) has been run in a real browser against PostgreSQL with Safepay faked; the other specs' browser-runtime flows are not re-verified here |
 
 ### 3.3 Request lifecycle
 
@@ -676,7 +676,7 @@ Local verification on November 9, 2026, against the current worktree (not a full
 
 The checked-in PostgreSQL-specific suite currently consists of one guarded file, `src/lib/availability-alerts.postgres.integration.test.ts`, covering availability-alert and seat-hold concurrency. It requires `RUN_AVAILABILITY_ALERTS_POSTGRES_TESTS=1` and a loopback `HOSTELLO_TEST_DATABASE_URL` whose database name ends in `_test`. CI and the independent production quality gate now provision ephemeral PostgreSQL services, apply migrations to their dedicated `hostello_test` databases, and run that file; a successful workflow run is still required to verify the new gate.
 
-The guarded suite does not currently cover booking concurrency, payment/webhook replay, payout claims, or the seat-hold migration constraint. The CI and production workflows now provision isolated PostgreSQL gates, but no GitHub Actions run has yet verified those new gates. Playwright test discovery is not browser-runtime validation. Safepay sandbox refunds/retries, QStash retry behavior, and a disposable-database backup/restore rehearsal remain unverified.
+The guarded suite does not currently cover booking concurrency, payment/webhook replay, payout claims, or the seat-hold migration constraint. The browser E2E in `e2e/payments` does exercise webhook replay, forged and mismatched confirmations, retry after failure, a Safepay outage, and abandoned-checkout cancellation with a late payment; it runs locally (`npm run e2e:payments`), is not part of this guarded suite, and no CI job runs it yet. The CI and production workflows now provision isolated PostgreSQL gates, but no GitHub Actions run has yet verified those new gates. Playwright test discovery is not browser-runtime validation. Safepay sandbox refunds/retries, QStash retry behavior, and a disposable-database backup/restore rehearsal remain unverified.
 
 **Proposed merge gate for `main`:** install from a clean clone (`npm ci`), `prisma validate`, typecheck, lint, unit tests, integration tests on a Postgres service container (parallel bookings for the last seat, alert transitions, webhook replay, double payout claim, and a property test that free seats equal capacity minus overlapping holds after any sequence of booking transitions), and `node scripts/check-docs.mjs`. **Proposed release gate:** browser E2E on disposable services, a sandbox pay/confirm/cancel/refund round trip including a QStash retry, a rehearsed restore, and an alert fired end to end.
 
