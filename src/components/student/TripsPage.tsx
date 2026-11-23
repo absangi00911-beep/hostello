@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
 const bookingStatuses = {
   PENDING: "Pending",
@@ -143,16 +144,12 @@ export function TripsPageContent({
   onRetry: () => void;
 }) {
   return (
-    <main id="main-content" className="min-h-dvh bg-canvas py-12 md:py-16">
-      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),600px)] md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">
-        <header className="mb-7 md:mb-8">
-          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
-            Trips
-          </h1>
-          <p className="mt-2 m-0 text-[0.95rem] text-muted">
-            Your hostel bookings and stay dates.
-          </p>
-        </header>
+    <main id="main-content" className="min-h-dvh bg-canvas pt-8 pb-28 md:py-14">
+      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),640px)] md:w-[min(1040px,calc(100%-var(--page-gutter-total)))]">
+        <AccountPageHeader
+          title="Trips"
+          description="Your hostel bookings and stay dates."
+        />
 
         {isLoading ? (
           <section

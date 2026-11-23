@@ -9,7 +9,7 @@ export function AvailabilityAlertsLoading() {
     >
       {[0, 1, 2].map((item) => (
         <div
-          className="h-32 rounded-xl bg-surface-muted motion-safe:animate-pulse"
+          className="h-32 rounded-[14px] border border-line bg-surface-muted motion-safe:animate-pulse"
           key={item}
         />
       ))}
@@ -25,10 +25,10 @@ export function AvailabilityAlertsError({
   onRetry: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-line p-5" role="alert">
+    <div className="rounded-[14px] border border-danger bg-surface p-5 text-danger" role="alert">
       <p className="m-0 text-sm">{message}</p>
       <button
-        className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-line px-4 font-semibold"
+        className="mt-3 inline-flex min-h-11 items-center rounded-full border border-current px-4 font-semibold"
         onClick={onRetry}
         type="button"
       >
@@ -44,7 +44,7 @@ export function AvailabilityAlertsEmpty({
   onCreate: () => void;
 }) {
   return (
-    <section className="rounded-xl border border-dashed border-line bg-surface-muted p-6 sm:p-8">
+    <section className="rounded-[14px] border border-line bg-surface p-6 shadow-[0_1px_2px_rgb(15_23_42_/_4%)] sm:p-8">
       <h2 className="m-0 text-lg font-semibold">
         You don’t have any availability alerts.
       </h2>

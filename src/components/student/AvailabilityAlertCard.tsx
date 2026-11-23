@@ -96,13 +96,10 @@ export function AvailabilityAlertCard({
   const hostelId = alert.criteria.hostelId;
 
   return (
-    <li className="rounded-xl border border-line bg-white p-4 sm:p-5">
+    <li className="rounded-[14px] border border-line bg-surface p-4 shadow-[0_1px_2px_rgb(15_23_42_/_4%)] sm:p-5">
       <article aria-labelledby={`alert-title-${alert.id}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="m-0 text-xs font-bold uppercase tracking-[0.08em] text-brand">
-              {alert.type === "HOSTEL" ? "Specific hostel" : "Saved search"}
-            </p>
             <h2
               className="mt-1 mb-0 break-words text-base font-semibold"
               id={`alert-title-${alert.id}`}

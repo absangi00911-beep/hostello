@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
+import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
 export type VerificationStatus = "NONE" | "PENDING" | "APPROVED" | "REJECTED";
 
@@ -127,17 +128,20 @@ export function StudentVerificationPage() {
   }
 
   return (
-    <main id="main-content" className="mx-auto w-full max-w-[640px] px-4 pb-28 pt-8">
-      <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/profile">
-        ← Back to profile
-      </Link>
-      <h1 className="mb-1 mt-3 text-[1.75rem] font-bold text-ink">
-        Student verification
-      </h1>
-      <p className="mb-6 mt-0 text-muted">
-        Upload a student ID or enrollment document. Only the HostelLo review
-        team can view it.
-      </p>
+    <main id="main-content" className="min-h-dvh bg-canvas pt-8 pb-28 md:py-14">
+      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),640px)] md:w-[min(1040px,calc(100%-var(--page-gutter-total)))]">
+        <AccountPageHeader
+          title="Student verification"
+          description="Upload a student ID or enrollment document. Only the HostelLo review team can view it."
+          action={
+            <Link
+              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-[0.9rem] font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
+              href="/profile"
+            >
+              Back to profile
+            </Link>
+          }
+        />
 
       {isLoading ? (
         <p className="text-muted">Loading verification status...</p>
@@ -199,6 +203,7 @@ export function StudentVerificationPage() {
           </form>
         </>
       )}
+      </div>
     </main>
   );
 }

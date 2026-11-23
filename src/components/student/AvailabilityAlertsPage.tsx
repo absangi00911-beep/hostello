@@ -15,6 +15,7 @@ import {
 import type { AlertRecord } from "@/components/student/availability-alert-types";
 import type { AvailabilityAlertFormInitial } from "@/components/student/availability-alert-form-model";
 import { useAvailabilityAlerts } from "@/components/student/use-availability-alerts";
+import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
 export function AvailabilityAlertsPage({
   initial,
@@ -84,26 +85,20 @@ export function AvailabilityAlertsPage({
   }
 
   return (
-    <main id="main-content" className="mx-auto w-[min(100%-32px,880px)] pb-28 pt-8 text-ink sm:w-[min(100%-48px,880px)] sm:pt-12">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.1em] text-brand">
-            Student account
-          </p>
-          <h1 className="mt-1 mb-2 text-[clamp(1.7rem,4vw,2.2rem)] font-semibold tracking-[-0.035em]">
-            Availability alerts
-          </h1>
-          <p className="m-0 max-w-[52ch] text-sm leading-6 text-muted">
-            We’ll let you know in Notifications when a hostel matches your dates and guest count.
-          </p>
-        </div>
-        <Link
-          className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
-          href="/notifications"
-        >
-          Notifications
-        </Link>
-      </header>
+    <main id="main-content" className="min-h-dvh bg-canvas pt-8 pb-28 text-ink md:py-14">
+      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),640px)] md:w-[min(1040px,calc(100%-var(--page-gutter-total)))]">
+        <AccountPageHeader
+          title="Availability alerts"
+          description="We’ll let you know in Notifications when a hostel matches your dates and guest count."
+          action={
+            <Link
+              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-sm font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
+              href="/notifications"
+            >
+              Notifications
+            </Link>
+          }
+        />
 
       {notice && (
         <p aria-live="polite" className="mb-4 text-sm text-brand-dark" role="status">
@@ -112,7 +107,7 @@ export function AvailabilityAlertsPage({
       )}
       {uncertain && (
         <button
-          className="mb-4 inline-flex min-h-11 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold"
+          className="mb-4 inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-sm font-semibold"
           disabled={refreshingUncertain}
           onClick={refreshUncertain}
           type="button"
@@ -154,7 +149,7 @@ export function AvailabilityAlertsPage({
 
       {!showCreateForm && !editing && alerts.length > 0 && (
         <button
-          className="mb-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-5 font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+          className="mb-5 inline-flex min-h-11 items-center justify-center rounded-[8px] bg-brand px-5 font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
           onClick={() => setShowCreateForm(true)}
           type="button"
         >
@@ -191,6 +186,7 @@ export function AvailabilityAlertsPage({
           />
         </>
       )}
+      </div>
     </main>
   );
 }
