@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   hostelFindUnique: vi.fn(),
   rateLimit: vi.fn(),
   createBooking: vi.fn(),
+  recordServerEvent: vi.fn(),
   BookingServiceError: class extends Error {
     constructor(message: string, readonly statusCode: number) {
       super(message);
@@ -27,6 +28,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/rate-limit", () => ({ rateLimit: mocks.rateLimit }));
+vi.mock("@/lib/analytics/sink", () => ({ recordServerEvent: mocks.recordServerEvent }));
 
 import { GET, POST } from "./route";
 import { db } from "@/lib/db";
@@ -112,5 +114,28 @@ describe("POST /api/bookings", () => {
     expect(await response.json()).toEqual({
       error: "Could not create booking. Please try again.",
     });
+  });
+
+  it("records booking_requested once the booking exists", async () => {
+    mocks.createBooking.mockResolvedValueOnce({ id: "cbooking000000000000001", status: "PENDING" });
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(201);
+    expect(mocks.recordServerEvent).toHaveBeenCalledTimes(1);
+    expect(mocks.recordServerEvent).toHaveBeenCalledWith("booking_requested", {
+      bookingId: "cbooking000000000000001",
+      hostelId: "clh1234567890123456789012",
+    });
+  });
+
+  it("records nothing when the booking is refused or fails", async () => {
+    await POST(request({ roomId: undefined }));
+    mocks.createBooking.mockRejectedValueOnce(new mocks.BookingServiceError("Room availability changed.", 409));
+    await POST(request());
+    mocks.createBooking.mockRejectedValueOnce(new Error("db down"));
+    await POST(request());
+
+    expect(mocks.recordServerEvent).not.toHaveBeenCalled();
   });
 });

@@ -186,4 +186,13 @@ describe("HostelDetailPage", () => {
     expect(tree).toContain('"slug":"quetta"');
     expect(mocks.getCityLinks).toHaveBeenCalledWith({ prioritySlug: "quetta" });
   });
+
+  it("records a hostel_viewed event for this hostel, once per tab session", async () => {
+    const page = await HostelDetailPage({ params: Promise.resolve({ param: hostel.slug }) });
+    const tree = JSON.stringify(page);
+
+    expect(tree).toContain('"event":"hostel_viewed"');
+    expect(tree).toContain(`"dedupeKey":"${hostel.id}"`);
+    expect(tree).toContain(`"properties":{"hostelId":"${hostel.id}"}`);
+  });
 });

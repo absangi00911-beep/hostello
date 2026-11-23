@@ -1,3 +1,4 @@
+import { recordServerEvent } from "@/lib/analytics/sink";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 // Path: src/app/api/bookings/route.ts
 import { type NextRequest, NextResponse } from "next/server";
@@ -144,6 +145,7 @@ export async function POST(req: NextRequest) {
     }
 
     const booking = await createBooking(session.user.id, parsed.data);
+    await recordServerEvent("booking_requested", { bookingId: booking.id, hostelId: parsed.data.hostelId });
 
     return NextResponse.json(
       { data: booking, message: "Booking created." },

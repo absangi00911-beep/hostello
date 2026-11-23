@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { TrackOnMount } from "@/components/analytics/TrackOnMount";
 import { CityLinks } from "@/components/city/CityLinks";
 import { HostelBreadcrumb } from "@/components/city/HostelBreadcrumb";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -96,6 +97,7 @@ export default async function HostelDetailPage({
   return (
     <div className="hostel-detail-page min-h-dvh bg-white text-ink">
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
+      <TrackOnMount dedupeKey={hostel.id} event="hostel_viewed" properties={{ hostelId: hostel.id }} />
       <ScrollAwareSurface
         as="header"
         className="sticky top-0 z-30 bg-white [@media(max-width:720px)]:hidden"

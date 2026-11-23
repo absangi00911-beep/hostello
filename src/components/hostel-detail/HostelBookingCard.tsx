@@ -12,6 +12,7 @@ import {
 import { buildHostelAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
+import { trackOnce } from "@/lib/analytics/client";
 import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 interface BookableRoom {
@@ -401,6 +402,7 @@ export function HostelBookingCard({
         setMessage("Choose an available room and valid stay dates before continuing.");
         return;
       }
+      trackOnce("booking_started", hostelId, { hostelId, roomId });
       setShowReview(true);
       return;
     }
