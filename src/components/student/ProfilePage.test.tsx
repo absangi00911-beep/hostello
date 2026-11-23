@@ -102,6 +102,68 @@ describe("ProfilePage", () => {
     expect(markup).not.toContain("#8c2822");
   });
 
+  it("shows the verified badge and bio when the profile has them", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        onRetry={() => {}}
+        profile={{
+          name: "Alex Student",
+          avatar: null,
+          city: "Lahore",
+          bio: "Final-year CS student.",
+          verificationStatus: "APPROVED",
+          createdAt: "2024-06-10T00:00:00.000Z",
+          counts: { bookings: 2, favorites: 5, reviews: 1 },
+        }}
+        isLoading={false}
+      />,
+    );
+
+    expect(markup).toContain("Verified student");
+    expect(markup).toContain("Final-year CS student.");
+    expect(markup).toContain("You&#x27;re a verified student");
+  });
+
+  it("offers to resubmit when verification was rejected", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        onRetry={() => {}}
+        profile={{
+          name: "Alex Student",
+          avatar: null,
+          city: null,
+          verificationStatus: "REJECTED",
+          createdAt: "2024-06-10T00:00:00.000Z",
+          counts: { bookings: 0, favorites: 0, reviews: 0 },
+        }}
+        isLoading={false}
+      />,
+    );
+
+    expect(markup).toContain("Resubmit");
+    expect(markup).toContain('href="/profile/verification"');
+    expect(markup).not.toContain("Verified student");
+  });
+
+  it("parses optional bio and verification status", () => {
+    const parsed = parseProfile({
+      data: {
+        name: "Alex Student",
+        avatar: null,
+        city: null,
+        bio: "  Hello  ",
+        verificationStatus: "PENDING",
+        createdAt: "2024-06-10T00:00:00.000Z",
+        _count: { bookings: 0, favorites: 0, reviews: 0 },
+      },
+    });
+
+    expect(parsed?.bio).toBe("Hello");
+    expect(parsed?.verificationStatus).toBe("PENDING");
+  });
+
   it("keeps private profile fields out of the student profile model", () => {
     expect(
       parseProfile({

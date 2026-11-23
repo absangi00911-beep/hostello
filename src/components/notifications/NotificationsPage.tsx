@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { announceUnreadCount } from "./useUnreadNotificationCount";
 import { buildAvailabilityAlertSearchResultsHref } from "@/lib/availability-alert-links";
+import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
 type AvailabilityAlertNotificationData = {
   type: "HOSTEL" | "SEARCH";
@@ -369,28 +370,31 @@ export function NotificationsPage({ role }: { role: Role }) {
   return (
     <main id="main-content"
       aria-busy={isLoading || isLoadingMore}
-      className="mx-auto w-full max-w-[760px] px-4 pb-24 pt-8"
+      className="min-h-dvh bg-canvas pt-8 pb-28 md:py-14"
     >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="m-0 text-[1.75rem] font-bold text-ink">Notifications</h1>
-          <p aria-live="polite" className="m-0 text-[0.9rem] text-muted" role="status">
-            {isLoading
-              ? "Loading…"
-              : unreadCount === 0 && items.length > 0
-                ? "You’re all caught up."
-                : `${unreadCount} unread`}
-          </p>
-        </div>
-        <button
-          className={actionClassName}
-          disabled={busyId !== null || unreadCount === 0}
-          onClick={markAllRead}
-          type="button"
-        >
-          Mark all as read
-        </button>
-      </div>
+      <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),640px)] md:w-[min(1040px,calc(100%-var(--page-gutter-total)))]">
+        <AccountPageHeader
+          title="Notifications"
+          description={
+            <span aria-live="polite" role="status">
+              {isLoading
+                ? "Loading…"
+                : unreadCount === 0 && items.length > 0
+                  ? "You’re all caught up."
+                  : `${unreadCount} unread`}
+            </span>
+          }
+          action={
+            <button
+              className={actionClassName}
+              disabled={busyId !== null || unreadCount === 0}
+              onClick={markAllRead}
+              type="button"
+            >
+              Mark all as read
+            </button>
+          }
+        />
 
       {actionError ? (
         <div
@@ -528,6 +532,7 @@ export function NotificationsPage({ role }: { role: Role }) {
           </button>
         </div>
       ) : null}
+      </div>
     </main>
   );
 }
