@@ -906,3 +906,23 @@ model RoommateReport {
   @@unique([postId, reporterId])
   @@map("roommate_reports")
 }
+
+// First-party product analytics: one row per funnel event. Deliberately anonymous: no user
+// id, no IP address, no user agent. `sessionId` is a random per-tab id created in the browser
+// (sessionStorage), and server-recorded events carry the booking they belong to instead.
+// There are no foreign keys, so events never block deleting a hostel, booking or account.
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  name       String
+  sessionId  String?
+  hostelId   String?
+  bookingId  String?
+  properties Json?
+  createdAt  DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([bookingId])
+  @@index([hostelId, name])
+  @@index([createdAt])
+  @@map("analytics_events")
+}

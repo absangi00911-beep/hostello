@@ -35,6 +35,7 @@ vi.mock("@/lib/notifications", () => ({ createNotification: vi.fn() }));
 vi.mock("@/lib/email-templates/booking-status", () => ({ bookingStatusEmail: vi.fn() }));
 vi.mock("@/lib/verify-upstash", () => ({ verifyUpstashRequest: vi.fn() }));
 vi.mock("@/lib/late-payment-resolution", () => ({ resolveLatePayment: vi.fn() }));
+vi.mock("@/lib/analytics/sink", () => ({ recordServerEvent: vi.fn() }));
 
 import { POST } from "./route";
 import { verifyWebhookSignature } from "@/lib/safepay";
@@ -42,6 +43,7 @@ import { db } from "@/lib/db";
 import { verifyUpstashRequest } from "@/lib/verify-upstash";
 import { sendEmail } from "@/lib/email";
 import { resolveLatePayment } from "@/lib/late-payment-resolution";
+import { recordServerEvent } from "@/lib/analytics/sink";
 
 function request(body: string, headers: Record<string, string> = {}) {
   return new NextRequest("https://hostello.test/api/payment/webhook", {
@@ -577,4 +579,56 @@ describe("POST /api/payment/webhook", () => {
     expect(db.$transaction).not.toHaveBeenCalled();
   });
 
+
+  describe("funnel event", () => {
+    const withHostel = { ...booking, hostelId: "chostel00000000000000001" };
+    const confirmed = ["payment_confirmed", { bookingId: "booking_1", hostelId: "chostel00000000000000001" }] as const;
+
+    it("is recorded once when a payment is applied to a pending booking", async () => {
+      const { event } = successEvent();
+      transactionWithPaymentResult(1);
+      vi.mocked(db.booking.findUnique).mockResolvedValue(withHostel as never);
+
+      const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+      expect(response.status).toBe(200);
+      expect(recordServerEvent).toHaveBeenCalledTimes(1);
+      expect(recordServerEvent).toHaveBeenCalledWith(...confirmed);
+    });
+
+    it("is recorded when a late payment reinstates a cancelled booking", async () => {
+      const { event } = successEvent();
+      vi.mocked(db.booking.findUnique).mockResolvedValue({ ...withHostel, status: "CANCELLED" } as never);
+      vi.mocked(resolveLatePayment).mockResolvedValue({ outcome: "REINSTATED" });
+
+      const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+      expect(await response.json()).toMatchObject({ received: true, latePaymentOutcome: "REINSTATED" });
+      expect(recordServerEvent).toHaveBeenCalledWith(...confirmed);
+    });
+
+    it("is not recorded when a late payment can only be refunded", async () => {
+      const { event } = successEvent();
+      vi.mocked(db.booking.findUnique).mockResolvedValue({ ...withHostel, status: "CANCELLED" } as never);
+      vi.mocked(resolveLatePayment).mockResolvedValue({ outcome: "REFUND_REQUIRED" });
+
+      const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+      expect(await response.json()).toMatchObject({ received: true, latePaymentOutcome: "REFUND_REQUIRED" });
+      expect(recordServerEvent).not.toHaveBeenCalled();
+    });
+
+    it("is not recorded when the payment is not applied (lost update that is already paid)", async () => {
+      const { event } = successEvent({ bookingStatus: "PENDING", paymentStatus: "PENDING" });
+      transactionWithPaymentResult(0);
+      vi.mocked(db.booking.findUnique)
+        .mockResolvedValueOnce(withHostel as never)
+        .mockResolvedValueOnce({ status: "PENDING", paymentMethod: "safepay", paymentStatus: "PAID", transactionId: "tracker_1" } as never);
+
+      const response = await POST(request(JSON.stringify(event), { "x-sfpy-signature": "valid" }));
+
+      expect(response.status).toBe(200);
+      expect(recordServerEvent).not.toHaveBeenCalled();
+    });
+  });
 });

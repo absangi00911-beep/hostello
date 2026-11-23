@@ -35,10 +35,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 40 |
-| API route handler files | 83 |
-| Prisma models | 33 |
-| Prisma migrations | 36 |
-| Vitest test files | 291 |
+| API route handler files | 84 |
+| Prisma models | 34 |
+| Prisma migrations | 37 |
+| Vitest test files | 297 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -297,6 +297,7 @@ Money is stored as integer PKR and converted to paisas only at the Safepay bound
 | Student identity documents | ID image for student verification | Private R2 bucket | Separate bucket and token; copy-on-submit to immutable keys; admins stream through an authenticated no-store route | Abandoned uploads removed hourly; **retention after review is undefined** |
 | Messages and reviews | Conversation text, review text | Postgres | Participant-only reads | Deleted with the account |
 | Payment email delivery metadata | Recipient user ID, booking ID, typed template, idempotency key and retry state | Postgres `PaymentEmailOutbox` | No email address, subject, body, provider response or raw error is persisted | Pending/retry records expire within 30 days of enqueue; sent records 24 hours after delivery; terminal failures 30 days after final attempt; QStash cleanup must run |
+| Product analytics | Funnel events: search performed, hostel viewed, booking started, booking requested, payment started, payment confirmed | Postgres `AnalyticsEvent` | Anonymous by design: no user ID, IP address or user agent, no foreign keys. Browser events carry a random per-tab session ID kept in `sessionStorage` (no cookie, nothing that spans visits); server events carry the booking ID. Visitors sending Global Privacy Control or Do Not Track are not recorded. The browser may send only three event names with a fixed set of properties; the money steps are recorded by the server only | **No retention limit yet**: a purge job comes with the admin funnel report |
 | Operational logs | Structured events, Sentry events | Vercel and Sentry _(operational)_ | Allow-listed fields, HMAC pseudonyms, SDK payload collection disabled | Provider defaults; **set explicitly** |
 
 **D-6 status:** the payment-confirmation outbox uses the minimal metadata and expiry windows above. Retention for student documents, rejected verification records, messages and logs, and encryption of owner bank details on `User`, remain open. The email outbox does not include signup, password-reset, price-alert or other email flows.
@@ -472,6 +473,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Uploads | `/api/upload` (listing images; Owner or Admin with or without `hostelId`; per-user limit of 20 uploads per 10 minutes, R-11) | Owner / Admin |
 | Support | `/api/contact`, `/api/report` | Signed in |
 | Health | `/api/health/crons`, `/api/health/payments` | Admin or internal `x-cron-health-secret` |
+| Analytics | `/api/events` (browser funnel events; validated against a fixed per-event schema, 2 KB limit, 120 per minute per IP, always 204 for ignored traffic such as bots or opted-out visitors) | Public |
 | Security reports | `/api/csp-report` (browser Content-Security-Policy violation reports; logs sanitized summaries only, always 204, 20 per minute per IP, exempt from the CSRF Origin check because browsers send no Origin) | Public |
 | Jobs | `/api/cron/cancel-abandoned-payments`, `/api/cron/drain-payment-email-outbox`, `/api/cron/check-price-alerts`, `/api/cron/cleanup-tokens`, `/api/cron/cleanup-verification-uploads`, `/api/cron/expire-availability-alerts`, `/api/cron/expire-pro-subscriptions`, `/api/cron/expire-unanswered-bookings`, `/api/cron/mark-completed-stays`, `/api/cron/process-account-deletions`, `/api/cron/sweep-cancelled-refunds` | QStash |
 
@@ -651,6 +653,7 @@ Implemented controls are described in §§3, 6–8, and 12–14; open gaps are t
 - **Logs:** one JSON event per business event from `src/lib/operational-logger.ts`, with request and trace correlation and HMAC-pseudonymized identifiers. Raw emails and names are not logged.
 - **Errors:** Sentry on client, server and edge, with request payloads, headers, cookies and query strings disabled and event data scrubbed. Tracing runs at a 100% sample rate; tune it once production volume is known _(operational)_.
 - **Health:** `GET /api/health/crons` (job freshness) and `GET /api/health/payments` (returns 207 when payment work needs attention) accept an Admin session or the internal `x-cron-health-secret` header. External monitor configuration and secret handling are operational and unverified (R-17).
+- **Product analytics:** first-party funnel events in `AnalyticsEvent` (`src/lib/analytics`). `track()` in the browser and `recordServerEvent()` on the server write through one `AnalyticsSink`, so a hosted analytics product can replace the database sink without touching callers. Funnel, in order: `search_performed`, `hostel_viewed`, `booking_started` (counted per browser session), then `booking_requested`, `payment_started`, `payment_confirmed` (counted per booking, recorded by the server; a late payment that reinstates an abandoned booking counts as confirmed). Recording never throws or delays a booking, payment or webhook. Until the admin report exists, read it with SQL, for example `SELECT name, count(DISTINCT coalesce("bookingId", "sessionId")) FROM analytics_events WHERE "createdAt" > now() - interval '30 days' GROUP BY name;`.
 - **Alerts:** none configured for payment health, search degradation, notification delivery or cron failure (R-17).
 
 ### 14.2 Data and recovery

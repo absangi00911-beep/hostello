@@ -1,5 +1,6 @@
 // Path: src/app/api/payment/initiate/route.ts
 import { type NextRequest, NextResponse } from "next/server";
+import { recordServerEvent } from "@/lib/analytics/sink";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createCheckoutLink, createCheckoutSession } from "@/lib/safepay";
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
         paymentMethod: true,
         transactionId: true,
         cancellationPolicy: true,
+        hostelId: true,
         hostel: { select: { name: true } },
         user:   { select: { name: true, email: true } },
       },
@@ -129,6 +131,7 @@ export async function POST(req: NextRequest) {
         ...checkoutOptions,
         token: booking.transactionId,
       });
+      await recordServerEvent("payment_started", { bookingId: booking.id, hostelId: booking.hostelId });
       return NextResponse.json({ data: { paymentUrl: checkout.redirectUrl }, message: "Payment resumed" });
     }
 
@@ -162,11 +165,13 @@ export async function POST(req: NextRequest) {
       });
       if (current?.status === "PENDING" && current.paymentStatus === "PENDING" && current.transactionId) {
         const resumed = await createCheckoutLink({ ...checkoutOptions, token: current.transactionId });
+        await recordServerEvent("payment_started", { bookingId: booking.id, hostelId: booking.hostelId });
         return NextResponse.json({ data: { paymentUrl: resumed.redirectUrl }, message: "Payment resumed" });
       }
       return NextResponse.json({ error: "Booking changed while payment was being prepared. Please retry." }, { status: 409 });
     }
 
+    await recordServerEvent("payment_started", { bookingId: booking.id, hostelId: booking.hostelId });
     return NextResponse.json({ data: { paymentUrl: checkout.redirectUrl }, message: "Payment initiated" });
   } catch (err) {
     console.error("[POST /api/payment/initiate]", getSafeErrorSummary(err));

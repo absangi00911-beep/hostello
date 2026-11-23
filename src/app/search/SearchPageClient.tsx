@@ -33,6 +33,7 @@ import {
   type HostelSearchSort,
 } from "./search-params";
 import { useHostelSearch } from "./useHostelSearch";
+import { trackOnce } from "@/lib/analytics/client";
 import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 const mapPinPositions = [
@@ -278,6 +279,31 @@ export default function SearchPageClient({
     },
     initialResults,
   );
+  // One funnel event per distinct search, once its results are on screen. Turning the page
+  // is not a new search, so the page number is not part of the key.
+  useEffect(() => {
+    if (isLoading || searchError) return;
+    trackOnce(
+      "search_performed",
+      JSON.stringify([appliedQuery, appliedCity, appliedNearby, appliedMoveInDate, appliedCheckOutDate, appliedFilters]),
+      {
+        city: appliedCity.slice(0, 60) || undefined,
+        nearby: appliedNearby,
+        hasDates: Boolean(appliedMoveInDate),
+        resultCount: totalHostels,
+      },
+    );
+  }, [
+    isLoading,
+    searchError,
+    totalHostels,
+    appliedQuery,
+    appliedCity,
+    appliedNearby,
+    appliedMoveInDate,
+    appliedCheckOutDate,
+    appliedFilters,
+  ]);
   const pageCount = Math.max(1, Math.ceil(totalHostels / PAGE_SIZE));
   const availabilityAlertHref = buildSearchAvailabilityAlertHref({
     q: appliedQuery,

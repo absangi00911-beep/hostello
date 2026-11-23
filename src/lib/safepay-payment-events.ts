@@ -4,6 +4,7 @@
 // amount and currency checks, payment state, late-payment reconciliation and the
 // confirmation-email outbox. Returns an HTTP-style response that the inbox records.
 import { NextResponse } from "next/server";
+import { recordServerEvent } from "@/lib/analytics/sink";
 import { db } from "@/lib/db";
 import { resolveLatePayment } from "@/lib/late-payment-resolution";
 import { createOperationalLogContext, logOperationalEvent } from "@/lib/operational-logger";
@@ -21,6 +22,17 @@ import {
   handleSubscriptionPayment,
 } from "@/lib/safepay-subscription-events";
 import type { SafepayEvent } from "@/lib/safepay-webhook-auth";
+
+/**
+ * A payment that arrives after an abandoned checkout was cancelled either puts the booking
+ * back (REINSTATED: paid and active again, which the funnel counts as a confirmed payment)
+ * or has to be refunded because the bed is gone (REFUND_REQUIRED: not a confirmed booking).
+ */
+async function recordReinstatedPayment(outcome: string, booking: { id: string; hostelId: string }): Promise<void> {
+  if (outcome === "REINSTATED") {
+    await recordServerEvent("payment_confirmed", { bookingId: booking.id, hostelId: booking.hostelId });
+  }
+}
 
 export async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEventId: string) {
   const logContext = createOperationalLogContext();
@@ -169,6 +181,7 @@ export async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEv
         }, logContext);
         return NextResponse.json({ error: "Payment requires booking reconciliation." }, { status: 409 });
       }
+      await recordReinstatedPayment(resolution.outcome, booking);
       return NextResponse.json({ received: true, latePaymentOutcome: resolution.outcome });
     }
 
@@ -274,6 +287,7 @@ export async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEv
           currency: event.data?.currency as string,
         });
         if (resolution.outcome !== "RECONCILIATION_REQUIRED") {
+          await recordReinstatedPayment(resolution.outcome, booking);
           return NextResponse.json({ received: true, latePaymentOutcome: resolution.outcome });
         }
       }
@@ -291,6 +305,7 @@ export async function processSafepayWebhook(event: SafepayEvent, sourceWebhookEv
       booking_status: "PENDING",
       owner_response_due_at: responseDueAt.toISOString(),
     }, logContext);
+    await recordServerEvent("payment_confirmed", { bookingId: booking.id, hostelId: booking.hostelId });
 
 
     return NextResponse.json({ received: true });

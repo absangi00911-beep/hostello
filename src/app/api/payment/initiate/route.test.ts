@@ -23,11 +23,16 @@ vi.mock("@/lib/easypaisa", () => ({
   createEasypaisaSession: vi.fn(),
 }));
 
+vi.mock("@/lib/analytics/sink", () => ({
+  recordServerEvent: vi.fn(),
+}));
+
 vi.mock("@/lib/app-url", () => ({
   getAppOrigin: vi.fn(() => "https://hostello.test"),
 }));
 
 import { POST } from "@/app/api/payment/initiate/route";
+import { recordServerEvent } from "@/lib/analytics/sink";
 import { auth } from "@/lib/auth/config";
 import { db } from "@/lib/db";
 import { createCheckoutLink, createCheckoutSession } from "@/lib/safepay";
@@ -161,5 +166,60 @@ describe("POST /api/payment/initiate", () => {
       }),
       data: { paymentStatus: "PENDING", transactionId: "token-1" },
     }));
+  });
+
+  describe("funnel event", () => {
+    const booking = (overrides: Record<string, unknown> = {}) =>
+      ({
+        id: "booking-1",
+        hostelId: "chostel00000000000000001",
+        userId: "user-1",
+        total: 12000,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: "safepay",
+        transactionId: null,
+        cancellationPolicy: "STANDARD",
+        user: { name: "Ali", email: "ali@example.com" },
+        ...overrides,
+      }) as Awaited<ReturnType<typeof db.booking.findUnique>>;
+    const initiate = () =>
+      POST(new NextRequest("https://hostello.test/api/payment/initiate", { method: "POST", body: JSON.stringify({ bookingId: "booking-1" }) }));
+    const expectedEvent = ["payment_started", { bookingId: "booking-1", hostelId: "chostel00000000000000001" }] as const;
+
+    it("is recorded when a checkout is created", async () => {
+      vi.mocked(db.booking.findUnique).mockResolvedValue(booking());
+      expect((await initiate()).status).toBe(200);
+      expect(recordServerEvent).toHaveBeenCalledTimes(1);
+      expect(recordServerEvent).toHaveBeenCalledWith(...expectedEvent);
+    });
+
+    it("is recorded when a pending checkout is resumed", async () => {
+      vi.mocked(db.booking.findUnique).mockResolvedValue(booking({ transactionId: "track_existing" }));
+      expect((await initiate()).status).toBe(200);
+      expect(recordServerEvent).toHaveBeenCalledTimes(1);
+      expect(recordServerEvent).toHaveBeenCalledWith(...expectedEvent);
+    });
+
+    it("is recorded when a failed payment is retried with a new checkout", async () => {
+      vi.mocked(db.booking.findUnique).mockResolvedValue(booking({ paymentStatus: "FAILED", transactionId: "track_failed" }));
+      expect((await initiate()).status).toBe(200);
+      expect(recordServerEvent).toHaveBeenCalledWith(...expectedEvent);
+    });
+
+    it("is not recorded when no checkout could be started", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(db.booking.findUnique).mockResolvedValue(booking());
+      vi.mocked(createCheckoutSession).mockRejectedValue(new Error("Safepay down"));
+      expect((await initiate()).status).toBe(500);
+
+      vi.mocked(db.booking.findUnique).mockResolvedValue(booking({ userId: "someone-else" }));
+      expect((await initiate()).status).toBeGreaterThanOrEqual(400);
+
+      vi.mocked(db.booking.findUnique).mockResolvedValue(null);
+      expect((await initiate()).status).toBe(404);
+
+      expect(recordServerEvent).not.toHaveBeenCalled();
+    });
   });
 });
