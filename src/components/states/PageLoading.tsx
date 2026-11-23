@@ -1,22 +1,32 @@
+import Image from "next/image";
 import { siteCopy } from "@/lib/site-copy";
 
-/** Lightweight skeleton shown while a route segment streams in. */
+/** Centered brand loader shown while a route segment streams in. */
 export function PageLoading() {
   return (
-    <main id="main-content"
+    <main
+      id="main-content"
       aria-busy="true"
-      className="mx-auto w-[min(1120px,calc(100%-40px))] py-10"
+      className="mx-auto flex min-h-dvh w-[min(1120px,calc(100%-40px))] flex-col items-center justify-center py-10"
       role="status"
     >
-      <span className="sr-only">{siteCopy.states.loading}</span>
-      <div aria-hidden="true" className="motion-safe:animate-pulse">
-        <div className="h-8 w-2/3 max-w-[360px] rounded-[8px] bg-surface-muted" />
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2].map((item) => (
-            <div className="h-[220px] rounded-[14px] bg-surface-muted" key={item} />
-          ))}
-        </div>
+      <div
+        aria-hidden="true"
+        className="mb-8 flex items-center gap-2.5"
+      >
+        <Image
+          src="/logo.png"
+          alt=""
+          width={48}
+          height={48}
+          className="h-12 w-12 shrink-0 motion-safe:animate-pulse"
+          priority
+        />
+        <span className="text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]">
+          HostelLo
+        </span>
       </div>
+      <p className="m-0 text-sm text-muted">{siteCopy.states.loading}</p>
     </main>
   );
 }

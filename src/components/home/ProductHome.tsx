@@ -291,7 +291,7 @@ export default function ProductHome({
             {isLoading && (
               <div className="flex items-center justify-center py-12" role="status">
                 <div className="flex items-center gap-3">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+                  <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-brand border-t-transparent" />
                   <p className="m-0 text-[0.92rem] text-muted">Finding stays…</p>
                 </div>
               </div>

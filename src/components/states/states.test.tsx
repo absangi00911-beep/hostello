@@ -92,7 +92,13 @@ describe("loading pages", () => {
 
       expect(markup).toContain('role="status"');
       expect(markup).toContain("Loading…");
-      expect(markup).toContain("motion-safe:animate-pulse");
+      expect(markup).toContain('rel="preload"');
+      expect(markup).toContain('as="image"');
+      expect(markup).toContain("HostelLo");
+      expect(markup).toContain("justify-center");
+      expect(markup).toContain(">Loading…</p>");
+      expect(markup.match(/Loading…/g)).toHaveLength(1);
+      expect(markup).not.toContain("h-[220px]");
     });
   }
 });

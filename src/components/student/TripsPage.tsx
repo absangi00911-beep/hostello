@@ -126,6 +126,34 @@ const bookingStatusClassNames: Record<BookingStatus, string> = {
   COMPLETED: "bg-brand-soft text-brand-dark",
 };
 
+function TripsLoading() {
+  return (
+    <section
+      aria-busy="true"
+      className="py-8 text-sm text-muted"
+      role="status"
+    >
+      <p className="m-0">Loading trips...</p>
+      <div aria-hidden="true" className="mt-4 grid gap-4">
+        {[0, 1, 2].map((item) => (
+          <div
+            className="grid gap-5 rounded-[14px] border border-line bg-surface p-3 motion-safe:animate-pulse md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
+            key={item}
+          >
+            <div className="min-h-[150px] rounded-[10px] bg-surface-muted" />
+            <div className="grid content-center gap-3 py-1 md:px-1">
+              <div className="h-4 w-1/4 rounded bg-surface-muted" />
+              <div className="h-6 w-2/3 rounded bg-surface-muted" />
+              <div className="h-4 w-1/2 rounded bg-surface-muted" />
+              <div className="h-7 w-20 rounded-full bg-surface-muted" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function TripsPageContent({
   bookings,
   error,
@@ -152,13 +180,7 @@ export function TripsPageContent({
         />
 
         {isLoading ? (
-          <section
-            aria-busy="true"
-            className="py-8 text-sm text-muted"
-            role="status"
-          >
-            <p className="m-0">Loading trips...</p>
-          </section>
+          <TripsLoading />
         ) : error && bookings.length === 0 ? (
           <section
             className="rounded-[14px] border border-danger bg-surface p-7 text-danger"

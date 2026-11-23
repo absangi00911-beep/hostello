@@ -149,7 +149,8 @@ describe("buildAvailabilityAlertInput", () => {
     );
 
     expect(markup).toContain("Availability alerts");
-    expect(markup).toContain('aria-label="Loading availability alerts"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain("Loading availability alerts…");
     expect(markup).toContain("hostel_1");
     expect(markup).toContain("Create alert");
   });

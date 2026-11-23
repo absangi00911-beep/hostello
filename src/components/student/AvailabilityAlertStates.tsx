@@ -4,15 +4,18 @@ export function AvailabilityAlertsLoading() {
   return (
     <div
       aria-busy="true"
-      aria-label="Loading availability alerts"
       className="grid gap-3"
+      role="status"
     >
-      {[0, 1, 2].map((item) => (
-        <div
-          className="h-32 rounded-[14px] border border-line bg-surface-muted motion-safe:animate-pulse"
-          key={item}
-        />
-      ))}
+      <span className="sr-only">Loading availability alerts…</span>
+      <div aria-hidden="true" className="grid gap-3">
+        {[0, 1, 2].map((item) => (
+          <div
+            className="h-32 rounded-[14px] border border-line bg-surface-muted motion-safe:animate-pulse"
+            key={item}
+          />
+        ))}
+      </div>
     </div>
   );
 }

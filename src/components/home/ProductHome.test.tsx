@@ -79,5 +79,7 @@ describe("ProductHome server rendering", () => {
   it("renders no listings until the browser loads them when there are none from the server", () => {
     const markup = renderToStaticMarkup(<ProductHome accountUser={null} initialHostels={null} />);
     expect(markup).not.toContain("Green View Hostel");
+    expect(markup).toContain("motion-safe:animate-spin");
+    expect(markup).toContain("Finding stays…");
   });
 });

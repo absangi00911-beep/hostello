@@ -10,6 +10,8 @@ describe("TripsPage", () => {
     expect(markup).toContain("Loading trips...");
     expect(markup).toContain('role="status"');
     expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain("min-h-[150px]");
   });
 
   it("renders the booking's real dates, status, and hostel destination", () => {
