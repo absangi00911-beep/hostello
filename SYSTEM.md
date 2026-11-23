@@ -667,9 +667,9 @@ Production deploys from `main` through the production workflow, which declares t
 
 Local verification on November 9, 2026, against the current worktree (not a full-system re-audit):
 
-- `npm run test -- --run`: 251 test files passed, 2 skipped (253 total); 1,684 tests passed, 10 skipped (1,694 total). The guarded PostgreSQL integration test remained skipped in this local run.
+- `npm run test -- --run`: 294 test files passed, 2 skipped (296 total); 1,980 tests passed, 10 skipped (1,990 total). The guarded PostgreSQL integration test remained skipped in this local run.
 - `npm run test:scripts`: 27 passed, 0 failed.
-- `npm run typecheck`, `npm run lint`, `npm run docs:check`, `npx prisma generate`, `npx prisma validate`, and `git diff --check`: passed. The docs check reported 82 routes, 11 cron jobs, 65 environment variables read, and 54 linked Markdown files.
+- `npm run typecheck`, `npm run lint`, `npm run docs:check`, `npx prisma generate`, `npx prisma validate`, and `git diff --check`: passed. The docs check reported 83 routes, 11 cron jobs, 65 environment variables read, and 57 linked Markdown files.
 - No production build, database connection, provider request, staging check, or production check was run as part of this verification. No GitHub Actions run was inspected.
 - `npm run e2e -- --list` previously discovered 135 tests in 12 files; no browser test was executed. This is prior discovery evidence, not a result of the current verification.
 - `npm audit --omit=dev` on November 9 reported five moderate advisories in the `@sentry/nextjs` bundler-plugin dependency chain (`glob`/`minimatch`); npm reports a fix is available. No dependency upgrade was included in this work. The October 19 audit had reported zero production advisories and five high findings in a development-only dependency chain; that result is historical.

@@ -8,6 +8,8 @@ const eslintConfig = [
       ".claude/**",
       ".code-review-graph/**",
       ".cursor/**",
+      // Vendored, locally installed Impeccable skill, not app source.
+      ".github/skills/impeccable/**",
       ".github/skills/impeccable/scripts/modern-screenshot.umd.js",
       ".impeccable-live/**",
       ".kiro/**",

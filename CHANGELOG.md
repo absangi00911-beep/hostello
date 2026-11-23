@@ -14,7 +14,7 @@ Project-health remediation follow-up (G-001, G-005, G-007, G-008–G-011).
 - **Launch approval:** recorded selected defaults, schema/data-model impacts, external blockers and evidence requirements in `docs/FINAL-LAUNCH-APPROVAL-SPEC.md`; this is not go-live authorization.
 - **CI and uploads:** CI and production workflows are configured with isolated PostgreSQL integration gates. Public listing images are re-encoded in their accepted format with source metadata removed.
 - **Operations and documentation:** Added source-backed operations, launch, and CI/CD guidance; corrected upload-access/rate-limit and verification documentation. The unhealthy-job guidance requires checking the specific handler before reruns.
-- **Local verification:** 251 Vitest files passed, 2 skipped; 1,684 tests passed, 10 skipped; 27 script tests passed. Typecheck, lint, docs check, Prisma generation/validation, and `git diff --check` passed.
+- **Local verification:** 294 Vitest files passed, 2 skipped; 1,980 tests passed, 10 skipped; 27 script tests passed. Typecheck, lint, docs check, Prisma generation/validation, and `git diff --check` passed.
 - **Not verified:** Remote CI, build, provider, staging, and production checks were not run. The PostgreSQL CI gate's remote execution remains unverified.
 
 ## Unreleased (November 6, 2026)
