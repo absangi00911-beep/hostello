@@ -13,7 +13,7 @@ Operate surface for students evaluating a hostel and starting a monthly booking.
 
 THESIS: Put the real hostel and its photos first, then make the monthly reservation path immediately clear; refuse a marketing hero and fabricated listing claims.
 
-OWN-WORLD: Inherit HostelLo’s white browse surface, dark ink, fine borders, and deep-green brand accents. Keep HostelLo identity; do not reproduce Airbnb branding, copy, or supplied photos.
+OWN-WORLD: Inherit HostelLo’s white browse surface, dark ink, fine borders, and blue brand accents. Keep HostelLo identity; do not reproduce Airbnb branding, copy, or supplied photos.
 
 STORY: Students inspect a real active listing, understand its location and monthly price, and can begin the existing booking and payment flow.
 

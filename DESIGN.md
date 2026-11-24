@@ -214,7 +214,7 @@ Keep borders 1px wide and use `{colors.line}` by default. Interactive form contr
 
 ## Do's and Don'ts
 
-- **Do** use the tokens in [globals.css](/C:/Projects/Personal/hostello/src/app/globals.css) as the source of truth.
+- **Do** use the tokens in [globals.css](./src/app/globals.css) as the source of truth.
 - **Do** keep the listings-first, student-oriented hierarchy.
 - **Do** preserve accessible contrast, focus states, keyboard operation, and reduced-motion behavior.
 - **Do** use Inter for headings and emphasized values where already established.

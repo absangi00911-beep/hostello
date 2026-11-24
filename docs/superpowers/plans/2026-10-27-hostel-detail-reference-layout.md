@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Keep HostelLo's name, green visual identity, typography, real listing content, and existing user interactions.
+- Keep HostelLo's name, blue visual identity, typography, real listing content, and existing user interactions.
 - Do not copy Airbnb branding, proprietary text, or photography.
 - Do not invent guest-favorite badges, beds/baths, host review totals, or listing facts not present in HostelLo data.
 - Do not imply unsupported date or guest filters work in discovery.

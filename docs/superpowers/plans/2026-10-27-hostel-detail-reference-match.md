@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - The supplied Airbnb screenshot is the authoritative reference for the proportions and spacing visible at its captured viewport.
-- Keep the HostelLo wordmark and existing deep-green brand accents; do not use Airbnb’s coral-red.
+- Keep the HostelLo wordmark and existing blue brand accents; do not use Airbnb’s coral-red.
 - Use only real listing cover/gallery photos and actual room photos belonging to the displayed hostel; do not invent photos or listing claims.
 - Preserve the existing booking rules, save/share behavior, review content, approximate-map privacy, and host-inquiry behavior.
 - Avoid horizontal overflow at 320, 375, 768, 1024, and 1440 CSS pixels.

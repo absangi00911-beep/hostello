@@ -20,7 +20,7 @@ viewport sizes.
   placement, and section rhythm.
 - Apply the same visual discipline across the full detail page: overview, rooms,
   amenities, dates, reviews, map, and host.
-- Keep the HostelLo wordmark and existing deep-green brand accents instead of
+- Keep the HostelLo wordmark and existing blue brand accents instead of
   Airbnb’s coral-red. Use a white canvas, charcoal text, muted metadata, and
   subtle gray borders around that brand accent.
 - Build the top mosaic from the hostel’s real cover/gallery photos and actual
@@ -75,7 +75,7 @@ If there are no ratings or reviews, preserve the current honest empty state.
 - White page and card surfaces; no decorative gradients or heavy shadows.
 - Near-black headings and body text, muted gray secondary text, fine pale-gray
   separators, and softly rounded image/card corners.
-- Use the project’s existing deep green (`--brand: #2f6549`) for primary
+- Use the project’s existing blue (`--brand: #2563eb`) for primary
   actions and brand details; do not use Airbnb’s coral-red.
 - Use modest heading weights and an Airbnb-like scale, with photography and
   whitespace carrying hierarchy rather than oversized bold headings.

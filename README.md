@@ -86,7 +86,6 @@ table is append-only by design.
 | [`prisma/MIGRATIONS.md`](./prisma/MIGRATIONS.md) | Migration workflow and failure recovery |
 | [`.github/VERCEL_SETUP.md`](./.github/VERCEL_SETUP.md) | CI/CD and Vercel deployment setup |
 | [`SENTRY_SETUP.md`](./SENTRY_SETUP.md) | Error tracking setup |
-| [`.github/VERCEL_SETUP.md`](./.github/VERCEL_SETUP.md) | Vercel deployment setup |
 
 Money is stored as whole-integer PKR, never `Float`. Schema changes go through
 Prisma migrations; the pre-commit hook blocks a staged `schema.prisma` change

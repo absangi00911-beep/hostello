@@ -16,7 +16,7 @@ Returning students sign in to continue using HostelLo. The screen must authentic
 
 ## Direction contract
 THESIS: Keep hostel discovery present while a returning student signs in; this is an account task, not a separate promotional page.
-OWN-WORLD: Inherit HostelLo's white listing canvas, forest-green brand controls, quiet borders, and rounded forms. Use the HostelLo mark, never Airbnb branding.
+OWN-WORLD: Inherit HostelLo's white listing canvas, blue brand controls, quiet borders, and rounded forms. Use the HostelLo mark, never Airbnb branding.
 STORY: A focused dialog communicates account entry, accepts email and password, offers configured Google sign-in, and gives clear recovery feedback without exposing authentication details.
 FIRST VIEWPORT: Center a white dialog over the dimmed listings. Place a close control at the top, the Hostello mark and login heading above labeled email and password fields, then a full-width primary action and a divider with Google only when available. Keep the dialog within the viewport on mobile.
 FORM: User-pinned centered sign-in dialog adapted from the supplied reference; a ranked concept list and concept-seed roll are not applicable to this precisely specified request. seed: none (user-pinned direction).

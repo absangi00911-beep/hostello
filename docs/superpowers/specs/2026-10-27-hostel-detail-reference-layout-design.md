@@ -44,7 +44,7 @@ search. Keep the listing content in a narrower, centered column. The order is:
 5. Existing rooms, amenities, date calendar, reviews, location, and host
    sections continue below without losing content or behavior.
 
-Use HostelLo's existing green identity and typography. The reference's red
+Use HostelLo's existing blue identity and typography. The reference's red
 brand accent is not copied.
 
 ## Content and data rules
