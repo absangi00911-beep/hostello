@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { X } from "@/components/icons/HostelloIcons";
 import Image from "next/image";
 import Link from "next/link";
 

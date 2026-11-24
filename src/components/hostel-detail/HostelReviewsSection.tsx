@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CheckCircle2, Star } from "lucide-react";
+import { CheckCircle2, Star } from "@/components/icons/HostelloIcons";
 
 interface HostelReview {
   id: string;

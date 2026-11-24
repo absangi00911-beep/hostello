@@ -1,10 +1,10 @@
 import {
-  CalendarDays,
+  Calendar,
   Compass,
   Heart,
-  MessageCircle,
+  Message,
   UserRound,
-} from "lucide-react";
+} from "@/components/icons/HostelloIcons";
 
 export type ProductNavigationRole = "STUDENT" | "OWNER" | "ADMIN" | null;
 
@@ -16,8 +16,8 @@ export interface AccountNavigationItem {
 export const productNavigationTabs = [
   { id: "explore", label: "Explore", href: "/", icon: Compass },
   { id: "wishlists", label: "Wishlists", href: "/wishlists", icon: Heart },
-  { id: "trips", label: "Trips", href: "/trips", icon: CalendarDays },
-  { id: "messages", label: "Messages", href: "/messages", icon: MessageCircle },
+  { id: "trips", label: "Trips", href: "/trips", icon: Calendar },
+  { id: "messages", label: "Messages", href: "/messages", icon: Message },
   { id: "profile", label: "Profile", href: "/profile", icon: UserRound },
 ] as const;
 

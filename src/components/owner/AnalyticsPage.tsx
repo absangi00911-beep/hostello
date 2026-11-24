@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, Users, DollarSign, Eye, BarChart3 } from "lucide-react";
+import {
+  TrendingUp,
+  Users,
+  Eye,
+  DollarSign,
+  BarChart3,
+} from "@/components/icons/HostelloIcons";
 
 interface AnalyticsData {
   totalViews: number;

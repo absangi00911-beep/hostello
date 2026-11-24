@@ -165,7 +165,13 @@ describe("HostelSearchBar", () => {
     );
 
     expect(markup).toContain('role="tablist"');
-    expect(markup).toContain('role="tab"');
+    expect(markup.match(/role="tab"/g)).toHaveLength(2);
+    expect(markup).toContain('tabindex="0"');
+    expect(markup).toContain('tabindex="-1"');
+    expect(markup).toContain('aria-controls="search-date-dates-panel"');
+    expect(markup).toContain('aria-controls="search-date-flexible-panel"');
+    expect(markup).toContain('id="search-date-dates-panel"');
+    expect(markup).toContain('aria-labelledby="search-date-dates-tab"');
     expect(markup).toContain("Choose a date");
     expect(markup).toContain("Dates");
     expect(markup).toContain("Flexible");

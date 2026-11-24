@@ -4,7 +4,7 @@ import {
   participantName,
 } from "@/lib/messages-inbox";
 import Image from "next/image";
-import { Search, Settings } from "lucide-react";
+import { Search, Settings } from "@/components/icons/HostelloIcons";
 import { useState } from "react";
 import type {
   ConversationListPage,

@@ -1,18 +1,24 @@
 "use client";
 
-import { Banknote, Compass, Star, UsersRound } from "lucide-react";
+import {
+  Banknote,
+  Compass,
+  Star,
+  Users,
+  type HostelloIcon,
+} from "@/components/icons/HostelloIcons";
 
 export type Category = "all" | "women" | "top-rated" | "budget";
 
 const categories = [
   { id: "all", label: "All stays", icon: Compass },
-  { id: "women", label: "Women-only", icon: UsersRound },
+  { id: "women", label: "Women-only", icon: Users },
   { id: "top-rated", label: "Top rated", icon: Star },
   { id: "budget", label: "Under PKR 20k", icon: Banknote },
 ] satisfies {
   id: Category;
   label: string;
-  icon: typeof Compass;
+  icon: HostelloIcon;
 }[];
 
 export function BrowseCategoryNav({

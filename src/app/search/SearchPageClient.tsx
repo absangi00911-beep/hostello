@@ -9,7 +9,7 @@ import {
   SlidersHorizontal,
   Star,
   X,
-} from "lucide-react";
+} from "@/components/icons/HostelloIcons";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AMENITIES, SORT_OPTIONS } from "@hostello/shared";

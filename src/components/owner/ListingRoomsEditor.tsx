@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "@/components/icons/HostelloIcons";
 import {
   LISTING_LIMITS,
   emptyRoom,

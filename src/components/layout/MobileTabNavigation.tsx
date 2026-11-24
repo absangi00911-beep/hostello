@@ -36,7 +36,7 @@ export function MobileTabNavigation({
           href={href}
           key={id}
         >
-          <Icon aria-hidden="true" size={22} strokeWidth={1.8} />
+          <Icon aria-hidden="true" animate="click" size={22} strokeWidth={1.8} />
           <span>{label}</span>
         </Link>
       ))}

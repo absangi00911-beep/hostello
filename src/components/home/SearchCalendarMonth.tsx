@@ -51,18 +51,21 @@ export function SearchCalendarMonth({
   const monthDays = getCalendarDays(month);
 
   return (
-    <section aria-label={MONTH_FORMATTER.format(month)} className="min-w-0">
-      <h3 className="mb-4 text-center text-sm font-semibold text-ink">
+    <section
+      aria-label={MONTH_FORMATTER.format(month)}
+      className="mx-auto w-full max-w-[390px] min-w-0"
+    >
+      <h3 className="mb-3 text-left text-sm font-semibold text-ink">
         {MONTH_FORMATTER.format(month)}
       </h3>
       <div
         aria-label={`${MONTH_FORMATTER.format(month)} calendar`}
-        className="grid grid-cols-7 gap-y-1 text-center"
+        className="grid grid-cols-7 gap-y-1.5 text-center"
       >
         {WEEKDAYS.map((weekday) => (
           <span
             aria-hidden="true"
-            className="pb-2 text-[0.8125rem] font-medium text-muted"
+            className="min-h-9 pb-2 text-[0.8125rem] font-medium text-muted"
             key={weekday}
           >
             {weekday}
@@ -72,8 +75,9 @@ export function SearchCalendarMonth({
           day ? (
             <button
               aria-label={DAY_FORMATTER.format(day)}
+              aria-current={today === toDateKey(day) ? "date" : undefined}
               aria-pressed={selectedDate === toDateKey(day)}
-              className="mx-auto grid size-9 place-items-center rounded-full text-sm text-ink transition-colors hover:bg-[#f2f2f2] aria-pressed:bg-brand aria-pressed:text-white disabled:cursor-not-allowed disabled:text-muted/45 disabled:hover:bg-transparent focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+              className="mx-auto grid size-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-sm font-medium text-ink transition-colors duration-150 hover:bg-brand-soft hover:text-brand-dark aria-[current=date]:border aria-[current=date]:border-brand aria-pressed:bg-brand aria-pressed:text-white aria-pressed:hover:bg-brand-dark aria-pressed:hover:text-white disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted/45 disabled:hover:bg-transparent disabled:hover:text-muted/45 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
               disabled={toDateKey(day) < today}
               key={toDateKey(day)}
               onClick={() => onSelect(toDateKey(day))}

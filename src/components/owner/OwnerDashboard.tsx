@@ -7,10 +7,10 @@ import {
   Bell,
   CalendarCheck,
   CreditCard,
-  MessageCircle,
   Star,
   Wallet,
-} from "lucide-react";
+  MessageCircle,
+} from "@/components/icons/HostelloIcons";
 import { useCallback, useEffect, useState } from "react";
 import {
   STATUS_FILTERS,

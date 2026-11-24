@@ -1,6 +1,10 @@
 "use client";
 
-import { GraduationCap, Minus, Plus } from "lucide-react";
+import {
+  GraduationCap,
+  Minus,
+  Plus,
+} from "@/components/icons/HostelloIcons";
 
 interface SearchStudentPickerProps {
   count: number;

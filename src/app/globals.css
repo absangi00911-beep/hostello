@@ -77,12 +77,22 @@ textarea {
   font: inherit;
 }
 
+button:not(:disabled),
+a[class~="bg-brand"] {
+  cursor: pointer;
+}
+
+button:disabled,
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 :focus-visible {
   outline: 3px solid var(--brand);
   outline-offset: 4px;
 }
 
-button[class~="bg-brand"]:not(:disabled),
+button[class~="bg-brand"]:not(:disabled):not([aria-disabled="true"]),
 a[class~="bg-brand"] {
   background-image: linear-gradient(
     to bottom,
@@ -102,7 +112,19 @@ a[class~="bg-brand"] {
     transform 160ms ease;
 }
 
-button[class~="bg-brand"]:active:not(:disabled),
+@media (hover: hover) {
+  button[class~="bg-brand"]:hover:not(:disabled):not([aria-disabled="true"]),
+  a[class~="bg-brand"]:hover {
+    background-color: var(--brand-dark);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.42),
+      inset 0 -2px 0 rgb(0 0 0 / 0.22),
+      0 4px 7px rgb(15 23 42 / 0.32),
+      0 0 24px color-mix(in srgb, var(--brand) 42%, transparent);
+  }
+}
+
+button[class~="bg-brand"]:active:not(:disabled):not([aria-disabled="true"]),
 a[class~="bg-brand"]:active {
   background-image: linear-gradient(
     to bottom,
@@ -114,6 +136,13 @@ a[class~="bg-brand"]:active {
     inset 0 -1px 0 rgb(255 255 255 / 0.14),
     0 0 16px color-mix(in srgb, var(--brand) 32%, transparent);
   transform: translateY(1px);
+}
+
+button[class~="bg-brand"]:disabled,
+a[class~="bg-brand"][aria-disabled="true"] {
+  box-shadow: none;
+  opacity: 0.58;
+  filter: saturate(0.7);
 }
 
 @media (prefers-reduced-motion: reduce) {

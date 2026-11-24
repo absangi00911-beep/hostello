@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/icons/HostelloIcons";
 import { useEffect, useState } from "react";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ConversationThread } from "@/components/messages/ConversationThread";

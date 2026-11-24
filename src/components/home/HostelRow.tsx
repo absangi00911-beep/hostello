@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Heart, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  Star,
+} from "@/components/icons/HostelloIcons";
 import { useRef, useState } from "react";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";

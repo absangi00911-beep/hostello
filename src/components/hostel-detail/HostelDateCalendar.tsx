@@ -5,7 +5,10 @@ import {
   getPakistanCalendarDate,
   MAX_BOOKING_MONTHS,
 } from "@hostello/shared";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "@/components/icons/HostelloIcons";
 import { useState } from "react";
 import {
   areStayBoundsValid,
@@ -80,11 +83,8 @@ export function HostelDateCalendar({
     const monthLabel = formatUtcMonth(monthStart);
 
     return (
-      <div
-        className="[@media(max-width:720px)]:-mx-5 [@media(max-width:720px)]:w-[calc(100%_+_40px)]"
-        key={toDateInputValue(monthStart)}
-      >
-        <h3 className="m-0 mb-4 px-5 text-base leading-6 font-[650]">
+      <div className="mx-auto w-full max-w-[390px]" key={toDateInputValue(monthStart)}>
+        <h3 className="m-0 mb-4 text-base leading-6 font-[650]">
           {monthLabel}
         </h3>
         <div
@@ -137,12 +137,12 @@ export function HostelDateCalendar({
               dateValue < checkOut;
             const dateStyle =
               isMoveIn || isMoveOut
-                ? "rounded-full bg-brand-dark text-white"
+                ? "rounded-full bg-brand text-white font-semibold"
                 : isInRange
-                  ? "is-in-range rounded-none bg-surface-muted"
+                  ? "is-in-range rounded-none bg-brand-soft text-brand-dark"
                   : "rounded-full bg-transparent";
             const className = [
-              "grid aspect-square w-[min(100%,44px)] cursor-pointer place-items-center border-0 text-sm tabular-nums text-ink aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
+              "grid aspect-square w-[min(100%,44px)] cursor-pointer place-items-center border-0 text-sm font-medium tabular-nums transition-colors duration-150 aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-brand-soft aria-[pressed=false]:hover:text-brand-dark aria-[pressed=true]:hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
               dateStyle,
               isMoveIn ? "is-move-in" : "",
               isMoveOut ? "is-move-out" : "",
@@ -179,7 +179,7 @@ export function HostelDateCalendar({
   return (
     <section
       aria-labelledby="hostel-date-calendar-title"
-      className="border-t border-line pt-5"
+      className="rounded-xl border border-line bg-white px-1 py-4 sm:px-4 sm:py-6"
       role="region"
     >
       <div className="mb-4 flex items-start justify-between gap-4 [@media(max-width:720px)]:flex-col">

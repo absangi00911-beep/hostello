@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, UserRound } from "lucide-react";
+import { UserRound, ChevronDown } from "@/components/icons/HostelloIcons";
 import { useState } from "react";
 import {
   formatUnreadCount,

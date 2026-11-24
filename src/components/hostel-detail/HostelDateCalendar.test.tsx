@@ -40,7 +40,7 @@ describe("HostelDateCalendar", () => {
   it("uses the available mobile width for seven date targets", () => {
     const markup = renderCalendar(1, null);
 
-    expect(markup).toContain("w-[calc(100%_+_40px)]");
+    expect(markup).toContain("max-w-[390px]");
     expect(markup).toContain("w-[min(100%,44px)]");
   });
 

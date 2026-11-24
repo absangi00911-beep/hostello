@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { MapPin } from "@/components/icons/HostelloIcons";
 import { getHostelMapEmbedUrl } from "@/lib/hostel-detail-presentation";
 
 interface HostelLocationSectionProps {

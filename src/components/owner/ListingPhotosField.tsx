@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ImagePlus, X } from "lucide-react";
+import { X, ImagePlus } from "@/components/icons/HostelloIcons";
 import { useRef, useState } from "react";
 import {
   ACCEPTED_IMAGE_TYPES,

@@ -1,30 +1,30 @@
 import {
-  BookOpen,
+  Book,
   Camera,
   CircleCheck,
   Droplets,
-  ShieldCheck,
+  Lock,
   Utensils,
   Wifi,
   Zap,
-  type LucideIcon,
-} from "lucide-react";
+  type HostelloIcon,
+} from "@/components/icons/HostelloIcons";
 import { formatHostelAmenity } from "@/lib/hostel-detail-presentation";
 
 interface HostelAmenitiesSectionProps {
   amenities: string[];
 }
 
-function getAmenityIcon(amenity: string): LucideIcon {
+function getAmenityIcon(amenity: string): HostelloIcon {
   const normalized = amenity.toLowerCase();
 
   if (/wi-?fi|internet/.test(normalized)) return Wifi;
   if (/meal|kitchen|dining/.test(normalized)) return Utensils;
-  if (/study|library|desk/.test(normalized)) return BookOpen;
+  if (/study|library|desk/.test(normalized)) return Book;
   if (/generator|power|electric/.test(normalized)) return Zap;
   if (/water|cooler|drinking/.test(normalized)) return Droplets;
   if (/camera|cctv/.test(normalized)) return Camera;
-  if (/security/.test(normalized)) return ShieldCheck;
+  if (/security/.test(normalized)) return Lock;
 
   return CircleCheck;
 }

@@ -1,5 +1,10 @@
 import Image from "next/image";
-import { MapPin, MessageCircle, ShieldCheck, Star } from "lucide-react";
+import {
+  MapPin,
+  Star,
+  MessageCircle,
+  ShieldCheck,
+} from "@/components/icons/HostelloIcons";
 import { HostelInquiryForm } from "@/components/hostel-detail/HostelInquiryForm";
 
 type HostResponseSummary = {

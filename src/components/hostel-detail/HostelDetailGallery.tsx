@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
-import { ArrowLeft, Heart, Share2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  X,
+} from "@/components/icons/HostelloIcons";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type UIEvent } from "react";
 import type { HostelDetailPhoto } from "@/lib/hostel-gallery";

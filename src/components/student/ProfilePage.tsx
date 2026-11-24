@@ -1,16 +1,15 @@
 "use client";
 
 import {
-  Bell,
-  BellRing,
   ChevronRight,
-  Clock,
-  type LucideIcon,
-  MapPin,
-  MessageCircle,
+  type HostelloIcon,
   ShieldAlert,
   ShieldCheck,
-} from "lucide-react";
+  Bell,
+  Clock,
+  MapPin,
+  Message,
+} from "@/components/icons/HostelloIcons";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -133,7 +132,7 @@ function initials(name: string) {
 
 const verificationCopy: Record<
   VerificationStatus,
-  { title: string; body: string; action: string; icon: LucideIcon; tone: string }
+  { title: string; body: string; action: string; icon: HostelloIcon; tone: string }
 > = {
   NONE: {
     title: "Student verification",
@@ -165,19 +164,19 @@ const verificationCopy: Record<
   },
 };
 
-const shortcuts: { label: string; hint: string; href: string; icon: LucideIcon }[] =
+const shortcuts: { label: string; hint: string; href: string; icon: HostelloIcon }[] =
   [
     {
       label: "Messages",
       hint: "Chat with hosts",
       href: "/messages",
-      icon: MessageCircle,
+      icon: Message,
     },
     {
       label: "Availability alerts",
       hint: "Get told when a room opens up",
       href: "/student/availability-alerts",
-      icon: BellRing,
+      icon: Bell,
     },
     {
       label: "Notifications",

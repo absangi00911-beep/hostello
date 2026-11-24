@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star } from "@/components/icons/HostelloIcons";
 import { useEffect, useState } from "react";
 import type { HostelListing } from "@/components/home/HostelRow";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";

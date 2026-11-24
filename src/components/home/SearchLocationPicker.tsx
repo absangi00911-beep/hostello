@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPin } from "@/components/icons/HostelloIcons";
 
 interface SearchLocationPickerProps {
   query: string;

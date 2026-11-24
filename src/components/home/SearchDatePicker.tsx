@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { SearchCalendarMonth } from "./SearchCalendarMonth";
 
 interface SearchDatePickerProps {
@@ -36,20 +36,45 @@ export function SearchDatePicker({
   const [flexibleMonth, setFlexibleMonth] = useState<Date | null>(null);
   const currentMonth = startOfMonth(new Date());
 
+  function handleModeKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    option: DateMode,
+  ) {
+    let nextMode: DateMode | null = null;
+
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      nextMode = option === "dates" ? "flexible" : "dates";
+    } else if (event.key === "Home") {
+      nextMode = "dates";
+    } else if (event.key === "End") {
+      nextMode = "flexible";
+    }
+
+    if (!nextMode) return;
+
+    event.preventDefault();
+    setMode(nextMode);
+    document.getElementById(`search-date-${nextMode}-tab`)?.focus();
+  }
+
   return (
     <div>
       <div
         aria-label="Date selection mode"
-        className="mb-5 flex w-fit gap-1 rounded-full bg-[#f5f5f4] p-1"
+        className="mb-5 flex w-fit gap-1 rounded-xl bg-surface-muted p-1"
         role="tablist"
       >
         {(["dates", "flexible"] as const).map((option) => (
           <button
             aria-selected={mode === option}
-            className="min-h-11 rounded-full px-4 text-sm font-medium capitalize transition-colors aria-selected:bg-white aria-selected:text-ink aria-selected:shadow-[0_1px_3px_rgb(0_0_0_/_10%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+            aria-controls={`search-date-${option}-panel`}
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border-0 px-4 text-sm font-medium capitalize text-muted transition-colors hover:text-ink aria-selected:bg-white aria-selected:text-brand-dark aria-selected:shadow-[0_1px_3px_rgb(15_23_42_/_12%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+            id={`search-date-${option}-tab`}
             key={option}
             onClick={() => setMode(option)}
+            onKeyDown={(event) => handleModeKeyDown(event, option)}
             role="tab"
+            tabIndex={mode === option ? 0 : -1}
             type="button"
           >
             {option === "dates" ? "Dates" : "Flexible"}
@@ -58,13 +83,17 @@ export function SearchDatePicker({
       </div>
 
       {mode === "dates" ? (
-        <div>
+        <div
+          aria-labelledby="search-date-dates-tab"
+          id="search-date-dates-panel"
+          role="tabpanel"
+        >
           <div className="mb-4 flex items-center justify-between">
             <p className="m-0 text-sm font-semibold text-ink">Choose a date</p>
             <div className="flex gap-2">
               <button
                 aria-label="Previous month"
-                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors enabled:hover:border-brand enabled:hover:bg-brand-soft enabled:hover:text-brand-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                 disabled={monthOffset === 0}
                 onClick={() => setMonthOffset((offset) => offset - 1)}
                 type="button"
@@ -73,7 +102,7 @@ export function SearchDatePicker({
               </button>
               <button
                 aria-label="Next month"
-                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark active:scale-[0.97] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                 onClick={() => setMonthOffset((offset) => offset + 1)}
                 type="button"
               >
@@ -99,7 +128,11 @@ export function SearchDatePicker({
           </div>
         </div>
       ) : (
-        <div>
+        <div
+          aria-labelledby="search-date-flexible-tab"
+          id="search-date-flexible-panel"
+          role="tabpanel"
+        >
           <p className="mb-3 text-sm font-semibold text-ink">
             {flexibleMonth
               ? `Choose a move-in day in ${MONTH_FORMATTER.format(flexibleMonth)}`
@@ -118,7 +151,7 @@ export function SearchDatePicker({
                 );
                 return (
                   <button
-                    className="min-h-12 rounded-lg border border-line px-3 text-left text-sm font-medium text-ink hover:border-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                    className="min-h-12 cursor-pointer rounded-xl border border-line bg-white px-4 text-left text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                     key={toDateKey(month)}
                     onClick={() => setFlexibleMonth(month)}
                     type="button"
@@ -131,7 +164,7 @@ export function SearchDatePicker({
           ) : (
             <div>
               <button
-                className="mb-3 min-h-11 rounded-full border border-line px-3 text-xs font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="mb-3 min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                 onClick={() => setFlexibleMonth(null)}
                 type="button"
               >

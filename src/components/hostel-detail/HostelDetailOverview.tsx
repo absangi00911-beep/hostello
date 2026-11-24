@@ -1,4 +1,8 @@
-import { MapPin, ShieldCheck, Star } from "lucide-react";
+import {
+  MapPin,
+  Star,
+  ShieldCheck,
+} from "@/components/icons/HostelloIcons";
 
 interface HostelDetailOverviewProps {
   area: string | null;
