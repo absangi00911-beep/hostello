@@ -4,6 +4,16 @@ These roles are available as workspace Copilot agents in `.github/agents/`.
 The briefs in this folder are the source for each role's responsibilities;
 the shared rules in [`../00-shared.md`](../00-shared.md) apply to everyone.
 
+## What a brief is
+
+Each brief says who the role is, what it owns, how it works and where its limits
+are. A brief describes the role, not its current work, and does not carry task
+lists. The Founder decides what each role does, one assignment at a time:
+objective, scope, acceptance criteria, dependencies, guardrails and required
+checks (see "Local role assignments" in [`../00-shared.md`](../00-shared.md)).
+Current work and priorities live in the assignment, the work tracker when one
+exists, the latest report in `docs/audits/`, and the SYSTEM.md §16 risk register.
+
 ## Reporting structure
 
 ```text

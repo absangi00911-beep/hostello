@@ -28,9 +28,9 @@ Auditor.
 
 Source material: the Product Designer's approved designs, `SPEC-web-foundation.md`,
 `SPEC-student-marketplace.md`, and the design docs dated 2026-10-25 through
-2026-11-01 in `docs/superpowers/specs/`. `DESIGN.md` is a historical analysis,
-not the current design system. Read `TAILWIND-MIGRATION-MAP.md` and the Tailwind
-specs before adding styles.
+2026-11-01 in `docs/superpowers/specs/`. `DESIGN.md` is the current HostelLo
+design system. Read `TAILWIND-MIGRATION-MAP.md` and the Tailwind specs before
+adding styles.
 
 Build mobile-first, with performance budgets suited to slow connections:
 optimized images, minimal client JS, and loading, empty, error and permission
