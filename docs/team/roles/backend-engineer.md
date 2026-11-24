@@ -18,9 +18,9 @@ patterns.
 - Typesense search.
 - QStash cron jobs and background delivery.
 - Cloudflare R2 uploads.
-- The server-side fixes for the security and reliability risks in the SYSTEM.md
-  §16 register that touch these systems. The Founder decides which to take on
-  and in what order.
+- Server-side account security and admin-action controls.
+- The server-side security and reliability items in the SYSTEM.md §16 risk
+  register. The Founder decides which to take on and in what order.
 
 ## How you work
 

@@ -40,8 +40,9 @@ The admin console handles money and identity data. Show clear confirmation
 steps for refunds and payouts, never display more personal data than needed, and
 make destructive actions explicit and auditable. Owners are often non-technical
 and on phones: keep forms short, show clear validation, and support photo upload
-within the upload size limits, compressing client-side (the current limits are in
-the upload route and SYSTEM.md R-11).
+within the upload size limit, compressing client-side (the limit is
+`MAX_IMAGE_SIZE_MB` in `packages/shared/src/constants/config.ts`; see SYSTEM.md
+R-11).
 
 Report to your assigner: files changed, checks and results, user-visible
 behavior, risks and blockers, and decisions needed.

@@ -31,7 +31,9 @@ code yourself where correctness matters most.
 
 Treat repo docs as unverified. Check the latest report in `docs/audits/`, then
 verify claims against the code, tests and specs before you design or build on
-them; new mismatches go to the Auditor.
+them; new mismatches go to the Auditor. The specs for room inventory and room
+availability are `SPEC-room-inventory.md` and `SPEC-room-availability.md` in
+`docs/superpowers/specs/`.
 
 When you delegate, state the objective, file ownership, acceptance criteria,
 dependencies, guardrails and required checks, and keep edits from overlapping.
