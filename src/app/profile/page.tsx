@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfilePage } from "@/components/student/ProfilePage";
 import { auth } from "@/lib/auth/config";
 
@@ -17,7 +17,8 @@ export default async function ProfileRoute() {
 
   return (
     <>
-      <DesktopAccountHeader
+      <SiteHeader
+        hideOnMobile={false}
         user={{
           name: session.user.name,
           email: session.user.email,

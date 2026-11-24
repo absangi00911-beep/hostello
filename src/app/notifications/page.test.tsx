@@ -37,6 +37,37 @@ describe("NotificationsRoute", () => {
       expect(markup).toContain("Loading notifications...");
     }
   });
+
+  it("shows student mobile navigation without marking another tab current", async () => {
+    mocks.auth.mockResolvedValue({
+      user: { id: "student-1", name: "Student User", role: "STUDENT" },
+    });
+
+    const markup = renderToStaticMarkup(await NotificationsRoute());
+
+    expect(markup).toContain('aria-label="Student navigation"');
+    expect(markup).toContain('href="/profile"');
+    expect(markup).not.toContain('aria-current="page"');
+  });
+
+  it.each([
+    ["OWNER", "Owner User"],
+    ["ADMIN", "Admin User"],
+  ] as const)(
+    "keeps the %s account header visible on mobile",
+    async (role, name) => {
+      mocks.auth.mockResolvedValue({
+        user: { id: `${role.toLowerCase()}-1`, name, role },
+      });
+
+      const markup = renderToStaticMarkup(await NotificationsRoute());
+      const siteHeader = markup.match(/<header\b[^>]*>/)?.[0];
+
+      expect(siteHeader).toContain("sticky");
+      expect(siteHeader).not.toContain("max-width:720px");
+      expect(markup).toContain(`Account menu for ${name}`);
+    },
+  );
 });
 
 describe("getNotificationHref", () => {

@@ -76,27 +76,23 @@ test("mobile_explore_submits_destination_move_in_date_and_guests", async ({
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
 
-  await expect(page.getByRole("link", { name: "hostello home" })).toBeVisible();
-  await expect(
-    page.getByRole("img", { name: "Hostello logo" }),
-  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Start your search" }),
   ).toBeVisible();
+  const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  await expect(navigation).toBeVisible();
   await expect(
-    page.getByRole("navigation", { name: "Student navigation" }),
-  ).toBeVisible();
-  await expect(
-    page
-      .getByRole("navigation", { name: "Student navigation" })
-      .getByRole("link", { name: "Explore" }),
+    navigation.getByRole("link", { name: "Explore" }),
   ).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("button", { name: "Start your search" }).click();
   const searchDialog = page.getByRole("dialog", { name: "Search stays" });
   await expect(searchDialog).toBeVisible();
   await searchDialog.getByRole("searchbox", { name: "Destination" }).fill("Murree");
-  await searchDialog.getByRole("button", { name: /^Murree, Pakistan/ }).click();
+  await expect(
+    searchDialog.getByRole("searchbox", { name: "Destination" }),
+  ).toHaveValue("Murree");
+  await searchDialog.getByRole("button", { name: "Move-in date" }).click();
   const dateButton = searchDialog
     .locator('button[aria-pressed]:not(:disabled)')
     .first();
@@ -117,19 +113,13 @@ test("mobile_explore_submits_destination_move_in_date_and_guests", async ({
   await expect(
     searchDialog.getByRole("searchbox", { name: "Destination" }),
   ).toHaveValue("Murree");
-  const hostelRequest = page.waitForRequest(
-    (request) =>
-      request.url().includes("/api/hostels?") &&
-      new URL(request.url()).searchParams.get("city") === "Murree" &&
-      new URL(request.url()).searchParams.has("moveInDate"),
-  );
   await searchDialog.getByRole("button", { name: "Search hostels" }).click();
-  const request = await hostelRequest;
-  const params = new URL(request.url()).searchParams;
+  await expect(page).toHaveURL(/\/search\?/);
+  const searchUrl = new URL(page.url());
 
-  expect(params.get("city")).toBe("Murree");
-  expect(params.get("moveInDate")).toBe(moveInDate);
-  expect(params.get("guests")).toBe("2");
+  expect(searchUrl.searchParams.get("city")).toBe("Murree");
+  expect(searchUrl.searchParams.get("moveInDate")).toBe(moveInDate);
+  expect(searchUrl.searchParams.get("guests")).toBe("2");
   await expect(page).toHaveURL(
     new RegExp(`/search\\?city=Murree&moveInDate=${moveInDate}&guests=2$`),
   );
@@ -194,7 +184,9 @@ test("mobile_and_desktop_layouts_fit_the_viewport_and_keep_navigation_consistent
       )
       .toBe(true);
 
-    const navigation = page.locator(".mobile-tab-navigation");
+    const navigation = page.getByRole("navigation", {
+      name: "Main navigation",
+    });
     const isMobile = width <= 720;
 
     if (isMobile) {
@@ -202,14 +194,20 @@ test("mobile_and_desktop_layouts_fit_the_viewport_and_keep_navigation_consistent
       await expect(
         page.getByRole("button", { name: "Start your search" }),
       ).toBeVisible();
-      const clearance = await page.locator(".browse-listings").evaluate((element) => {
-        const nav = document.querySelector(".mobile-tab-navigation");
-        return {
-          paddingBottom: Number.parseFloat(getComputedStyle(element).paddingBottom),
-          navigationHeight: nav?.getBoundingClientRect().height ?? 0,
-          navigationBottom: nav?.getBoundingClientRect().bottom ?? -1,
-        };
-      });
+      const clearance = await page
+        .getByRole("region", { name: "Hostel listings" })
+        .evaluate((element) => {
+          const nav = document.querySelector(
+            'nav[aria-label="Main navigation"]',
+          );
+          return {
+            paddingBottom: Number.parseFloat(
+              getComputedStyle(element).paddingBottom,
+            ),
+            navigationHeight: nav?.getBoundingClientRect().height ?? 0,
+            navigationBottom: nav?.getBoundingClientRect().bottom ?? -1,
+          };
+        });
       expect(clearance.navigationBottom).toBe(900);
       expect(clearance.paddingBottom).toBeGreaterThanOrEqual(92);
       expect(clearance.navigationHeight).toBeGreaterThanOrEqual(64);

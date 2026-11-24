@@ -12,7 +12,7 @@ export function MobileTabNavigation({
   activeTab,
   role,
 }: {
-  activeTab: ProductNavigationTabId;
+  activeTab: ProductNavigationTabId | null;
   role: ProductNavigationRole;
 }) {
   if (role !== null && role !== "STUDENT") return null;

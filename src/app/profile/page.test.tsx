@@ -43,5 +43,7 @@ describe("ProfileRoute", () => {
     expect(markup).toContain("Loading profile...");
     expect(markup).toContain('aria-label="Student navigation"');
     expect(markup).toContain('aria-label="Account menu for Account"');
+    const header = markup.match(/<header\b[^>]*>/)?.[0];
+    expect(header).not.toContain("max-width:720px");
   });
 });
