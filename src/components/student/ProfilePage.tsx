@@ -3,16 +3,13 @@
 import {
   Bell,
   BellRing,
-  CalendarDays,
   ChevronRight,
   Clock,
-  Heart,
   type LucideIcon,
   MapPin,
   MessageCircle,
   ShieldAlert,
   ShieldCheck,
-  Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -134,9 +131,6 @@ function initials(name: string) {
   );
 }
 
-const cardClass =
-  "rounded-[14px] border border-line bg-surface shadow-[0_1px_2px_rgb(15_23_42_/_4%)]";
-
 const verificationCopy: Record<
   VerificationStatus,
   { title: string; body: string; action: string; icon: LucideIcon; tone: string }
@@ -193,70 +187,294 @@ const shortcuts: { label: string; hint: string; href: string; icon: LucideIcon }
     },
   ];
 
-function StatTile({
+const cardStatus: Record<VerificationStatus, string> = {
+  NONE: "Not verified",
+  PENDING: "In review",
+  APPROVED: "Verified",
+  REJECTED: "Not verified",
+};
+
+const HERO_SHELL =
+  "overflow-hidden rounded-xl border border-line bg-surface lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]";
+
+function StudentCard({ profile }: { profile: StudentProfile }) {
+  const status = profile.verificationStatus ?? "NONE";
+
+  return (
+    <section
+      aria-label="Profile summary"
+      className="relative flex min-h-[236px] w-full max-w-[420px] flex-col justify-between gap-5 overflow-hidden rounded-xl bg-ink p-5 pt-8 text-white md:p-6 md:pt-9"
+    >
+      <span
+        aria-hidden="true"
+        className="absolute left-1/2 top-3 h-1.5 w-14 -translate-x-1/2 rounded-full bg-surface-muted"
+      />
+      <div className="flex items-center justify-between text-[0.9rem]">
+        <span className="font-semibold tracking-[-0.01em]">Hostello</span>
+        <span className="text-white/60">Student</span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        {profile.avatar ? (
+          <Image
+            alt=""
+            className="h-[88px] w-[72px] flex-none rounded-lg object-cover ring-1 ring-white/10 sm:h-[104px] sm:w-[88px]"
+            height={104}
+            src={profile.avatar}
+            unoptimized
+            width={88}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid h-[88px] w-[72px] flex-none place-items-center rounded-lg bg-white text-[1.5rem] font-bold text-ink sm:h-[104px] sm:w-[88px] sm:text-[1.75rem]"
+          >
+            {initials(profile.name)}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h2 className="line-clamp-2 break-words text-[1.5rem] font-semibold leading-[1.15] tracking-[-0.02em]">
+            {profile.name}
+          </h2>
+          {profile.city ? (
+            <p className="mt-1 flex items-center gap-1.5 text-[0.95rem] text-white/70">
+              <MapPin aria-hidden="true" className="flex-none" size={15} />
+              {profile.city}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex items-end justify-between gap-4 border-t border-white/10 pt-3.5">
+        <div>
+          <p className="text-[0.78rem] text-white/50">Member since</p>
+          <p className="text-[0.95rem] font-medium">
+            {memberSinceFormatter.format(new Date(profile.createdAt))}
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[0.9rem] font-medium text-white/85">
+            {cardStatus[status]}
+          </span>
+          {status === "APPROVED" ? (
+            <span
+              aria-label="Verified student"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink"
+              role="img"
+            >
+              <ShieldCheck aria-hidden="true" size={20} strokeWidth={2} />
+            </span>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="grid h-10 w-10 place-items-center rounded-full border border-dashed border-white/40 text-white/60"
+            >
+              {status === "PENDING" ? <Clock size={18} /> : null}
+            </span>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LedgerRow({
   count,
+  hint,
   href,
-  icon: Icon,
   label,
 }: {
   count: number;
+  hint?: string;
   href?: string;
-  icon: LucideIcon;
   label: string;
 }) {
-  const body = (
+  const content = (
     <>
-      <span
-        aria-hidden="true"
-        className="grid h-9 w-9 place-items-center rounded-full bg-brand-soft text-brand-dark"
-      >
-        <Icon size={18} strokeWidth={2} />
-      </span>
-      <strong className="mt-3 block font-[var(--font-inter),sans-serif] text-[1.6rem] font-semibold leading-none tracking-[-0.02em] text-ink">
+      <strong className="text-[2.75rem] font-semibold leading-none tracking-[-0.04em] tabular-nums text-ink md:text-[3.25rem]">
         {count}
       </strong>
-      <span className="mt-1 block text-[0.88rem] text-muted">{label}</span>
+      <span className="min-w-0">
+        <span className="block text-[1.05rem] font-semibold text-ink">
+          {label}
+        </span>
+        {hint ? (
+          <span className="mt-0.5 block text-[0.9rem] text-muted">{hint}</span>
+        ) : null}
+      </span>
+      {href ? (
+        <ChevronRight
+          aria-hidden="true"
+          className="flex-none text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5"
+          size={18}
+        />
+      ) : (
+        <span />
+      )}
     </>
   );
-  const className = `${cardClass} block p-4 md:p-5`;
+  const layout =
+    "grid grid-cols-[minmax(3.5rem,auto)_minmax(0,1fr)_auto] items-center gap-x-4 py-5";
 
-  return href ? (
-    <Link
-      className={`${className} transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-[0_4px_14px_rgb(15_23_42_/_8%)]`}
-      href={href}
-    >
-      {body}
-    </Link>
-  ) : (
-    <article className={className}>{body}</article>
+  return (
+    <li>
+      {href ? (
+        <Link
+          className={`group -mx-3 rounded-xl px-3 ${layout} hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
+          href={href}
+        >
+          {content}
+        </Link>
+      ) : (
+        <div className={`-mx-3 px-3 ${layout}`}>{content}</div>
+      )}
+    </li>
   );
 }
 
 function ProfileSkeleton() {
   return (
-    <section
-      aria-busy="true"
-      className="grid gap-6 lg:grid-cols-[360px_1fr]"
-      role="status"
-    >
+    <section aria-busy="true" role="status">
       <p className="sr-only">Loading profile...</p>
       <div
         aria-hidden="true"
-        className={`${cardClass} h-[360px] motion-safe:animate-pulse`}
-      />
-      <div aria-hidden="true" className="grid content-start gap-4">
-        <div className="grid grid-cols-3 gap-3">
+        className={`${HERO_SHELL} motion-safe:animate-pulse`}
+      >
+        <div className="bg-surface-muted p-6 md:p-8">
+          <div className="h-[236px] max-w-[420px] rounded-xl bg-line" />
+        </div>
+        <div className="grid content-start gap-4 p-6 md:p-8">
           {[0, 1, 2].map((key) => (
-            <div
-              className={`${cardClass} h-[116px] motion-safe:animate-pulse`}
-              key={key}
-            />
+            <div className="h-16 rounded-xl bg-surface-muted" key={key} />
           ))}
         </div>
-        <div className={`${cardClass} h-40 motion-safe:animate-pulse`} />
-        <div className={`${cardClass} h-24 motion-safe:animate-pulse`} />
       </div>
     </section>
+  );
+}
+
+function ProfileDetails({ profile }: { profile: StudentProfile }) {
+  const verification = verificationCopy[profile.verificationStatus ?? "NONE"];
+  const VerificationIcon = verification.icon;
+  const { bookings, favorites, reviews } = profile.counts;
+
+  return (
+    <>
+      <div className={HERO_SHELL}>
+        <div className="grid content-start gap-6 bg-surface-muted p-6 md:p-8">
+          <StudentCard profile={profile} />
+          {profile.bio ? (
+            <p className="m-0 max-w-[420px] text-[0.95rem] leading-[1.55] text-ink">
+              {profile.bio}
+            </p>
+          ) : null}
+          <section
+            aria-label="Student verification"
+            className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-6"
+          >
+            <div className="flex min-w-0 items-start gap-3">
+              <span
+                aria-hidden="true"
+                className={`grid h-10 w-10 flex-none place-items-center rounded-full ${verification.tone}`}
+              >
+                <VerificationIcon size={20} strokeWidth={1.9} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="m-0 text-[1rem] font-semibold text-ink">
+                  {verification.title}
+                </h2>
+                <p className="mt-0.5 m-0 text-[0.92rem] text-muted">
+                  {verification.body}
+                </p>
+              </div>
+            </div>
+            <Link
+              className="inline-flex min-h-11 flex-none items-center justify-center rounded-full border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary"
+              href="/profile/verification"
+            >
+              {verification.action}
+            </Link>
+          </section>
+        </div>
+
+        <div className="p-6 md:p-8">
+          <section aria-label="Your activity">
+            <ul className="m-0 list-none divide-y divide-line p-0">
+              <LedgerRow
+                count={bookings}
+                hint={bookings ? "See your trips" : "Find your first hostel"}
+                href={bookings ? "/trips" : "/search"}
+                label="Bookings"
+              />
+              <LedgerRow
+                count={favorites}
+                hint={
+                  favorites ? "See your wishlists" : "Save hostels as you browse"
+                }
+                href={favorites ? "/wishlists" : "/search"}
+                label="Saved hostels"
+              />
+              <LedgerRow count={reviews} label="Reviews" />
+            </ul>
+          </section>
+
+          <nav
+            aria-label="Account shortcuts"
+            className="mt-2 border-t border-line pt-3"
+          >
+            <ul className="-mx-3 grid list-none p-0">
+              {shortcuts.map(({ label, hint, href, icon: Icon }) => (
+                <li key={href}>
+                  <Link
+                    className="flex min-h-14 items-center gap-4 rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-surface-muted"
+                    href={href}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="grid h-10 w-10 flex-none place-items-center rounded-full bg-surface-muted text-ink"
+                    >
+                      <Icon size={19} strokeWidth={1.9} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-ink">
+                        {label}
+                      </span>
+                      <span className="block text-[0.86rem] text-muted">
+                        {hint}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className="flex-none text-muted"
+                      size={18}
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <section className="flex flex-col items-start justify-between gap-4 rounded-[14px] border border-line bg-surface-muted p-6 sm:flex-row sm:items-center sm:gap-6">
+                <div>
+                  <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
+                    Have a place to share?
+                  </h2>
+                  <p className="mt-1 m-0 text-[0.95rem] text-muted">
+                    Welcome students by listing your hostel on Hostello.
+                  </p>
+                </div>
+                <Link
+                  className="inline-flex min-h-11 flex-none items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+                  href="/signup?role=OWNER"
+                >
+                  Become a host
+                </Link>
+              </section>
+      </div>
+    </>
   );
 }
 
@@ -295,9 +513,6 @@ export function ProfilePageContent({
   onRetry: () => void;
   profile: StudentProfile | null;
 }) {
-  const verification = verificationCopy[profile?.verificationStatus ?? "NONE"];
-  const VerificationIcon = verification.icon;
-
   return (
     <main
       id="main-content"
@@ -318,170 +533,7 @@ export function ProfilePageContent({
         ) : error ? (
           <ErrorPanel message={error} onRetry={onRetry} />
         ) : profile ? (
-          <div className="grid gap-5 lg:grid-cols-[360px_1fr] lg:items-start lg:gap-6">
-            <section
-              aria-label="Profile summary"
-              className={`${cardClass} overflow-hidden lg:sticky lg:top-24`}
-            >
-              <div
-                aria-hidden="true"
-                className="h-28 bg-[linear-gradient(135deg,var(--brand-dark)_0%,var(--brand)_60%,#60a5fa_100%)]"
-              />
-              <div className="px-6 pb-6">
-                {profile.avatar ? (
-                  <Image
-                    alt=""
-                    className="-mt-12 h-24 w-24 overflow-hidden rounded-full object-cover ring-4 ring-surface"
-                    height={96}
-                    src={profile.avatar}
-                    unoptimized
-                    width={96}
-                  />
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="-mt-12 grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-brand-soft text-[1.9rem] font-bold text-brand-dark ring-4 ring-surface"
-                  >
-                    {initials(profile.name)}
-                  </span>
-                )}
-
-                <h2 className="mt-4 mb-0 text-[1.4rem] font-semibold leading-[1.25] tracking-[-0.02em] text-ink">
-                  {profile.name}
-                </h2>
-
-                {profile.verificationStatus === "APPROVED" && (
-                  <p className="mt-2 mb-0 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-[0.8rem] font-semibold text-brand-dark">
-                    <ShieldCheck aria-hidden="true" size={14} strokeWidth={2.2} />
-                    Verified student
-                  </p>
-                )}
-
-                {profile.bio && (
-                  <p className="mt-3 mb-0 text-[0.95rem] leading-[1.55] text-ink">
-                    {profile.bio}
-                  </p>
-                )}
-
-                <ul className="m-0 mt-4 grid list-none gap-2 border-t border-line p-0 pt-4 text-[0.92rem] text-muted">
-                  {profile.city && (
-                    <li className="flex items-center gap-2">
-                      <MapPin aria-hidden="true" size={16} />
-                      {profile.city}
-                    </li>
-                  )}
-                  <li className="flex items-center gap-2">
-                    <CalendarDays aria-hidden="true" size={16} />
-                    Member since{" "}
-                    {memberSinceFormatter.format(new Date(profile.createdAt))}
-                  </li>
-                </ul>
-              </div>
-            </section>
-
-            <div className="grid gap-5">
-              <section
-                aria-label="Your activity"
-                className="grid grid-cols-3 gap-3"
-              >
-                <StatTile
-                  count={profile.counts.bookings}
-                  href="/trips"
-                  icon={CalendarDays}
-                  label="Bookings"
-                />
-                <StatTile
-                  count={profile.counts.favorites}
-                  href="/wishlists"
-                  icon={Heart}
-                  label="Saved hostels"
-                />
-                <StatTile
-                  count={profile.counts.reviews}
-                  icon={Star}
-                  label="Reviews"
-                />
-              </section>
-
-              <section
-                aria-label="Student verification"
-                className={`${cardClass} flex items-center justify-between gap-4 p-5 md:p-6`}
-              >
-                <div className="flex min-w-0 items-start gap-4">
-                  <span
-                    aria-hidden="true"
-                    className={`grid h-11 w-11 flex-none place-items-center rounded-full ${verification.tone}`}
-                  >
-                    <VerificationIcon size={22} strokeWidth={1.9} />
-                  </span>
-                  <div className="min-w-0">
-                    <h2 className="m-0 text-[1.05rem] font-semibold text-ink">
-                      {verification.title}
-                    </h2>
-                    <p className="mt-1 m-0 text-[0.92rem] text-muted">
-                      {verification.body}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  className="inline-flex min-h-11 flex-none items-center justify-center rounded-full border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary"
-                  href="/profile/verification"
-                >
-                  {verification.action}
-                </Link>
-              </section>
-
-              <nav aria-label="Account shortcuts" className={`${cardClass} p-2`}>
-                <ul className="m-0 grid list-none p-0">
-                  {shortcuts.map(({ label, hint, href, icon: Icon }) => (
-                    <li key={href}>
-                      <Link
-                        className="flex min-h-14 items-center gap-4 rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-surface-muted"
-                        href={href}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="grid h-10 w-10 flex-none place-items-center rounded-full bg-surface-muted text-ink"
-                        >
-                          <Icon size={19} strokeWidth={1.9} />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block font-semibold text-ink">
-                            {label}
-                          </span>
-                          <span className="block text-[0.86rem] text-muted">
-                            {hint}
-                          </span>
-                        </span>
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="flex-none text-muted"
-                          size={18}
-                        />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-
-              <section className="flex flex-col items-start justify-between gap-4 rounded-[14px] border border-brand-soft bg-[linear-gradient(135deg,var(--brand-soft),var(--surface)_70%)] p-6 sm:flex-row sm:items-center sm:gap-6">
-                <div>
-                  <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
-                    Have a place to share?
-                  </h2>
-                  <p className="mt-1 m-0 text-[0.95rem] text-muted">
-                    Welcome students by listing your hostel on Hostello.
-                  </p>
-                </div>
-                <Link
-                  className="inline-flex min-h-11 flex-none items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
-                  href="/signup?role=OWNER"
-                >
-                  Become a host
-                </Link>
-              </section>
-            </div>
-          </div>
+          <ProfileDetails profile={profile} />
         ) : (
           <ErrorPanel
             message="Could not load your profile. Please try again."

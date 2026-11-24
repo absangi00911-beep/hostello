@@ -164,6 +164,50 @@ describe("ProfilePage", () => {
     expect(parsed?.verificationStatus).toBe("PENDING");
   });
 
+  it("points empty activity rows at hostel search", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        isLoading={false}
+        onRetry={() => {}}
+        profile={{
+          name: "Alex Student",
+          avatar: null,
+          city: null,
+          createdAt: "2024-06-10T00:00:00.000Z",
+          counts: { bookings: 0, favorites: 0, reviews: 0 },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/search"');
+    expect(markup).toContain("Find your first hostel");
+    expect(markup).not.toContain('href="/trips"');
+    expect(markup).not.toContain('href="/wishlists"');
+  });
+
+  it("links filled activity rows through and keeps the account shortcuts", () => {
+    const markup = renderToStaticMarkup(
+      <ProfilePageContent
+        error={null}
+        isLoading={false}
+        onRetry={() => {}}
+        profile={{
+          name: "Alex Student",
+          avatar: null,
+          city: "Lahore",
+          createdAt: "2024-06-10T00:00:00.000Z",
+          counts: { bookings: 2, favorites: 5, reviews: 1 },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/trips"');
+    expect(markup).toContain('href="/wishlists"');
+    expect(markup).toContain('aria-label="Account shortcuts"');
+    expect(markup).toContain('href="/messages"');
+  });
+
   it("keeps private profile fields out of the student profile model", () => {
     expect(
       parseProfile({
