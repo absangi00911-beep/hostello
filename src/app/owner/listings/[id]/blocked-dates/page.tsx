@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { OwnerBlockedDatesPage } from "@/components/owner/OwnerBlockedDatesPage";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
+import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
 import { getOwnerListingSummary } from "@/lib/owner-listing";
 
@@ -32,16 +34,21 @@ export default async function OwnerBlockedDatesRoute({
   }
 
   return (
-    <>
-      <OwnerPageHeader
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image,
-          role: session.user.role,
-        }}
-      />
+    <WorkspaceShell
+      activeHref="/owner"
+      navigation={OWNER_WORKSPACE_NAVIGATION}
+      header={
+        <OwnerPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
       <OwnerBlockedDatesPage hostelId={listing.id} listingName={listing.name} />
-    </>
+    </WorkspaceShell>
   );
 }

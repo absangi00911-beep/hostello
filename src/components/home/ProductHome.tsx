@@ -252,7 +252,7 @@ export default function ProductHome({
 
   return (
     <div
-      className="min-h-dvh bg-white text-ink"
+      className="browse-home min-h-dvh bg-white text-ink"
       data-account-role={accountUser?.role ?? "GUEST"}
     >
       <BrowseHeader
@@ -270,7 +270,7 @@ export default function ProductHome({
           destinationSuggestions={[...hostelsByCity.keys()]}
           onSearch={openSearch}
         />
-        <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
+        <div className="browse-shell mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
           {showsStudentNavigation && (
             <BrowseCategoryNav
               category={category}

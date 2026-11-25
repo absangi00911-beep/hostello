@@ -134,7 +134,9 @@ test("mobile_categories_filter_listings_and_signed_out_save_opens_login", async 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/");
 
-  const categories = page.locator(".browse-mobile-category-nav");
+  const categories = page.getByRole("navigation", {
+    name: "Browse categories",
+  });
   const womenOnly = categories.getByRole("button", { name: "Women-only" });
   await womenOnly.click();
 
@@ -241,7 +243,7 @@ test("homepage_marketplace_layout_scales_listings_for_desktop_tablet_and_phone",
     if (viewport.maxHeaderHeight > 0) {
       await expect
         .poll(() =>
-          page.locator(".browse-header").evaluate((header) =>
+          page.getByRole("banner").evaluate((header) =>
             Math.round(header.getBoundingClientRect().height),
           ),
         )
@@ -266,9 +268,9 @@ test("homepage_interaction_motion_is_disabled_when_reduced_motion_is_preferred",
   await favoriteButton.hover();
   await expect
     .poll(() =>
-      favoriteButton.evaluate((button) => getComputedStyle(button).transform),
+      favoriteButton.evaluate((button) => getComputedStyle(button).scale),
     )
-    .not.toBe("none");
+    .toBe("1.04");
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
@@ -285,8 +287,8 @@ test("homepage_interaction_motion_is_disabled_when_reduced_motion_is_preferred",
   await expect
     .poll(() =>
       reducedMotionFavorite.evaluate(
-        (button) => getComputedStyle(button).transform,
+        (button) => getComputedStyle(button).scale,
       ),
     )
-    .toBe("none");
+    .toBe("1");
 });

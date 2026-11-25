@@ -34,6 +34,7 @@ describe("AdminBookingsRoute", () => {
   it("renders the queue for an admin", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "a1", role: "ADMIN" } });
     const markup = renderToStaticMarkup(await AdminBookingsRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Loading bookings...");
   });
 });

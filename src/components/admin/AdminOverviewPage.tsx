@@ -157,8 +157,8 @@ export function AdminOverviewContent({
               Owner payouts
             </span>
             <span className="text-[0.88rem] text-muted">
-              Generate payout batches, then record the transfer or void the
-              batch.
+              A second admin must approve each payout batch; settlement is
+              disabled. Do not send funds or record a transfer.
             </span>
           </Link>
           <Link

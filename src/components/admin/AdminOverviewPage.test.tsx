@@ -45,6 +45,13 @@ describe("AdminOverviewContent", () => {
     expect(markup).toContain('href="/admin/search-sync"');
   });
 
+  it("does not imply that payout approval sends money", () => {
+    const markup = render();
+    expect(markup).toContain("second admin");
+    expect(markup).toContain("settlement is disabled");
+    expect(markup).not.toContain("record the transfer or void the batch");
+  });
+
   it("shows loading and error states", () => {
     expect(render({ isLoading: true, stats: null })).toContain("Loading overview...");
     const error = render({ stats: null, loadError: "Forbidden" });

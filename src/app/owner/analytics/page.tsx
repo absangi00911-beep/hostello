@@ -1,5 +1,8 @@
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { AnalyticsPage } from "@/components/owner/AnalyticsPage";
+import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
+import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
 
 export default async function OwnerAnalyticsRoute() {
@@ -13,5 +16,26 @@ export default async function OwnerAnalyticsRoute() {
     notFound();
   }
 
-  return <AnalyticsPage />;
+  if (session.user.role === "ADMIN") {
+    return <AnalyticsPage />;
+  }
+
+  return (
+    <WorkspaceShell
+      activeHref="/owner/analytics"
+      navigation={OWNER_WORKSPACE_NAVIGATION}
+      header={
+        <OwnerPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
+      <AnalyticsPage />
+    </WorkspaceShell>
+  );
 }

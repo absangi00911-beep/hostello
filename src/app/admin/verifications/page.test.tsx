@@ -34,6 +34,7 @@ describe("AdminVerificationsRoute", () => {
   it("renders the page for admins", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "a1", role: "ADMIN", name: "Admin" } });
     const markup = renderToStaticMarkup(await AdminVerificationsRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Student verification");
     expect(markup).toContain("Loading verification requests...");
   });

@@ -85,7 +85,7 @@ export default function LoginDialog({
   >(null);
   const [step, setStep] = useState<"email" | "otp" | "name">("email");
   const [loginMethod, setLoginMethod] = useState<"otp" | "password">(
-    "password",
+    emailCodeEnabled ? "otp" : "password",
   );
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(
@@ -443,6 +443,18 @@ export default function LoginDialog({
                 type="submit"
               >
                 {isSubmitting ? "Sending code…" : "Continue"}
+              </button>
+              <button
+                className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                disabled={isSubmitting || isGoogleRedirecting}
+                onClick={() => {
+                  setLoginMethod("password");
+                  clearValidationError();
+                  setStatusMessage(null);
+                }}
+                type="button"
+              >
+                Use password
               </button>
             </form>
           ) : step === "email" ? (

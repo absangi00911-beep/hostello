@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminPayoutsPage } from "@/components/admin/AdminPayoutsPage";
+import { ADMIN_WORKSPACE_NAVIGATION } from "@/components/admin/adminNavigation";
 import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = { title: "Owner payouts" };
@@ -18,16 +20,21 @@ export default async function AdminPayoutsRoute() {
   }
 
   return (
-    <>
-      <AdminPageHeader
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image,
-          role: session.user.role,
-        }}
-      />
+    <WorkspaceShell
+      activeHref="/admin/payouts"
+      navigation={ADMIN_WORKSPACE_NAVIGATION}
+      header={
+        <AdminPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
       <AdminPayoutsPage />
-    </>
+    </WorkspaceShell>
   );
 }

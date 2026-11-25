@@ -47,6 +47,7 @@ describe("Typesense success path", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(searchHostels).mockResolvedValue(typesenseResult(IDS, 42) as any);
+    vi.mocked(db.hostel.count).mockResolvedValue(IDS.length);
   });
 
   it("returns hostelIds and total from Typesense", async () => {
@@ -57,11 +58,13 @@ describe("Typesense success path", () => {
     expect(result.isSearchDegraded).toBe(false);
   });
 
-  it("does NOT call Prisma when Typesense succeeds", async () => {
+  it("checks Typesense hits against active database listings", async () => {
     await searchHostelsWithFallback(baseParams());
 
     expect(db.hostel.findMany).not.toHaveBeenCalled();
-    expect(db.hostel.count).not.toHaveBeenCalled();
+    expect(db.hostel.count).toHaveBeenCalledWith({
+      where: { id: { in: IDS }, status: "ACTIVE" },
+    });
   });
 
   it("passes query string to Typesense", async () => {
@@ -152,6 +155,22 @@ describe("Typesense success path", () => {
     expect(result.total).toBe(1);
     expect(result.isSearchDegraded).toBe(true);
   });
+
+  it("falls back to Prisma when Typesense hits no longer exist as active listings", async () => {
+    vi.mocked(db.hostel.count).mockResolvedValue(0);
+    vi.mocked(db.hostel.findMany).mockResolvedValue([
+      { id: "db_hostel_1" },
+    ] as any);
+    vi.mocked(db.hostel.count).mockResolvedValueOnce(0).mockResolvedValueOnce(1);
+
+    const result = await searchHostelsWithFallback(baseParams());
+
+    expect(result).toEqual({
+      hostelIds: ["db_hostel_1"],
+      total: 1,
+      isSearchDegraded: true,
+    });
+  });
 });
 
 describe("move-in date availability", () => {
@@ -225,6 +244,7 @@ describe("move-in date availability", () => {
 
   it("does not apply availability when the move-in date is omitted", async () => {
     vi.mocked(searchHostels).mockResolvedValue(typesenseResult(IDS) as any);
+    vi.mocked(db.hostel.count).mockResolvedValue(IDS.length);
 
     const result = await searchHostelsWithFallback(baseParams({ guests: 4 }));
 

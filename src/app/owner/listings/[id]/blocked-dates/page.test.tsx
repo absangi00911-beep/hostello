@@ -49,6 +49,7 @@ describe("OwnerBlockedDatesRoute", () => {
     mocks.auth.mockResolvedValue({ user: { id: "o1", role: "OWNER", name: "Sana" } });
     mocks.getListing.mockResolvedValue({ id: "h1", name: "Green Hostel", status: "ACTIVE" });
     const markup = renderToStaticMarkup(await OwnerBlockedDatesRoute(props));
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Blocked dates");
     expect(markup).toContain("Green Hostel");
     expect(markup).toContain("Loading blocked dates...");

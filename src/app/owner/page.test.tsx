@@ -42,6 +42,10 @@ describe("OwnerDashboardRoute", () => {
 
     const markup = renderToStaticMarkup(await OwnerDashboardRoute());
 
+    expect(markup).toContain('aria-label="Workspace navigation"');
+    expect(markup).toMatch(
+      /<a\b(?=[^>]*href="\/owner")(?=[^>]*aria-current="page")[^>]*>/,
+    );
     expect(markup).toContain("Host dashboard");
     expect(markup).toContain("Welcome back, Sana Owner");
     expect(markup).toContain("Loading listings...");

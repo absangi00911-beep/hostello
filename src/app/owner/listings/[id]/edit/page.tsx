@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { ListingForm } from "@/components/owner/ListingForm";
 import { ListingStatusActions } from "@/components/owner/ListingStatusActions";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { getListingStatusLabel } from "@/components/owner/ownerListings";
+import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
 import { getOwnerListingForEdit } from "@/lib/owner-listing";
 
@@ -35,15 +37,20 @@ export default async function EditListingRoute({
   }
 
   return (
-    <>
-      <OwnerPageHeader
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image,
-          role: session.user.role,
-        }}
-      />
+    <WorkspaceShell
+      activeHref="/owner"
+      navigation={OWNER_WORKSPACE_NAVIGATION}
+      header={
+        <OwnerPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
       <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-20 pt-8 md:pt-10">
         <Link
           className="text-[0.85rem] font-semibold text-brand hover:underline"
@@ -75,6 +82,6 @@ export default async function EditListingRoute({
           </>
         )}
       </main>
-    </>
+    </WorkspaceShell>
   );
 }

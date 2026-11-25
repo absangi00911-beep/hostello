@@ -1,4 +1,4 @@
-export const PAYOUT_STATUSES = ["PENDING", "PAID", "CANCELLED"] as const;
+export const PAYOUT_STATUSES = ["PENDING", "APPROVED", "PAID", "CANCELLED"] as const;
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number];
 
 export interface BankDetails {
@@ -35,6 +35,7 @@ export const BANK_LIMITS = {
 
 export const PAYOUT_STATUS_LABELS: Record<PayoutStatus, string> = {
   PENDING: "Being processed",
+  APPROVED: "Approved (settlement disabled)",
   PAID: "Paid",
   CANCELLED: "Cancelled",
 };

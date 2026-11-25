@@ -34,6 +34,7 @@ describe("OwnerReviewsRoute", () => {
   it("renders the reviews page for owners", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "o1", role: "OWNER", name: "Sana" } });
     const markup = renderToStaticMarkup(await OwnerReviewsRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Reviews");
     expect(markup).toContain("Loading reviews...");
   });

@@ -38,6 +38,10 @@ describe("AdminBookingDetailRoute", () => {
         params: Promise.resolve({ id: "booking_1" }),
       }),
     );
+    expect(markup).toContain('aria-label="Workspace navigation"');
+    expect(markup).toMatch(
+      /<a\b(?=[^>]*href="\/admin\/bookings")(?=[^>]*aria-current="page")[^>]*>/,
+    );
     expect(markup).toContain("Loading booking...");
   });
 

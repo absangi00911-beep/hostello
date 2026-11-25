@@ -38,6 +38,7 @@ describe("OwnerEarningsRoute", () => {
 
     const markup = renderToStaticMarkup(await OwnerEarningsRoute());
 
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Earnings");
     expect(markup).toContain("Loading earnings...");
   });

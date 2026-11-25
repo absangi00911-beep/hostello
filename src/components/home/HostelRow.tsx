@@ -28,7 +28,7 @@ export interface HostelListing {
 }
 
 const favoriteButtonClassName =
-  "hostel-favorite-button absolute top-0 right-0 z-[2] grid size-[clamp(2.75rem,26cqw,3.25rem)] cursor-pointer place-items-center rounded-full border-0 bg-transparent text-white no-underline transition-transform duration-[160ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] active:scale-[0.92] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! motion-reduce:hover:transform-none! motion-reduce:active:transform-none!";
+  "hostel-favorite-button absolute top-0 right-0 z-[2] grid size-[clamp(2.75rem,26cqw,3.25rem)] cursor-pointer place-items-center rounded-full border-0 bg-transparent text-white no-underline transition-transform duration-[160ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] active:scale-[0.92] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! motion-reduce:hover:scale-100! motion-reduce:active:scale-100! motion-reduce:hover:transform-none! motion-reduce:active:transform-none!";
 
 function readErrorMessage(value: unknown): string | undefined {
   if (
@@ -215,7 +215,7 @@ export function HostelRow({
   return (
     <section className="mb-7" aria-labelledby={`stays-${city}`}>
       <div className="mb-3 flex items-center justify-between gap-[18px]">
-        <h2 className="m-0 text-[1.3125rem] font-bold leading-[1.43] tracking-0" id={`stays-${city}`}>
+        <h2 className="m-0 min-w-0 text-[1.3125rem] font-bold leading-[1.43] tracking-0" id={`stays-${city}`}>
           Stays in {city}
         </h2>
         <div className="flex flex-[0_0_auto] gap-2">

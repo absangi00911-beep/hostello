@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { ListingForm } from "@/components/owner/ListingForm";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
+import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = { title: "Add a listing" };
@@ -19,15 +21,20 @@ export default async function NewListingRoute() {
   }
 
   return (
-    <>
-      <OwnerPageHeader
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image,
-          role: session.user.role,
-        }}
-      />
+    <WorkspaceShell
+      activeHref="/owner/listings/new"
+      navigation={OWNER_WORKSPACE_NAVIGATION}
+      header={
+        <OwnerPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
       <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-20 pt-8 md:pt-10">
         <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
           Add a listing
@@ -38,6 +45,6 @@ export default async function NewListingRoute() {
         </p>
         <ListingForm />
       </main>
-    </>
+    </WorkspaceShell>
   );
 }

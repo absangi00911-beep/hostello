@@ -34,6 +34,7 @@ describe("AdminListingsRoute", () => {
   it("renders the page for admins", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "a1", role: "ADMIN", name: "Admin" } });
     const markup = renderToStaticMarkup(await AdminListingsRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Listing review");
     expect(markup).toContain("Loading listings...");
   });

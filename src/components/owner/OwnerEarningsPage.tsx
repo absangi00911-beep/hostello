@@ -29,6 +29,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 
 const statusBadgeClassName: Record<PayoutStatus, string> = {
   PENDING: "bg-warn-soft text-warn-ink",
+  APPROVED: "bg-warn-soft text-warn-ink",
   PAID: "bg-brand-soft text-brand-dark",
   CANCELLED: "bg-surface-muted text-muted",
 };

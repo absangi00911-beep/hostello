@@ -31,10 +31,18 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+async function refreshSearch(page: import("@playwright/test").Page) {
+  await page.getByText("Filters", { exact: true }).click();
+  await page.getByLabel("Sort by").selectOption("price_asc");
+  await page.getByRole("button", { name: "Apply filters" }).click();
+  await page.getByText("Filters", { exact: true }).click();
+}
+
 test("search_results_use_a_two_column_listing_and_map_layout", async ({
   page,
 }) => {
   await page.goto("/search?city=Lahore");
+  await refreshSearch(page);
 
   const wordmark = page.getByRole("link", { name: "hostello home" });
   await expect(wordmark).toHaveText("hostello");
@@ -68,6 +76,7 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
   page,
 }) => {
   await page.goto("/search?city=Lahore");
+  await refreshSearch(page);
 
   const pageClass = await page.locator(".search-results-page").getAttribute("class");
   const headerClass = await page.locator(".search-results-header").getAttribute("class");
@@ -133,11 +142,11 @@ test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_width
 });
 
 test("search_results_are_available_without_a_city_filter", async ({ page }) => {
+  await page.goto("/search");
   const searchRequest = page.waitForRequest((request) =>
     request.url().includes("/api/hostels?"),
   );
-
-  await page.goto("/search");
+  await refreshSearch(page);
 
   const request = await searchRequest;
   const params = new URL(request.url()).searchParams;
@@ -383,6 +392,7 @@ test("search_reports_errors_when_hostel_results_cannot_be_loaded", async ({
   );
 
   await page.goto("/search?city=Lahore");
+  await refreshSearch(page);
 
   await expect(
     page.getByRole("alert").getByText("Search service unavailable."),
@@ -407,6 +417,7 @@ test("search_shows_an_empty_state_when_no_hostels_match", async ({ page }) => {
   );
 
   await page.goto("/search?city=Lahore");
+  await refreshSearch(page);
 
   await expect(
     page.getByRole("status").getByText("No hostels found in Lahore yet."),

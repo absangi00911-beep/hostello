@@ -34,6 +34,7 @@ describe("AdminRoommateReportsRoute", () => {
   it("renders the page for admins", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "a1", role: "ADMIN", name: "Admin" } });
     const markup = renderToStaticMarkup(await AdminRoommateReportsRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Roommate reports");
     expect(markup).toContain("Loading reported posts...");
   });

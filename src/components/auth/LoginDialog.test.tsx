@@ -83,9 +83,20 @@ describe("LoginDialog sign-in methods", () => {
     expect(renderLoginDialog()).not.toContain("Use one-time code");
     expect(
       renderLoginDialog({ emailCodeEnabled: true }).match(
-        /Use one-time code/g,
+        /Use password/g,
       ),
     ).toHaveLength(1);
+  });
+
+  it("defaults to email-code sign-in when configured", () => {
+    const markup = renderLoginDialog({ emailCodeEnabled: true });
+
+    expect(markup).toContain(
+      "Enter your email to receive a one-time login code.",
+    );
+    expect(markup).toContain(">Continue</button>");
+    expect(markup).not.toContain('name="password"');
+    expect(markup).toContain(">Use password</button>");
   });
 
   it("offers Google only when both credentials are configured", () => {
@@ -116,7 +127,7 @@ describe("LoginDialog keyboard and focus affordances", () => {
   it("keeps the optional method switch a keyboard-sized control", () => {
     const markup = renderLoginDialog({ emailCodeEnabled: true });
     const switchButton = markup.match(
-      /<button\b(?=[^>]*>Use one-time code<\/button>)[^>]*>/,
+      /<button\b(?=[^>]*>Use password<\/button>)[^>]*>/,
     )?.[0];
 
     expect(switchButton).toContain("min-h-11");

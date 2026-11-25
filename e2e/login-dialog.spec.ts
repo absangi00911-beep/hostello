@@ -93,7 +93,7 @@ test("password_login_uses_credentials_and_closes_the_dialog_on_success", async (
   });
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByRole("button", { name: "Use password" }).click();
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("correct-horse");
@@ -117,7 +117,7 @@ test("password_login_shows_a_generic_error_when_credentials_are_rejected", async
   );
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByRole("button", { name: "Use password" }).click();
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("wrong-password");
@@ -140,7 +140,7 @@ test("login_opens_as_a_shareable_dialog_over_hostel_discovery", async ({
     }),
   );
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
 
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -248,7 +248,7 @@ test("verified_code_closes_the_modal_without_changing_the_url_when_auth_succeeds
   );
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("6-digit code").fill("123456");
@@ -285,7 +285,7 @@ test("verified_new_email_requires_a_name_before_creating_a_student_account", asy
   );
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Email").fill("new-student@example.com");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("6-digit code").fill("123456");
@@ -321,7 +321,7 @@ test("invalid_code_keeps_the_dialog_open_and_does_not_authenticate", async ({
   );
 
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("6-digit code").fill("123456");
@@ -370,7 +370,7 @@ test("login_dialog_fits_mobile_and_short_landscape_viewports", async ({
 
 test("escape_closes_the_login_dialog", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
   await page.keyboard.press("Escape");

@@ -38,6 +38,7 @@ describe("OwnerBookingsRoute", () => {
 
     const markup = renderToStaticMarkup(await OwnerBookingsRoute());
 
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Bookings");
     expect(markup).toContain("Needs response");
   });

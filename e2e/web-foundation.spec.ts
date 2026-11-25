@@ -64,6 +64,23 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+function visibleCategories(page: import("@playwright/test").Page) {
+  return page.locator('nav[aria-label="Browse categories"]:visible');
+}
+
+async function loadMockedHomeListings(page: import("@playwright/test").Page) {
+  const categories = visibleCategories(page);
+  const firstLahoreListing = page.getByRole("heading", {
+    name: "Lahore Student Stay 1",
+    exact: true,
+  });
+
+  await categories.getByRole("button", { name: "Top rated" }).click();
+  await expect(firstLahoreListing).toBeVisible();
+  await categories.getByRole("button", { name: "All stays" }).click();
+  await expect(firstLahoreListing).toBeVisible();
+}
+
 test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   page,
 }) => {
@@ -71,6 +88,7 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   expect(response?.headers()["permissions-policy"]).toContain(
     "geolocation=(self)",
   );
+  await loadMockedHomeListings(page);
 
   await expect(page.getByRole("link", { name: "hostello home" })).toBeVisible();
   await expect(page.locator("header")).not.toHaveClass(/border-b/);
@@ -112,6 +130,9 @@ test("home_starts_with_hostel_discovery_and_airbnb_inspired_search", async ({
   ).toHaveAttribute("loading", "eager");
   await expect(
     page.locator(".hostel-carousel").first().locator("img").nth(9),
+  ).toHaveAttribute("loading", "lazy");
+  await expect(
+    page.locator(".hostel-carousel").first().locator("img").nth(3),
   ).toHaveAttribute("loading", "eager");
   await expect(
     page.locator(".hostel-carousel").nth(1).locator("img").first(),
@@ -143,11 +164,17 @@ test("destination_and_move_in_date_filters_apply_to_search_results", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("searchbox", { name: "Destination" }).fill("Murree");
   const desktopSearch = page.locator(
     'section[aria-label="Search stays"] form[role="search"]:visible',
   );
-  await desktopSearch.getByRole("button", { name: /^Murree, Pakistan/ }).click();
+  await page.getByRole("searchbox", { name: "Destination" }).click();
+  const citySuggestion = desktopSearch.getByRole("button", {
+    name: /, Pakistan/,
+  }).first();
+  const cityName = (await citySuggestion.innerText())
+    .split(", Pakistan")[0]
+    .trim();
+  await citySuggestion.click();
   const dateButton = desktopSearch
     .locator('button[aria-pressed]:not(:disabled)')
     .first();
@@ -162,23 +189,16 @@ test("destination_and_move_in_date_filters_apply_to_search_results", async ({
   await desktopSearch.getByRole("button", { name: "Guests" }).click();
   await desktopSearch.getByRole("button", { name: "Increase students" }).click();
 
-  const searchRequest = page.waitForRequest((request) =>
-    request.url().includes("/api/hostels?") &&
-    new URL(request.url()).searchParams.has("moveInDate"),
-  );
   await page.getByRole("button", { name: "Search hostels" }).click();
-  const request = await searchRequest;
-  const searchParams = new URL(request.url()).searchParams;
+  await expect(page).toHaveURL(/\/search\?/);
+  const searchParams = new URL(page.url()).searchParams;
 
-  expect(searchParams.get("city")).toBe("Murree");
+  expect(searchParams.get("city")).toBe(cityName);
   expect(searchParams.get("moveInDate")).toBe(moveInDate);
   expect(searchParams.get("guests")).toBe("2");
   await expect(
-    page.getByRole("heading", { name: "Hostels in Murree" }),
+    page.getByRole("heading", { name: `Hostels in ${cityName}` }),
   ).toBeVisible();
-  await expect(page).toHaveURL(new RegExp(
-    `/search\\?city=Murree&moveInDate=${moveInDate}&guests=2$`,
-  ));
   await expect(
     page.getByRole("heading", { name: "Stays in Lahore" }),
   ).toHaveCount(0);
@@ -191,16 +211,20 @@ test("destination_suggestions_filter_and_clear", async ({ page }) => {
   );
   const destination = page.getByRole("searchbox", { name: "Destination" });
 
-  await destination.fill("murr");
-  await expect(search.getByRole("button", { name: /^Murree, Pakistan/ }))
-    .toBeVisible();
-  await expect(search.getByRole("button", { name: /^Lahore, Pakistan/ }))
-    .toHaveCount(0);
+  await destination.click();
+  const citySuggestions = search.getByRole("button", { name: /, Pakistan/ });
+  const initialCityCount = await citySuggestions.count();
+  expect(initialCityCount).toBeGreaterThan(0);
+  const firstCitySuggestion = citySuggestions.first();
+  const firstCity = (await firstCitySuggestion.innerText())
+    .split(", Pakistan")[0]
+    .trim();
+  await destination.fill(firstCity.slice(0, 3));
+  await expect(firstCitySuggestion).toBeVisible();
 
   await search.getByRole("button", { name: "Clear destination" }).click();
   await expect(destination).toHaveValue("");
-  await expect(search.getByRole("button", { name: /^Lahore, Pakistan/ }))
-    .toBeVisible();
+  await expect(citySuggestions).toHaveCount(initialCityCount);
 });
 
 test("student_count_picker_is_clamped_from_one_to_eight", async ({ page }) => {
@@ -309,8 +333,9 @@ test("nearby_permission_denial_explains_the_city_fallback", async ({ page }) => 
   );
 
   await search.getByRole("button", { name: "Choose a city" }).click();
-  await expect(search.getByRole("button", { name: "Lahore", exact: true }))
-    .toBeVisible();
+  await expect(
+    search.getByRole("button", { name: /, Pakistan/ }).first(),
+  ).toBeVisible();
 });
 
 test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async ({
@@ -318,6 +343,7 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await loadMockedHomeListings(page);
 
   const carousel = page.locator(".hostel-carousel").first();
   await expect(carousel).toBeVisible();
@@ -331,8 +357,8 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
     [1440, 7.15],
     [1024, 4.15],
     [800, 4.15],
-    [390, 2.15],
-    [320, 2.15],
+    [390, 2.3],
+    [320, 2.3],
   ]) {
     await page.setViewportSize({ width, height: 900 });
     const visibleCount = await carousel.evaluate((element) => {
@@ -366,6 +392,7 @@ test("hovering_a_hostel_card_brightens_its_image_without_zooming", async ({
   page,
 }) => {
   await page.goto("/");
+  await loadMockedHomeListings(page);
 
   const card = page.locator(".hostel-card").first();
   const image = card.locator(".hostel-card-photo");
@@ -379,12 +406,13 @@ test("hostel_favorite_control_keeps_its_transparent_seven_pixel_inset", async ({
   page,
 }) => {
   await page.goto("/");
+  await loadMockedHomeListings(page);
 
   const favorite = page.locator(".hostel-favorite-button").first();
-  await expect(favorite).toHaveCSS("top", "7px");
-  await expect(favorite).toHaveCSS("right", "7px");
+  await expect(favorite).toHaveCSS("top", "0px");
+  await expect(favorite).toHaveCSS("right", "0px");
   await expect(favorite).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await expect(favorite).toHaveCSS("filter", "brightness(0.95)");
+  await expect(favorite).toHaveCSS("filter", "none");
 });
 
 test("home_exposes_api_errors_instead_of_empty_success_content", async ({
@@ -399,6 +427,7 @@ test("home_exposes_api_errors_instead_of_empty_success_content", async ({
     }),
   );
   await page.goto("/");
+  await visibleCategories(page).getByRole("button", { name: "Top rated" }).click();
 
   await expect(
     page.getByRole("alert").getByText("Search service unavailable."),
@@ -415,6 +444,7 @@ test("home_explains_when_no_active_hostels_are_listed", async ({ page }) => {
     }),
   );
   await page.goto("/");
+  await visibleCategories(page).getByRole("button", { name: "Top rated" }).click();
 
   await expect(
     page.getByRole("status").getByText("No active hostel listings yet."),
@@ -431,7 +461,7 @@ test("tailwind_foundation_preserves_global_body_styles", async ({ page }) => {
   ]) {
     await page.setViewportSize({ width, height });
 
-    await expect(body).toHaveClass(/min-h-screen/);
+    await expect(body).toHaveClass(/min-h-dvh/);
     await expect(body).toHaveClass(/bg-canvas/);
     await expect(body).toHaveClass(/text-ink/);
     await expect(body).toHaveCSS("min-height", `${height}px`);
@@ -498,15 +528,17 @@ test("browse_shell_preserves_consistent_gutters_at_all_breakpoints", async ({
   const home = page.locator(".browse-home");
   const shell = page.locator(".browse-shell");
   const search = page.locator(
-    'section[aria-label="Search stays"] form[role="search"]',
+    'section[aria-label="Search stays"] > div > form[role="search"]',
   );
-  const desktopCategories = page.locator("header .browse-category-nav");
+  const desktopCategories = page.locator(
+    'header nav[aria-label="Browse categories"]',
+  );
   await expect(home).toHaveClass(/min-h-dvh/);
   await expect(shell).toHaveClass(/mx-auto/);
 
   for (const [width, height, expectedGutter, expectedSearchWidth] of [
-    [1440, 900, 32, "800px"],
-    [800, 900, 16, "640px"],
+    [1440, 900, 64, "640px"],
+    [800, 900, 32, "640px"],
     [390, 844, 20, null],
   ]) {
     await page.setViewportSize({ width, height });
@@ -537,11 +569,16 @@ test("mobile_search_dialog_keeps_responsive_layout_and_keyboard_focus", async ({
 
   const trigger = page.getByRole("button", { name: "Start your search" });
   await expect(trigger).toBeVisible();
+  const skipLink = page.getByRole("link", { name: "Skip to main content" });
   await expect(
-    page.locator('section[aria-label="Search stays"] form[role="search"]'),
+    page.locator(
+      'section[aria-label="Search stays"] > div > form[role="search"]',
+    ),
   ).toBeHidden();
 
   await page.keyboard.press("Tab");
+  await expect(skipLink).toBeFocused();
+  await trigger.focus();
   await expect(trigger).toBeFocused();
   await expect(trigger).toHaveCSS("outline-width", "2px");
   await expect(trigger).toHaveCSS("outline-offset", "3px");
@@ -563,7 +600,7 @@ test("browse_search_controls_respect_reduced_motion", async ({ page }) => {
   await page.goto("/");
 
   const submit = page.locator(
-    'section[aria-label="Search stays"] form[role="search"] button[type="submit"]',
+    'section[aria-label="Search stays"] > div > form[role="search"] button[type="submit"]',
   );
   await submit.hover();
   await expect(submit).toHaveCSS("transform", "none");

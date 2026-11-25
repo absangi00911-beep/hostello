@@ -34,6 +34,7 @@ describe("AdminSearchSyncRoute", () => {
   it("renders the page for admins", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "a1", role: "ADMIN", name: "Admin" } });
     const markup = renderToStaticMarkup(await AdminSearchSyncRoute());
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Search index");
     expect(markup).toContain("Sync all listings");
   });

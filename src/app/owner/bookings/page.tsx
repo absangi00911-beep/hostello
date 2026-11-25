@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { OwnerBookingsPage } from "@/components/owner/OwnerBookingsPage";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
+import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
 
 export const metadata: Metadata = { title: "Bookings" };
@@ -20,16 +22,21 @@ export default async function OwnerBookingsRoute() {
   }
 
   return (
-    <>
-      <OwnerPageHeader
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image,
-          role: session.user.role,
-        }}
-      />
+    <WorkspaceShell
+      activeHref="/owner/bookings"
+      navigation={OWNER_WORKSPACE_NAVIGATION}
+      header={
+        <OwnerPageHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      }
+    >
       <OwnerBookingsPage />
-    </>
+    </WorkspaceShell>
   );
 }

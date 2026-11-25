@@ -38,6 +38,7 @@ describe("NewListingRoute", () => {
 
     const markup = renderToStaticMarkup(await NewListingRoute());
 
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Add a listing");
     expect(markup).toContain("Submit for review");
   });

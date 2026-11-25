@@ -36,6 +36,7 @@ describe("OwnerSubscriptionRoute", () => {
   it("renders the subscription page for owners", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "o1", role: "OWNER", name: "Sana" } });
     const markup = renderToStaticMarkup(await OwnerSubscriptionRoute(props));
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Subscription");
     expect(markup).toContain("Loading subscription...");
   });

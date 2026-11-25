@@ -318,7 +318,11 @@ export async function searchHostelsWithFallback(
   let hostelIds: string[];
   let total: number;
   let isSearchDegraded = false;
-  let degradationReason: "typesense_error" | "empty_index" | undefined;
+  let degradationReason:
+    | "typesense_error"
+    | "empty_index"
+    | "stale_index"
+    | undefined;
   let providerError: ReturnType<typeof getSafeErrorSummary> | undefined;
 
   // Try Typesense first. An empty index is also degraded: seeded or newly
@@ -341,13 +345,25 @@ export async function searchHostelsWithFallback(
     total = searchResults.found;
 
     if (total > 0) {
-      return {
-        hostelIds,
-        total,
-        isSearchDegraded,
-      };
+      const activeHitCount = hostelIds.length
+        ? await db.hostel.count({
+            where: { id: { in: hostelIds }, status: "ACTIVE" },
+          })
+        : 0;
+      const hasStaleHits =
+        activeHitCount !== hostelIds.length || (page === 1 && hostelIds.length === 0);
+
+      if (!hasStaleHits) {
+        return {
+          hostelIds,
+          total,
+          isSearchDegraded,
+        };
+      }
+
+      degradationReason = "stale_index";
     }
-    degradationReason = "empty_index";
+    if (total === 0) degradationReason = "empty_index";
   } catch (searchErr) {
     providerError = getSafeErrorSummary(searchErr);
     degradationReason = "typesense_error";
@@ -371,7 +387,11 @@ export async function searchHostelsWithFallback(
 
   // An empty Typesense result can be a valid no-match query. Report that path
   // only when the database fallback finds rows that the index missed.
-  if (degradationReason === "typesense_error" || total > 0) {
+  if (
+    degradationReason === "typesense_error" ||
+    degradationReason === "stale_index" ||
+    total > 0
+  ) {
     logOperationalEvent("warn", "search.degraded", {
       degradation_reason: degradationReason ?? "empty_index",
       result_count: total,

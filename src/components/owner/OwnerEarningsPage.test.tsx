@@ -77,15 +77,17 @@ describe("OwnerEarningsContent", () => {
         payout(),
         payout({ id: "p2", status: "PENDING", reference: null, paidAt: null }),
         payout({ id: "p3", status: "CANCELLED", paidAt: null }),
+        payout({ id: "p4", status: "APPROVED", reference: null, paidAt: null }),
       ],
-      payoutTotal: 3,
+      payoutTotal: 4,
     });
 
     expect(markup).toContain("Paid");
     expect(markup).toContain("Being processed");
     expect(markup).toContain("Cancelled");
+    expect(markup).toContain("Approved (settlement disabled)");
     expect(markup).toContain("TXN-1");
-    expect(markup).toContain("3 payouts");
+    expect(markup).toContain("4 payouts");
     expect(markup).toContain("paid ");
   });
 

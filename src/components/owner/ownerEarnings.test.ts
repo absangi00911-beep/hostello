@@ -51,6 +51,21 @@ describe("parseEarnings", () => {
     expect(parsed?.payouts[0]).toMatchObject({ reference: null, paidAt: null });
   });
 
+  it("accepts approved payouts without transfer details", () => {
+    const parsed = parseEarnings({
+      ...response,
+      payouts: [
+        { ...payout, status: "APPROVED", reference: null, paidAt: null },
+      ],
+    });
+
+    expect(parsed?.payouts[0]).toMatchObject({
+      status: "APPROVED",
+      reference: null,
+      paidAt: null,
+    });
+  });
+
   it("rejects unknown payout statuses, bad dates and malformed payloads", () => {
     expect(parseEarnings({ ...response, payouts: [{ ...payout, status: "LOST" }] })).toBeNull();
     expect(parseEarnings({ ...response, payouts: [{ ...payout, createdAt: "x" }] })).toBeNull();

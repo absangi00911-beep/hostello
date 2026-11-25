@@ -75,6 +75,7 @@ describe("EditListingRoute", () => {
 
     const markup = renderToStaticMarkup(await EditListingRoute({ params }));
 
+    expect(markup).toContain('aria-label="Workspace navigation"');
     expect(markup).toContain("Edit listing");
     expect(markup).toContain("Unpublish listing");
     expect(markup).toContain('value="Green Hostel"');
