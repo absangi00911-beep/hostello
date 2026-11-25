@@ -38,29 +38,12 @@ describe("touch targets", () => {
   const SMALL =
     /\b(size-(?:5|6|7|8|9)|h-(?:5|6|7|8|9|10)|min-h-(?:5|6|7|8|9|10)|size-\[(?:1\d|2\d|3\d|40)px\]|h-\[(?:1\d|2\d|3\d|40)px\]|min-h-\[(?:1\d|2\d|3\d|40)px\])\b/;
 
-  const ALLOWED = new Set([
-    // Calendar day cells: a 7-column grid at 44px would overflow the date popover; 36px
-    // clears the 24px WCAG 2.2 AA minimum and the grid has no neighbouring controls closer
-    // than a cell.
-    "src/components/home/SearchCalendarMonth.tsx",
-  ]);
-
   it("buttons and links are at least 44px, or give a small control a 44px hit area", () => {
     const offenders = files.flatMap(({ file, text }) =>
-      ALLOWED.has(file)
-        ? []
-        : openingTags(text, ["button", "a", "Link"])
-            .filter(({ tag }) => SMALL.test(tag) && !/\b(before|after):-inset-/.test(tag))
-            .map(({ index }) => `${file}:${text.slice(0, index).split("\n").length}`),
+      openingTags(text, ["button", "a", "Link"])
+        .filter(({ tag }) => SMALL.test(tag) && !/\b(before|after):-inset-/.test(tag))
+        .map(({ index }) => `${file}:${text.slice(0, index).split("\n").length}`),
     );
     expect(offenders, `small touch targets: ${offenders.join(", ")}`).toEqual([]);
-  });
-
-  it("keeps the exception list current", () => {
-    for (const file of ALLOWED) {
-      const { text } = files.find((candidate) => candidate.file === file)!;
-      const stillSmall = openingTags(text, ["button", "a", "Link"]).some(({ tag }) => SMALL.test(tag));
-      expect(stillSmall, `${file} no longer has a small target; remove it from ALLOWED`).toBe(true);
-    }
   });
 });
