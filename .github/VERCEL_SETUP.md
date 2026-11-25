@@ -29,6 +29,17 @@ migration step, after the environment's required reviewers approve the job.
 Keep the database URL sensitive; Vercel CLI cannot expose Sensitive
 environment values to `vercel env run`.
 
+### `R2_PUBLIC_URL` in Vercel
+
+Set `R2_PUBLIC_URL` in **Vercel → Project → Settings → Environment Variables**
+for the Production environment. Use the public HTTPS URL of the image bucket,
+such as `https://pub-<bucket-id>.r2.dev` or its configured custom domain.
+Keep this variable non-sensitive: the production workflow runs `vercel pull`
+before building, and Vercel CLI replaces Sensitive values with placeholders
+instead of downloading them. A placeholder fails the production image-host
+allowlist check. If `R2_PUBLIC_URL` is currently marked Sensitive, recreate it
+as a regular environment variable, then rerun the failed deployment.
+
 ## Deployment flow
 
 ```text
