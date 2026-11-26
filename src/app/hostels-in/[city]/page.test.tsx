@@ -7,6 +7,9 @@ vi.mock("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
+  redirect: (url: string) => {
+    throw new Error(`REDIRECT:${url}`);
+  },
   permanentRedirect: (url: string) => {
     throw new Error(`REDIRECT:${url}`);
   },
@@ -79,6 +82,25 @@ describe("CityHostelsPage", () => {
 
   it("permanently redirects non-canonical spellings to the slug", async () => {
     await expect(CityHostelsPage(params("Lahore"))).rejects.toThrow("REDIRECT:/hostels-in/lahore");
+  });
+
+  it.each([
+    ["OWNER", "/owner"],
+    ["ADMIN", "/admin"],
+  ] as const)("redirects %s accounts to their dashboard", async (role, destination) => {
+    mocks.auth.mockResolvedValue({ user: { role } });
+    mocks.getCityPage.mockClear();
+
+    await expect(CityHostelsPage(params("lahore"))).rejects.toThrow(`REDIRECT:${destination}`);
+    expect(mocks.getCityPage).not.toHaveBeenCalled();
+  });
+
+  it("keeps the city discovery page available to students", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "student-1", role: "STUDENT" } });
+
+    const markup = renderToStaticMarkup(await CityHostelsPage(params("lahore")));
+
+    expect(markup).toContain("Student hostels in Lahore");
   });
 
   it("sets canonical metadata from the city slug", async () => {

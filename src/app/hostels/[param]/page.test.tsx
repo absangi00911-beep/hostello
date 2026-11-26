@@ -10,6 +10,14 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
+vi.mock("next/navigation", () => ({
+  notFound: () => {
+    throw new Error("NEXT_NOT_FOUND");
+  },
+  redirect: (url: string) => {
+    throw new Error(`REDIRECT:${url}`);
+  },
+}));
 vi.mock("@/lib/city-links", () => ({ getCityLinks: mocks.getCityLinks }));
 vi.mock("@/lib/db", () => ({
   db: { favorite: { findUnique: mocks.findUnique } },
@@ -128,6 +136,29 @@ describe("HostelDetailPage", () => {
     });
 
     expect(hasDestinationSearch(page)).toBe(false);
+  });
+
+  it.each([
+    ["OWNER", "/owner"],
+    ["ADMIN", "/admin"],
+  ] as const)("redirects %s accounts to their dashboard", async (role, destination) => {
+    mocks.auth.mockResolvedValue({ user: { id: "user-1", role } });
+    mocks.getPublicHostelDetail.mockClear();
+
+    await expect(
+      HostelDetailPage({ params: Promise.resolve({ param: hostel.slug }) }),
+    ).rejects.toThrow(`REDIRECT:${destination}`);
+    expect(mocks.getPublicHostelDetail).not.toHaveBeenCalled();
+  });
+
+  it("keeps the hostel detail page available to students", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "student-1", role: "STUDENT" } });
+
+    const page = await HostelDetailPage({
+      params: Promise.resolve({ param: hostel.slug }),
+    });
+
+    expect(isValidElement(page)).toBe(true);
   });
 
   it("hides the header on mobile screens", async () => {

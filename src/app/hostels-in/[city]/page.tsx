@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -44,13 +44,15 @@ export default async function CityHostelsPage({
 }: {
   params: Promise<{ city: string }>;
 }) {
-  const { city: param } = await params;
+  const [{ city: param }, session] = await Promise.all([params, auth()]);
+  if (session?.user.role === "OWNER") redirect("/owner");
+  if (session?.user.role === "ADMIN") redirect("/admin");
+
   const city = await getCity(param);
   if (!city) notFound();
   // "/hostels-in/Lahore" and "/hostels-in/lahore " collapse onto one indexable URL.
   if (param !== city.slug) permanentRedirect(getCityCanonicalPath(city.slug));
 
-  const session = await auth();
   const user = session?.user
     ? {
         name: session.user.name,

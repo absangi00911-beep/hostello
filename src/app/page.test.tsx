@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), getCityLinks: vi.fn(), loadInitialHomeHostels: vi.fn() }));
 
+vi.mock("next/navigation", () => ({
+  redirect: (url: string) => {
+    throw new Error(`REDIRECT:${url}`);
+  },
+}));
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("@/lib/city-links", () => ({ getCityLinks: mocks.getCityLinks }));
 vi.mock("./load-initial-home-hostels", () => ({ loadInitialHomeHostels: mocks.loadInitialHomeHostels }));
@@ -72,6 +77,19 @@ describe("HomePage", () => {
     const markup = renderToStaticMarkup(await HomePage());
 
     expect(markup).toContain("Guest");
+  });
+
+  it.each([
+    ["OWNER", "/owner"],
+    ["ADMIN", "/admin"],
+  ] as const)("redirects %s accounts to their dashboard", async (role, destination) => {
+    mocks.auth.mockResolvedValue({ user: { role } });
+    mocks.getCityLinks.mockClear();
+    mocks.loadInitialHomeHostels.mockClear();
+
+    await expect(HomePage()).rejects.toThrow(`REDIRECT:${destination}`);
+    expect(mocks.getCityLinks).not.toHaveBeenCalled();
+    expect(mocks.loadInitialHomeHostels).not.toHaveBeenCalled();
   });
 
   it("passes the server-rendered listings to the home page", async () => {

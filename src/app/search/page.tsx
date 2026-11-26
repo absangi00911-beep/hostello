@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { buildSearchMetadata } from "@/lib/search-metadata";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
@@ -40,6 +41,9 @@ export default async function SearchPage({
   searchParams: SearchPageSearchParams;
 }) {
   const [params, session] = await Promise.all([searchParams, auth()]);
+  if (session?.user.role === "OWNER") redirect("/owner");
+  if (session?.user.role === "ADMIN") redirect("/admin");
+
   const firstString = (value: string | string[] | undefined) =>
     typeof value === "string" ? value : "";
   const query = firstString(params.q).trim().slice(0, 200);

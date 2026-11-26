@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), loadInitial: vi.fn(), client: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  redirect: (url: string) => {
+    throw new Error(`REDIRECT:${url}`);
+  },
+}));
 vi.mock("@/lib/auth/config", () => ({ auth: mocks.auth }));
 vi.mock("./load-initial-hostel-search", () => ({ loadInitialHostelSearch: mocks.loadInitial }));
 vi.mock("./SearchPageClient", () => ({
@@ -24,6 +29,22 @@ beforeEach(() => {
 });
 
 describe("search page: server-rendered first results", () => {
+  it.each([
+    ["OWNER", "/owner"],
+    ["ADMIN", "/admin"],
+  ] as const)("redirects %s accounts to their dashboard", async (role, destination) => {
+    mocks.auth.mockResolvedValue({ user: { role } });
+
+    await expect(render()).rejects.toThrow(`REDIRECT:${destination}`);
+    expect(mocks.loadInitial).not.toHaveBeenCalled();
+  });
+
+  it("keeps search available to students", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "student-1", role: "STUDENT" } });
+
+    expect((await render()).accountUser.role).toBe("STUDENT");
+  });
+
   it("passes the loaded results to the client", async () => {
     const results = { hostels: [], total: 0 };
     mocks.loadInitial.mockResolvedValue(results);

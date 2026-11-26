@@ -1,12 +1,16 @@
 import { CityLinks } from "@/components/city/CityLinks";
 import ProductHome from "@/components/home/ProductHome";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { getCityLinks } from "@/lib/city-links";
 import { loadInitialHomeHostels } from "./load-initial-home-hostels";
 
 export default async function HomePage() {
-  const [session, cities, initialHostels] = await Promise.all([
-    auth(),
+  const session = await auth();
+  if (session?.user.role === "OWNER") redirect("/owner");
+  if (session?.user.role === "ADMIN") redirect("/admin");
+
+  const [cities, initialHostels] = await Promise.all([
     getCityLinks(),
     loadInitialHomeHostels(),
   ]);

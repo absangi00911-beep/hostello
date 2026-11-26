@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TrackOnMount } from "@/components/analytics/TrackOnMount";
 import { CityLinks } from "@/components/city/CityLinks";
 import { HostelBreadcrumb } from "@/components/city/HostelBreadcrumb";
@@ -61,15 +61,15 @@ export default async function HostelDetailPage({
 }: {
   params: Promise<{ param: string }>;
 }) {
-  const { param } = await params;
+  const [{ param }, session] = await Promise.all([params, auth()]);
+  if (session?.user.role === "OWNER") redirect("/owner");
+  if (session?.user.role === "ADMIN") redirect("/admin");
+
   const hostel = await getHostel(param);
   if (!hostel) notFound();
   const publicHostel = projectPublicHostelDetail(hostel);
 
-  const [session, cityLinks] = await Promise.all([
-    auth(),
-    getCityLinks({ prioritySlug: slugifyCity(hostel.city) }),
-  ]);
+  const cityLinks = await getCityLinks({ prioritySlug: slugifyCity(hostel.city) });
   const isSaved =
     session?.user.role === "STUDENT"
       ? Boolean(
