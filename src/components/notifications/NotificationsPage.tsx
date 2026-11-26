@@ -165,7 +165,7 @@ function formatWhen(iso: string): string {
 }
 
 const actionClassName =
-  "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-[0.8rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
+  "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-label font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
 
 export function NotificationsPage({ role }: { role: Role }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -398,7 +398,7 @@ export function NotificationsPage({ role }: { role: Role }) {
 
       {actionError ? (
         <div
-          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           <p className="m-0">{actionError}</p>
@@ -424,7 +424,7 @@ export function NotificationsPage({ role }: { role: Role }) {
           Loading notifications...
         </p>
       ) : loadError ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${actionClassName} mt-3`}
@@ -436,7 +436,7 @@ export function NotificationsPage({ role }: { role: Role }) {
         </div>
       ) : items.length === 0 ? (
         <p
-          className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted"
+          className="rounded-xl border border-line bg-surface p-6 text-center text-muted"
           role="status"
         >
           You’re all caught up.
@@ -447,7 +447,7 @@ export function NotificationsPage({ role }: { role: Role }) {
             const href = getNotificationHref(item, role);
             return (
               <li
-                className={`rounded-[14px] border p-4 ${
+                className={`rounded-xl border p-4 ${
                   item.read
                     ? "border-line bg-surface"
                     : "border-brand bg-brand-soft"
@@ -456,13 +456,13 @@ export function NotificationsPage({ role }: { role: Role }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="m-0 text-[0.95rem] font-semibold text-ink">
+                    <p className="m-0 text-body font-semibold text-ink">
                       {item.title}
                     </p>
-                    <p className="mb-0 mt-1 text-[0.9rem] text-ink">
+                    <p className="mb-0 mt-1 text-label text-ink">
                       {item.message}
                     </p>
-                    <p className="mb-0 mt-1 text-[0.8125rem] text-muted">
+                    <p className="mb-0 mt-1 text-label text-muted">
                       <span
                         className={
                           item.read

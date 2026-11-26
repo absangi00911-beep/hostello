@@ -13,13 +13,13 @@ export function LegalPlaceholderPage({
     <div className="min-h-dvh bg-canvas">
       <SiteHeader hideOnMobile={false} user={user} />
       <main id="main-content" className="mx-auto max-w-[720px] px-4 pb-16 pt-6">
-        <h1 className="m-0 text-[2rem] font-bold text-ink">{title}</h1>
+        <h1 className="m-0 text-display font-bold text-ink">{title}</h1>
         <p
-          className="mt-4 rounded-[14px] bg-surface-muted px-4 py-3 text-[0.95rem] text-ink"
+          className="mt-4 rounded-xl bg-surface-muted px-4 py-3 text-body text-ink"
           role="note"
         >
-          This page is a placeholder. The {title.toLowerCase()} have not been
-          published yet, and nothing here is legal guidance.
+          This page is a placeholder. Published content is not yet available,
+          and nothing here is legal guidance.
         </p>
         <p className="mt-4 text-muted">
           If you have questions in the meantime, please{" "}

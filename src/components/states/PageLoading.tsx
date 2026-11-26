@@ -22,11 +22,11 @@ export function PageLoading() {
           className="h-12 w-12 shrink-0 motion-safe:animate-pulse"
           priority
         />
-        <span className="text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]">
+        <span className="text-title font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]">
           HostelLo
         </span>
       </div>
-      <p className="m-0 text-sm text-muted">{siteCopy.states.loading}</p>
+      <p className="m-0 text-label text-muted">{siteCopy.states.loading}</p>
     </main>
   );
 }

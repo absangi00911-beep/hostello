@@ -178,6 +178,14 @@ describe("ListingForm", () => {
     expect(markup).toContain("reviewed before they become visible");
   });
 
+  it("provides an in-form section index for faster navigation", () => {
+    expect(markup).toContain('aria-label="Listing form sections"');
+    expect(markup).toContain('href="#listing-basics"');
+    expect(markup).toContain('href="#listing-cancellation"');
+    expect(markup).toContain('href="#listing-photos"');
+    expect(markup.match(/id="listing-photos"/g)).toHaveLength(1);
+  });
+
   it("submits a validated create payload with POST", async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
 

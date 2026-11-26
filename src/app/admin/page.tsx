@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { AdminOverviewPage } from "@/components/admin/AdminOverviewPage";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -15,10 +15,9 @@ export default async function AdminRoute() {
     redirect(`/login?callbackUrl=${encodeURIComponent("/admin")}`);
   }
 
-  // Everything behind this page is admin-only; other roles see a 404 rather
-  // than a hint that an admin area exists.
+  // Everything behind this page is admin-only; other roles go to their account area.
   if (session.user.role !== "ADMIN") {
-    notFound();
+    redirect(session.user.role === "OWNER" ? "/owner" : "/profile");
   }
 
   return (

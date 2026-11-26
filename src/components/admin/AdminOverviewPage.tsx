@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   secondaryButtonClassName,
@@ -21,12 +20,12 @@ function StatCard({
   note?: string;
 }) {
   return (
-    <div className="grid gap-1 rounded-[14px] border border-line bg-surface p-4">
-      <dt className="text-[0.8rem] font-semibold text-muted">{label}</dt>
-      <dd className="m-0 text-[1.6rem] font-bold tracking-[-0.03em] text-ink">
+    <div className="grid gap-1 rounded-xl border border-line bg-surface p-4">
+      <dt className="text-label font-semibold text-muted">{label}</dt>
+      <dd className="m-0 text-headline font-bold tracking-[-0.03em] text-ink">
         {value}
       </dd>
-      {note ? <dd className="m-0 text-[0.8125rem] text-muted">{note}</dd> : null}
+      {note ? <dd className="m-0 text-label text-muted">{note}</dd> : null}
     </div>
   );
 }
@@ -46,16 +45,16 @@ export function AdminOverviewContent({
 }: AdminOverviewContentProps) {
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
-      <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
         Admin console
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Moderate listings and keep the marketplace running.
       </p>
 
       <div className="grid gap-5">
         <section aria-labelledby="listing-statistics" id="listing-statistics">
-          <h2 className="mb-3 mt-0 text-[1.05rem] font-semibold text-ink">
+          <h2 className="mb-3 mt-0 text-body font-semibold text-ink">
             Listing statistics
           </h2>
           {isLoading ? (
@@ -63,7 +62,7 @@ export function AdminOverviewContent({
               Loading overview...
             </p>
           ) : loadError || !stats ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">
                 {loadError ?? "Could not load the overview."}
               </p>
@@ -93,107 +92,6 @@ export function AdminOverviewContent({
           )}
         </section>
 
-        <nav aria-label="Admin sections" className="grid gap-3">
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/bookings"
-          >
-            <span className="text-[1rem] font-semibold text-ink">Bookings</span>
-            <span className="text-[0.88rem] text-muted">
-              Review booking, payment and stay status without student contact
-              details.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin#listing-statistics"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Listing statistics
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              See current listing totals and the published-listing window.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/listings"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Listing review
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              Verify new listings, suspend problem ones and reactivate them.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/verifications"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Student verification
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              Check student documents and approve or reject them.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/roommate-reports"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Roommate reports
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              Review reported roommate posts and delete the ones that break the
-              rules.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/payouts"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Owner payouts
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              A second admin must approve each payout batch; settlement is
-              disabled. Do not send funds or record a transfer.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/refunds"
-          >
-            <span className="text-[1rem] font-semibold text-ink">Refunds</span>
-            <span className="text-[0.88rem] text-muted">
-              Refund cancelled, paid bookings and resolve unconfirmed refunds.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/payment-events"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Payment events
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              Review Safepay notifications that failed to process and retry
-              them.
-            </span>
-          </Link>
-          <Link
-            className="grid gap-1 rounded-[14px] border border-line bg-surface p-4 no-underline hover:bg-surface-muted"
-            href="/admin/search-sync"
-          >
-            <span className="text-[1rem] font-semibold text-ink">
-              Search index
-            </span>
-            <span className="text-[0.88rem] text-muted">
-              Re-sync listings to search or remove one from the index.
-            </span>
-          </Link>
-        </nav>
       </div>
     </main>
   );

@@ -149,7 +149,45 @@ describe("WishlistsPage", () => {
     expect(markup).toContain(
       "grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))]",
     );
+    expect(markup).toContain("hostel-card min-w-0 snap-start overflow-hidden rounded-xl");
     expect(markup).toContain("group-hover:brightness-[0.9]");
     expect(markup).toContain("object-cover");
+  });
+
+  it("uses the visible hostel title as the saved-card link name", () => {
+    const markup = renderToStaticMarkup(
+      <WishlistsPageContent
+        error={null}
+        hasMore={false}
+        hostels={[
+          {
+            id: "hostel-1",
+            slug: "gulberg-student-stay",
+            name: "Gulberg Student Stay",
+            city: "Lahore",
+            area: "Gulberg",
+            pricePerMonth: 18_000,
+            coverImage: null,
+            images: [],
+            rating: 4.5,
+            reviewCount: 12,
+          },
+        ]}
+        isLoading={false}
+        isLoadingMore={false}
+        onLoadMore={() => {}}
+        onRetry={() => {}}
+      />,
+    );
+    const link = markup.match(
+      /<a[^>]*href="\/hostels\/gulberg-student-stay"[^>]*>[\s\S]*?<\/a>/,
+    )?.[0];
+
+    expect(link).toContain('aria-labelledby="wishlist-hostel-title-hostel-1"');
+    expect(link).toContain('id="wishlist-hostel-title-hostel-1"');
+    expect(link).toContain("Gulberg Student Stay");
+    expect(link).not.toContain(
+      'aria-label="View details for Gulberg Student Stay"',
+    );
   });
 });

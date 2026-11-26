@@ -37,6 +37,14 @@ describe("OwnerSubscriptionContent", () => {
     expect(markup).toContain("Unlimited listings");
   });
 
+  it("explains the consequence of exceeding the free-plan listing limit", () => {
+    const markup = render({
+      data: { plan: "FREE", subscription: null, listingCount: 15 },
+    });
+    expect(markup).toContain("15 listings used");
+    expect(markup).toContain("New listings cannot be submitted");
+  });
+
   it("hides the upgrade button for Pro owners and shows the period end", () => {
     const markup = render({
       data: {

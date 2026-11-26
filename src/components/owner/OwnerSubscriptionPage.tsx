@@ -44,22 +44,22 @@ function PlanCard({
       className={`grid content-start gap-3 rounded-[16px] border p-5 ${current ? "border-brand bg-brand-soft" : "border-line bg-surface"}`}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 text-[1.05rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {plan.label}
         </h3>
         {current ? (
-          <span className="rounded-full bg-brand px-[10px] py-[2px] text-[0.72rem] font-bold text-white">
+          <span className="rounded-full bg-brand px-[10px] py-[2px] text-meta font-bold text-white">
             Current plan
           </span>
         ) : null}
       </div>
-      <p className="m-0 text-[1.5rem] font-bold tracking-[-0.03em] text-ink">
+      <p className="m-0 text-headline font-bold tracking-[-0.03em] text-ink">
         {plan.price === 0 ? "Free" : currencyFormatter.format(plan.price)}
         {plan.price > 0 ? (
-          <span className="text-[0.85rem] font-medium text-muted"> / month</span>
+          <span className="text-label font-medium text-muted"> / month</span>
         ) : null}
       </p>
-      <ul className="m-0 grid list-disc gap-1 pl-5 text-[0.9rem] text-ink">
+      <ul className="m-0 grid list-disc gap-1 pl-5 text-label text-ink">
         {perks.map((perk) => (
           <li key={perk}>{perk}</li>
         ))}
@@ -95,15 +95,15 @@ export function OwnerSubscriptionContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/owner"
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Subscription
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Choose the plan that fits how many listings you run.
       </p>
 
@@ -112,7 +112,7 @@ export function OwnerSubscriptionContent({
           Loading subscription...
         </p>
       ) : loadError || !data ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">
             {loadError ?? "Could not load your subscription."}
           </p>
@@ -128,7 +128,7 @@ export function OwnerSubscriptionContent({
         <div className="grid gap-5">
           {returnState === "upgraded" && !isPro ? (
             <p
-              className="m-0 rounded-[14px] bg-warn-soft px-[13px] py-[11px] text-[0.875rem] text-warn-ink"
+              className="m-0 rounded-xl bg-warn-soft px-[13px] py-[11px] text-label text-warn-ink"
               role="status"
             >
               Thanks. We&apos;re waiting for the payment confirmation. Pro
@@ -144,7 +144,7 @@ export function OwnerSubscriptionContent({
           ) : null}
           {returnState === "upgraded" && isPro ? (
             <p
-              className="m-0 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.875rem] text-brand-dark"
+              className="m-0 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
               role="status"
             >
               Payment received. Your Pro plan is active.
@@ -152,7 +152,7 @@ export function OwnerSubscriptionContent({
           ) : null}
           {returnState === "cancelled" && !isPro ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-muted"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-muted"
               role="status"
             >
               Checkout was cancelled and you weren&apos;t charged. You can
@@ -161,7 +161,7 @@ export function OwnerSubscriptionContent({
           ) : null}
 
           <FormSection title="Your plan">
-            <p className="m-0 text-[0.95rem] text-ink">
+            <p className="m-0 text-body text-ink">
               You&apos;re on the{" "}
               <strong>{isPro ? PLANS.PRO.label : PLANS.FREE.label}</strong>{" "}
               plan.
@@ -170,16 +170,23 @@ export function OwnerSubscriptionContent({
                 : ""}
             </p>
             {isPro && data.subscription?.endDate ? (
-              <p className="m-0 text-[0.88rem] text-muted">
+              <p className="m-0 text-label text-muted">
                 Current period ends{" "}
                 {dateFormatter.format(new Date(data.subscription.endDate))}.
               </p>
             ) : null}
-            <p className="m-0 text-[0.88rem] text-muted">
+            <p className="m-0 text-label text-muted">
               {isPro
                 ? `${data.listingCount} ${data.listingCount === 1 ? "listing" : "listings"} (no limit on Pro).`
                 : `${data.listingCount} of ${limit} included ${limit === 1 ? "listing" : "listings"} used.`}
             </p>
+            {!isPro && data.listingCount > limit ? (
+              <p className="m-0 text-label text-warn-ink" role="status">
+                {data.listingCount} listings used. This Free plan allows 1
+                listing. New listings cannot be submitted until you remove one
+                or upgrade to Pro.
+              </p>
+            ) : null}
           </FormSection>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -191,7 +198,7 @@ export function OwnerSubscriptionContent({
             <div className="grid gap-3">
               {upgradeError ? (
                 <p
-                  className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+                  className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
                   role="alert"
                 >
                   {upgradeError}
@@ -207,7 +214,7 @@ export function OwnerSubscriptionContent({
                   ? "Redirecting to checkout…"
                   : `Upgrade to Pro for ${currencyFormatter.format(PLANS.PRO.price)}`}
               </button>
-              <p className="m-0 text-center text-[0.82rem] text-muted">
+              <p className="m-0 text-center text-label text-muted">
                 You&apos;ll pay securely with Safepay and come back here
                 afterwards.
               </p>

@@ -497,16 +497,16 @@ export function HostelBookingCard({
       id="hostel-booking"
       ref={bookingCardRef}
     >
-      <div className="mb-3 text-[0.8125rem] text-muted">
+      <div className="mb-3 text-label text-muted">
         {room ? (
           <>
-            <strong className="text-xl leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+            <strong className="text-title leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
               PKR {formatPrice(room.pricePerMonth)}
             </strong>
             <span> / month</span>
           </>
         ) : (
-          <strong className="text-xl leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+          <strong className="text-title leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
             Monthly rate
           </strong>
         )}
@@ -517,9 +517,9 @@ export function HostelBookingCard({
           onSubmit={submitBooking}
         >
           <label className="grid min-w-0 gap-1">
-            <span className="text-[0.8125rem] font-[650] text-ink">Room</span>
+            <span className="text-label font-[650] text-ink">Room</span>
             <select
-              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-label text-ink focus-visible:outline-brand"
               disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
               ref={roomSelectRef}
               onChange={(event) => {
@@ -546,11 +546,11 @@ export function HostelBookingCard({
           </label>
           <div className="grid grid-cols-2 gap-[10px]">
             <label className="grid min-w-0 gap-1">
-              <span className="text-[0.8125rem] font-[650] text-ink">
+              <span className="text-label font-[650] text-ink">
                 Move in
               </span>
               <input
-                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-label text-ink focus-visible:outline-brand"
                 disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 ref={moveInInputRef}
                 min={todayDateInputValue()}
@@ -569,11 +569,11 @@ export function HostelBookingCard({
               />
             </label>
             <label className="grid min-w-0 gap-1">
-              <span className="text-[0.8125rem] font-[650] text-ink">
+              <span className="text-label font-[650] text-ink">
                 Move out
               </span>
               <input
-                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
+                className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-label text-ink focus-visible:outline-brand"
                 disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
                 min={checkIn || todayDateInputValue()}
                 onChange={(event) => {
@@ -598,9 +598,9 @@ export function HostelBookingCard({
             </label>
           </div>
           <label className="grid min-w-0 gap-1">
-            <span className="text-[0.8125rem] font-[650] text-ink">Guests</span>
+            <span className="text-label font-[650] text-ink">Guests</span>
             <select
-              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-[0.8125rem] text-ink focus-visible:outline-brand"
+              className="min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-[9px] py-[7px] text-label text-ink focus-visible:outline-brand"
               disabled={Boolean(bookingOutcome) || submissionUncertain || showReview}
               onChange={(event) => {
                 setGuests(Number(event.target.value));
@@ -619,12 +619,12 @@ export function HostelBookingCard({
             </select>
           </label>
           {availabilityLoading && (
-            <p className="m-0 text-[0.8125rem] text-muted" role="status">
+            <p className="m-0 text-label text-muted" role="status">
               Checking exact availability for these dates…
             </p>
           )}
           {availabilityError && (
-            <p className="m-0 text-[0.8125rem] text-[#991b1b]" role="alert">
+            <p className="m-0 text-label text-[#991b1b]" role="alert">
               {availabilityError}
               {" "}
               <button
@@ -641,19 +641,19 @@ export function HostelBookingCard({
             checkIn &&
             checkOut &&
             selectedAvailability && (
-              <p className="m-0 text-[0.8125rem] text-muted" role="status">
+              <p className="m-0 text-label text-muted" role="status">
                 {selectedAvailability.fits
                   ? `Available for all selected dates: ${selectedAvailability.availableSeats} of ${selectedAvailability.capacity} seats.`
                   : "No room seats are available for the selected dates and guest count. Change dates or choose another room."}
               </p>
             )}
           {!stayBoundsAreValid && (
-            <p className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]" role="alert">
+            <p className="m-0 text-label leading-[1.5] text-[#8b2525]" role="alert">
               This listing's stay requirements are invalid, so booking is unavailable.
             </p>
           )}
           {checkIn && checkOut && stayIsValid && stayTerm && (
-            <p className="m-0 text-[0.8125rem] leading-[1.5] text-muted" aria-live="polite" role="status">
+            <p className="m-0 text-label leading-[1.5] text-muted" aria-live="polite" role="status">
               Selected term: {stayTerm.months} {stayTerm.months === 1 ? "month" : "months"}.
               {stayTerm.isMonthEndClamped && (
                 <> Move-out is clamped to {formatDateOnlyForDisplay(checkOut)} because the target month has fewer days than your move-in date.</>
@@ -662,16 +662,16 @@ export function HostelBookingCard({
           )}
           {checkIn && checkOut && !stayIsValid && stayBoundsAreValid && (
             <p
-              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-[#8b2525]"
               role="status"
             >
               Stay must be a whole-month term from {minStay} to {Math.min(maxStay ?? MAX_BOOKING_MONTHS, MAX_BOOKING_MONTHS)} months (global maximum: {MAX_BOOKING_MONTHS} months).
             </p>
           )}
           {estimatedTotal !== null && (
-            <p className="mx-0 my-1 flex justify-between gap-3 border-t border-line pt-3 text-[0.82rem] text-muted">
+            <p className="mx-0 my-1 flex justify-between gap-3 border-t border-line pt-3 text-label text-muted">
               Estimated total{" "}
-              <strong className="text-[0.875rem] leading-[1.43] font-semibold text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+              <strong className="text-label leading-[1.43] font-semibold text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
                 PKR {formatPrice(estimatedTotal)}
               </strong>
             </p>
@@ -679,9 +679,9 @@ export function HostelBookingCard({
           {showReview && room && (
             <section
               aria-labelledby="booking-review-title"
-              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-[0.82rem]"
+              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-label"
             >
-              <h3 className="m-0 text-sm font-semibold" id="booking-review-title">
+              <h3 className="m-0 text-label font-semibold" id="booking-review-title">
                 Review your booking
               </h3>
               <p className="m-0">Room: {room.name}</p>
@@ -705,7 +705,7 @@ export function HostelBookingCard({
           {bookingOutcome && (
             <section
               aria-label="Booking request status"
-              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-[0.82rem]"
+              className="grid gap-2 rounded-lg border border-line bg-surface-muted p-3 text-label"
               role="status"
             >
               <p className="m-0 font-semibold">Booking request received</p>
@@ -732,7 +732,7 @@ export function HostelBookingCard({
             </section>
           )}
           {submissionUncertain && (
-            <p className="m-0 text-[0.8125rem] text-[#991b1b]" role="alert">
+            <p className="m-0 text-label text-[#991b1b]" role="alert">
               We couldn't confirm the request status. Check Trips before trying again.
               {" "}
               <a className="font-semibold text-brand-dark underline" href="/trips">
@@ -741,7 +741,7 @@ export function HostelBookingCard({
             </p>
           )}
           <button
-            className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-[0.84rem] font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 [@media(max-width:720px)]:hidden"
+            className="min-h-11 cursor-pointer rounded-lg border-0 bg-brand text-label font-[650] text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 [@media(max-width:720px)]:hidden"
             disabled={!canBook || isSubmitting || isStartingPayment}
             type="submit"
           >
@@ -751,12 +751,12 @@ export function HostelBookingCard({
                 ? "Request booking"
                 : "Review booking"}
           </button>
-          <p className="m-0 text-[0.8125rem] leading-[1.5] text-muted">
+          <p className="m-0 text-label leading-[1.5] text-muted">
             Booking and payment statuses are shown only after the server confirms them.
           </p>
           {!hasCancellationPolicy && (
             <p
-              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-[#8b2525]"
               role="status"
             >
               Booking is temporarily unavailable while cancellation terms are updated.
@@ -765,7 +765,7 @@ export function HostelBookingCard({
           {message && (
             <p
               aria-live="polite"
-              className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-[#8b2525]"
               role="alert"
             >
               {message}
@@ -785,28 +785,28 @@ export function HostelBookingCard({
             role="region"
           >
             <div className="min-w-0">
-              <p className="m-0 flex items-baseline gap-1 text-sm text-muted">
+              <p className="m-0 flex items-baseline gap-1 text-label text-muted">
                 {room ? (
                   <>
-                    <strong className="text-[1rem] font-bold text-ink tabular-nums">
+                    <strong className="text-body font-bold text-ink tabular-nums">
                       PKR {formatPrice(room.pricePerMonth)}
                     </strong>
                     <span>/ month</span>
                   </>
                 ) : (
-                  <strong className="text-[0.9rem] font-semibold text-ink">
+                  <strong className="text-label font-semibold text-ink">
                     Rates unavailable
                   </strong>
                 )}
               </p>
-              <p className="m-0 mt-0.5 truncate text-[0.8125rem] text-muted">
+              <p className="m-0 mt-0.5 truncate text-label text-muted">
                 {estimatedTotal !== null
                   ? `Estimated total PKR ${formatPrice(estimatedTotal)}`
                   : "Choose dates to see your stay total"}
               </p>
             </div>
             <button
-              className="min-h-12 min-w-[132px] shrink-0 cursor-pointer rounded-lg border-0 bg-brand px-5 text-[0.9rem] font-semibold text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-12 min-w-[132px] shrink-0 cursor-pointer rounded-lg border-0 bg-brand px-5 text-label font-semibold text-white hover:enabled:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
               disabled={
                 !hasCancellationPolicy ||
                 isSubmitting ||
@@ -824,14 +824,14 @@ export function HostelBookingCard({
         </form>
       ) : (
         <p
-          className="m-0 text-[0.8125rem] leading-[1.5] text-[#8b2525]"
+          className="m-0 text-label leading-[1.5] text-[#8b2525]"
           role="status"
         >
           No rooms are currently available to book.
         </p>
       )}
       <Link
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-brand px-4 text-center text-sm font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-brand px-4 text-center text-label font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
         href={availabilityAlertHref}
       >
         Alert me when these dates are available

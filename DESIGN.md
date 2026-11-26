@@ -9,11 +9,14 @@ colors:
   muted: "#586579"
   line: "#e2e8f0"
   line-strong: "#cbd5e1"
+  control-border: "#7d8ba1"
   brand: "#2563eb"
   brand-dark: "#1d4ed8"
   brand-soft: "#e0e7ff"
   warm: "#f59e0b"
   danger: "#c13515"
+  danger-hover: "#a52c10"
+  danger-pressed: "#8f240d"
   warn-ink: "#583c13"
   warn-soft: "#fbf4e6"
 typography:
@@ -42,6 +45,11 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 600
     lineHeight: 1.25
+  metadata:
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.35
 rounded:
   sm: "0.375rem"
   md: "0.5rem"
@@ -130,6 +138,8 @@ The palette is cool, neutral, and utility-focused. Blue supplies brand recogniti
 - **Muted Text** (`{colors.muted}` — #586579): Secondary text and metadata.
 - **Line** (`{colors.line}` — #e2e8f0): Default borders and dividers.
 - **Strong Line** (`{colors.line-strong}` — #cbd5e1): Stronger structural boundaries.
+- **Control Border** (`{colors.control-border}` — #7d8ba1): Higher-contrast idle border for form controls to meet WCAG 1.4.11.
+- **Danger Hover** (`{colors.danger-hover}` — #a52c10) and **Danger Pressed** (`{colors.danger-pressed}` — #8f240d): Destructive-action states.
 
 **The Blue Scarcity Rule.** Use brand blue for actions, selection, and focus. Do not turn decorative areas or status text into blue accents.
 
@@ -146,7 +156,9 @@ The type pairing separates task-oriented headings from comfortable interface cop
 - **Title:** 18px, 700 weight, 1.35 line-height, for cards and subsection labels.
 - **Body:** 16px, 400 weight, 1.55 line-height, for paragraphs and form copy.
 - **Label:** 14px, 600 weight, 1.25 line-height, for buttons and compact controls.
-- **Metadata:** 12–14px in `{colors.muted}` for secondary facts and supporting text.
+- **Metadata:** 12px, 400 weight, 1.35 line-height, in `{colors.muted}` for secondary facts and supporting text. Use the label role when metadata needs 14px for readability.
+
+Use the matching semantic utilities from [globals.css](./src/app/globals.css): `text-display`, `text-headline`, `text-title`, `text-body`, `text-label`, and `text-meta`. Keep responsive overrides only where a specific surface requires them; do not introduce new one-off font sizes.
 
 Keep line length near 65–75 characters for paragraphs. Left-align interface copy; avoid centered layouts unless the component is inherently modal or empty-state oriented.
 
@@ -186,13 +198,14 @@ Keep borders 1px wide and use `{colors.line}` by default. Interactive form contr
 ### Buttons
 - **Primary:** `{colors.brand}` fill, `{colors.surface}` text, 8px radius, 10–16px vertical/horizontal padding, and the global primary depth treatment.
 - **Secondary:** `{colors.surface}` fill, `{colors.ink}` text, 1px `{colors.line-strong}` or project-defined border, 8px radius, and a quiet raised or pressed state.
+- **Destructive:** `{colors.danger}` fill with `{colors.danger-hover}` hover and `{colors.danger-pressed}` pressed states; use the shared `btn-danger` treatment.
 - **Text and link actions:** No filled surface; use `{colors.brand}` or `{colors.ink}` according to context.
 - **Disabled:** Reduced opacity or disabled fill; preserve readable text and clear not-allowed behavior.
 - **Focus:** 2–3px blue outline with 2–4px offset.
 
 ### Inputs
 - White surface, ink text, 8px radius, and 10–12px internal padding.
-- Default 1px edge; use the stronger 1.4.11-compatible edge treatment for fields.
+- Default 1px edge; use `{colors.control-border}` for the stronger 1.4.11-compatible edge treatment on fields.
 - Keep labels adjacent and explicit; do not rely on placeholder text.
 - Keep mobile text controls at least 16px to prevent Safari zoom.
 

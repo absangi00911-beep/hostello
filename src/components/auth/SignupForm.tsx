@@ -117,9 +117,9 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
   return (
     <>
       {errorMessage ? <AuthNotice tone="error">{errorMessage}</AuthNotice> : null}
-      <form className="grid gap-[14px]" noValidate onSubmit={handleSubmit}>
+      <form className="grid gap-[14px]" onSubmit={handleSubmit}>
         <fieldset className="m-0 grid gap-[6px] border-0 p-0">
-          <legend className="mb-[6px] p-0 text-[0.875rem] font-semibold text-ink">
+          <legend className="mb-[6px] p-0 text-label font-semibold text-ink">
             I am a
           </legend>
           <div className="grid grid-cols-2 gap-2">
@@ -130,7 +130,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
               ] as const
             ).map(([value, label]) => (
               <label
-                className="flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-line bg-white text-[0.95rem] font-semibold text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-dark"
+                className="flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-line bg-white text-body font-semibold text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-dark"
                 key={value}
               >
                 <input
@@ -147,7 +147,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
           </div>
         </fieldset>
 
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Full name</span>
           <input
             autoComplete="name"
@@ -161,7 +161,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
           />
         </label>
 
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Email</span>
           <input
             autoComplete="email"
@@ -174,7 +174,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
           />
         </label>
 
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>
             Phone <span className="font-normal text-muted">(optional)</span>
           </span>
@@ -190,7 +190,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
           />
         </label>
 
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Password</span>
           <input
             autoComplete="new-password"
@@ -201,12 +201,12 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
             type="password"
             value={password}
           />
-          <span className="text-[0.8rem] font-normal text-muted">
+          <span className="text-label font-normal text-muted">
             At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
           </span>
         </label>
 
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Confirm password</span>
           <input
             autoComplete="new-password"
@@ -228,7 +228,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
         </button>
       </form>
 
-      <p className="mb-0 mt-5 text-center text-[0.9rem] text-muted">
+      <p className="mb-0 mt-5 text-center text-label text-muted">
         Already have an account?{" "}
         <Link className={authLinkClassName} href="/login">
           Log in

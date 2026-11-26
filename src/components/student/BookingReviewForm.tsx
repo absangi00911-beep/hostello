@@ -50,7 +50,7 @@ function readApiError(payload: unknown): string | null {
 }
 
 const inputClassName =
-  "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!";
+  "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!";
 
 export function BookingReviewForm({
   hostelId,
@@ -116,7 +116,7 @@ export function BookingReviewForm({
     return (
       <section
         aria-label="Review"
-        className="mt-5 rounded-[14px] border border-line bg-surface p-5"
+        className="mt-5 rounded-xl border border-line bg-surface p-5"
       >
         <p className="m-0 text-brand-dark" role="status">
           Thanks, your review of {hostelName} was submitted.
@@ -128,19 +128,19 @@ export function BookingReviewForm({
   return (
     <section
       aria-label="Review this stay"
-      className="mt-5 rounded-[14px] border border-line bg-surface p-5"
+      className="mt-5 rounded-xl border border-line bg-surface p-5"
     >
-      <h2 className="m-0 mb-1 text-[1.05rem] font-semibold text-ink">
+      <h2 className="m-0 mb-1 text-body font-semibold text-ink">
         Review your stay
       </h2>
-      <p className="mb-4 mt-0 text-[0.9rem] text-muted">
+      <p className="mb-4 mt-0 text-label text-muted">
         Help other students by sharing how {hostelName} was. Submitting again
         updates your earlier review.
       </p>
 
       {errorMessage ? (
         <p
-          className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+          className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           {errorMessage}
@@ -149,7 +149,7 @@ export function BookingReviewForm({
 
       <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
         <fieldset className="m-0 border-0 p-0">
-          <legend className="mb-2 p-0 text-[0.875rem] font-semibold text-ink">
+          <legend className="mb-2 p-0 text-label font-semibold text-ink">
             Overall rating
           </legend>
           <div className="flex gap-2">
@@ -178,7 +178,7 @@ export function BookingReviewForm({
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {subRatings.map(([key, label]) => (
             <label
-              className="grid gap-1 text-[0.8rem] font-semibold text-ink"
+              className="grid gap-1 text-label font-semibold text-ink"
               key={key}
             >
               <span>{label}</span>
@@ -204,7 +204,7 @@ export function BookingReviewForm({
           ))}
         </div>
 
-        <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-1 text-label font-semibold text-ink">
           <span>
             Title <span className="font-normal text-muted">(optional)</span>
           </span>
@@ -218,7 +218,7 @@ export function BookingReviewForm({
           />
         </label>
 
-        <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-1 text-label font-semibold text-ink">
           <span>Your review</span>
           <textarea
             className={`${inputClassName} min-h-[120px] py-2`}
@@ -228,13 +228,13 @@ export function BookingReviewForm({
             required
             value={comment}
           />
-          <span className="text-[0.8rem] font-normal text-muted">
+          <span className="text-label font-normal text-muted">
             {comment.trim().length}/1000, at least 20 characters
           </span>
         </label>
 
         <button
-          className="inline-flex min-h-[46px] cursor-pointer items-center justify-center justify-self-start rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+          className="inline-flex min-h-[46px] cursor-pointer items-center justify-center justify-self-start rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
           disabled={isSubmitting}
           type="submit"
         >

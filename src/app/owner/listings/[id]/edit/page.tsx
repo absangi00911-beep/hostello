@@ -53,20 +53,20 @@ export default async function EditListingRoute({
     >
       <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-20 pt-8 md:pt-10">
         <Link
-          className="text-[0.85rem] font-semibold text-brand hover:underline"
+          className="text-label font-semibold text-brand hover:underline"
           href="/owner"
         >
           ← Back to dashboard
         </Link>
-        <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+        <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
           Edit listing
         </h1>
-        <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+        <p className="mb-6 mt-2 text-body text-muted">
           {listing.name} · {getListingStatusLabel(listing.status)}
         </p>
         {listing.status === "SUSPENDED" ? (
           <p
-            className="rounded-[14px] bg-surface-muted px-4 py-3 text-[0.95rem] text-ink"
+            className="rounded-xl bg-surface-muted px-4 py-3 text-body text-ink"
             role="note"
           >
             This listing is suspended and can&apos;t be edited.{" "}

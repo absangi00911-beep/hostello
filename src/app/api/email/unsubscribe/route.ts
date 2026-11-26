@@ -116,8 +116,6 @@ function page(title: string, message: string, status: 200 | 400 | 413 | 503, tok
         <button type="submit">Unsubscribe</button>
       </form>`
     : '<a href="/">Back to HostelLo</a>';
-  const ok = status === 200;
-
   return new NextResponse(
     `<!DOCTYPE html>
 <html lang="en">
@@ -127,17 +125,16 @@ function page(title: string, message: string, status: 200 | 400 | 413 | 503, tok
   <title>${escapeHtml(title)} — HostelLo</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #FDF8F0; color: #2A2318; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .card { background: #FEFCF8; border: 1px solid #E0D4C0; border-radius: 16px; padding: 48px 40px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(42,35,24,0.08); }
-    .icon { font-size: 2.5rem; margin-bottom: 20px; }
-    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; }
-    p { font-size: 0.9375rem; color: #857060; line-height: 1.65; margin-bottom: 28px; }
-    a, button { display: inline-block; border: 0; background: #2A6545; color: #F9F5EE; text-decoration: none; padding: 12px 32px; border-radius: 10px; font-size: 0.9375rem; font-weight: 600; cursor: pointer; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f6f8fb; color: #0f172a; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px 32px; max-width: 440px; width: 100%; text-align: center; }
+    h1 { font-size: 1.5rem; line-height: 1.25; font-weight: 700; margin-bottom: 12px; }
+    p { font-size: 1rem; color: #586579; line-height: 1.55; margin-bottom: 24px; }
+    a, button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; border: 0; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 24px; border-radius: 8px; font-size: 0.875rem; line-height: 1.25; font-weight: 600; cursor: pointer; }
+    a:focus-visible, button:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="icon">${ok ? '✓' : '⚠'}</div>
     <h1>${escapeHtml(title)}</h1>
     <p>${escapeHtml(message)}</p>
     ${action}

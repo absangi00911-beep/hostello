@@ -26,6 +26,7 @@ describe("legal placeholder pages", () => {
 
     expect(markup).toContain("Privacy Policy");
     expect(markup).toContain("placeholder");
+    expect(markup).toContain("Published content is not yet available");
     expect(markup).toContain("<header");
   });
 });

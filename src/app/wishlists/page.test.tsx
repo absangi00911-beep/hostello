@@ -29,10 +29,14 @@ describe("WishlistsRoute", () => {
     );
   });
 
-  it("denies users who are not students", async () => {
+  it("redirects owner users to the owner dashboard", async () => {
     mocks.auth.mockResolvedValue({ user: { id: "owner-1", role: "OWNER" } });
+    await expect(WishlistsRoute()).rejects.toThrow("NEXT_REDIRECT:/owner");
+  });
 
-    await expect(WishlistsRoute()).rejects.toThrow("NEXT_NOT_FOUND");
+  it("redirects admin users to the admin console", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "admin-1", role: "ADMIN" } });
+    await expect(WishlistsRoute()).rejects.toThrow("NEXT_REDIRECT:/admin");
   });
 
   it("renders the student wishlists page", async () => {

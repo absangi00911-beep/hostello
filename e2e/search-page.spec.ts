@@ -72,6 +72,29 @@ test("search_results_use_a_two_column_listing_and_map_layout", async ({
   await expect(firstImage).toHaveCSS("transform", "none");
 });
 
+test("search_results_show_an_accessible_fallback_when_a_photo_fails", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.route("**/_next/image**", (route) =>
+    route.request().url().includes("images.unsplash.com")
+      ? route.fulfill({ status: 404, body: "Image unavailable" })
+      : route.continue(),
+  );
+  await page.goto("/search?city=Lahore");
+  await refreshSearch(page);
+
+  await expect(
+    page.getByRole("heading", { name: "Campus Stay 1", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", {
+      name: "No photo available for Campus Stay 1",
+      exact: true,
+    }),
+  ).toBeVisible();
+});
+
 test("search_results_keep_the_tailwind_layout_at_desktop_tablet_and_mobile_widths", async ({
   page,
 }) => {
@@ -235,6 +258,33 @@ test("home_search_opens_the_results_page_for_the_entered_city", async ({
   await expect(page).toHaveURL(/\/search\?city=Lahore$/);
   await expect(
     page.getByRole("heading", { name: "Hostels in Lahore" }),
+  ).toBeVisible();
+});
+
+test("search_accepts_a_move_in_date_without_a_checkout_date", async ({ page }) => {
+  await page.goto("/search?city=Lahore&moveInDate=2026-11-27&guests=1");
+
+  await page.getByRole("button", { name: "Search hostels" }).click();
+
+  await expect(page.locator(".search-compact-form [role='alert']")).toHaveCount(0);
+  await expect(page).toHaveURL(/moveInDate=2026-11-27/);
+});
+
+test("search_validation_feedback_is_visible_on_desktop", async ({ page }) => {
+  const searchEvent = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/events") &&
+      response.request().method() === "POST",
+  );
+  await page.goto("/search?city=Lahore&moveInDate=2026-11-28&guests=1");
+  await searchEvent;
+  const checkOut = page.getByLabel("Check-out date");
+  await checkOut.fill("2026-11-27");
+  await expect(checkOut).toHaveValue("2026-11-27");
+  await page.getByRole("button", { name: "Search hostels" }).click();
+
+  await expect(
+    page.locator(".search-compact-form [role='alert']"),
   ).toBeVisible();
 });
 

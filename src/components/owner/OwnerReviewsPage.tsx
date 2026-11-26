@@ -73,38 +73,38 @@ function ReviewCard({
   }
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span
           aria-label={`${review.rating} out of 5 stars`}
-          className="text-[0.95rem] font-semibold text-ink"
+          className="text-body font-semibold text-ink"
         >
           ★ {review.rating}/5
         </span>
-        <span className="text-[0.9rem] font-semibold text-ink">
+        <span className="text-label font-semibold text-ink">
           {review.reviewerName}
         </span>
-        <span className="text-[0.82rem] text-muted">
+        <span className="text-label text-muted">
           {dateFormatter.format(new Date(review.createdAt))}
         </span>
       </div>
-      <p className="m-0 text-[0.82rem] text-muted">
+      <p className="m-0 text-label text-muted">
         {review.hostelName}
         {review.stay
           ? ` · stayed ${dateFormatter.format(new Date(review.stay.checkIn))} to ${dateFormatter.format(new Date(review.stay.checkOut))}`
           : ""}
       </p>
       {review.title ? (
-        <p className="m-0 text-[0.95rem] font-semibold text-ink">{review.title}</p>
+        <p className="m-0 text-body font-semibold text-ink">{review.title}</p>
       ) : null}
-      <p className="m-0 whitespace-pre-line text-[0.92rem] text-ink">
+      <p className="m-0 whitespace-pre-line text-body text-ink">
         {review.comment}
       </p>
 
       {editing ? (
         <div className="grid gap-2">
           <label
-            className="text-[0.875rem] font-semibold text-ink"
+            className="text-label font-semibold text-ink"
             htmlFor={`reply-${review.id}`}
           >
             Your public reply
@@ -142,13 +142,13 @@ function ReviewCard({
         </div>
       ) : review.ownerReply ? (
         <div className="grid gap-2 rounded-[12px] bg-surface-muted p-3">
-          <p className="m-0 text-[0.82rem] font-semibold text-muted">
+          <p className="m-0 text-label font-semibold text-muted">
             Your reply
             {review.repliedAt
               ? ` · ${dateFormatter.format(new Date(review.repliedAt))}`
               : ""}
           </p>
-          <p className="m-0 whitespace-pre-line text-[0.9rem] text-ink">
+          <p className="m-0 whitespace-pre-line text-label text-ink">
             {review.ownerReply}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -173,6 +173,7 @@ function ReviewCard({
       ) : (
         <div>
           <button
+            aria-label={`Reply to review for ${review.hostelName}`}
             className={secondaryButtonClassName}
             onClick={() => setEditing(true)}
             type="button"
@@ -184,7 +185,7 @@ function ReviewCard({
 
       {error ? (
         <p
-          className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+          className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           {error}
@@ -210,11 +211,11 @@ function StatsRow({ stats }: { stats: ReviewStats }) {
     <dl className="m-0 grid grid-cols-3 gap-3">
       {items.map((item) => (
         <div
-          className="grid gap-1 rounded-[14px] border border-line bg-surface p-4"
+          className="grid gap-1 rounded-xl border border-line bg-surface p-4"
           key={item.label}
         >
-          <dt className="text-[0.8rem] font-semibold text-muted">{item.label}</dt>
-          <dd className="m-0 text-[1.4rem] font-bold tracking-[-0.03em] text-ink">
+          <dt className="text-label font-semibold text-muted">{item.label}</dt>
+          <dd className="m-0 text-headline font-bold tracking-[-0.03em] text-ink">
             {item.value}
           </dd>
         </div>
@@ -259,15 +260,15 @@ export function OwnerReviewsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/owner"
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Reviews
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Replies are public and appear under the review on your listing.
       </p>
 
@@ -294,7 +295,7 @@ export function OwnerReviewsContent({
               Loading reviews...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -305,14 +306,14 @@ export function OwnerReviewsContent({
               </button>
             </div>
           ) : reviews.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               {filter === "all"
                 ? "No reviews yet. Students can review a hostel after a completed stay."
                 : "No reviews match this filter."}
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} {total === 1 ? "review" : "reviews"}
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -329,7 +330,7 @@ export function OwnerReviewsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

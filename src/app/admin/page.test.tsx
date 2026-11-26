@@ -26,9 +26,14 @@ describe("AdminRoute", () => {
     );
   });
 
-  it.each(["STUDENT", "OWNER"])("hides the page from %s accounts", async (role) => {
-    mocks.auth.mockResolvedValue({ user: { id: "u1", role } });
-    await expect(AdminRoute()).rejects.toThrow("NEXT_NOT_FOUND");
+  it("redirects student accounts to their profile", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "u1", role: "STUDENT" } });
+    await expect(AdminRoute()).rejects.toThrow("NEXT_REDIRECT:/profile");
+  });
+
+  it("redirects owner accounts to their dashboard", async () => {
+    mocks.auth.mockResolvedValue({ user: { id: "u1", role: "OWNER" } });
+    await expect(AdminRoute()).rejects.toThrow("NEXT_REDIRECT:/owner");
   });
 
   it("renders the page for admins", async () => {

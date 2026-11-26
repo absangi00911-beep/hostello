@@ -37,7 +37,7 @@ export default async function RootLayout({
 
   return (
     <html className={inter.variable} lang="en">
-      <body className="min-h-dvh bg-canvas text-ink">
+      <body className="flex min-h-dvh flex-col bg-canvas text-ink">
         <SkipLink />
         <LoginDialogProvider
           emailCodeEnabled={signInMethods.emailCode}

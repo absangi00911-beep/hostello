@@ -14,8 +14,23 @@
   --color-warm: var(--warm);
   --color-line-strong: var(--line-strong);
   --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-pressed: var(--danger-pressed);
   --color-warn-ink: var(--warn-ink);
   --color-warn-soft: var(--warn-soft);
+  --color-control-border: var(--control-border);
+  --text-display: var(--font-size-display);
+  --text-display--line-height: 1.1;
+  --text-headline: var(--font-size-headline);
+  --text-headline--line-height: 1.25;
+  --text-title: var(--font-size-title);
+  --text-title--line-height: 1.35;
+  --text-body: var(--font-size-body);
+  --text-body--line-height: 1.55;
+  --text-label: var(--font-size-label);
+  --text-label--line-height: 1.25;
+  --text-meta: var(--font-size-meta);
+  --text-meta--line-height: 1.35;
 }
 
 :root {
@@ -31,8 +46,17 @@
   --warm: #f59e0b;
   --line-strong: #cbd5e1;
   --danger: #c13515;
+  --danger-hover: #a52c10;
+  --danger-pressed: #8f240d;
   --warn-ink: #583c13;
   --warn-soft: #fbf4e6;
+  --control-border: #7d8ba1;
+  --font-size-display: clamp(1.875rem, 4vw, 3rem);
+  --font-size-headline: 1.5rem;
+  --font-size-title: 1.125rem;
+  --font-size-body: 1rem;
+  --font-size-label: 0.875rem;
+  --font-size-meta: 0.75rem;
   --page-gutter-total: 128px;
   --page-gutter-tablet: 64px;
   --page-gutter-mobile: 40px;
@@ -103,8 +127,7 @@ a[class~="bg-brand"] {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.4),
     inset 0 -2px 0 rgb(0 0 0 / 0.2),
-    0 3px 4px rgb(15 23 42 / 0.28),
-    0 0 22px color-mix(in srgb, var(--brand) 38%, transparent);
+    0 3px 5px rgb(15 23 42 / 0.18);
   transition:
     background-color 160ms ease,
     background-image 160ms ease,
@@ -119,8 +142,7 @@ a[class~="bg-brand"] {
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.42),
       inset 0 -2px 0 rgb(0 0 0 / 0.22),
-      0 4px 7px rgb(15 23 42 / 0.32),
-      0 0 24px color-mix(in srgb, var(--brand) 42%, transparent);
+      0 4px 7px rgb(15 23 42 / 0.22);
   }
 }
 
@@ -134,7 +156,7 @@ a[class~="bg-brand"]:active {
   box-shadow:
     inset 0 3px 6px rgb(15 23 42 / 0.3),
     inset 0 -1px 0 rgb(255 255 255 / 0.14),
-    0 0 16px color-mix(in srgb, var(--brand) 32%, transparent);
+    0 1px 2px rgb(15 23 42 / 0.18);
   transform: translateY(1px);
 }
 
@@ -217,6 +239,54 @@ a[class~="bg-brand"][aria-disabled="true"] {
   outline-offset: 2px;
 }
 
+.btn-danger {
+  display: inline-flex;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background-color: var(--danger);
+  padding-inline: 1rem;
+  color: var(--surface);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  line-height: 1.25;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    inset 0 -2px 0 rgb(0 0 0 / 0.18),
+    0 2px 3px rgb(15 23 42 / 0.22);
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+@media (hover: hover) {
+  .btn-danger:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--danger-hover);
+  }
+}
+
+.btn-danger:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--danger-pressed);
+  box-shadow: inset 0 3px 6px rgb(0 0 0 / 0.3);
+  transform: translateY(1px);
+}
+
+.btn-danger:disabled,
+.btn-danger[aria-disabled="true"] {
+  cursor: wait;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn-secondary:not([class~="bg-brand"]) {
     transition: none;
@@ -225,6 +295,14 @@ a[class~="bg-brand"][aria-disabled="true"] {
   .btn-secondary:not([class~="bg-brand"]):active:not(:disabled):not(
       [aria-disabled="true"]
     ) {
+    transform: none;
+  }
+
+  .btn-danger {
+    transition: none;
+  }
+
+  .btn-danger:active:not(:disabled):not([aria-disabled="true"]) {
     transform: none;
   }
 }
@@ -264,11 +342,11 @@ a[class~="bg-brand"][aria-disabled="true"] {
 
 /*
  * Form controls drawn with the pale --line border (1.2:1 on white) fail the
- * 3:1 contrast WCAG 1.4.11 needs to identify a field. Give them a darker edge
- * until focused; controls with their own border colour are unaffected.
+ * 3:1 contrast WCAG 1.4.11 needs to identify a field. Use the named stronger
+ * edge until focused; controls with their own border colour are unaffected.
  */
 input[class~="border-line"]:not(:focus),
 select[class~="border-line"]:not(:focus),
 textarea[class~="border-line"]:not(:focus) {
-  border-color: #7d8ba1;
+  border-color: var(--control-border);
 }

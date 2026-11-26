@@ -54,16 +54,16 @@ export interface AdminBookingsContentProps {
 
 function BookingCard({ booking }: { booking: AdminBooking }) {
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="m-0 text-[1rem] font-semibold text-ink">
+        <h2 className="m-0 text-body font-semibold text-ink">
           {booking.hostel.name}
         </h2>
-        <span className="rounded-full bg-surface-muted px-[10px] py-[2px] text-[0.72rem] font-bold text-ink">
+        <span className="rounded-full bg-surface-muted px-[10px] py-[2px] text-meta font-bold text-ink">
           {adminBookingStatusLabel(booking.status)}
         </span>
       </div>
-      <dl className="m-0 grid gap-2 text-[0.85rem] sm:grid-cols-2">
+      <dl className="m-0 grid gap-2 text-label sm:grid-cols-2">
         <div>
           <dt className="text-muted">Payment status</dt>
           <dd className="m-0 font-semibold text-ink">
@@ -87,7 +87,7 @@ function BookingCard({ booking }: { booking: AdminBooking }) {
         </div>
       </dl>
       <Link
-        className="w-fit text-[0.85rem] font-semibold text-brand hover:underline"
+        className="w-fit text-label font-semibold text-brand hover:underline"
         href={`/admin/bookings/${encodeURIComponent(booking.id)}`}
       >
         View booking
@@ -111,16 +111,16 @@ export function AdminBookingsContent({
   return (
     <main id="main-content" className="mx-auto grid w-[min(900px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
       <header>
-        <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+        <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
           Bookings
         </h1>
-        <p className="mb-0 mt-2 text-[0.95rem] text-muted">
+        <p className="mb-0 mt-2 text-body text-muted">
           Review booking and payment status. Student contact and provider
           identifiers are not shown here.
         </p>
@@ -145,7 +145,7 @@ export function AdminBookingsContent({
           Loading bookings...
         </p>
       ) : loadError ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
@@ -156,12 +156,12 @@ export function AdminBookingsContent({
           </button>
         </div>
       ) : bookings.length === 0 ? (
-        <p className="m-0 text-[0.92rem] text-muted">
+        <p className="m-0 text-body text-muted">
           No bookings to review.
         </p>
       ) : (
         <>
-          <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+          <p aria-live="polite" className="m-0 text-label text-muted">
             {bookings.length} {bookings.length === 1 ? "booking" : "bookings"}{" "}
             shown
           </p>
@@ -174,7 +174,7 @@ export function AdminBookingsContent({
       )}
 
       {moreError ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {moreError}
         </p>
       ) : null}

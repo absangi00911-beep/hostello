@@ -49,14 +49,14 @@ export function ConversationThread({
         <div className="flex min-h-[340px] flex-1 flex-col items-center justify-center px-5 py-8 text-center">
           <span
             aria-hidden="true"
-            className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-[1.3rem] text-brand-dark"
+            className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-title text-brand-dark"
           >
             ↗
           </span>
-          <h2 className="m-0 text-[1.2rem] tracking-[-0.045em] text-ink">
+          <h2 className="m-0 text-title tracking-[-0.045em] text-ink">
             Select a conversation
           </h2>
-          <p className="mt-2 m-0 text-[0.9rem] text-muted">
+          <p className="mt-2 m-0 text-label text-muted">
             Choose a hostel conversation to read and reply.
           </p>
         </div>
@@ -68,10 +68,10 @@ export function ConversationThread({
     <section className="flex min-w-0 flex-col" aria-label="Conversation">
       <div className="flex min-h-[78px] items-center justify-between gap-[14px] border-b border-line px-5 py-[14px]">
         <div>
-          <p className="m-0 mb-1 text-[0.8125rem] font-bold uppercase tracking-[0.09em] text-muted">
+          <p className="m-0 mb-1 text-label font-bold uppercase tracking-[0.09em] text-muted">
             {thread?.hostelName ?? "Hostel conversation"}
           </p>
-          <h2 className="m-0 text-[1.15rem] tracking-[-0.045em] text-ink">
+          <h2 className="m-0 text-title tracking-[-0.045em] text-ink">
             {thread
               ? participantName(thread.participants, currentUserId)
               : "Conversation"}
@@ -79,7 +79,7 @@ export function ConversationThread({
         </div>
         <button
           aria-label="Refresh conversation"
-          className="cursor-pointer rounded-lg border border-line bg-surface px-[13px] py-[9px] text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
+          className="cursor-pointer rounded-lg border border-line bg-surface px-[13px] py-[9px] text-label font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
           disabled={refreshing || loading}
           onClick={onRefresh}
           type="button"
@@ -89,12 +89,12 @@ export function ConversationThread({
       </div>
       {error && (
         <div
-          className="mt-3 mx-[18px] rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-[0.88rem] text-[#772e1b]"
+          className="mt-3 mx-[18px] rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-label text-[#772e1b]"
           role="alert"
         >
           <p className="m-0">{error}</p>
           <button
-            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
+            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={onRetry}
             type="button"
           >
@@ -104,7 +104,7 @@ export function ConversationThread({
       )}
       {!thread ? (
         <p
-          className="m-0 px-[18px] py-[22px] text-[0.9rem] text-muted"
+          className="m-0 px-[18px] py-[22px] text-label text-muted"
           role={loading ? "status" : undefined}
         >
           {loading ? "Loading messages…" : "This conversation is unavailable."}
@@ -117,7 +117,7 @@ export function ConversationThread({
           >
             {thread?.messageHasMore && (
               <button
-                className="self-center rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
+                className="self-center rounded-lg border border-line bg-surface px-3 py-2 text-label font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
                 disabled={refreshing}
                 onClick={onLoadOlder}
                 type="button"
@@ -126,7 +126,7 @@ export function ConversationThread({
               </button>
             )}
             {messages.length === 0 && !error ? (
-              <p className="m-auto text-center text-[0.9rem] text-muted">
+              <p className="m-auto text-center text-label text-muted">
                 No messages yet. Send the first reply.
               </p>
             ) : (
@@ -141,7 +141,7 @@ export function ConversationThread({
                     }`}
                     key={item.id}
                   >
-                    <div className="flex items-baseline gap-[9px] text-[0.8125rem] text-muted">
+                    <div className="flex items-baseline gap-[9px] text-label text-muted">
                       <strong className="text-ink">
                         {isOwnMessage ? "You" : item.sender.name || "Hostello member"}
                       </strong>
@@ -158,7 +158,7 @@ export function ConversationThread({
             )}
           </div>
           <form className="border-t border-line px-[18px] pb-4 pt-[14px]" onSubmit={onSend}>
-            <label className="mb-[7px] block text-[0.83rem] font-bold text-ink" htmlFor="messages-compose-input">
+            <label className="mb-[7px] block text-label font-bold text-ink" htmlFor="messages-compose-input">
               Write a message
             </label>
             <textarea
@@ -171,13 +171,13 @@ export function ConversationThread({
               rows={3}
               value={message}
             />
-            {sendError && <p className="mt-2 mb-0 text-[0.84rem] text-[#772e1b]" role="alert">{sendError}</p>}
+            {sendError && <p className="mt-2 mb-0 text-label text-[#772e1b]" role="alert">{sendError}</p>}
             <div className="mt-2 flex items-center justify-between gap-3">
-              <span className="text-[0.8125rem] text-muted">
+              <span className="text-label text-muted">
                 Keep personal contact details private.
               </span>
               <button
-                className="rounded-lg border border-brand bg-brand px-[14px] py-[9px] text-[0.88rem] font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
+                className="rounded-lg border border-brand bg-brand px-[14px] py-[9px] text-label font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
                 disabled={sending || !message.trim()}
                 type="submit"
               >

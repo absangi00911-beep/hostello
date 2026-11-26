@@ -14,7 +14,7 @@ describe("BrowseAccountActions", () => {
     );
 
     expect(markup).toContain("flex items-center justify-self-end gap-4");
-    expect(markup).toContain("text-[0.82rem] font-semibold");
+    expect(markup).toContain("text-label font-semibold");
   });
 
   it("does not offer host sign-up to a student", () => {

@@ -79,6 +79,7 @@ describe("AdminRoommateReportsContent", () => {
     expect(markup).toContain("Asked me to pay outside the platform");
     expect(markup).toContain("Sara");
     expect(markup).toContain("1 reported post<");
+    expect(markup).toContain('aria-label="Delete post by Ayesha"');
     expect(markup).toContain(">Delete post<");
   });
 
@@ -158,6 +159,8 @@ describe("DeleteForm", () => {
     expect(markup).toContain("3 reports are deleted with it");
     expect(markup).toContain("The author is not notified");
     expect(markup).toContain("cannot be undone");
+    expect(markup).toContain('aria-label="Delete post by Ayesha permanently"');
+    expect(markup).toContain('aria-label="Cancel deletion of Ayesha&#x27;s post"');
   });
 
   it("uses the singular for a single report", () => {

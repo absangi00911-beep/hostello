@@ -88,7 +88,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
     <>
       {errorMessage ? <AuthNotice tone="error">{errorMessage}</AuthNotice> : null}
       <form className="grid gap-[14px]" noValidate onSubmit={handleSubmit}>
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>New password</span>
           <input
             autoComplete="new-password"
@@ -100,11 +100,11 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
             type="password"
             value={password}
           />
-          <span className="text-[0.8rem] font-normal text-muted">
+          <span className="text-label font-normal text-muted">
             At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
           </span>
         </label>
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Confirm new password</span>
           <input
             autoComplete="new-password"
@@ -124,7 +124,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
           {isSubmitting ? "Saving…" : "Change password"}
         </button>
       </form>
-      <p className="mb-0 mt-5 text-center text-[0.9rem] text-muted">
+      <p className="mb-0 mt-5 text-center text-label text-muted">
         <Link className={authLinkClassName} href="/login">
           Back to log in
         </Link>

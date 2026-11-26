@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { WishlistsPage } from "@/components/student/WishlistsPage";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
@@ -14,7 +14,7 @@ export default async function WishlistsRoute() {
   }
 
   if (session.user.role !== "STUDENT") {
-    notFound();
+    redirect(session.user.role === "OWNER" ? "/owner" : "/admin");
   }
 
   return (

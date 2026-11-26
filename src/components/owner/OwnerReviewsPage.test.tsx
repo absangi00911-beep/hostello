@@ -69,6 +69,7 @@ describe("OwnerReviewsContent", () => {
     expect(markup).toContain("Clean rooms and friendly staff.");
     expect(markup).toContain("1 review");
     expect(markup).toContain(">Reply<");
+    expect(markup).toContain('aria-label="Reply to review for Green Hostel"');
     expect(markup).not.toContain("Edit reply");
   });
 

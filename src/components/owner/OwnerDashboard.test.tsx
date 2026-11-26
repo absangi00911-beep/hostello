@@ -38,18 +38,18 @@ const render = (props: Partial<OwnerDashboardContentProps>) =>
   renderToStaticMarkup(<OwnerDashboardContent {...base} {...props} />);
 
 describe("OwnerDashboardContent", () => {
-  it("links only to pages that exist today", () => {
+  it("does not duplicate workspace destinations in dashboard quick links", () => {
     const markup = render({});
 
-    for (const href of [
-      "/owner/bookings",
-      "/owner/earnings",
-      "/owner/analytics",
-      "/messages",
-      "/notifications",
-    ]) {
-      expect(markup).toContain(`href="${href}"`);
-    }
+    expect(markup).not.toContain('href="/owner/bookings"');
+    expect(markup).not.toContain('href="/owner/earnings"');
+    expect(markup).not.toContain('href="/owner/reviews"');
+    expect(markup).not.toContain('href="/owner/analytics"');
+  });
+
+  it("keeps the Add listing action and no duplicate quick links", () => {
+    const markup = render({});
+
     expect(markup).toContain('href="/owner/listings/new"');
     expect(markup).not.toContain("/edit");
   });
@@ -71,6 +71,7 @@ describe("OwnerDashboardContent", () => {
     expect(render({ isLoading: true })).toContain("Loading listings...");
     expect(render({})).toContain("You don&#x27;t have any listings yet.");
     expect(render({ filter: "PENDING_REVIEW" })).toContain("No pending review listings.");
+    expect(render({ filter: "DRAFT" })).toContain("No draft listings.");
   });
 
   it("shows a recoverable error", () => {

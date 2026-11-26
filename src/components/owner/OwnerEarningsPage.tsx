@@ -36,25 +36,25 @@ const statusBadgeClassName: Record<PayoutStatus, string> = {
 
 function PayoutRow({ payout }: { payout: OwnerPayout }) {
   return (
-    <li className="grid gap-1 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-1 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[1rem] font-semibold text-ink">
+        <span className="text-body font-semibold text-ink">
           {currencyFormatter.format(payout.amount)}
         </span>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${statusBadgeClassName[payout.status]}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[payout.status]}`}
         >
           {PAYOUT_STATUS_LABELS[payout.status]}
         </span>
       </div>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         Batch created {dateFormatter.format(new Date(payout.createdAt))}
         {payout.status === "PAID" && payout.paidAt
           ? ` · paid ${dateFormatter.format(new Date(payout.paidAt))}`
           : ""}
       </p>
       {payout.reference ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           Reference: <span className="text-ink">{payout.reference}</span>
         </p>
       ) : null}
@@ -96,15 +96,15 @@ export function OwnerEarningsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/owner"
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Earnings
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Payouts are sent in batches by the HostelLo team after a stay ends.
       </p>
 
@@ -113,7 +113,7 @@ export function OwnerEarningsContent({
           Loading earnings...
         </p>
       ) : loadError ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
@@ -130,21 +130,21 @@ export function OwnerEarningsContent({
             className="grid gap-2 rounded-[16px] border border-line bg-surface p-5 sm:p-6"
           >
             <h2
-              className="m-0 text-[0.9rem] font-semibold text-muted"
+              className="m-0 text-label font-semibold text-muted"
               id="ready-for-payout"
             >
               Ready for payout
             </h2>
-            <p className="m-0 text-[2rem] font-bold tracking-[-0.03em] text-ink">
+            <p className="m-0 text-display font-bold tracking-[-0.03em] text-ink">
               {currencyFormatter.format(pendingBalance)}
             </p>
-            <p className="m-0 text-[0.85rem] text-muted">
+            <p className="m-0 text-label text-muted">
               Confirmed, paid stays that have ended and aren&apos;t in a payout
               batch yet.
             </p>
             {pendingBalance > 0 && !hasBankDetails ? (
               <p
-                className="m-0 mt-1 rounded-[12px] bg-warn-soft px-3 py-2 text-[0.85rem] text-warn-ink"
+                className="m-0 mt-1 rounded-[12px] bg-warn-soft px-3 py-2 text-label text-warn-ink"
                 role="note"
               >
                 Add your bank details below so we can send this to you.
@@ -156,12 +156,12 @@ export function OwnerEarningsContent({
 
           <FormSection title="Payout history">
             {payouts.length === 0 ? (
-              <p className="m-0 text-[0.92rem] text-muted">
+              <p className="m-0 text-body text-muted">
                 No payouts yet. They appear here once a batch is created for you.
               </p>
             ) : (
               <>
-                <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+                <p aria-live="polite" className="m-0 text-label text-muted">
                   {payoutTotal} {payoutTotal === 1 ? "payout" : "payouts"}
                 </p>
                 <ul className="m-0 grid list-none gap-3 p-0">
@@ -173,7 +173,7 @@ export function OwnerEarningsContent({
             )}
             {moreError ? (
               <p
-                className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+                className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
                 role="alert"
               >
                 {moreError}

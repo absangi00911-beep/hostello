@@ -67,7 +67,7 @@ export function HostelInquiryForm({
       className="hostel-inquiry-form grid w-full max-w-[560px] min-w-0 gap-2.5 pt-3.5"
       onSubmit={(event) => void handleSubmit(event)}
     >
-      <label className="text-[0.84rem] font-semibold text-ink" htmlFor="hostel-inquiry-message">
+      <label className="text-label font-semibold text-ink" htmlFor="hostel-inquiry-message">
         Your message
       </label>
       <textarea
@@ -81,12 +81,12 @@ export function HostelInquiryForm({
         value={message}
       />
       {error && (
-        <p className="hostel-inquiry-error m-0 text-[0.82rem] text-[#8b2525]" role="alert">
+        <p className="hostel-inquiry-error m-0 text-label text-[#8b2525]" role="alert">
           {error}
         </p>
       )}
       <button
-        className="hostel-inquiry-submit min-h-[46px] self-start rounded-lg border-0 bg-brand px-[18px] text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+        className="hostel-inquiry-submit min-h-[46px] self-start rounded-lg border-0 bg-brand px-[18px] text-label font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
         disabled={isSubmitting}
         type="submit"
       >

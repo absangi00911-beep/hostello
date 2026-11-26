@@ -74,11 +74,11 @@ export function ListingStatusActions({
   return (
     <section
       aria-label="Listing status"
-      className="mb-6 grid gap-2 rounded-[14px] border border-line bg-surface p-4"
+      className="mb-6 grid gap-2 rounded-xl border border-line bg-surface p-4"
     >
-      <p className="m-0 text-[0.88rem] text-muted">{action.help}</p>
+      <p className="m-0 text-label text-muted">{action.help}</p>
       {error ? (
-        <p className="m-0 text-[0.85rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}

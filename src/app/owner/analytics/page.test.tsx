@@ -14,10 +14,14 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-import OwnerAnalyticsRoute from "./page";
+import OwnerAnalyticsRoute, { metadata } from "./page";
 
 describe("OwnerAnalyticsRoute", () => {
   beforeEach(() => mocks.auth.mockReset());
+
+  it("uses the page-specific browser title", () => {
+    expect(metadata.title).toBe("Analytics");
+  });
 
   it("renders the owner analytics page in the workspace shell", async () => {
     mocks.auth.mockResolvedValue({
@@ -35,13 +39,11 @@ describe("OwnerAnalyticsRoute", () => {
     expect(markup).toContain("Analytics");
   });
 
-  it("keeps the existing unframed rendering for admins", async () => {
+  it("redirects admins to the admin console instead of showing an owner route", async () => {
     mocks.auth.mockResolvedValue({
       user: { id: "a1", role: "ADMIN", name: "Admin", email: "admin@example.com" },
     });
 
-    const markup = renderToStaticMarkup(await OwnerAnalyticsRoute());
-
-    expect(markup).not.toContain('aria-label="Workspace navigation"');
+    await expect(OwnerAnalyticsRoute()).rejects.toThrow("NEXT_REDIRECT:/admin");
   });
 });

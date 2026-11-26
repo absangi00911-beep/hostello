@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { WorkspaceShell } from "@/components/layout/WorkspaceShell";
 import { AnalyticsPage } from "@/components/owner/AnalyticsPage";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { OWNER_WORKSPACE_NAVIGATION } from "@/components/owner/ownerNavigation";
 import { auth } from "@/lib/auth/config";
+
+export const metadata: Metadata = { title: "Analytics" };
 
 export default async function OwnerAnalyticsRoute() {
   const session = await auth();
@@ -12,12 +15,12 @@ export default async function OwnerAnalyticsRoute() {
     redirect(`/login?callbackUrl=${encodeURIComponent("/owner/analytics")}`);
   }
 
-  if (session.user.role !== "OWNER" && session.user.role !== "ADMIN") {
-    notFound();
+  if (session.user.role === "ADMIN") {
+    redirect("/admin");
   }
 
-  if (session.user.role === "ADMIN") {
-    return <AnalyticsPage />;
+  if (session.user.role !== "OWNER") {
+    notFound();
   }
 
   return (

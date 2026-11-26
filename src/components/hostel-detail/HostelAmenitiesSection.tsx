@@ -49,7 +49,7 @@ export function HostelAmenitiesSection({
       role="region"
     >
       <h2
-        className="m-0 mb-3 text-xl leading-[1.35] font-semibold tracking-[-0.02em]"
+        className="m-0 mb-3 text-title leading-[1.35] font-semibold tracking-[-0.02em]"
         id="hostel-amenities-title"
       >
         What this place offers
@@ -60,7 +60,7 @@ export function HostelAmenitiesSection({
 
           return (
             <li
-              className="flex min-w-0 items-center gap-3 border-b border-line py-2.5 text-base text-ink [&:nth-last-child(-n+2)]:border-b-0"
+              className="flex min-w-0 items-center gap-3 border-b border-line py-2.5 text-body text-ink [&:nth-last-child(-n+2)]:border-b-0"
               key={amenity}
             >
               <Icon

@@ -31,7 +31,7 @@ export function ListingRoomsEditor({
   return (
     <div className="grid gap-4">
       {errors.rooms ? (
-        <p className="m-0 text-[0.85rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {errors.rooms}
         </p>
       ) : null}
@@ -45,7 +45,7 @@ export function ListingRoomsEditor({
               key={room.id ?? `new-${index}`}
             >
               <div className="flex items-center justify-between gap-3">
-                <h3 className="m-0 text-[0.95rem] font-semibold text-ink">
+                <h3 className="m-0 text-body font-semibold text-ink">
                   Room type {index + 1}
                 </h3>
                 <button

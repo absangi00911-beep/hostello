@@ -58,7 +58,12 @@ describe("/api/auth/verify-email", () => {
     expect(html).toContain("Verify your email");
     expect(html).toContain('method="post"');
     expect(html).toContain('name="confirm" value="verify"');
+    expect(html).toContain("background:#f6f8fb;color:#0f172a");
+    expect(html).toContain("border-radius:12px");
+    expect(html).toContain("background:#2563eb;color:#fff");
+    expect(html).not.toContain("#FDF8F0");
     expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("content-security-policy")).toContain("default-src 'none'");
     expect(mocks.transaction).not.toHaveBeenCalled();
     expect(mocks.verificationTokenFindFirst).toHaveBeenCalledWith({
       where: { token: { in: [TOKEN_HASH, TOKEN] } },

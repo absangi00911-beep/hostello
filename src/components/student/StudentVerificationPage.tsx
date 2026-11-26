@@ -41,7 +41,7 @@ function readApiError(value: unknown): string | null {
 }
 
 const buttonClassName =
-  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white no-underline enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
+  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white no-underline enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 
 export function StudentVerificationPage() {
   const [status, setStatus] = useState<VerificationStatus | null>(null);
@@ -135,7 +135,7 @@ export function StudentVerificationPage() {
           description="Upload a student ID or enrollment document. Only the HostelLo review team can view it."
           action={
             <Link
-              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-[0.9rem] font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
+              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-label font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
               href="/profile"
             >
               Back to profile
@@ -146,19 +146,19 @@ export function StudentVerificationPage() {
       {isLoading ? (
         <p className="text-muted">Loading verification status...</p>
       ) : loadError || !status ? (
-        <p className="rounded-[14px] bg-surface-muted p-4 text-danger" role="alert">
+        <p className="rounded-xl bg-surface-muted p-4 text-danger" role="alert">
           {loadError ?? "Could not load your verification status."}
         </p>
       ) : status === "APPROVED" ? (
         <p
-          className="rounded-[14px] bg-brand-soft p-4 text-brand-dark"
+          className="rounded-xl bg-brand-soft p-4 text-brand-dark"
           role="status"
         >
           You're verified. A verified student badge shows on your profile.
         </p>
       ) : status === "PENDING" ? (
         <p
-          className="rounded-[14px] bg-brand-soft p-4 text-brand-dark"
+          className="rounded-xl bg-brand-soft p-4 text-brand-dark"
           role="status"
         >
           Your document is under review. We'll notify you once it's decided.
@@ -167,7 +167,7 @@ export function StudentVerificationPage() {
         <>
           {status === "REJECTED" ? (
             <p
-              className="mb-4 rounded-[14px] bg-surface-muted p-4 text-ink"
+              className="mb-4 rounded-xl bg-surface-muted p-4 text-ink"
               role="status"
             >
               Your last document wasn't approved. You can upload a clearer or
@@ -176,18 +176,18 @@ export function StudentVerificationPage() {
           ) : null}
           {errorMessage ? (
             <p
-              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {errorMessage}
             </p>
           ) : null}
           <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
-            <label className="grid gap-2 text-[0.875rem] font-semibold text-ink">
+            <label className="grid gap-2 text-label font-semibold text-ink">
               <span>Document (JPEG, PNG, WebP or PDF, up to 4MB)</span>
               <input
                 accept={ACCEPTED_TYPES.join(",")}
-                className="text-base font-normal"
+                className="text-body font-normal"
                 name="file"
                 onChange={(event) => setFile(event.currentTarget.files?.[0] ?? null)}
                 type="file"

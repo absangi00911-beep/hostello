@@ -13,11 +13,11 @@ type Props = {
 export function AvailabilityAlertStayFields({ values, update }: Props) {
   return (
     <fieldset className="grid gap-4 border-0 p-0">
-      <legend className="mb-1 text-sm font-semibold text-ink">
+      <legend className="mb-1 text-label font-semibold text-ink">
         Stay details
       </legend>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm font-medium">
+        <label className="grid gap-1 text-label font-medium">
           Check-in
           <input
             className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -27,7 +27,7 @@ export function AvailabilityAlertStayFields({ values, update }: Props) {
             value={values.checkIn}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium">
+        <label className="grid gap-1 text-label font-medium">
           Check-out
           <input
             className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -38,7 +38,7 @@ export function AvailabilityAlertStayFields({ values, update }: Props) {
           />
         </label>
       </div>
-      <label className="grid gap-1 text-sm font-medium sm:max-w-xs">
+      <label className="grid gap-1 text-label font-medium sm:max-w-xs">
         Guests (1–4)
         <select
           className="min-h-11 rounded-lg border border-line bg-white px-3 font-normal"

@@ -6,7 +6,7 @@ export const MAIN_CONTENT_ID = "main-content";
 export function SkipLink() {
   return (
     <a
-      className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[2000] focus-visible:rounded-[8px] focus-visible:bg-ink focus-visible:px-4 focus-visible:py-3 focus-visible:text-sm focus-visible:font-semibold focus-visible:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[2000] focus-visible:rounded-[8px] focus-visible:bg-ink focus-visible:px-4 focus-visible:py-3 focus-visible:text-label focus-visible:font-semibold focus-visible:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       href={`#${MAIN_CONTENT_ID}`}
     >
       Skip to main content

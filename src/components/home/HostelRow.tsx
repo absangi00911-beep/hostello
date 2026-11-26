@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,6 +11,7 @@ import { useRef, useState } from "react";
 import { LoginDialogTrigger } from "@/components/auth/LoginDialogTrigger";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import { HostelCardImage } from "@/components/HostelCardImage";
 import { getScrollBehavior } from "@/lib/scroll-behavior";
 
 export interface HostelListing {
@@ -156,8 +156,8 @@ function HostelFavoriteControl({
       </button>
       {message && (
         <p
-          className={`hostel-favorite-feedback mt-2 mb-0 text-[0.8125rem] leading-[1.4] ${
-            isError ? "text-[#a12622]" : "text-muted"
+          className={`hostel-favorite-feedback mt-2 mb-0 text-label leading-[1.4] ${
+            isError ? "text-danger" : "text-muted"
           }`}
           role={isError ? "alert" : "status"}
         >
@@ -215,7 +215,7 @@ export function HostelRow({
   return (
     <section className="mb-7" aria-labelledby={`stays-${city}`}>
       <div className="mb-3 flex items-center justify-between gap-[18px]">
-        <h2 className="m-0 min-w-0 text-[1.3125rem] font-bold leading-[1.43] tracking-0" id={`stays-${city}`}>
+        <h2 className="m-0 min-w-0 text-title font-bold leading-[1.43] tracking-0" id={`stays-${city}`}>
           Stays in {city}
         </h2>
         <div className="flex flex-[0_0_auto] gap-2">
@@ -239,10 +239,10 @@ export function HostelRow({
       </div>
 
       <div
-        className="hostel-carousel grid grid-flow-col auto-cols-[calc(14.085%_-_13.8px)] gap-[14px] overflow-x-auto overscroll-x-contain px-px pb-[10px] [scroll-padding-inline:1px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.39%_-_11.71px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(50%_-_5px)] [@media(max-width:720px)]:gap-3 [@media(max-width:720px)]:ml-[-20px] [@media(max-width:720px)]:mr-[-20px] [@media(max-width:720px)]:px-0 [@media(max-width:720px)]:pl-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:pr-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:[scroll-padding-inline:calc(4.545%_+_10.36px)]"
+        className="hostel-carousel grid grid-flow-col auto-cols-[calc(14.085%_-_13.8px)] gap-[14px] overflow-x-auto overscroll-x-contain px-2 pb-[10px] [scroll-padding-inline:8px] snap-x snap-mandatory [scrollbar-width:none] [@media(min-width:721px)_and_(max-width:1100px)]:auto-cols-[calc(24.39%_-_11.71px)] [@media(min-width:721px)_and_(max-width:1100px)]:gap-3 [@media(max-width:720px)]:auto-cols-[calc(50%_-_5px)] [@media(max-width:720px)]:gap-3 [@media(max-width:720px)]:ml-[-20px] [@media(max-width:720px)]:mr-[-20px] [@media(max-width:720px)]:px-0 [@media(max-width:720px)]:pl-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:pr-[calc(4.545%_+_12.18px)] [@media(max-width:720px)]:[scroll-padding-inline:calc(4.545%_+_10.36px)]"
         ref={carouselRef}
         role="region"
-        aria-label={`Stays in ${city}`}
+        aria-label={`Hostel listings in ${city}`}
         tabIndex={0}
       >
         {hostels.map((hostel, index) => {
@@ -254,43 +254,35 @@ export function HostelRow({
               key={hostel.id}
             >
               <Link
-                aria-label={`View details for ${hostel.name}`}
+                aria-labelledby={`hostel-title-${hostel.id}`}
                 className="hostel-card-link group block min-w-0 rounded-[16px] text-inherit transition-transform duration-[160ms] active:scale-[0.99] motion-reduce:active:transform-none!"
                 href={`/hostels/${hostel.id}`}
               >
                 <div className="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[16px] bg-brand-soft">
-                  {image ? (
-                    <Image
-                      alt={hostel.name}
-                      className={hostelCardImageClassName}
-                      fill
-                      loading={isAboveFold && index < EAGER_CARD_IMAGES ? "eager" : "lazy"}
-                      sizes="(max-width: 720px) 40vw, (max-width: 1100px) 23vw, 12vw"
-                      src={image}
-                    />
-                  ) : (
-                    <div
-                      className="hostel-image-fallback h-full w-full bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73/16%)),var(--brand-soft)]"
-                      role="img"
-                      aria-label={`No photo available for ${hostel.name}`}
-                    />
-                  )}
+                  <HostelCardImage
+                    alt={hostel.name}
+                    className={hostelCardImageClassName}
+                    loading={isAboveFold && index < EAGER_CARD_IMAGES ? "eager" : "lazy"}
+                    sizes="(max-width: 720px) 40vw, (max-width: 1100px) 23vw, 12vw"
+                    src={image}
+                  />
                 </div>
                 <div className="hostel-card-details px-[2px] pt-2 pb-1 [@media(max-width:720px)]:px-0">
                   <h3
-                    className="m-0 mb-[3px] overflow-hidden text-[0.875rem] font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.82rem]"
+                    className="m-0 mb-[3px] overflow-hidden text-label font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap [@media(max-width:720px)]:line-clamp-2 [@media(max-width:720px)]:min-h-[2.5em] [@media(max-width:720px)]:whitespace-normal [@media(max-width:720px)]:text-label"
+                    id={`hostel-title-${hostel.id}`}
                     title={hostel.name}
                   >
                     {hostel.name}
                   </h3>
-                  <p className="hostel-card-price m-0 mb-[5px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.875rem] [font-family:var(--font-inter),_sans-serif]">
+                  <p className="hostel-card-price m-0 mb-[5px] overflow-hidden text-label leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-label [font-family:var(--font-inter),_sans-serif]">
                     PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
-                    <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-xs">
+                    <span className="text-meta font-[450] text-muted [@media(max-width:720px)]:text-meta">
                       {" / month"}
                     </span>
                   </p>
-                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-xs">
-                    <span className="hostel-card-area inline-flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-meta text-muted [@media(max-width:720px)]:text-meta">
+                    <span className="hostel-card-area min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:720px)]:line-clamp-2 [@media(max-width:720px)]:items-start [@media(max-width:720px)]:whitespace-normal">
                       {hostel.area || hostel.city}
                     </span>
                     <span

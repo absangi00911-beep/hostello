@@ -16,7 +16,7 @@ describe("ProfilePage", () => {
     expect(markup).toContain('aria-busy="true"');
   });
 
-  it("renders student summary counts and the existing host signup destination", () => {
+  it("renders student summary counts without a dead host-signup action", () => {
     const markup = renderToStaticMarkup(
       <ProfilePageContent
         error={null}
@@ -38,32 +38,10 @@ describe("ProfilePage", () => {
     expect(markup).toContain("Bookings");
     expect(markup).toContain("Saved hostels");
     expect(markup).toContain("Reviews");
-    expect(markup).toContain('href="/signup?role=OWNER"');
-    expect(markup).toContain("Become a host");
+    expect(markup).not.toContain('href="/signup?role=OWNER"');
+    expect(markup).not.toContain("Become a host");
     expect(markup).not.toContain("student@example.com");
     expect(markup).not.toContain("03001234567");
-  });
-
-  it("stacks the host promotion content on narrow screens", () => {
-    const markup = renderToStaticMarkup(
-      <ProfilePageContent
-        error={null}
-        onRetry={() => {}}
-        profile={{
-          name: "Alex Student",
-          avatar: null,
-          city: "Lahore",
-          createdAt: "2024-06-10T00:00:00.000Z",
-          counts: { bookings: 2, favorites: 5, reviews: 1 },
-        }}
-        isLoading={false}
-      />,
-    );
-
-    expect(markup).toContain(
-      "flex flex-col items-start justify-between gap-4 rounded-[14px]",
-    );
-    expect(markup).toContain("sm:flex-row sm:items-center sm:gap-6");
   });
 
   it("shows a profile retry action after an API error", () => {

@@ -160,6 +160,28 @@ test("category_tabs_filter_by_supported_hostel_attributes", async ({
   ).toHaveCount(0);
 });
 
+test("mobile_category_navigation_can_reach_the_budget_filter", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await loadMockedHomeListings(page);
+
+  const categories = visibleCategories(page);
+  const budget = categories.getByRole("button", { name: "Under PKR 20k" });
+  await budget.scrollIntoViewIfNeeded();
+  await budget.click();
+
+  await expect(budget).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("heading", {
+      name: "Lahore Student Stay 2",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect(await categories.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+});
+
 test("destination_and_move_in_date_filters_apply_to_search_results", async ({
   page,
 }) => {
@@ -357,17 +379,29 @@ test("hostel_carousel_peek_matches_desktop_tablet_and_mobile_direction", async (
     [1440, 7.15],
     [1024, 4.15],
     [800, 4.15],
-    [390, 2.3],
-    [320, 2.3],
+    [390, 2.1],
+    [320, 2.1],
   ]) {
     await page.setViewportSize({ width, height: 900 });
+    await carousel.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
     const visibleCount = await carousel.evaluate((element) => {
-      const card = element.querySelector(".hostel-card");
-      if (!card) return 0;
-      const gap = Number.parseFloat(getComputedStyle(element).columnGap);
-      return (
-        (element.clientWidth + gap) /
-        (card.getBoundingClientRect().width + gap)
+      const bounds = element.getBoundingClientRect();
+      const viewportLeft = bounds.left + element.clientLeft;
+      const viewportRight = viewportLeft + element.clientWidth;
+
+      return [...element.querySelectorAll(".hostel-card")].reduce(
+        (count, card) => {
+          const cardBounds = card.getBoundingClientRect();
+          const visibleWidth = Math.max(
+            0,
+            Math.min(cardBounds.right, viewportRight) -
+              Math.max(cardBounds.left, viewportLeft),
+          );
+          return count + visibleWidth / cardBounds.width;
+        },
+        0,
       );
     });
 

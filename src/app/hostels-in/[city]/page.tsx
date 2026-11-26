@@ -21,7 +21,7 @@ import { getSiteUrl } from "@/lib/site-metadata";
 const getCity = cache(getCityPage);
 
 const linkClassName =
-  "inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 text-base font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2";
+  "inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 text-body font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2";
 
 function genderLabel(gender: string): string {
   if (gender === "MALE") return "Men\u2019s hostel";
@@ -67,7 +67,7 @@ export default async function CityHostelsPage({
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <SiteHeader user={user} />
       <main id="main-content" className="mx-auto w-[min(960px,calc(100%-2.5rem))] py-8 text-ink">
-        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
+        <nav aria-label="Breadcrumb" className="mb-4 text-label text-muted">
           <Link className="hover:underline" href="/">
             Home
           </Link>
@@ -75,8 +75,8 @@ export default async function CityHostelsPage({
           <span aria-current="page">Hostels in {city.name}</span>
         </nav>
 
-        <h1 className="m-0 text-3xl font-bold tracking-tight">Student hostels in {city.name}</h1>
-        <div className="mt-3 grid gap-2 text-base text-muted">
+        <h1 className="m-0 text-display font-bold tracking-tight">Student hostels in {city.name}</h1>
+        <div className="mt-3 grid gap-2 text-body text-muted">
           {buildCityIntro(city.name, city.facts).map((paragraph) => (
             <p className="m-0" key={paragraph}>
               {paragraph}
@@ -94,11 +94,11 @@ export default async function CityHostelsPage({
                   className="block rounded-2xl border border-line bg-white p-4 text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                   href={`/hostels/${encodeURIComponent(hostel.slug)}`}
                 >
-                  <span className="block text-lg font-semibold">{hostel.name}</span>
-                  <span className="block text-sm text-muted">
+                  <span className="block text-title font-semibold">{hostel.name}</span>
+                  <span className="block text-label text-muted">
                     {[hostel.area?.trim(), genderLabel(hostel.gender)].filter(Boolean).join(" \u00b7 ")}
                   </span>
-                  <span className="mt-1 block text-sm">
+                  <span className="mt-1 block text-label">
                     {price > 0 ? `From ${formatPkr(price)}/month` : "Price on request"}
                     {hasRating ? ` \u00b7 ${hostel.rating.toFixed(1)}/5 (${hostel.reviewCount})` : ""}
                     {hostel.verified ? " \u00b7 Verified" : ""}
@@ -117,7 +117,7 @@ export default async function CityHostelsPage({
 
         {city.relatedCities.length > 0 ? (
           <nav aria-label="Other cities" className="mt-8">
-            <h2 className="m-0 text-lg font-semibold">Hostels in other cities</h2>
+            <h2 className="m-0 text-title font-semibold">Hostels in other cities</h2>
             <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">
               {city.relatedCities.map((related) => (
                 <li key={related.slug}>

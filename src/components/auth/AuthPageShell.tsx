@@ -3,10 +3,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import type { BrowseAccountUser } from "./BrowseAccountMenu";
 
 export const authInputClassName =
-  "min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!";
+  "min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!";
 
 export const authButtonClassName =
-  "mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-4 text-base font-[650] text-white no-underline enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
+  "mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-4 text-body font-[650] text-white no-underline enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 
 export const authLinkClassName =
   "font-semibold text-brand hover:underline focus-visible:outline-brand!";
@@ -20,7 +20,7 @@ export function AuthNotice({
 }) {
   return (
     <p
-      className={`mb-4 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] leading-[1.45] ${
+      className={`mb-4 rounded-xl px-[13px] py-[11px] text-label leading-[1.45] ${
         tone === "error"
           ? "bg-surface-muted text-danger"
           : "bg-brand-soft text-brand-dark"
@@ -48,11 +48,11 @@ export function AuthPageShell({
       <SiteHeader hideOnMobile={false} user={user} />
       <main id="main-content" className="flex flex-1 items-start justify-center px-4 pb-16 pt-6">
         <div className="w-full max-w-[440px] rounded-[16px] border border-line bg-surface p-6 shadow-[0_8px_24px_rgb(15_23_42_/_6%)] sm:p-8">
-          <h1 className="m-0 text-[1.5rem] font-bold leading-tight text-ink">
+          <h1 className="m-0 text-headline font-bold leading-tight text-ink">
             {title}
           </h1>
           {description ? (
-            <p className="mb-5 mt-2 text-[0.95rem] text-muted">{description}</p>
+            <p className="mb-5 mt-2 text-body text-muted">{description}</p>
           ) : (
             <div className="mb-5" />
           )}

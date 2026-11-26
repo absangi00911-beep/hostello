@@ -24,11 +24,11 @@ export function SearchLocationPicker({
   return (
     <div className="space-y-3">
       {locationError && (
-        <p className="m-0 rounded-lg bg-[#fff4f1] px-3 py-2 text-sm text-[#9b2c18]" role="alert">
+        <p className="m-0 rounded-lg bg-warn-soft px-3 py-2 text-label text-danger" role="alert">
           {locationError}
         </p>
       )}
-      <p className="m-0 px-1 text-[0.8125rem] font-semibold text-muted">
+      <p className="m-0 px-1 text-label font-semibold text-muted">
         Suggested destinations
       </p>
       <div>
@@ -42,8 +42,8 @@ export function SearchLocationPicker({
             <MapPin aria-hidden="true" size={18} />
           </span>
           <span>
-            <span className="block text-sm font-semibold text-ink">Nearby</span>
-            <span className="mt-0.5 block text-xs text-muted">
+            <span className="block text-label font-semibold text-ink">Nearby</span>
+            <span className="mt-0.5 block text-meta text-muted">
               Search within 25 km of your location
             </span>
           </span>
@@ -61,10 +61,10 @@ export function SearchLocationPicker({
                     <MapPin aria-hidden="true" size={18} />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-ink">
+                    <span className="block text-label font-semibold text-ink">
                       {city}, Pakistan
                     </span>
-                    <span className="mt-0.5 block text-xs text-muted">
+                    <span className="mt-0.5 block text-meta text-muted">
                       Explore student stays
                     </span>
                   </span>
@@ -73,7 +73,7 @@ export function SearchLocationPicker({
             ))}
           </ul>
         ) : (
-          <p className="m-0 px-3 py-2 text-sm text-muted">
+          <p className="m-0 px-3 py-2 text-label text-muted">
             No suggested city matches. You can still search for "{query}".
           </p>
         )}

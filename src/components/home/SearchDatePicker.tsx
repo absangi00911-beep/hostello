@@ -68,7 +68,7 @@ export function SearchDatePicker({
           <button
             aria-selected={mode === option}
             aria-controls={`search-date-${option}-panel`}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border-0 px-4 text-sm font-medium capitalize text-muted transition-colors hover:text-ink aria-selected:bg-white aria-selected:text-brand-dark aria-selected:shadow-[0_1px_3px_rgb(15_23_42_/_12%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border-0 px-4 text-label font-medium capitalize text-muted transition-colors hover:text-ink aria-selected:bg-white aria-selected:text-brand-dark aria-selected:shadow-[0_1px_3px_rgb(15_23_42_/_12%)] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
             id={`search-date-${option}-tab`}
             key={option}
             onClick={() => setMode(option)}
@@ -89,7 +89,7 @@ export function SearchDatePicker({
           role="tabpanel"
         >
           <div className="mb-4 flex items-center justify-between">
-            <p className="m-0 text-sm font-semibold text-ink">Choose a date</p>
+            <p className="m-0 text-label font-semibold text-ink">Choose a date</p>
             <div className="flex gap-2">
               <button
                 aria-label="Previous month"
@@ -133,7 +133,7 @@ export function SearchDatePicker({
           id="search-date-flexible-panel"
           role="tabpanel"
         >
-          <p className="mb-3 text-sm font-semibold text-ink">
+          <p className="mb-3 text-label font-semibold text-ink">
             {flexibleMonth
               ? `Choose a move-in day in ${MONTH_FORMATTER.format(flexibleMonth)}`
               : "Choose a month"}
@@ -151,7 +151,7 @@ export function SearchDatePicker({
                 );
                 return (
                   <button
-                    className="min-h-12 cursor-pointer rounded-xl border border-line bg-white px-4 text-left text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                    className="min-h-12 cursor-pointer rounded-xl border border-line bg-white px-4 text-left text-label font-medium text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                     key={toDateKey(month)}
                     onClick={() => setFlexibleMonth(month)}
                     type="button"
@@ -164,7 +164,7 @@ export function SearchDatePicker({
           ) : (
             <div>
               <button
-                className="mb-3 min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                className="mb-3 min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-label font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
                 onClick={() => setFlexibleMonth(null)}
                 type="button"
               >
@@ -177,7 +177,7 @@ export function SearchDatePicker({
               />
             </div>
           )}
-          <p className="mt-4 text-xs leading-5 text-muted">
+          <p className="mt-4 text-meta leading-5 text-muted">
             Choose one exact move-in day. Availability is checked for that day.
           </p>
         </div>

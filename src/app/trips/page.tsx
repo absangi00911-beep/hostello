@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { DesktopAccountHeader } from "@/components/layout/DesktopAccountHeader";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { TripsPage } from "@/components/student/TripsPage";
@@ -12,7 +12,7 @@ export default async function TripsRoute() {
   }
 
   if (session.user.role !== "STUDENT") {
-    notFound();
+    redirect(session.user.role === "OWNER" ? "/owner" : "/admin");
   }
 
   return (

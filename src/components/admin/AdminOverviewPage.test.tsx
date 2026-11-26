@@ -32,24 +32,10 @@ describe("AdminOverviewContent", () => {
     expect(markup).toContain("Last 7 days");
   });
 
-  it("links to every admin section that exists", () => {
+  it("does not duplicate the workspace navigation as an overview card directory", () => {
     const markup = render();
-    expect(markup).toContain('href="/admin/bookings"');
-    expect(markup).toContain('href="/admin#listing-statistics"');
-    expect(markup).toContain('href="/admin/listings"');
-    expect(markup).toContain('href="/admin/verifications"');
-    expect(markup).toContain('href="/admin/roommate-reports"');
-    expect(markup).toContain('href="/admin/payouts"');
-    expect(markup).toContain('href="/admin/refunds"');
-    expect(markup).toContain('href="/admin/payment-events"');
-    expect(markup).toContain('href="/admin/search-sync"');
-  });
-
-  it("does not imply that payout approval sends money", () => {
-    const markup = render();
-    expect(markup).toContain("second admin");
-    expect(markup).toContain("settlement is disabled");
-    expect(markup).not.toContain("record the transfer or void the batch");
+    expect(markup).not.toContain('aria-label="Admin sections"');
+    expect(markup).not.toContain('href="/admin#listing-statistics"');
   });
 
   it("shows loading and error states", () => {

@@ -34,13 +34,13 @@ function RangeRow({
   onRemove: (id: string) => void;
 }) {
   return (
-    <li className="flex flex-wrap items-start justify-between gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="grid gap-1">
-        <span className="text-[1rem] font-semibold text-ink">
+        <span className="text-body font-semibold text-ink">
           {formatBlockedRange(range.startDate, range.endDate)}
         </span>
         {range.reason ? (
-          <span className="text-[0.85rem] text-muted">{range.reason}</span>
+          <span className="text-label text-muted">{range.reason}</span>
         ) : null}
       </div>
       <button
@@ -105,15 +105,15 @@ export function OwnerBlockedDatesContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/owner"
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Blocked dates
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">{listingName}</p>
+      <p className="mb-6 mt-2 text-body text-muted">{listingName}</p>
 
       <div className="grid gap-5">
         <FormSection
@@ -161,7 +161,7 @@ export function OwnerBlockedDatesContent({
             </Field>
             {formError ? (
               <p
-                className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+                className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
                 role="alert"
               >
                 {formError}
@@ -185,7 +185,7 @@ export function OwnerBlockedDatesContent({
               Loading blocked dates...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -196,12 +196,12 @@ export function OwnerBlockedDatesContent({
               </button>
             </div>
           ) : ranges.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               No blocked dates. Every date is open for booking.
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} {total === 1 ? "range" : "ranges"}
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -218,7 +218,7 @@ export function OwnerBlockedDatesContent({
           )}
           {removeError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {removeError}
@@ -226,7 +226,7 @@ export function OwnerBlockedDatesContent({
           ) : null}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

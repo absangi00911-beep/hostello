@@ -67,22 +67,22 @@ export function SearchPillPanels({
           role="dialog"
         >
           {isNearby && locationStatus === "loading" && (
-            <p className="mb-4 text-sm text-muted" role="status">
+            <p className="mb-4 text-label text-muted" role="status">
               Getting your location for a {NEARBY_SEARCH_RADIUS_KM} km search...
             </p>
           )}
           {isNearby && locationStatus === "ready" && (
-            <p className="mb-4 text-sm text-muted" role="status">
+            <p className="mb-4 text-label text-muted" role="status">
               Using your location within {NEARBY_SEARCH_RADIUS_KM} km.
             </p>
           )}
           {isNearby && locationStatus === "error" && (
             <div className="mb-4">
-              <p className="m-0 text-sm text-[#9b2c18]" role="alert">
+              <p className="m-0 text-label text-danger" role="alert">
                 {locationError}
               </p>
               <button
-                className="mt-2 min-h-11 rounded-full border border-line px-3 text-sm font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+                className="mt-2 min-h-11 rounded-full border border-line px-3 text-label font-medium text-ink focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
                 onClick={onChooseCity}
                 type="button"
               >

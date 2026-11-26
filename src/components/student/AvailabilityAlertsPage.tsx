@@ -92,7 +92,7 @@ export function AvailabilityAlertsPage({
           description="We’ll let you know in Notifications when a hostel matches your dates and guest count."
           action={
             <Link
-              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-sm font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
+              className="inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-label font-semibold text-ink no-underline hover:border-line-strong hover:bg-surface-muted"
               href="/notifications"
             >
               Notifications
@@ -101,13 +101,13 @@ export function AvailabilityAlertsPage({
         />
 
       {notice && (
-        <p aria-live="polite" className="mb-4 text-sm text-brand-dark" role="status">
+        <p aria-live="polite" className="mb-4 text-label text-brand-dark" role="status">
           {notice}
         </p>
       )}
       {uncertain && (
         <button
-          className="mb-4 inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-sm font-semibold"
+          className="mb-4 inline-flex min-h-11 items-center rounded-[8px] border border-line bg-surface px-4 text-label font-semibold"
           disabled={refreshingUncertain}
           onClick={refreshUncertain}
           type="button"
@@ -166,7 +166,7 @@ export function AvailabilityAlertsPage({
       )}
       {!loading && !loadError && alerts.length > 0 && (
         <>
-          <p className="mb-3 text-sm text-muted" role="status">
+          <p className="mb-3 text-label text-muted" role="status">
             {total} {total === 1 ? "alert" : "alerts"}
           </p>
           <AvailabilityAlertList

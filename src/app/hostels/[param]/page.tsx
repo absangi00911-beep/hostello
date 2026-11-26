@@ -105,7 +105,7 @@ export default async function HostelDetailPage({
       >
         <div className="hostel-detail-header-inner mx-auto grid min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] grid-cols-[minmax(0,1fr)_auto] items-center gap-6 [@media(max-width:960px)]:min-h-0 [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:960px)]:py-3 [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))] [&_.browse-account-trigger]:px-2 [&_.browse-account-trigger]:py-1 [&_.browse-account-trigger]:pl-1 [&_.browse-sign-in]:size-[34px]">
           <HostelloBrand
-            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
+            className="inline-flex w-fit items-center text-title font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]"
           />
           <BrowseAccountActions
             user={
@@ -191,7 +191,7 @@ export default async function HostelDetailPage({
                 />
                 {session?.user.role === "STUDENT" ? (
                   <Link
-                    className="inline-flex min-h-11 items-center justify-self-start rounded-full border border-line bg-white px-4 text-base font-semibold text-ink no-underline hover:bg-surface-muted btn-secondary"
+                    className="inline-flex min-h-11 items-center justify-self-start rounded-full border border-line bg-white px-4 text-body font-semibold text-ink no-underline hover:bg-surface-muted btn-secondary"
                     href={`/hostels/${encodeURIComponent(hostel.slug)}/roommates`}
                   >
                     Find a roommate for this hostel

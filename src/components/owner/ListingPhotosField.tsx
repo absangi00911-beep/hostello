@@ -107,7 +107,7 @@ export function ListingPhotosField({
                   src={url}
                 />
                 {index === 0 ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-[0.8125rem] font-bold text-ink">
+                  <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-label font-bold text-ink">
                     Cover
                   </span>
                 ) : null}
@@ -115,7 +115,7 @@ export function ListingPhotosField({
               <div className="flex flex-wrap gap-2">
                 {index > 0 ? (
                   <button
-                    className={`${secondaryButtonClassName} min-h-11 px-3 text-[0.8125rem]`}
+                    className={`${secondaryButtonClassName} min-h-11 px-3 text-label`}
                     disabled={isUploading}
                     onClick={() =>
                       onChange([url, ...images.filter((_, i) => i !== index)])
@@ -127,7 +127,7 @@ export function ListingPhotosField({
                 ) : null}
                 <button
                   aria-label={`Remove photo ${index + 1}`}
-                  className={`${secondaryButtonClassName} min-h-11 gap-1 px-3 text-[0.8125rem]`}
+                  className={`${secondaryButtonClassName} min-h-11 gap-1 px-3 text-label`}
                   disabled={isUploading}
                   onClick={() => onChange(images.filter((_, i) => i !== index))}
                   type="button"
@@ -147,7 +147,7 @@ export function ListingPhotosField({
           aria-label="Add listing photos"
           className="sr-only"
           disabled={isUploading || remaining <= 0}
-          id="listing-photos"
+          id="listing-photos-input"
           multiple
           onChange={(event) => void handleFiles(event.currentTarget.files)}
           ref={inputRef}
@@ -162,19 +162,19 @@ export function ListingPhotosField({
           <ImagePlus aria-hidden="true" size={16} />
           {isUploading ? "Uploading…" : "Add photos"}
         </button>
-        <span aria-live="polite" className="text-[0.82rem] text-muted">
+        <span aria-live="polite" className="text-label text-muted">
           {images.length}/{LISTING_LIMITS.imagesMax} photos · JPEG, PNG or WebP, up to{" "}
           {MAX_IMAGE_SIZE_MB}MB each. The first photo is the cover.
         </span>
       </div>
 
       {error ? (
-        <p className="m-0 text-[0.82rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
       {uploadErrors.length > 0 ? (
-        <ul className="m-0 grid gap-1 pl-5 text-[0.82rem] text-danger" role="alert">
+        <ul className="m-0 grid gap-1 pl-5 text-label text-danger" role="alert">
           {uploadErrors.map((message) => (
             <li key={message}>{message}</li>
           ))}

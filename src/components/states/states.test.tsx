@@ -83,6 +83,17 @@ describe("error pages", () => {
       expect(markup).not.toContain("abc123digest");
     });
   }
+
+  it("lets the root error state fill the space above the footer", () => {
+    const markup = renderToStaticMarkup(
+      <RootError error={new Error("temporary test error")} retry={vi.fn()} />,
+    );
+
+    expect(markup).toMatch(
+      /<div class="[^"]*flex-1[^"]*" role="alert">/,
+    );
+    expect(markup).toMatch(/<main[^>]*class="[^"]*flex-1[^"]*"/);
+  });
 });
 
 describe("loading pages", () => {

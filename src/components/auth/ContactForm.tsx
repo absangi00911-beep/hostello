@@ -11,7 +11,7 @@ const MESSAGE_MAX = 5_000;
 const MESSAGE_MIN = 20;
 
 const labelClassName =
-  "grid gap-[6px] text-[0.875rem] font-semibold text-ink";
+  "grid gap-[6px] text-label font-semibold text-ink";
 
 export function ContactForm({
   defaultEmail = "",
@@ -126,7 +126,7 @@ export function ContactForm({
             required
             value={message}
           />
-          <span className="text-[0.8125rem] font-normal text-muted">
+          <span className="text-label font-normal text-muted">
             At least {MESSAGE_MIN} characters · {message.length}/{MESSAGE_MAX}
           </span>
         </label>

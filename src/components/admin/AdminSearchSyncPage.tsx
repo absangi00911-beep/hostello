@@ -18,8 +18,7 @@ import {
   type SearchSyncResult,
 } from "./adminSearchSync";
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 export type RunSyncAction = (
   action: SearchSyncAction,
@@ -56,7 +55,7 @@ function ResultNotice({ result }: { result: SearchSyncResult | null }) {
   return (
     <div className="grid gap-3">
       <p
-        className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${result.ok ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+        className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${result.ok ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
         role={result.ok ? "status" : "alert"}
       >
         {result.message}
@@ -85,13 +84,13 @@ export function SyncAllCard({ onRun }: { onRun: RunSyncAction }) {
       description="Re-indexes every live listing from the database. Use it after a data migration or if search results look out of date."
       title="Sync all listings"
     >
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         You can run this twice an hour. It can take a while, so keep this page
         open until it finishes.
       </p>
       {confirming ? (
         <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-          <p className="m-0 text-[0.9rem] text-ink">
+          <p className="m-0 text-label text-ink">
             Re-index all live listings now? This uses one of your two runs this
             hour.
           </p>
@@ -173,14 +172,14 @@ export function SingleHostelCard({ onRun }: { onRun: RunSyncAction }) {
           value={hostelId}
         />
       </Field>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         You can run these 60 times an hour. A success message only means the
         request finished. If no listing has that ID, nothing is indexed and the
         page cannot tell you.
       </p>
       {confirmRemove ? (
         <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-          <p className="m-0 text-[0.9rem] text-ink">
+          <p className="m-0 text-label text-ink">
             Remove this listing from search? Students will stop finding it
             until it is synced again. The listing itself is not changed.
           </p>
@@ -236,15 +235,15 @@ export function AdminSearchSyncContent({ onRun }: { onRun: RunSyncAction }) {
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Search index
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Keep the search index in line with the database. These actions only
         change search. They never change a listing, its status or its bookings.
         The server replies with a short message only, so this page cannot show

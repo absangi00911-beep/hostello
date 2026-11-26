@@ -7,7 +7,7 @@ import { HostelloBrand } from "@/components/brand/HostelloBrand";
 import { ScrollAwareSurface } from "./ScrollAwareSurface";
 
 const brandClassName =
-  "inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]";
+  "inline-flex w-fit items-center text-title font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif]";
 
 /**
  * The one shared site header: brand on the left, account menu on the right.

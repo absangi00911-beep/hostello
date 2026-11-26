@@ -44,6 +44,14 @@ describe("/api/alerts/unsubscribe", () => {
     expect(response.status).toBe(200);
     expect(html).toContain("Confirm unsubscribe");
     expect(html).toContain('method="post"');
+    expect(html).toContain("background:#f6f8fb;color:#0f172a");
+    expect(html).toContain("border:1px solid #e2e8f0");
+    expect(html).toContain("background:#2563eb;color:#fff");
+    expect(html).toContain("border-radius:8px");
+    expect(html).toContain("h1{font-size:1.5rem");
+    expect(html).toContain("p{font-size:1rem");
+    expect(html).not.toContain("#FDF8F0");
+    expect(html).not.toContain("#2A6545");
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(db.priceAlert.updateMany).not.toHaveBeenCalled();
   });

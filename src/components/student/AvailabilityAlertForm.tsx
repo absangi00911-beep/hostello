@@ -29,7 +29,7 @@ function readError(result: unknown) {
 
 export function AvailabilityAlertError({ message }: { message: string }) {
   return (
-    <p className="m-0 text-sm text-danger" role="alert">
+    <p className="m-0 text-label text-danger" role="alert">
       {message}
     </p>
   );
@@ -122,16 +122,16 @@ export function AvailabilityAlertForm({
       onSubmit={submit}
     >
       <div>
-        <p className="m-0 text-xs font-bold uppercase tracking-[0.08em] text-brand">
+        <p className="m-0 text-meta font-bold uppercase tracking-[0.08em] text-brand">
           {isEditing ? "Edit alert" : "New alert"}
         </p>
-        <h2 className="mt-1 mb-0 text-lg font-semibold text-ink">
+        <h2 className="mt-1 mb-0 text-title font-semibold text-ink">
           {values.type === "HOSTEL" ? "Specific hostel" : "Saved search"}
         </h2>
       </div>
 
       {values.type === "HOSTEL" ? (
-        <p className="m-0 flex flex-wrap items-center gap-x-1 text-sm text-muted">
+        <p className="m-0 flex flex-wrap items-center gap-x-1 text-label text-muted">
           This alert is for the hostel selected on its detail page.
           {values.hostelId && /^[a-zA-Z0-9_-]{1,128}$/.test(values.hostelId) && (
             <Link

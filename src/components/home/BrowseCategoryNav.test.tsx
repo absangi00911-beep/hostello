@@ -39,6 +39,16 @@ describe("BrowseCategoryNav", () => {
     expect(markup).toContain("hidden");
     expect(markup).toContain("min-h-[50px]");
     expect(markup).toContain("min-h-[44px]");
+    expect(markup).toContain("rounded-lg");
+    expect(markup).not.toContain("rounded-full");
+  });
+
+  it("keeps desktop category labels at the documented metadata minimum", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseCategoryNav category="women" onSelectCategory={() => {}} />,
+    );
+
+    expect(markup).toContain("text-meta");
   });
 
   it("calls the existing category handler with the selected category", () => {

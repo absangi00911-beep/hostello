@@ -130,14 +130,14 @@ function TripsLoading() {
   return (
     <section
       aria-busy="true"
-      className="py-8 text-sm text-muted"
+      className="py-8 text-label text-muted"
       role="status"
     >
       <p className="m-0">Loading trips...</p>
       <div aria-hidden="true" className="mt-4 grid gap-4">
         {[0, 1, 2].map((item) => (
           <div
-            className="grid gap-5 rounded-[14px] border border-line bg-surface p-3 motion-safe:animate-pulse md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
+            className="grid gap-5 rounded-xl border border-line bg-surface p-3 motion-safe:animate-pulse md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
             key={item}
           >
             <div className="min-h-[150px] rounded-[10px] bg-surface-muted" />
@@ -183,10 +183,10 @@ export function TripsPageContent({
           <TripsLoading />
         ) : error && bookings.length === 0 ? (
           <section
-            className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
+            className="rounded-xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
-            <p className="m-0 text-[0.95rem]">{error}</p>
+            <p className="m-0 text-body">{error}</p>
             <button
               className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
@@ -197,13 +197,13 @@ export function TripsPageContent({
           </section>
         ) : bookings.length === 0 ? (
           <section
-            className="rounded-[14px] border border-line bg-surface p-7"
+            className="rounded-xl border border-line bg-surface p-7"
             role="status"
           >
-            <h2 className="m-0 text-[1.2rem] font-semibold text-ink">
+            <h2 className="m-0 text-title font-semibold text-ink">
               No trips yet
             </h2>
-            <p className="mt-2 mb-4 text-[0.95rem] text-muted">
+            <p className="mt-2 mb-4 text-body text-muted">
               Your hostel bookings will appear here.
             </p>
             <Link
@@ -217,7 +217,7 @@ export function TripsPageContent({
           <>
             {error && (
               <p
-                className="mb-5 rounded-[14px] border border-danger bg-surface p-3 text-[0.9rem] text-danger"
+                className="mb-5 rounded-xl border border-danger bg-surface p-3 text-label text-danger"
                 role="alert"
               >
                 {error}{" "}
@@ -234,7 +234,7 @@ export function TripsPageContent({
             <div className="grid gap-4">
               {bookings.map((booking) => (
                 <article
-                  className="grid gap-5 overflow-hidden rounded-[14px] border border-line bg-surface p-3 md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
+                  className="grid gap-5 overflow-hidden rounded-xl border border-line bg-surface p-3 md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)]"
                   key={booking.id}
                 >
                   <Link
@@ -255,15 +255,15 @@ export function TripsPageContent({
                     )}
                   </Link>
                   <div className="min-w-0 self-center py-1 md:px-1">
-                    <p className="m-0 mb-2 text-[0.9rem] text-muted">
+                    <p className="m-0 mb-2 text-label text-muted">
                       {booking.hostel.city}
                     </p>
-                    <h2 className="m-0 mb-2 text-[1.15rem] font-semibold leading-[1.3] text-ink">
+                    <h2 className="m-0 mb-2 text-title font-semibold leading-[1.3] text-ink">
                       <Link className="text-inherit no-underline" href={`/hostels/${booking.hostel.slug}`}>
                         {booking.hostel.name}
                       </Link>
                     </h2>
-                    <p className="m-0 mb-3 text-[0.9rem] text-muted">
+                    <p className="m-0 mb-3 text-label text-muted">
                       <time dateTime={booking.checkIn}>
                         {dateFormatter.format(new Date(booking.checkIn))}
                       </time>
@@ -273,13 +273,13 @@ export function TripsPageContent({
                       </time>
                     </p>
                     <span
-                      className={`inline-flex min-h-[28px] items-center rounded-full px-2.5 text-[0.78rem] font-semibold ${bookingStatusClassNames[booking.status]}`}
+                      className={`inline-flex min-h-[28px] items-center rounded-full px-2.5 text-meta font-semibold ${bookingStatusClassNames[booking.status]}`}
                       data-status={booking.status.toLowerCase()}
                     >
                       {bookingStatuses[booking.status]}
                     </span>
                     <Link
-                      className="ml-3 text-[0.9rem] font-semibold text-brand no-underline hover:underline"
+                      className="ml-3 text-label font-semibold text-brand no-underline hover:underline"
                       href={`/bookings/${encodeURIComponent(booking.id)}`}
                     >
                       View booking

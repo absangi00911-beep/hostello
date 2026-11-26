@@ -292,12 +292,12 @@ export default function ProductHome({
               <div className="flex items-center justify-center py-12" role="status">
                 <div className="flex items-center gap-3">
                   <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-brand border-t-transparent" />
-                  <p className="m-0 text-[0.92rem] text-muted">Finding stays…</p>
+                  <p className="m-0 text-body text-muted">Finding stays…</p>
                 </div>
               </div>
             )}
             {searchError && (
-              <div className="m-0 py-8 text-[0.92rem] text-muted" role="alert">
+              <div className="m-0 py-8 text-body text-muted" role="alert">
                 <p className="m-0">{searchError}</p>
                 <button
                   className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
@@ -309,7 +309,7 @@ export default function ProductHome({
               </div>
             )}
             {favoriteError && accountUser?.role === "STUDENT" && (
-              <p className="mt-2 mb-0 text-[0.8125rem] leading-[1.4] text-[#a12622]" role="alert">
+              <p className="mt-2 mb-0 text-label leading-[1.4] text-danger" role="alert">
                 {favoriteError}{" "}
                 <button
                   className="cursor-pointer border-0 bg-transparent p-0 font-bold underline underline-offset-[2px]"
@@ -321,7 +321,7 @@ export default function ProductHome({
               </p>
             )}
             {!isLoading && !searchError && hostelsByCity.size === 0 && (
-              <p className="m-0 py-8 text-[0.92rem] text-muted" role="status">
+              <p className="m-0 py-8 text-body text-muted" role="status">
                 No active hostel listings yet.
               </p>
             )}

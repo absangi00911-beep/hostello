@@ -366,7 +366,7 @@ export default function LoginDialog({
               className="size-12"
             />
           </Link>
-          <Dialog.Title className="m-0 text-center text-xl leading-[1.2] font-semibold tracking-[-0.009em]">
+          <Dialog.Title className="m-0 text-center text-title leading-[1.2] font-semibold tracking-[-0.009em]">
             {step === "email"
               ? "Login or Signup"
               : step === "otp"
@@ -375,7 +375,7 @@ export default function LoginDialog({
           </Dialog.Title>
 
           <Dialog.Description
-            className="mt-[7px] mb-[22px] text-center text-[0.9rem] text-muted"
+            className="mt-[7px] mb-[22px] text-center text-label text-muted"
             id="login-dialog-description"
           >
             {step === "email"
@@ -389,7 +389,7 @@ export default function LoginDialog({
 
           {verified && (
             <p
-              className="mb-4 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-brand-dark"
+              className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label leading-[1.45] text-brand-dark"
               role="status"
             >
               Your email has been verified. Log in to continue.
@@ -398,7 +398,7 @@ export default function LoginDialog({
           {errorMessage && (
             <p
               id="login-dialog-error"
-              className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-danger"
+              className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label leading-[1.45] text-danger"
               role="alert"
             >
               {errorMessage}
@@ -406,7 +406,7 @@ export default function LoginDialog({
           )}
           {statusMessage && (
             <p
-              className="mb-4 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.875rem] leading-[1.45] text-brand-dark"
+              className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label leading-[1.45] text-brand-dark"
               role="status"
             >
               {statusMessage}
@@ -415,7 +415,7 @@ export default function LoginDialog({
 
           {step === "email" && loginMethod === "otp" ? (
             <form className="grid gap-[14px]" noValidate onSubmit={requestOtp}>
-              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-[6px] text-label font-semibold text-ink">
                 <span>Email</span>
                 <input
                   aria-describedby={
@@ -424,7 +424,7 @@ export default function LoginDialog({
                   aria-invalid={invalidField === "email" || undefined}
                   autoComplete="email"
                   autoFocus
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
                   onChange={(event) => {
                     setEmail(event.currentTarget.value);
@@ -438,14 +438,14 @@ export default function LoginDialog({
               </label>
 
               <button
-                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-base font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting || isGoogleRedirecting}
                 type="submit"
               >
                 {isSubmitting ? "Sending code…" : "Continue"}
               </button>
               <button
-                className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting || isGoogleRedirecting}
                 onClick={() => {
                   setLoginMethod("password");
@@ -459,7 +459,7 @@ export default function LoginDialog({
             </form>
           ) : step === "email" ? (
             <form className="grid gap-[14px]" noValidate onSubmit={handlePasswordSignIn}>
-              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-[6px] text-label font-semibold text-ink">
                 <span>Email</span>
                 <input
                   aria-describedby={
@@ -468,7 +468,7 @@ export default function LoginDialog({
                   aria-invalid={invalidField === "email" || undefined}
                   autoComplete="email"
                   autoFocus
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
                   onChange={(event) => {
                     setEmail(event.currentTarget.value);
@@ -480,7 +480,7 @@ export default function LoginDialog({
                   value={email}
                 />
               </label>
-              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-[6px] text-label font-semibold text-ink">
                 <span>Password</span>
                 <input
                   aria-describedby={
@@ -490,7 +490,7 @@ export default function LoginDialog({
                   }
                   aria-invalid={invalidField === "password" || undefined}
                   autoComplete="current-password"
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="password"
                   onChange={(event) => {
                     setPassword(event.currentTarget.value);
@@ -503,13 +503,13 @@ export default function LoginDialog({
                 />
               </label>
               <Link
-                className="inline-flex min-h-11 items-center justify-self-end rounded-[8px] px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                className="inline-flex min-h-11 items-center justify-self-end rounded-[8px] px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                 href="/forgot-password"
               >
                 Forgot password?
               </Link>
               <button
-                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-base font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting || isGoogleRedirecting}
                 type="submit"
               >
@@ -517,7 +517,7 @@ export default function LoginDialog({
               </button>
               {emailCodeEnabled && (
                 <button
-                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.85rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   disabled={isSubmitting || isGoogleRedirecting}
                   onClick={() => {
                     setLoginMethod("otp");
@@ -533,7 +533,7 @@ export default function LoginDialog({
             </form>
           ) : step === "otp" ? (
             <form className="grid gap-[14px]" onSubmit={verifyOtp}>
-              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-[6px] text-label font-semibold text-ink">
                 <span>6-digit code</span>
                 <input
                   aria-describedby={
@@ -542,7 +542,7 @@ export default function LoginDialog({
                   aria-invalid={invalidField === "otp" || undefined}
                   autoComplete="one-time-code"
                   autoFocus
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   inputMode="numeric"
                   maxLength={6}
                   name="otp"
@@ -561,7 +561,7 @@ export default function LoginDialog({
               </label>
 
               <button
-                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-base font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting || isGoogleRedirecting}
                 type="submit"
               >
@@ -570,14 +570,14 @@ export default function LoginDialog({
 
               <div className="mt-1 flex flex-wrap justify-between gap-3">
                 <button
-                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   onClick={() => setStep("email")}
                   type="button"
                 >
                   Use another email
                 </button>
                 <button
-                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   onClick={handleResendCode}
                   disabled={isSubmitting || isGoogleRedirecting}
                   type="button"
@@ -585,7 +585,7 @@ export default function LoginDialog({
                   Resend code
                 </button>
                 <button
-                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-[0.8rem] font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70"
                   disabled={isSubmitting || isGoogleRedirecting}
                   onClick={() => {
                     setLoginMethod("password");
@@ -602,7 +602,7 @@ export default function LoginDialog({
             </form>
           ) : (
             <form className="grid gap-[14px]" onSubmit={createAccount}>
-              <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-[6px] text-label font-semibold text-ink">
                 <span>Name</span>
                 <input
                   aria-describedby={
@@ -611,7 +611,7 @@ export default function LoginDialog({
                   aria-invalid={invalidField === "name" || undefined}
                   autoComplete="name"
                   autoFocus
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   maxLength={80}
                   minLength={2}
                   name="name"
@@ -627,7 +627,7 @@ export default function LoginDialog({
               </label>
 
               <button
-                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-base font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+                className="mt-[2px] inline-flex min-h-[50px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
                 disabled={isSubmitting || isGoogleRedirecting}
                 type="submit"
               >
@@ -639,7 +639,7 @@ export default function LoginDialog({
           {googleEnabled && step === "email" && (
             <>
               <div
-                className="my-[18px] grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-xs text-muted"
+                className="my-[18px] grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-meta text-muted"
                 aria-hidden="true"
               >
                 <span className="h-px bg-line" />
@@ -647,7 +647,7 @@ export default function LoginDialog({
                 <span className="h-px bg-line" />
               </div>
               <button
-                className="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-[8px] border border-muted bg-white text-base font-[650] text-ink enabled:hover:bg-surface-muted disabled:cursor-wait disabled:opacity-70 btn-secondary"
+                className="inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-[8px] border border-muted bg-white text-body font-[650] text-ink enabled:hover:bg-surface-muted disabled:cursor-wait disabled:opacity-70 btn-secondary"
                 disabled={isSubmitting || isGoogleRedirecting}
                 onClick={() => void handleGoogleSignIn()}
                 type="button"
@@ -659,7 +659,7 @@ export default function LoginDialog({
             </>
           )}
           {step === "email" && (
-            <p className="mt-4 mb-0 text-center text-[0.875rem] text-muted">
+            <p className="mt-4 mb-0 text-center text-label text-muted">
               New to HostelLo?{" "}
               <Link
                 className="inline-flex min-h-11 items-center rounded-[8px] px-2 font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"

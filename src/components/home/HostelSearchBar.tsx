@@ -160,7 +160,7 @@ export function HostelSearchBar({
       <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">
         <button
           aria-label="Start your search"
-          className="hidden min-h-14 w-full cursor-pointer items-center justify-center gap-[11px] rounded-full border border-line bg-white px-[18px] py-3 text-[0.94rem] font-semibold text-ink shadow-[0_4px_14px_rgb(29_42_34/8%)] transition-[box-shadow,transform] duration-[180ms] active:scale-[0.99] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! [@media(max-width:720px)]:flex motion-reduce:active:transform-none!"
+          className="hidden min-h-14 w-full cursor-pointer items-center justify-center gap-[11px] rounded-full border border-line bg-white px-[18px] py-3 text-body font-semibold text-ink shadow-[0_4px_14px_rgb(29_42_34/8%)] transition-[box-shadow,transform] duration-[180ms] active:scale-[0.99] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-[3px]! [@media(max-width:720px)]:flex motion-reduce:active:transform-none!"
           onClick={() => searchDialogRef.current?.showModal()}
           type="button"
         >
@@ -180,7 +180,7 @@ export function HostelSearchBar({
         >
           <div className="mx-auto w-[min(100%,560px)]">
             <div className="mb-5 flex min-h-11 items-center justify-between">
-              <h2 className="m-0 text-[1.15rem] font-bold">Search stays</h2>
+              <h2 className="m-0 text-title font-bold">Search stays</h2>
               <button
                 aria-label="Close search"
                 className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink btn-secondary"
@@ -191,13 +191,13 @@ export function HostelSearchBar({
               </button>
             </div>
             {renderSearchForm(true)}
-            <p className="mt-2 text-center text-[0.8125rem] text-muted">
+            <p className="mt-2 text-center text-label text-muted">
               Availability is checked only on the selected move-in date.
             </p>
           </div>
         </dialog>
         {renderSearchForm(false)}
-        <p className="mt-2 text-center text-[0.8125rem] text-muted [@media(max-width:720px)]:hidden">
+        <p className="mt-2 text-center text-label text-muted [@media(max-width:720px)]:hidden">
           Availability is checked only on the selected move-in date.
         </p>
       </div>

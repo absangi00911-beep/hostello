@@ -159,9 +159,9 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 });
 
 const primaryButtonClassName =
-  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
+  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 const secondaryButtonClassName =
-  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-5 text-[0.95rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
+  "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-5 text-body font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
 
 export function BookingDetailPage({
   bookingId,
@@ -326,7 +326,7 @@ export function BookingDetailPage({
     return (
       <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
         <p
-          className="rounded-[14px] bg-surface-muted p-4 text-danger"
+          className="rounded-xl bg-surface-muted p-4 text-danger"
           role="alert"
         >
           {loadError ?? "Could not load this booking."}
@@ -352,14 +352,14 @@ export function BookingDetailPage({
 
   return (
     <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
-      <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/trips">
+      <Link className="text-label font-semibold text-brand hover:underline" href="/trips">
         ← Back to trips
       </Link>
-      <h1 className="mb-1 mt-3 text-[1.75rem] font-bold text-ink">Your booking</h1>
+      <h1 className="mb-1 mt-3 text-display font-bold text-ink">Your booking</h1>
 
       {paymentNotice ? (
         <p
-          className="my-4 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.9rem] text-brand-dark"
+          className="my-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
           role="status"
         >
           {paymentNotice}
@@ -367,7 +367,7 @@ export function BookingDetailPage({
       ) : null}
       {actionMessage ? (
         <p
-          className="my-4 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.9rem] text-brand-dark"
+          className="my-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
           role="status"
         >
           {actionMessage}
@@ -375,14 +375,14 @@ export function BookingDetailPage({
       ) : null}
       {actionError ? (
         <p
-          className="my-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.9rem] text-danger"
+          className="my-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           {actionError}
         </p>
       ) : null}
 
-      <section className="mt-4 grid gap-5 overflow-hidden rounded-[14px] border border-line bg-surface p-3 md:grid-cols-[minmax(180px,260px)_minmax(0,1fr)]">
+      <section className="mt-4 grid gap-5 overflow-hidden rounded-xl border border-line bg-surface p-3 md:grid-cols-[minmax(180px,260px)_minmax(0,1fr)]">
         <div className="relative min-h-[170px] overflow-hidden rounded-[10px] bg-brand-soft">
           {booking.hostel.coverImage ? (
             <Image
@@ -395,63 +395,63 @@ export function BookingDetailPage({
           ) : null}
         </div>
         <div className="min-w-0 self-center py-1">
-          <p className="m-0 mb-1 text-[0.9rem] text-muted">{place}</p>
-          <h2 className="m-0 mb-2 text-[1.2rem] font-semibold text-ink">
+          <p className="m-0 mb-1 text-label text-muted">{place}</p>
+          <h2 className="m-0 mb-2 text-title font-semibold text-ink">
             <Link className="text-inherit no-underline hover:underline" href={`/hostels/${booking.hostel.slug}`}>
               {booking.hostel.name}
             </Link>
           </h2>
           {booking.hostel.address ? (
-            <p className="m-0 text-[0.9rem] text-muted">{booking.hostel.address}</p>
+            <p className="m-0 text-label text-muted">{booking.hostel.address}</p>
           ) : null}
         </div>
       </section>
 
-      <section aria-label="Booking summary" className="mt-5 rounded-[14px] border border-line bg-surface p-5">
+      <section aria-label="Booking summary" className="mt-5 rounded-xl border border-line bg-surface p-5">
         <dl className="m-0 grid gap-4 sm:grid-cols-2">
           <div>
-            <dt className="text-[0.8rem] text-muted">Check-in</dt>
+            <dt className="text-label text-muted">Check-in</dt>
             <dd className="m-0 font-semibold text-ink">
               {dateFormatter.format(new Date(booking.checkIn))}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.8rem] text-muted">Check-out</dt>
+            <dt className="text-label text-muted">Check-out</dt>
             <dd className="m-0 font-semibold text-ink">
               {dateFormatter.format(new Date(booking.checkOut))}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.8rem] text-muted">Duration</dt>
+            <dt className="text-label text-muted">Duration</dt>
             <dd className="m-0 font-semibold text-ink">
               {booking.months} {booking.months === 1 ? "month" : "months"}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.8rem] text-muted">Guests</dt>
+            <dt className="text-label text-muted">Guests</dt>
             <dd className="m-0 font-semibold text-ink">{booking.guests}</dd>
           </div>
           <div>
-            <dt className="text-[0.8rem] text-muted">Booking status</dt>
+            <dt className="text-label text-muted">Booking status</dt>
             <dd className="m-0 font-semibold text-ink" data-status={booking.status.toLowerCase()}>
               {bookingStatuses[booking.status]}
             </dd>
           </div>
           <div>
-            <dt className="text-[0.8rem] text-muted">Payment</dt>
+            <dt className="text-label text-muted">Payment</dt>
             <dd className="m-0 font-semibold text-ink">
               {paymentStatuses[booking.paymentStatus]}
             </dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-[0.8rem] text-muted">Total</dt>
-            <dd className="m-0 text-[1.25rem] font-bold text-ink">
+            <dt className="text-label text-muted">Total</dt>
+            <dd className="m-0 text-title font-bold text-ink">
               {formatPrice(booking.total)}
             </dd>
           </div>
         </dl>
         {booking.status === "PENDING" && booking.paymentStatus === "PAID" ? (
-          <p className="mb-0 mt-4 text-[0.9rem] text-muted">
+          <p className="mb-0 mt-4 text-label text-muted">
             Your payment is received. The host still needs to confirm this
             booking
             {booking.ownerResponseDueAt
@@ -463,11 +463,11 @@ export function BookingDetailPage({
       </section>
 
       {policy ? (
-        <section aria-label="Cancellation terms" className="mt-5 rounded-[14px] border border-line bg-surface p-5">
-          <h2 className="m-0 mb-2 text-[1.05rem] font-semibold text-ink">
+        <section aria-label="Cancellation terms" className="mt-5 rounded-xl border border-line bg-surface p-5">
+          <h2 className="m-0 mb-2 text-body font-semibold text-ink">
             Cancellation: {policy.label}
           </h2>
-          <ul className="m-0 grid gap-1 pl-5 text-[0.9rem] text-muted">
+          <ul className="m-0 grid gap-1 pl-5 text-label text-muted">
             <li>{policy.fullRefund}</li>
             <li>{policy.partialRefund}</li>
             <li>{policy.noRefund}</li>
@@ -483,13 +483,13 @@ export function BookingDetailPage({
       ) : null}
 
       {awaitingConfirmation ? (
-        <div className="mt-6 rounded-[14px] border border-line bg-surface-muted p-4" role="status">
+        <div className="mt-6 rounded-xl border border-line bg-surface-muted p-4" role="status">
           {pollTimedOut ? (
             <>
               <p className="m-0 font-semibold text-ink">
                 Your payment is still being confirmed.
               </p>
-              <p className="m-0 mt-1 text-[0.9rem] text-muted">
+              <p className="m-0 mt-1 text-label text-muted">
                 This is taking longer than usual. Please don&apos;t pay again. If you
                 were charged, the booking will update shortly.
               </p>
@@ -539,12 +539,12 @@ export function BookingDetailPage({
 
       {confirmingCancel ? (
         <div
-          className="mt-4 rounded-[14px] border border-line bg-surface-muted p-4"
+          className="mt-4 rounded-xl border border-line bg-surface-muted p-4"
           role="alertdialog"
           aria-label="Confirm cancellation"
         >
           <p className="m-0 font-semibold text-ink">Cancel this booking?</p>
-          <p className="mb-3 mt-1 text-[0.9rem] text-muted">
+          <p className="mb-3 mt-1 text-label text-muted">
             This can't be undone. Any refund follows the cancellation terms above.
           </p>
           <div className="flex flex-wrap gap-3">

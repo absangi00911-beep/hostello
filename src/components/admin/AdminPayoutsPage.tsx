@@ -38,8 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "Asia/Karachi",
 });
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 const STATUS_STYLES: Record<AdminPayout["status"], string> = {
   PENDING: "bg-warn-soft text-warn-ink",
@@ -85,7 +84,7 @@ function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
         ? `•••• ${accountNumber.slice(-4)}`
         : "••••";
     return (
-      <dl className="m-0 grid gap-1 rounded-[12px] bg-surface-muted p-3 text-[0.85rem]">
+      <dl className="m-0 grid gap-1 rounded-[12px] bg-surface-muted p-3 text-label">
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Account title</dt>
           <dd className="m-0 font-semibold text-ink">
@@ -120,7 +119,7 @@ function PayoutDestinationBlock({ payout }: { payout: AdminPayout }) {
     );
   }
   return (
-    <p className="m-0 rounded-[12px] bg-surface-muted p-3 text-[0.85rem] text-danger">
+    <p className="m-0 rounded-[12px] bg-surface-muted p-3 text-label text-danger">
       {payout.destinationStatus === "missing"
         ? "No bank details were saved with this batch. Void it and generate a new one after the owner completes their bank details."
         : "The saved bank details could not be decrypted. Void this batch and generate a new one."}
@@ -146,7 +145,7 @@ export function VoidForm({
 
   return (
     <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-      <p className="m-0 text-[0.9rem] text-ink">
+      <p className="m-0 text-label text-ink">
         Voiding releases the bookings in this batch so they return to the
         owner&apos;s ready-for-payout balance. Do this only if no transfer was
         sent.
@@ -165,7 +164,7 @@ export function VoidForm({
           value={reason}
         />
       </Field>
-      <label className="flex items-start gap-2 text-[0.88rem] text-ink">
+      <label className="flex items-start gap-2 text-label text-ink">
         <input
           checked={confirmed}
           className="mt-1"
@@ -175,7 +174,7 @@ export function VoidForm({
         <span>I confirm that no transfer was sent for this batch.</span>
       </label>
       {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
@@ -235,21 +234,21 @@ function PayoutRow({
   return (
     <li className="grid gap-3 rounded-[12px] border border-line p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[1rem] font-semibold text-ink">
+        <span className="text-body font-semibold text-ink">
           {currencyFormatter.format(payout.amount)}
         </span>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${STATUS_STYLES[payout.status]}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${STATUS_STYLES[payout.status]}`}
         >
           {STATUS_LABELS[payout.status]}
         </span>
-        <span className="text-[0.8125rem] text-muted">
+        <span className="text-label text-muted">
           Created {dateFormatter.format(new Date(payout.createdAt))}
         </span>
       </div>
 
       {payout.status === "PAID" ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           Paid
           {payout.paidAt
             ? ` ${dateFormatter.format(new Date(payout.paidAt))}`
@@ -258,13 +257,13 @@ function PayoutRow({
         </p>
       ) : null}
       {payout.status === "APPROVED" ? (
-        <p className="m-0 rounded-[12px] bg-surface-muted p-3 text-[0.85rem] text-ink" role="status">
+        <p className="m-0 rounded-[12px] bg-surface-muted p-3 text-label text-ink" role="status">
           Approved by a second admin{payout.approvedAt ? ` on ${dateFormatter.format(new Date(payout.approvedAt))}` : ""}.
           Settlement is currently disabled: do not send funds or record a transfer until custody and independent settlement reconciliation are approved.
         </p>
       ) : null}
       {payout.status === "CANCELLED" ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           Voided
           {payout.cancelledAt
             ? ` ${dateFormatter.format(new Date(payout.cancelledAt))}`
@@ -276,7 +275,7 @@ function PayoutRow({
       <PayoutDestinationBlock payout={payout} />
 
       {payout.auditEvents.length > 0 ? (
-        <ul className="m-0 grid list-none gap-1 p-0 text-[0.8125rem] text-muted">
+        <ul className="m-0 grid list-none gap-1 p-0 text-label text-muted">
           {payout.auditEvents.map((event) => (
             <li key={event.id}>
               {auditActionLabel(event.action)} ·{" "}
@@ -289,7 +288,7 @@ function PayoutRow({
       {uncertain ? <AdminUncertainActionNotice /> : null}
       {payout.status === "PENDING" && !uncertain ? (
         <>
-          <p className="m-0 text-[0.85rem] text-muted">
+          <p className="m-0 text-label text-muted">
             A different admin must review and approve this batch before any transfer. Approval does not move money, but it locks the booking claims and this workflow cannot void an approved batch. Settlement is disabled; do not approve operational batches until a safe recovery path and settlement controls are ready.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -362,14 +361,14 @@ function OwnerCard({
   }
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="grid gap-[2px]">
-        <h3 className="m-0 text-[1.02rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {owner.name}
         </h3>
-        <p className="m-0 text-[0.85rem] text-muted">{owner.email}</p>
+        <p className="m-0 text-label text-muted">{owner.email}</p>
       </div>
-      <p className="m-0 text-[0.9rem] text-ink">
+      <p className="m-0 text-label text-ink">
         Ready for payout:{" "}
         <strong>{currencyFormatter.format(owner.pendingBalance)}</strong>
       </p>
@@ -386,19 +385,19 @@ function OwnerCard({
             {busy ? "Working…" : "Generate payout batch"}
           </button>
           {blocked ? (
-            <span className="text-[0.8rem] text-muted">{blocked}</span>
+            <span className="text-label text-muted">{blocked}</span>
           ) : null}
         </div>
       )}
       {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
 
       {owner.payouts.length > 0 ? (
         <div className="grid gap-2">
-          <h4 className="m-0 text-[0.9rem] font-semibold text-ink">Payouts</h4>
+          <h4 className="m-0 text-label font-semibold text-ink">Payouts</h4>
           <ul className="m-0 grid list-none gap-3 p-0">
             {owner.payouts.map((payout) => (
               <PayoutRow
@@ -411,7 +410,7 @@ function OwnerCard({
             ))}
           </ul>
           {owner.payoutHistoryTruncated ? (
-            <p className="m-0 text-[0.8125rem] text-muted">
+            <p className="m-0 text-label text-muted">
               Showing the latest {payoutHistoryPerOwner} payouts.
             </p>
           ) : null}
@@ -457,22 +456,22 @@ export function AdminPayoutsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Owner payouts
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         A second admin must approve each payout batch before any transfer. Transfers are manual and off-platform; settlement remains disabled until custody and independent reconciliation are approved. Do not send funds based on a batch or approval alone.
       </p>
 
       <div className="grid gap-5">
         {notice ? (
           <p
-            className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+            className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
             role={notice.tone === "success" ? "status" : "alert"}
           >
             {notice.text}
@@ -485,7 +484,7 @@ export function AdminPayoutsContent({
               Loading payouts...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -496,12 +495,12 @@ export function AdminPayoutsContent({
               </button>
             </div>
           ) : owners.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               No owners have money ready for payout or past payouts.
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} {total === 1 ? "owner" : "owners"}
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -520,7 +519,7 @@ export function AdminPayoutsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

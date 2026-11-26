@@ -122,12 +122,12 @@ function MetricsCard({
     >
       <div className="flex items-start justify-between">
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="text-[0.85rem] font-medium text-muted">{label}</span>
-          <span className="mt-2 text-[1.75rem] font-semibold leading-none tracking-tight text-ink">
+          <span className="text-label font-medium text-muted">{label}</span>
+          <span className="mt-2 text-display font-semibold leading-none tracking-tight text-ink">
             {value}
           </span>
           {trend && (
-            <span className="mt-2 text-[0.8rem] text-brand">{trend}</span>
+            <span className="mt-2 text-label text-brand">{trend}</span>
           )}
         </div>
         <div className="flex-none rounded-xl bg-brand-soft p-3">
@@ -150,7 +150,7 @@ function MonthlyChart({
       aria-label="Monthly performance"
       className="mt-6 rounded-2xl border border-line bg-[rgb(255_255_255_/_0.8)] p-6 backdrop-blur-xl"
     >
-      <h3 className="m-0 text-[1.1rem] font-semibold text-ink">
+      <h3 className="m-0 text-title font-semibold text-ink">
         6-Month Performance
       </h3>
       <div className="mt-6 space-y-4">
@@ -159,7 +159,7 @@ function MonthlyChart({
 
           return (
             <div key={month.key} className="space-y-2">
-              <div className="flex items-center justify-between text-[0.85rem]">
+              <div className="flex items-center justify-between text-label">
                 <span className="font-medium text-ink">{month.label}</span>
                 <div className="flex gap-4">
                   <span className="text-muted">
@@ -199,10 +199,10 @@ export function AnalyticsPageContent({
     <main id="main-content" className="min-h-dvh bg-canvas py-12 md:py-16">
       <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),600px)] md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">
         <header className="mb-8 md:mb-10">
-          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
+          <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
             Analytics
           </h1>
-          <p className="mt-2 m-0 text-[0.95rem] text-muted">
+          <p className="mt-2 m-0 text-body text-muted">
             Track your hostel performance and revenue.
           </p>
         </header>
@@ -210,7 +210,7 @@ export function AnalyticsPageContent({
         {isLoading ? (
           <section
             aria-busy="true"
-            className="py-8 text-sm text-muted"
+            className="py-8 text-label text-muted"
             role="status"
           >
             <p className="m-0">Loading analytics...</p>
@@ -220,7 +220,7 @@ export function AnalyticsPageContent({
             className="rounded-2xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
-            <p className="m-0 text-[0.95rem]">{error}</p>
+            <p className="m-0 text-body">{error}</p>
             <button
               className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
@@ -270,7 +270,7 @@ export function AnalyticsPageContent({
             className="rounded-2xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
-            <p className="m-0 text-[0.95rem]">
+            <p className="m-0 text-body">
               Could not load analytics data. Please try again.
             </p>
             <button

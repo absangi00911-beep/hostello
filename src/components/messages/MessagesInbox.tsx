@@ -57,14 +57,14 @@ export function MessagesInbox({
               <p role="alert">{inbox.pendingError}</p>
               <div className="mt-3 flex flex-wrap gap-2.5">
                 <button
-                  className="rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
+                  className="rounded-lg border border-line bg-surface px-3 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.retryPendingInquiry}
                   type="button"
                 >
                   Retry delivery
                 </button>
                 <button
-                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
+                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.cancelPendingInquiry}
                   type="button"
                 >
@@ -106,7 +106,7 @@ export function MessagesInbox({
         >
           <button
             aria-label="Back to inbox"
-            className="hidden min-h-11 items-center gap-2 border-b border-line px-5 text-[0.88rem] font-semibold text-ink [@media(max-width:720px)]:flex"
+            className="hidden min-h-11 items-center gap-2 border-b border-line px-5 text-label font-semibold text-ink [@media(max-width:720px)]:flex"
             onClick={() => setMobileThreadVisible(false)}
             type="button"
           >

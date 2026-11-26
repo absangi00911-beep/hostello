@@ -37,6 +37,17 @@ function renderRow({
 }
 
 describe("HostelRow favorite action", () => {
+  it("uses a distinct carousel region name and keeps listing link text as its name", () => {
+    const markup = renderRow();
+    const detailLink = markup.match(
+      /<a[^>]*href="\/hostels\/hostel-1"[^>]*>[\s\S]*?<\/a>/,
+    )?.[0];
+
+    expect(markup).toContain('aria-label="Hostel listings in Lahore"');
+    expect(detailLink).toContain("Hostel One");
+    expect(detailLink).not.toContain('aria-label="View details for Hostel One"');
+  });
+
   it("renders the favorite action as a sibling of the hostel detail link", () => {
     const markup = renderRow();
     const detailLinkEnd = markup.indexOf("</a>");
@@ -86,6 +97,21 @@ describe("HostelRow favorite action", () => {
     expect(markup).toContain(
       'class="hostel-card-image relative aspect-[1.05] overflow-hidden rounded-[16px]',
     );
+  });
+
+  it("allows hostel names and areas to wrap within mobile cards", () => {
+    const markup = renderRow();
+    const titleClass = markup.match(
+      /<h3 class="([^"]*)" id="hostel-title-hostel-1"/,
+    )?.[1];
+    const areaClass = markup.match(
+      /<span class="([^"]*hostel-card-area[^"]*)">/,
+    )?.[1];
+
+    expect(titleClass).toContain("line-clamp-2");
+    expect(titleClass).toContain("[@media(max-width:720px)]:whitespace-normal");
+    expect(areaClass).toContain("line-clamp-2");
+    expect(areaClass).toContain("[@media(max-width:720px)]:whitespace-normal");
   });
 
   it("renders a white outlined heart directly over the image corner", () => {

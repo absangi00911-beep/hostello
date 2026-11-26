@@ -2,15 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  BarChart3,
-  Bell,
-  CalendarCheck,
-  CreditCard,
-  Star,
-  Wallet,
-  MessageCircle,
-} from "@/components/icons/HostelloIcons";
 import { useCallback, useEffect, useState } from "react";
 import {
   STATUS_FILTERS,
@@ -32,7 +23,7 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 });
 
 const secondaryButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.85rem] font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
+  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-label font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
 
 const statusBadgeClassName: Record<ListingStatus, string> = {
   ACTIVE: "bg-brand-soft text-brand-dark",
@@ -40,16 +31,6 @@ const statusBadgeClassName: Record<ListingStatus, string> = {
   DRAFT: "bg-surface-muted text-muted",
   SUSPENDED: "bg-[#f9e4e0] text-[#8c2822]",
 };
-
-const quickLinks = [
-  { href: "/owner/bookings", label: "Bookings", icon: CalendarCheck },
-  { href: "/owner/earnings", label: "Earnings", icon: Wallet },
-  { href: "/owner/subscription", label: "Subscription", icon: CreditCard },
-  { href: "/owner/reviews", label: "Reviews", icon: Star },
-  { href: "/owner/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/messages", label: "Messages", icon: MessageCircle },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-] as const;
 
 function StatusNote({ status }: { status: ListingStatus }) {
   const note =
@@ -62,7 +43,7 @@ function StatusNote({ status }: { status: ListingStatus }) {
           : null;
   if (!note) return null;
   return (
-    <p className="m-0 text-[0.82rem] text-muted">
+    <p className="m-0 text-label text-muted">
       {note}
       {status === "SUSPENDED" ? (
         <>
@@ -82,7 +63,7 @@ function StatusNote({ status }: { status: ListingStatus }) {
 function ListingCard({ listing }: { listing: OwnerListing }) {
   const location = [listing.area, listing.city].filter(Boolean).join(", ");
   return (
-    <li className="flex gap-4 rounded-[14px] border border-line bg-surface p-3 sm:p-4">
+    <li className="flex gap-4 rounded-xl border border-line bg-surface p-3 sm:p-4">
       <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-[10px] bg-surface-muted sm:h-28 sm:w-36">
         {listing.coverImage ? (
           <Image
@@ -96,17 +77,17 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
       </div>
       <div className="grid min-w-0 flex-1 content-start gap-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="m-0 min-w-0 text-[1rem] font-semibold text-ink">
+          <h3 className="m-0 min-w-0 text-body font-semibold text-ink">
             {listing.name}
           </h3>
           <span
-            className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${statusBadgeClassName[listing.status]}`}
+            className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[listing.status]}`}
           >
             {getListingStatusLabel(listing.status)}
           </span>
         </div>
-        <p className="m-0 text-[0.85rem] text-muted">{location}</p>
-        <p className="m-0 text-[0.85rem] text-ink">
+        <p className="m-0 text-label text-muted">{location}</p>
+        <p className="m-0 text-label text-ink">
           {currencyFormatter.format(listing.pricePerMonth)} / month ·{" "}
           {listing.rooms} {listing.rooms === 1 ? "room" : "rooms"} ·{" "}
           {listing.capacity} {listing.capacity === 1 ? "bed" : "beds"}
@@ -118,7 +99,7 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
           {listing.status !== "SUSPENDED" ? (
             <Link
-              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              className="text-label font-semibold text-brand hover:underline"
               href={`/owner/listings/${encodeURIComponent(listing.id)}/edit`}
             >
               Edit
@@ -126,7 +107,7 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
           ) : null}
           {listing.status !== "SUSPENDED" ? (
             <Link
-              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              className="text-label font-semibold text-brand hover:underline"
               href={`/owner/listings/${encodeURIComponent(listing.id)}/blocked-dates`}
             >
               Blocked dates
@@ -134,7 +115,7 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
           ) : null}
           {listing.status === "ACTIVE" ? (
             <Link
-              className="text-[0.85rem] font-semibold text-brand hover:underline"
+              className="text-label font-semibold text-brand hover:underline"
               href={`/hostels/${encodeURIComponent(listing.slug)}`}
             >
               View public listing
@@ -178,39 +159,33 @@ export function OwnerDashboardContent({
   return (
     <main id="main-content" className="mx-auto w-[min(1100px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <header className="mb-6">
-        <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+        <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
           Host dashboard
         </h1>
-        <p className="mb-0 mt-2 text-[0.95rem] text-muted">
+        <p className="mb-0 mt-2 text-body text-muted">
           Welcome back, {ownerName}. Manage your listings here.
         </p>
       </header>
 
       <nav aria-label="Host tools" className="mb-8 flex flex-wrap gap-2">
         <Link
-          className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-brand px-4 text-[0.85rem] font-semibold text-white no-underline hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
+          className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-brand px-4 text-label font-semibold text-white no-underline hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2!"
           href="/owner/listings/new"
         >
           Add listing
         </Link>
-        {quickLinks.map(({ href, label, icon: Icon }) => (
-          <Link className={`${secondaryButtonClassName} gap-2`} href={href} key={href}>
-            <Icon aria-hidden="true" size={16} />
-            {label}
-          </Link>
-        ))}
       </nav>
 
       <section aria-labelledby="owner-listings-heading">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2
-              className="m-0 text-[1.2rem] font-semibold text-ink"
+              className="m-0 text-title font-semibold text-ink"
               id="owner-listings-heading"
             >
               Your listings
             </h2>
-            <p aria-live="polite" className="mb-0 mt-1 text-[0.85rem] text-muted">
+            <p aria-live="polite" className="mb-0 mt-1 text-label text-muted">
               {isLoading
                 ? "Loading…"
                 : loadError
@@ -228,7 +203,7 @@ export function OwnerDashboardContent({
           {STATUS_FILTERS.map(({ value, label }) => (
             <button
               aria-pressed={filter === value}
-              className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-[0.82rem] font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+              className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
               key={value}
               onClick={() => onFilterChange(value)}
               type="button"
@@ -243,7 +218,7 @@ export function OwnerDashboardContent({
             Loading listings...
           </p>
         ) : loadError ? (
-          <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+          <div className="rounded-xl bg-surface-muted p-4" role="alert">
             <p className="m-0 text-danger">{loadError}</p>
             <button
               className={`${secondaryButtonClassName} mt-3`}
@@ -254,7 +229,7 @@ export function OwnerDashboardContent({
             </button>
           </div>
         ) : items.length === 0 ? (
-          <p className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted">
+          <p className="rounded-xl border border-line bg-surface p-6 text-center text-muted">
             {filter === "ALL"
               ? "You don't have any listings yet. Use “Add listing” to create your first one."
               : `No ${getFilterNoun(filter)} listings.`}
@@ -269,7 +244,7 @@ export function OwnerDashboardContent({
 
         {moreError ? (
           <p
-            className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+            className="mt-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
             role="alert"
           >
             {moreError}
@@ -294,6 +269,7 @@ export function OwnerDashboardContent({
 }
 
 function getFilterNoun(filter: ListingStatusFilter): string {
+  if (filter === "DRAFT") return "draft";
   return STATUS_FILTERS.find((entry) => entry.value === filter)?.label.toLowerCase() ?? "";
 }
 

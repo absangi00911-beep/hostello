@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfilePage } from "@/components/student/ProfilePage";
@@ -12,7 +12,7 @@ export default async function ProfileRoute() {
   }
 
   if (session.user.role !== "STUDENT") {
-    notFound();
+    redirect(session.user.role === "OWNER" ? "/owner" : "/admin");
   }
 
   return (

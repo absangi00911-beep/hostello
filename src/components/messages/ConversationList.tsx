@@ -55,12 +55,12 @@ function ConversationListHeader({
     <>
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 pb-4">
         <div className="flex min-w-0 items-center gap-2.5">
-          <h1 className="m-0 text-[1.35rem] font-semibold tracking-[-0.045em] text-ink">
+          <h1 className="m-0 text-headline font-semibold tracking-[-0.045em] text-ink">
             Messages
           </h1>
           <span
             aria-label={`Total ${total} conversations`}
-            className="grid h-6 min-w-6 place-items-center rounded-full bg-surface-muted px-1.5 text-[0.78rem] font-bold text-muted"
+            className="grid h-6 min-w-6 place-items-center rounded-full bg-surface-muted px-1.5 text-meta font-bold text-muted"
             role="status"
           >
             {total}
@@ -97,7 +97,7 @@ function ConversationListHeader({
               role="group"
               aria-label="Inbox settings"
             >
-              <label className="flex cursor-pointer items-center gap-2.5 text-[0.88rem] text-ink">
+              <label className="flex cursor-pointer items-center gap-2.5 text-label text-ink">
                 <input
                   checked={unreadOnly}
                   className="h-4 w-4 accent-brand"
@@ -109,7 +109,7 @@ function ConversationListHeader({
                 Unread messages only
               </label>
               <button
-                className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 text-left text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
+                className="cursor-pointer rounded-md border border-line bg-surface px-3 py-2 text-left text-label font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
                 disabled={loading}
                 onClick={onRefresh}
                 type="button"
@@ -128,7 +128,7 @@ function ConversationListHeader({
         </label>
         <input
           autoComplete="off"
-          className="h-11 w-full rounded-full border border-line bg-surface px-4 text-[0.9rem] text-ink placeholder:text-muted focus:border-brand focus:outline-2 focus:outline-brand"
+          className="h-11 w-full rounded-full border border-line bg-surface px-4 text-label text-ink placeholder:text-muted focus:border-brand focus:outline-2 focus:outline-brand"
           id="conversation-search"
           onChange={(event) => onSearchChange(event.currentTarget.value)}
           placeholder="Search hostels or people"
@@ -157,14 +157,14 @@ function ConversationListEmptyState({
         className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
         role="status"
       >
-        <h2 className="m-0 text-[1.15rem] font-semibold tracking-[-0.035em] text-ink">
+        <h2 className="m-0 text-title font-semibold tracking-[-0.035em] text-ink">
           Nothing to see here
         </h2>
-        <p className="mt-2 mb-0 max-w-[260px] text-[0.88rem] leading-6 text-muted">
+        <p className="mt-2 mb-0 max-w-[260px] text-label leading-6 text-muted">
           When you contact a hostel, your conversations will appear here.
         </p>
         <Link
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-4 text-[0.86rem] font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-4 text-label font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
           href="/search"
         >
           Get started
@@ -178,16 +178,16 @@ function ConversationListEmptyState({
       className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center"
       role="status"
     >
-      <h2 className="m-0 text-[1.05rem] font-semibold tracking-[-0.025em] text-ink">
+      <h2 className="m-0 text-body font-semibold tracking-[-0.025em] text-ink">
         No conversations found
       </h2>
-      <p className="mt-2 mb-0 max-w-[260px] text-[0.88rem] leading-6 text-muted">
+      <p className="mt-2 mb-0 max-w-[260px] text-label leading-6 text-muted">
         Try a different search or update your inbox filters.
       </p>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {searchQuery.trim() && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink hover:border-brand btn-secondary"
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onSearchChange("")}
             type="button"
           >
@@ -196,7 +196,7 @@ function ConversationListEmptyState({
         )}
         {unreadOnly && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-[0.86rem] font-semibold text-ink hover:border-brand btn-secondary"
+            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onUnreadOnlyChange(false)}
             type="button"
           >
@@ -241,12 +241,12 @@ export function ConversationList({
       />
       {error && (
         <div
-          className="m-3 rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-[0.88rem] text-[#772e1b]"
+          className="m-3 rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-label text-[#772e1b]"
           role="alert"
         >
           <p className="m-0">{error}</p>
           <button
-            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-[0.88rem] font-semibold text-ink hover:border-brand btn-secondary"
+            className="mt-2 rounded-lg border border-line bg-white px-[11px] py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={onRetry}
             type="button"
           >
@@ -255,7 +255,7 @@ export function ConversationList({
         </div>
       )}
       {loading && conversations.length === 0 ? (
-        <p className="m-0 px-5 py-6 text-[0.9rem] text-muted" role="status">
+        <p className="m-0 px-5 py-6 text-label text-muted" role="status">
           Loading conversations…
         </p>
       ) : conversations.length === 0 && !error ? (
@@ -287,7 +287,7 @@ export function ConversationList({
                 >
                   <span
                     aria-hidden="true"
-                    className="grid h-[38px] w-[38px] flex-none place-items-center rounded-full bg-brand-soft text-[0.95rem] font-black text-brand-dark"
+                    className="grid h-[38px] w-[38px] flex-none place-items-center rounded-full bg-brand-soft text-body font-black text-brand-dark"
                   >
                     {otherParticipant?.user.avatar ? (
                       <Image
@@ -304,27 +304,27 @@ export function ConversationList({
                   </span>
                   <span className="grid min-w-0 flex-1 gap-[2px]">
                     <span className="flex min-w-0 items-baseline justify-between gap-2">
-                      <strong className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.9rem] text-ink">
+                      <strong className="overflow-hidden text-ellipsis whitespace-nowrap text-label text-ink">
                         {otherName}
                       </strong>
                       <time
-                        className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted"
+                        className="overflow-hidden text-ellipsis whitespace-nowrap text-label text-muted"
                         dateTime={conversation.updatedAt}
                       >
                         {displayMessageDate(conversation.updatedAt)}
                       </time>
                     </span>
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap text-label text-muted">
                       {conversation.hostelName}
                     </span>
-                    <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[0.8125rem] text-muted">
+                    <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-label text-muted">
                       {latestMessage?.content ?? "Start the conversation"}
                     </span>
                   </span>
                   {conversation.unreadCount > 0 && (
                     <span
                       aria-label={`${conversation.unreadCount} unread messages`}
-                      className="grid h-[22px] min-w-[22px] flex-none place-items-center rounded-full bg-brand text-[0.72rem] font-bold text-white"
+                      className="grid h-[22px] min-w-[22px] flex-none place-items-center rounded-full bg-brand text-meta font-bold text-white"
                     >
                       {conversation.unreadCount}
                     </span>
@@ -337,7 +337,7 @@ export function ConversationList({
       )}
       {page?.hasMore && (
         <button
-          className="mx-auto mt-3 block w-[calc(100%-32px)] rounded-lg border border-line bg-surface px-3 py-2 text-[0.88rem] font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
+          className="mx-auto mt-3 block w-[calc(100%-32px)] rounded-lg border border-line bg-surface px-3 py-2 text-label font-semibold text-ink hover:border-brand disabled:cursor-wait disabled:opacity-60 btn-secondary"
           disabled={paging}
           onClick={onLoadMore}
           type="button"

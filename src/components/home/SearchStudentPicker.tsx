@@ -25,8 +25,8 @@ export function SearchStudentPicker({
             <GraduationCap aria-hidden="true" size={19} />
           </span>
           <span>
-            <span className="block text-sm font-semibold text-ink">Students</span>
-            <span className="mt-1 block text-xs text-muted">
+            <span className="block text-label font-semibold text-ink">Students</span>
+            <span className="mt-1 block text-meta text-muted">
               Looking for a monthly stay
             </span>
           </span>
@@ -41,7 +41,7 @@ export function SearchStudentPicker({
           >
             <Minus aria-hidden="true" size={15} />
           </button>
-          <span aria-live="polite" className="w-5 text-center text-sm font-medium">
+          <span aria-live="polite" className="w-5 text-center text-label font-medium">
             {count}
           </span>
           <button
@@ -55,9 +55,9 @@ export function SearchStudentPicker({
           </button>
         </div>
       </div>
-      <p className="mt-3 mb-4 text-xs text-muted">Search for 1-8 students.</p>
+      <p className="mt-3 mb-4 text-meta text-muted">Search for 1-8 students.</p>
       <button
-        className="ml-auto block min-h-11 rounded-full bg-brand px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
+        className="ml-auto block min-h-11 rounded-full bg-brand px-4 text-label font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
         onClick={onDone}
         type="button"
       >

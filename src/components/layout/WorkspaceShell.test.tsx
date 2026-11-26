@@ -51,4 +51,19 @@ describe("WorkspaceShell", () => {
       "w-[min(1920px,calc(100%-var(--page-gutter-mobile)))]",
     );
   });
+
+  it("uses a visible wrapping mobile navigation instead of a clipped horizontal strip", () => {
+    const markup = renderToStaticMarkup(
+      <WorkspaceShell
+        activeHref="/owner"
+        header={<header>HostelLo</header>}
+        navigation={navigation}
+      >
+        <main>Page content</main>
+      </WorkspaceShell>,
+    );
+
+    expect(markup).toContain("[@media(max-width:720px)]:grid");
+    expect(markup).toContain("[@media(max-width:720px)]:grid-cols-2");
+  });
 });

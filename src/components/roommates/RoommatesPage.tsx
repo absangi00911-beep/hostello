@@ -89,11 +89,11 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 });
 
 const inputClassName =
-  "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-base text-ink focus-visible:border-brand! focus-visible:outline-brand!";
+  "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!";
 const buttonClassName =
-  "inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-[0.875rem] font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
+  "inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-label font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
 const primaryButtonClassName =
-  "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-[0.95rem] font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
+  "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 
 export function RoommatesPage({
   currentUserId,
@@ -264,12 +264,12 @@ export function RoommatesPage({
   return (
     <main id="main-content" className="mx-auto w-full max-w-[760px] px-4 pb-28 pt-8">
       <Link
-        className="text-[0.9rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href={`/hostels/${encodeURIComponent(hostelParam)}`}
       >
         ← Back to hostel
       </Link>
-      <h1 className="mb-1 mt-3 text-[1.75rem] font-bold text-ink">
+      <h1 className="mb-1 mt-3 text-display font-bold text-ink">
         Roommates for this hostel
       </h1>
       <p className="mb-6 mt-0 text-muted">
@@ -279,7 +279,7 @@ export function RoommatesPage({
 
       {notice ? (
         <p
-          className="mb-4 rounded-[14px] bg-brand-soft px-[13px] py-[11px] text-[0.9rem] text-brand-dark"
+          className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
           role="status"
         >
           {notice}
@@ -287,7 +287,7 @@ export function RoommatesPage({
       ) : null}
       {actionError ? (
         <p
-          className="mb-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.9rem] text-danger"
+          className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           {actionError}
@@ -297,23 +297,23 @@ export function RoommatesPage({
       {isLoading ? (
         <p className="text-muted">Loading roommate posts...</p>
       ) : loadError ? (
-        <p className="rounded-[14px] bg-surface-muted p-4 text-danger" role="alert">
+        <p className="rounded-xl bg-surface-muted p-4 text-danger" role="alert">
           {loadError}
         </p>
       ) : (
         <>
           <section
             aria-label="Your post"
-            className="mb-6 rounded-[14px] border border-line bg-surface p-5"
+            className="mb-6 rounded-xl border border-line bg-surface p-5"
           >
-            <h2 className="m-0 mb-3 text-[1.05rem] font-semibold text-ink">
+            <h2 className="m-0 mb-3 text-body font-semibold text-ink">
               {ownPost ? "Your post" : "Post that you're looking for a roommate"}
             </h2>
 
             {ownPost ? (
               <div className="mb-4 rounded-[10px] bg-surface-muted p-3">
                 <p className="m-0 text-ink">{ownPost.bio}</p>
-                <p className="mb-0 mt-2 text-[0.8rem] text-muted">
+                <p className="mb-0 mt-2 text-label text-muted">
                   Expires {dateFormatter.format(new Date(ownPost.expiresAt))}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -338,7 +338,7 @@ export function RoommatesPage({
             ) : null}
 
             <form className="grid gap-3" noValidate onSubmit={savePost}>
-              <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+              <label className="grid gap-1 text-label font-semibold text-ink">
                 <span>About you</span>
                 <textarea
                   className={`${inputClassName} min-h-[90px] py-2`}
@@ -348,12 +348,12 @@ export function RoommatesPage({
                   required
                   value={bio}
                 />
-                <span className="text-[0.8rem] font-normal text-muted">
+                <span className="text-label font-normal text-muted">
                   {bio.trim().length}/200
                 </span>
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+                <label className="grid gap-1 text-label font-semibold text-ink">
                   <span>
                     Monthly budget (PKR){" "}
                     <span className="font-normal text-muted">(optional)</span>
@@ -366,7 +366,7 @@ export function RoommatesPage({
                     value={budget}
                   />
                 </label>
-                <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+                <label className="grid gap-1 text-label font-semibold text-ink">
                   <span>
                     Move-in date{" "}
                     <span className="font-normal text-muted">(optional)</span>
@@ -391,14 +391,14 @@ export function RoommatesPage({
           </section>
 
           {otherPosts.length === 0 ? (
-            <p className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted">
+            <p className="rounded-xl border border-line bg-surface p-6 text-center text-muted">
               No other students have posted here yet.
             </p>
           ) : (
             <ul className="m-0 grid list-none gap-3 p-0">
               {otherPosts.map((post) => (
                 <li
-                  className="rounded-[14px] border border-line bg-surface p-4"
+                  className="rounded-xl border border-line bg-surface p-4"
                   key={post.id}
                 >
                   <p className="m-0 font-semibold text-ink">
@@ -408,7 +408,7 @@ export function RoommatesPage({
                     ) : null}
                   </p>
                   <p className="mb-0 mt-2 text-ink">{post.bio}</p>
-                  <p className="mb-0 mt-2 text-[0.85rem] text-muted">
+                  <p className="mb-0 mt-2 text-label text-muted">
                     {post.budget !== null ? `Budget ${formatPrice(post.budget)}/month` : null}
                     {post.budget !== null && post.moveIn ? " · " : null}
                     {post.moveIn
@@ -422,7 +422,7 @@ export function RoommatesPage({
                       noValidate
                       onSubmit={(event) => submitReport(event, post)}
                     >
-                      <label className="grid gap-1 text-[0.8rem] font-semibold text-ink">
+                      <label className="grid gap-1 text-label font-semibold text-ink">
                         <span>What's wrong with this post?</span>
                         <textarea
                           className={`${inputClassName} min-h-[70px] py-2`}

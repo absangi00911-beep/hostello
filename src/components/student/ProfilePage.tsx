@@ -208,7 +208,7 @@ function StudentCard({ profile }: { profile: StudentProfile }) {
         aria-hidden="true"
         className="absolute left-1/2 top-3 h-1.5 w-14 -translate-x-1/2 rounded-full bg-surface-muted"
       />
-      <div className="flex items-center justify-between text-[0.9rem]">
+      <div className="flex items-center justify-between text-label">
         <span className="font-semibold tracking-[-0.01em]">Hostello</span>
         <span className="text-white/60">Student</span>
       </div>
@@ -226,17 +226,17 @@ function StudentCard({ profile }: { profile: StudentProfile }) {
         ) : (
           <span
             aria-hidden="true"
-            className="grid h-[88px] w-[72px] flex-none place-items-center rounded-lg bg-white text-[1.5rem] font-bold text-ink sm:h-[104px] sm:w-[88px] sm:text-[1.75rem]"
+            className="grid h-[88px] w-[72px] flex-none place-items-center rounded-lg bg-white text-headline font-bold text-ink sm:h-[104px] sm:w-[88px] sm:text-display"
           >
             {initials(profile.name)}
           </span>
         )}
         <div className="min-w-0">
-          <h2 className="line-clamp-2 break-words text-[1.5rem] font-semibold leading-[1.15] tracking-[-0.02em]">
+          <h2 className="line-clamp-2 break-words text-headline font-semibold leading-[1.15] tracking-[-0.02em]">
             {profile.name}
           </h2>
           {profile.city ? (
-            <p className="mt-1 flex items-center gap-1.5 text-[0.95rem] text-white/70">
+            <p className="mt-1 flex items-center gap-1.5 text-body text-white/70">
               <MapPin aria-hidden="true" className="flex-none" size={15} />
               {profile.city}
             </p>
@@ -246,13 +246,13 @@ function StudentCard({ profile }: { profile: StudentProfile }) {
 
       <div className="flex items-end justify-between gap-4 border-t border-white/10 pt-3.5">
         <div>
-          <p className="text-[0.78rem] text-white/50">Member since</p>
-          <p className="text-[0.95rem] font-medium">
+          <p className="text-meta text-white/50">Member since</p>
+          <p className="text-body font-medium">
             {memberSinceFormatter.format(new Date(profile.createdAt))}
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          <span className="text-[0.9rem] font-medium text-white/85">
+          <span className="text-label font-medium text-white/85">
             {cardStatus[status]}
           </span>
           {status === "APPROVED" ? (
@@ -290,15 +290,15 @@ function LedgerRow({
 }) {
   const content = (
     <>
-      <strong className="text-[2.75rem] font-semibold leading-none tracking-[-0.04em] tabular-nums text-ink md:text-[3.25rem]">
+      <strong className="text-display font-semibold leading-none tracking-[-0.04em] tabular-nums text-ink md:text-display">
         {count}
       </strong>
       <span className="min-w-0">
-        <span className="block text-[1.05rem] font-semibold text-ink">
+        <span className="block text-body font-semibold text-ink">
           {label}
         </span>
         {hint ? (
-          <span className="mt-0.5 block text-[0.9rem] text-muted">{hint}</span>
+          <span className="mt-0.5 block text-label text-muted">{hint}</span>
         ) : null}
       </span>
       {href ? (
@@ -363,7 +363,7 @@ function ProfileDetails({ profile }: { profile: StudentProfile }) {
         <div className="grid content-start gap-6 bg-surface-muted p-6 md:p-8">
           <StudentCard profile={profile} />
           {profile.bio ? (
-            <p className="m-0 max-w-[420px] text-[0.95rem] leading-[1.55] text-ink">
+            <p className="m-0 max-w-[420px] text-body leading-[1.55] text-ink">
               {profile.bio}
             </p>
           ) : null}
@@ -379,10 +379,10 @@ function ProfileDetails({ profile }: { profile: StudentProfile }) {
                 <VerificationIcon size={20} strokeWidth={1.9} />
               </span>
               <div className="min-w-0">
-                <h2 className="m-0 text-[1rem] font-semibold text-ink">
+                <h2 className="m-0 text-body font-semibold text-ink">
                   {verification.title}
                 </h2>
-                <p className="mt-0.5 m-0 text-[0.92rem] text-muted">
+                <p className="mt-0.5 m-0 text-body text-muted">
                   {verification.body}
                 </p>
               </div>
@@ -438,7 +438,7 @@ function ProfileDetails({ profile }: { profile: StudentProfile }) {
                       <span className="block font-semibold text-ink">
                         {label}
                       </span>
-                      <span className="block text-[0.86rem] text-muted">
+                      <span className="block text-label text-muted">
                         {hint}
                       </span>
                     </span>
@@ -455,24 +455,6 @@ function ProfileDetails({ profile }: { profile: StudentProfile }) {
         </div>
       </div>
 
-      <div className="mt-6">
-        <section className="flex flex-col items-start justify-between gap-4 rounded-[14px] border border-line bg-surface-muted p-6 sm:flex-row sm:items-center sm:gap-6">
-                <div>
-                  <h2 className="m-0 text-[1.15rem] font-semibold text-ink">
-                    Have a place to share?
-                  </h2>
-                  <p className="mt-1 m-0 text-[0.95rem] text-muted">
-                    Welcome students by listing your hostel on Hostello.
-                  </p>
-                </div>
-                <Link
-                  className="inline-flex min-h-11 flex-none items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
-                  href="/signup?role=OWNER"
-                >
-                  Become a host
-                </Link>
-              </section>
-      </div>
     </>
   );
 }
@@ -486,10 +468,10 @@ function ErrorPanel({
 }) {
   return (
     <section
-      className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
+      className="rounded-xl border border-danger bg-surface p-7 text-danger"
       role="alert"
     >
-      <p className="m-0 text-[0.95rem]">{message}</p>
+      <p className="m-0 text-body">{message}</p>
       <button
         className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
         onClick={onRetry}
@@ -519,10 +501,10 @@ export function ProfilePageContent({
     >
       <div className="mx-auto w-[min(calc(100%-var(--page-gutter-mobile)),640px)] md:w-[min(1040px,calc(100%-var(--page-gutter-total)))]">
         <header className="mb-6 md:mb-8">
-          <h1 className="m-0 text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.035em] text-ink">
+          <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
             Profile
           </h1>
-          <p className="mt-2 m-0 text-[0.95rem] text-muted">
+          <p className="mt-2 m-0 text-body text-muted">
             Your Hostello account at a glance.
           </p>
         </header>

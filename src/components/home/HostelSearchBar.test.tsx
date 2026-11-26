@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { HostelSearchBar } from "./HostelSearchBar";
 import { SearchDatePicker } from "./SearchDatePicker";
 import { SearchLocationPicker } from "./SearchLocationPicker";
+import { SearchPillPanels } from "./SearchPillPanels";
 import { SearchPillForm } from "./SearchPillForm";
 
 describe("HostelSearchBar", () => {
@@ -36,8 +37,8 @@ describe("HostelSearchBar", () => {
     );
 
     expect(markup.match(/aria-label="Destination"/g)).toHaveLength(2);
-    expect(markup.match(/aria-label="Move-in date"/g)).toHaveLength(2);
-    expect(markup.match(/aria-label="Guests"/g)).toHaveLength(2);
+    expect(markup.match(/aria-label="Move-in: Add dates"/g)).toHaveLength(2);
+    expect(markup).not.toMatch(/<button[^>]*aria-label="Guests"/);
     expect(markup.match(/aria-label="Search hostels"/g)).toHaveLength(2);
     expect(markup.match(
       /Availability is checked only on the selected move-in date\./g,
@@ -53,27 +54,26 @@ describe("HostelSearchBar", () => {
     expect(markup.split("before:bg-line").length - 1).toBe(4);
     expect(
       markup.match(
-        /<div aria-label="Guests and search"[^>]*role="group">[\s\S]*?aria-label="Guests"[\s\S]*?aria-label="Search hostels"[\s\S]*?<\/div>/g,
+        /<div aria-label="Guests and search"[^>]*role="group">[\s\S]*?Guests[\s\S]*?students?[\s\S]*?aria-label="Search hostels"[\s\S]*?<\/div>/g,
       ),
     )
       .toHaveLength(2);
   });
 
-  it("highlights destination, move-in, and student controls on hover and focus", () => {
+  it("uses neutral token states without decorative shadows on search controls", () => {
     const markup = renderToStaticMarkup(
       <HostelSearchBar onSearch={vi.fn()} />,
     );
 
-    expect(
-      markup.split("[@media(hover:hover)]:hover:bg-white").length - 1,
-    ).toBe(4);
-    expect(markup.split("hover:bg-white").length - 1).toBeGreaterThanOrEqual(4);
-    expect(markup.split("focus-within:bg-white").length - 1).toBe(4);
-    expect(markup.split("focus-visible:bg-white").length - 1).toBe(2);
+    expect(markup.split("hover:bg-surface-muted").length - 1).toBe(6);
+    expect(markup.split("focus-within:bg-surface-muted").length - 1).toBe(4);
+    expect(markup).not.toContain("hover:shadow-");
+    expect(markup).not.toContain("focus-within:shadow-");
+    expect(markup).not.toContain("focus-visible:shadow-");
     expect(markup.split("motion-reduce:transition-none").length - 1).toBe(6);
   });
 
-  it("uses a soft capsule track and a raised white active field", () => {
+  it("uses moderate corners and token-based surfaces for the search form", () => {
     const markup = renderToStaticMarkup(
       <SearchPillForm
         activePanel="where"
@@ -93,8 +93,11 @@ describe("HostelSearchBar", () => {
       </SearchPillForm>,
     );
 
-    expect(markup).toContain("bg-[#f4f4f4]");
-    expect(markup).toContain("bg-white shadow-[0_1px_4px_rgb(0_0_0/12%)]");
+    expect(markup).toContain("rounded-xl border border-line bg-surface");
+    expect(markup).toContain("rounded-lg");
+    expect(markup).toContain("bg-surface-muted");
+    expect(markup).not.toContain("rounded-full");
+    expect(markup).not.toContain("shadow-[");
   });
 
   it("shows destinations in a compact, icon-led suggestion panel", () => {
@@ -128,7 +131,7 @@ describe("HostelSearchBar", () => {
       /<button aria-label="Search hostels" class="([^"]*)" type="submit">/g,
     );
     const guestButtons = markup.match(
-      /aria-label="Guests"[^>]*class="([^"]*)"[^>]*type="button"/g,
+      /<button aria-expanded="(?:true|false)" class="flex min-h-14 min-w-0 flex-1[^"]*"[^>]*type="button">[\s\S]*?<\/button>/g,
     );
 
     expect(forms).toHaveLength(2);
@@ -138,7 +141,11 @@ describe("HostelSearchBar", () => {
     )).toBe(true);
     expect(guestButtons).toHaveLength(2);
     expect(
-      guestButtons?.every((button) => button.includes("hover:bg-white")),
+      guestButtons?.every((button) =>
+        button.includes("hover:bg-surface-muted") &&
+        button.includes("Guests") &&
+        button.includes("student"),
+      ),
     ).toBe(true);
     expect(searchButtons).toHaveLength(2);
     expect(searchButtons?.every((button) =>
@@ -146,6 +153,51 @@ describe("HostelSearchBar", () => {
     )).toBe(true);
     expect(markup.split("peer-hover/where:before:opacity-0").length - 1).toBe(2);
     expect(markup.split("peer-hover/move-in:before:opacity-0").length - 1).toBe(2);
+  });
+
+  it("uses semantic danger styling for destination and nearby-location errors", () => {
+    const destinationError = renderToStaticMarkup(
+      <SearchPillPanels
+        activePanel="where"
+        destination=""
+        destinationSuggestions={[]}
+        locationError="Location unavailable."
+        locationStatus="error"
+        onChooseCity={vi.fn()}
+        onDoneStudents={vi.fn()}
+        onSelectCity={vi.fn()}
+        onSelectDate={vi.fn()}
+        onSelectNearby={vi.fn()}
+        onStudentCountChange={vi.fn()}
+        searchError={null}
+        selectedDate=""
+        studentCount={1}
+      />,
+    );
+    const nearbyError = renderToStaticMarkup(
+      <SearchPillPanels
+        activePanel="date"
+        destination="Nearby"
+        destinationSuggestions={[]}
+        locationError="Location unavailable."
+        locationStatus="error"
+        onChooseCity={vi.fn()}
+        onDoneStudents={vi.fn()}
+        onSelectCity={vi.fn()}
+        onSelectDate={vi.fn()}
+        onSelectNearby={vi.fn()}
+        onStudentCountChange={vi.fn()}
+        searchError={null}
+        selectedDate=""
+        studentCount={1}
+      />,
+    );
+
+    expect(destinationError).toContain("bg-warn-soft");
+    expect(destinationError).toContain("text-danger");
+    expect(nearbyError).toContain("text-danger");
+    expect(destinationError).not.toMatch(/text-\[#(?:9b2c18|a12622)\]/);
+    expect(nearbyError).not.toMatch(/text-\[#(?:9b2c18|a12622)\]/);
   });
 
   it("uses Tailwind utilities for responsive layout, focus, and motion states", () => {

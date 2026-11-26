@@ -147,3 +147,36 @@ export function validateBankDetails(values: BankDetails): string | null {
   }
   return null;
 }
+
+export type BankDetailFieldErrors = Partial<
+  Record<keyof BankDetails, string>
+>;
+
+export function validateBankDetailFields(
+  values: BankDetails,
+): BankDetailFieldErrors {
+  const errors: BankDetailFieldErrors = {};
+  if (!values.bankAccountTitle.trim()) {
+    errors.bankAccountTitle = "Enter the account title.";
+  } else if (
+    values.bankAccountTitle.trim().length > BANK_LIMITS.bankAccountTitle
+  ) {
+    errors.bankAccountTitle =
+      `Account title can be at most ${BANK_LIMITS.bankAccountTitle} characters.`;
+  }
+  if (!values.bankAccountNumber.trim()) {
+    errors.bankAccountNumber = "Enter the account number or IBAN.";
+  } else if (
+    values.bankAccountNumber.trim().length > BANK_LIMITS.bankAccountNumber
+  ) {
+    errors.bankAccountNumber =
+      `Account number can be at most ${BANK_LIMITS.bankAccountNumber} characters.`;
+  }
+  if (!values.bankName.trim()) {
+    errors.bankName = "Enter the bank name.";
+  } else if (values.bankName.trim().length > BANK_LIMITS.bankName) {
+    errors.bankName =
+      `Bank name can be at most ${BANK_LIMITS.bankName} characters.`;
+  }
+  return errors;
+}

@@ -40,11 +40,17 @@ describe("/api/email/unsubscribe", () => {
       `https://hostello.test/api/email/unsubscribe?token=${TOKEN}`,
     ));
     const html = await response.text();
+    const compactHtml = html.replace(/\s+/g, "");
 
     expect(response.status).toBe(200);
     expect(html).toContain("Confirm unsubscribe");
     expect(html).toContain('method="post"');
+    expect(compactHtml).toContain("background:#f6f8fb;color:#0f172a");
+    expect(compactHtml).toContain("border-radius:12px");
+    expect(compactHtml).toContain("background:#2563eb;color:#fff");
+    expect(compactHtml).not.toContain("#FDF8F0");
     expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("content-security-policy")).toContain("default-src 'none'");
     expect(db.user.update).not.toHaveBeenCalled();
   });
 

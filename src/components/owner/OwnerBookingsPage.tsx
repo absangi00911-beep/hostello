@@ -75,28 +75,28 @@ function BookingCard({
   const { student } = booking;
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 min-w-0 text-[1rem] font-semibold text-ink">
+        <h3 className="m-0 min-w-0 text-body font-semibold text-ink">
           {student.name}
         </h3>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${statusBadgeClassName[booking.status]}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[booking.status]}`}
         >
           {statusLabel[booking.status]}
         </span>
       </div>
 
-      <p className="m-0 text-[0.88rem] text-ink">
+      <p className="m-0 text-label text-ink">
         {booking.hostel.name} · {dateFormatter.format(new Date(booking.checkIn))} to{" "}
         {dateFormatter.format(new Date(booking.checkOut))}
       </p>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         {booking.months} {booking.months === 1 ? "month" : "months"} ·{" "}
         {booking.guests} {booking.guests === 1 ? "guest" : "guests"} ·{" "}
         {currencyFormatter.format(booking.total)} paid
       </p>
-      <p className="m-0 flex flex-wrap gap-x-4 text-[0.85rem]">
+      <p className="m-0 flex flex-wrap gap-x-4 text-label">
         {student.email ? (
           <a
             className="font-semibold text-brand hover:underline"
@@ -117,7 +117,7 @@ function BookingCard({
 
       {response.kind === "open" ? (
         <p
-          className={`m-0 text-[0.85rem] font-semibold ${
+          className={`m-0 text-label font-semibold ${
             response.urgent ? "text-danger" : "text-warn-ink"
           }`}
         >
@@ -125,7 +125,7 @@ function BookingCard({
         </p>
       ) : null}
       {response.kind === "expired" ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           The 24-hour response window has ended. This request is being
           cancelled and the student refunded in full.
         </p>
@@ -138,7 +138,7 @@ function BookingCard({
             role="group"
             aria-label={`Confirm declining ${student.name}'s request`}
           >
-            <p className="m-0 text-[0.88rem] text-ink">
+            <p className="m-0 text-label text-ink">
               Decline this request? {student.name} will be refunded{" "}
               {currencyFormatter.format(booking.total)} in full.
             </p>
@@ -164,7 +164,7 @@ function BookingCard({
         ) : (
           <div className="flex flex-wrap gap-2">
             <button
-              className={`${primaryButtonClassName} min-h-11! px-4! text-[0.85rem]!`}
+              className={`${primaryButtonClassName} min-h-11! px-4! text-label!`}
               disabled={busy}
               onClick={() => onConfirm(booking.id)}
               type="button"
@@ -232,15 +232,15 @@ export function OwnerBookingsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(860px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/owner"
       >
         ← Back to dashboard
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Bookings
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Paid requests for your hostels. Respond within 24 hours or the request
         is cancelled and the student is refunded.
       </p>
@@ -253,7 +253,7 @@ export function OwnerBookingsContent({
         {BOOKING_FILTERS.map(({ value, label }) => (
           <button
             aria-pressed={filter === value}
-            className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-[0.82rem] font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+            className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
             key={value}
             onClick={() => onFilterChange(value)}
             type="button"
@@ -265,7 +265,7 @@ export function OwnerBookingsContent({
 
       {notice ? (
         <p
-          className={`mb-4 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${
+          className={`mb-4 rounded-xl px-[13px] py-[11px] text-label ${
             notice.tone === "error"
               ? "bg-surface-muted text-danger"
               : "bg-brand-soft text-brand-dark"
@@ -276,7 +276,7 @@ export function OwnerBookingsContent({
         </p>
       ) : null}
 
-      <p aria-live="polite" className="mb-3 mt-0 text-[0.85rem] text-muted">
+      <p aria-live="polite" className="mb-3 mt-0 text-label text-muted">
         {isLoading || loadError
           ? ""
           : `${total} ${total === 1 ? "booking" : "bookings"}`}
@@ -287,7 +287,7 @@ export function OwnerBookingsContent({
           Loading bookings...
         </p>
       ) : loadError ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
@@ -298,7 +298,7 @@ export function OwnerBookingsContent({
           </button>
         </div>
       ) : items.length === 0 ? (
-        <p className="rounded-[14px] border border-line bg-surface p-6 text-center text-muted">
+        <p className="rounded-xl border border-line bg-surface p-6 text-center text-muted">
           {filter === "PENDING"
             ? "No booking requests are waiting for you."
             : filter === "ALL"
@@ -325,7 +325,7 @@ export function OwnerBookingsContent({
 
       {moreError ? (
         <p
-          className="mt-4 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+          className="mt-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
           role="alert"
         >
           {moreError}

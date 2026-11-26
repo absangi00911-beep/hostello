@@ -1,5 +1,14 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { validateSignupPassword } from "./SignupForm";
+import { SignupForm, validateSignupPassword } from "./SignupForm";
+
+describe("SignupForm", () => {
+  it("keeps native required-field validation enabled", () => {
+    const markup = renderToStaticMarkup(<SignupForm initialRole="STUDENT" />);
+
+    expect(markup).not.toMatch(/noValidate=/i);
+  });
+});
 
 describe("validateSignupPassword", () => {
   it("accepts a password that meets the server rules", () => {

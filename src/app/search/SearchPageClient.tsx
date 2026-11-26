@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -17,9 +16,11 @@ import {
   BrowseAccountActions,
 } from "@/components/auth/BrowseAccountActions";
 import { HostelloBrand } from "@/components/brand/HostelloBrand";
+import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { ScrollAwareSurface } from "@/components/layout/ScrollAwareSurface";
 import type { BrowseAccountUser } from "@/components/auth/BrowseAccountMenu";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import { HostelCardImage } from "@/components/HostelCardImage";
 import { NEARBY_COORDINATES_SESSION_KEY, type NearbyCoordinates } from "@/lib/nearby-search";
 import { buildSearchAvailabilityAlertHref } from "@/lib/availability-alert-links";
 import {
@@ -35,6 +36,17 @@ import {
 import { useHostelSearch } from "./useHostelSearch";
 import { trackOnce } from "@/lib/analytics/client";
 import { getScrollBehavior } from "@/lib/scroll-behavior";
+
+export function getPaginationPages(currentPage: number, pageCount: number): number[] {
+  if (pageCount <= 5) {
+    return Array.from({ length: pageCount }, (_, index) => index + 1);
+  }
+  const start = Math.min(
+    Math.max(1, currentPage - 2),
+    Math.max(1, pageCount - 4),
+  );
+  return Array.from({ length: 5 }, (_, index) => start + index);
+}
 
 const mapPinPositions = [
   { top: "23%", left: "24%" },
@@ -55,7 +67,7 @@ function MapPreview({
   return (
     <aside
       aria-label="Map preview"
-      className="search-map-preview sticky top-[164px] min-h-[min(720px,calc(100svh-190px))] isolate overflow-hidden rounded-[14px] border border-[#dfe3d8] bg-[#e7eddc] [@media(max-width:780px)]:hidden"
+      className="search-map-preview sticky top-[164px] min-h-[min(720px,calc(100svh-190px))] isolate overflow-hidden rounded-xl border border-[#dfe3d8] bg-[#e7eddc] [@media(max-width:780px)]:hidden"
       role="region"
     >
       <div
@@ -74,29 +86,29 @@ function MapPreview({
             d="m-20 290 160 55 95-115 150 55 125-95 165 40M-40 610l185-65 125 90 125-55 145 65 135-70M275-20l-25 185 70 145-60 210 80 165-15 175"
           />
         </svg>
-        <span className="search-map-area absolute top-[28%] left-[16%] text-[0.72rem] tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[28%] left-[16%] text-meta tracking-[0.02em] text-[#737d70]">
           Gulberg
         </span>
-        <span className="search-map-area absolute top-[63%] left-[54%] text-[0.72rem] tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[63%] left-[54%] text-meta tracking-[0.02em] text-[#737d70]">
           Model Town
         </span>
-        <span className="search-map-area absolute top-[78%] left-[17%] text-[0.72rem] tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[78%] left-[17%] text-meta tracking-[0.02em] text-[#737d70]">
           Garden Town
         </span>
       </div>
-      <span className="search-map-label absolute top-4 left-4 z-[2] rounded-full border border-[rgb(29_42_34_/_8%)] bg-white/[0.92] px-3 py-2 text-[0.75rem] font-semibold text-ink shadow-[0_2px_8px_rgb(29_42_34_/_10%)]">
+      <span className="search-map-label absolute top-4 left-4 z-[2] rounded-full border border-[rgb(29_42_34_/_8%)] bg-white/[0.92] px-3 py-2 text-meta font-semibold text-ink shadow-[0_2px_8px_rgb(29_42_34_/_10%)]">
         {city || "Pakistan"} · Map preview
       </span>
       {mapHostels.map((hostel, index) => (
         <span
-          className="search-map-price absolute z-[2] rounded-full border border-[rgb(29_42_34_/_12%)] bg-white px-[10px] py-[7px] text-[0.72rem] font-bold text-ink shadow-[0_2px_7px_rgb(29_42_34_/_18%)] whitespace-nowrap"
+          className="search-map-price absolute z-[2] rounded-full border border-[rgb(29_42_34_/_12%)] bg-white px-[10px] py-[7px] text-meta font-bold text-ink shadow-[0_2px_7px_rgb(29_42_34_/_18%)] whitespace-nowrap"
           key={hostel.id}
           style={mapPinPositions[index]}
         >
           PKR {(hostel.pricePerMonth / 1000).toFixed(0)}k
         </span>
       ))}
-      <div className="search-map-attribution absolute right-0 bottom-0 left-0 bg-white/[0.82] px-[11px] py-[7px] text-right text-[0.65rem] text-[#586358]">
+      <div className="search-map-attribution absolute right-0 bottom-0 left-0 bg-white/[0.82] px-[11px] py-[7px] text-right text-meta text-[#586358]">
         Illustrative map preview
       </div>
     </aside>
@@ -123,33 +135,25 @@ function HostelCard({
 
   return (
     <Link
-      aria-label={`View details for ${hostel.name}`}
+      aria-labelledby={`search-hostel-title-${hostel.id}`}
       className="search-result-card hostel-card-link group block min-w-0 rounded-xl text-inherit"
       href={`/hostels/${hostel.id}`}
     >
       <div className="search-result-image relative aspect-[1.28] overflow-hidden rounded-xl bg-surface-muted [@media(max-width:520px)]:aspect-[1.35]">
-        {image ? (
-          <Image
-            alt={hostel.name}
-            className={hostelCardImageClassName}
-            fetchPriority={isFirst ? "high" : "auto"}
-            fill
-            loading={priority ? "eager" : "lazy"}
-            sizes="(max-width: 720px) 90vw, (max-width: 1100px) 35vw, 25vw"
-            src={image}
-          />
-        ) : (
-          <div
-            aria-label={`No photo available for ${hostel.name}`}
-            className="search-result-image-fallback size-full bg-brand-soft bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73_/_16%))]"
-            role="img"
-          />
-        )}
+        <HostelCardImage
+          alt={hostel.name}
+          className={hostelCardImageClassName}
+          fetchPriority={isFirst ? "high" : "auto"}
+          loading={priority ? "eager" : "lazy"}
+          sizes="(max-width: 720px) 90vw, (max-width: 1100px) 35vw, 25vw"
+          src={image}
+        />
       </div>
       <div className="search-result-details pt-[9px]">
         <div className="search-result-title-row flex items-baseline justify-between gap-2">
           <h2
-            className="m-0 overflow-hidden text-[0.84rem] font-semibold leading-[1.35] tracking-[-0.01em] text-ellipsis [@media(max-width:520px)]:text-base whitespace-nowrap"
+            className="m-0 overflow-hidden text-label font-semibold leading-[1.35] tracking-[-0.01em] text-ellipsis [@media(max-width:520px)]:text-body whitespace-nowrap"
+            id={`search-hostel-title-${hostel.id}`}
             title={hostel.name}
           >
             {hostel.name}
@@ -160,7 +164,7 @@ function HostelCard({
                 ? `Rated ${hostel.rating.toFixed(1)} out of 5`
                 : "No ratings yet"
             }
-            className="search-result-rating inline-flex shrink-0 items-center gap-1 text-[0.72rem] font-semibold text-ink [@media(max-width:520px)]:text-sm"
+            className="search-result-rating inline-flex shrink-0 items-center gap-1 text-meta font-semibold text-ink [@media(max-width:520px)]:text-label"
             role="img"
           >
             {hostel.reviewCount > 0 ? (
@@ -178,10 +182,10 @@ function HostelCard({
             )}
           </span>
         </div>
-        <p className="search-result-area mt-[3px] mb-0 overflow-hidden text-[0.75rem] text-muted text-ellipsis [@media(max-width:520px)]:text-sm whitespace-nowrap">
+        <p className="search-result-area mt-[3px] mb-0 overflow-hidden text-meta text-muted text-ellipsis [@media(max-width:520px)]:text-label whitespace-nowrap">
           {hostel.area || hostel.city}, {hostel.city}
         </p>
-        <p className="search-result-price mt-2 mb-0 text-[0.78rem] [@media(max-width:520px)]:text-base">
+        <p className="search-result-price mt-2 mb-0 text-meta [@media(max-width:520px)]:text-body">
           <strong className="font-[650]">
             PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
           </strong>
@@ -346,10 +350,7 @@ export default function SearchPageClient({
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (
-      Boolean(moveInDate) !== Boolean(checkOutDate) ||
-      (moveInDate && checkOutDate && checkOutDate <= moveInDate)
-    ) {
+    if (checkOutDate && (!moveInDate || checkOutDate <= moveInDate)) {
       setFilterError("Choose a check-in and a later check-out date.");
       return;
     }
@@ -561,6 +562,8 @@ export default function SearchPageClient({
   const summaryWhen =
     summaryStart && summaryEnd ? `${summaryStart} to ${summaryEnd}` : "Any dates";
   const summaryGuests = `${appliedGuests} ${appliedGuests === "1" ? "guest" : "guests"}`;
+  const showsStudentNavigation =
+    !accountUser || accountUser.role === "STUDENT";
 
   return (
     <div className="search-results-page min-h-dvh bg-white text-ink">
@@ -571,7 +574,7 @@ export default function SearchPageClient({
       >
         <div className="search-results-header-inner mx-auto grid w-[min(1920px,calc(100%-var(--page-gutter-total)))] min-h-[82px] grid-cols-[minmax(0,1fr)_minmax(360px,620px)_minmax(0,1fr)] items-center gap-6 [@media(max-width:1020px)]:grid-cols-[minmax(0,1fr)_minmax(340px,1.5fr)_auto] [@media(max-width:1020px)]:gap-[14px] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]! [@media(max-width:780px)]:min-h-[70px] [@media(max-width:780px)]:grid-cols-[minmax(0,1fr)_auto] [@media(max-width:780px)]:[&_.browse-account-actions]:col-start-2 [@media(max-width:780px)]:[&_.browse-account-actions]:row-start-1 [&_.browse-account-actions]:whitespace-nowrap [@media(max-width:1020px)]:[&_.browse-host-link]:hidden">
           <HostelloBrand
-            className="inline-flex w-fit items-center text-xl font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:780px)]:hidden"
+            className="inline-flex w-fit items-center text-title font-[750] tracking-[-0.045em] text-brand [font-family:'Arial_Rounded_MT_Bold','Trebuchet_MS',var(--font-inter),sans-serif] [@media(max-width:780px)]:hidden"
           />
 
           <button
@@ -586,21 +589,21 @@ export default function SearchPageClient({
           >
             <Search aria-hidden="true" className="shrink-0 text-ink" size={18} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-ink">
+              <span className="block truncate text-label font-semibold text-ink">
                 {summaryWhere}
               </span>
-              <span className="block truncate text-[0.8125rem] text-muted">
+              <span className="block truncate text-label text-muted">
                 {summaryWhen}, {summaryGuests}
               </span>
             </span>
           </button>
           <form
-            className={`search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-full border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 ${mobileSearchOpen ? "[@media(max-width:520px)]:fixed [@media(max-width:520px)]:inset-0 [@media(max-width:520px)]:z-50 [@media(max-width:520px)]:h-dvh [@media(max-width:520px)]:grid-cols-1 [@media(max-width:520px)]:content-start [@media(max-width:520px)]:gap-4 [@media(max-width:520px)]:overflow-y-auto [@media(max-width:520px)]:rounded-none [@media(max-width:520px)]:border-0 [@media(max-width:520px)]:bg-white [@media(max-width:520px)]:p-4 [@media(max-width:520px)]:pb-[calc(16px+env(safe-area-inset-bottom))] [@media(max-width:520px)]:shadow-none" : "[@media(max-width:520px)]:hidden"}`}
+            className={`search-compact-form grid min-h-[54px] grid-cols-[minmax(120px,1.35fr)_minmax(96px,0.9fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_40px] items-center rounded-xl border border-line bg-white p-[5px] shadow-[0_2px_8px_rgb(29_42_34_/_8%)] [@media(max-width:780px)]:col-span-full [@media(max-width:780px)]:col-start-1 [@media(max-width:780px)]:row-start-2 [@media(max-width:780px)]:mb-3 ${mobileSearchOpen ? "[@media(max-width:520px)]:fixed [@media(max-width:520px)]:inset-0 [@media(max-width:520px)]:z-50 [@media(max-width:520px)]:h-dvh [@media(max-width:520px)]:grid-cols-1 [@media(max-width:520px)]:content-start [@media(max-width:520px)]:gap-4 [@media(max-width:520px)]:overflow-y-auto [@media(max-width:520px)]:rounded-none [@media(max-width:520px)]:border-0 [@media(max-width:520px)]:bg-white [@media(max-width:520px)]:p-4 [@media(max-width:520px)]:pb-[calc(16px+env(safe-area-inset-bottom))] [@media(max-width:520px)]:shadow-none" : "[@media(max-width:520px)]:hidden"}`}
             onSubmit={submitSearch}
             role="search"
           >
             <div className="hidden items-center justify-between [@media(max-width:520px)]:flex">
-              <h2 className="m-0 text-lg font-bold">Search hostels</h2>
+              <h2 className="m-0 text-title font-bold">Search hostels</h2>
               <button
                 aria-label="Close search"
                 className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink"
@@ -611,14 +614,14 @@ export default function SearchPageClient({
               </button>
             </div>
             <label className="search-compact-location flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
+              <span className="text-label leading-[1.25] font-bold text-ink">
                 Where
               </span>
               <input
                 aria-label="Search destination"
                 autoComplete="off"
                 ref={destinationInputRef}
-                className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.75rem] leading-[1.4] text-muted outline-none placeholder:text-muted placeholder:opacity-100"
+                className="w-full min-w-0 border-0 bg-transparent p-0 text-meta leading-[1.4] text-muted outline-none placeholder:text-muted placeholder:opacity-100"
                 onChange={(event) => {
                   setDestination(event.target.value);
                   setIsNearby(false);
@@ -629,36 +632,36 @@ export default function SearchPageClient({
               />
             </label>
             <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
+              <span className="text-label leading-[1.25] font-bold text-ink">
                 Check-in
               </span>
               <input
                 aria-label="Check-in date"
-                className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                className="w-full min-w-0 border-0 bg-transparent p-0 text-meta text-muted outline-none"
                 onChange={(event) => setMoveInDate(event.target.value)}
                 type="date"
                 value={moveInDate}
               />
             </label>
             <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
+              <span className="text-label leading-[1.25] font-bold text-ink">
                 Check-out
               </span>
               <input
                 aria-label="Check-out date"
-                className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                className="w-full min-w-0 border-0 bg-transparent p-0 text-meta text-muted outline-none"
                 onChange={(event) => setCheckOutDate(event.target.value)}
                 type="date"
                 value={checkOutDate}
               />
             </label>
             <label className="search-compact-static flex min-h-[36px] min-w-0 flex-col justify-center gap-px border-r border-line px-[14px] focus-within:outline-2 focus-within:outline-brand focus-within:-outline-offset-2 [@media(max-width:520px)]:min-h-14 [@media(max-width:520px)]:rounded-xl [@media(max-width:520px)]:border [@media(max-width:520px)]:px-3">
-              <span className="text-[0.68rem] leading-[1.25] font-bold text-ink [@media(max-width:520px)]:text-[0.8125rem]">
+              <span className="text-label leading-[1.25] font-bold text-ink">
                 Guests
               </span>
               <select
                 aria-label="Guests"
-                className="w-full min-w-0 cursor-pointer border-0 bg-transparent p-0 text-[0.7rem] text-muted outline-none"
+                className="w-full min-w-0 cursor-pointer border-0 bg-transparent p-0 text-meta text-muted outline-none"
                 onChange={(event) => setGuests(event.target.value)}
                 value={guests}
               >
@@ -675,13 +678,13 @@ export default function SearchPageClient({
               type="submit"
             >
               <Search aria-hidden="true" size={17} />
-              <span className="hidden text-base font-semibold [@media(max-width:520px)]:inline">
+              <span className="hidden text-body font-semibold [@media(max-width:520px)]:inline">
                 Search hostels
               </span>
             </button>
             {filterError ? (
               <p
-                className="m-0 hidden text-sm text-[#b32505] [@media(max-width:520px)]:block"
+                className="col-span-full m-0 text-label text-[#b32505]"
                 role="alert"
               >
                 {filterError}
@@ -696,14 +699,14 @@ export default function SearchPageClient({
       <div className="search-filter-bar sticky top-[82px] z-[15] border-b border-line bg-white/[0.97] [@media(max-width:780px)]:top-0">
         <div className="search-filter-inner mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[calc(100%-var(--page-gutter-mobile))]!">
           <details className="search-filter-details py-3">
-            <summary className="search-filter-control inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-white px-4 text-[0.82rem] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2">
+            <summary className="search-filter-control inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-white px-4 text-label font-semibold text-ink focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2">
               <SlidersHorizontal aria-hidden="true" size={16} />
               Filters
               {(appliedFilters.gender ||
                 appliedFilters.minPrice ||
                 appliedFilters.maxPrice ||
                 appliedFilters.amenities.length > 0) && (
-                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand-dark">
+                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-meta text-brand-dark">
                   Active
                 </span>
               )}
@@ -713,10 +716,10 @@ export default function SearchPageClient({
               className="search-filter-form mt-3 grid max-h-[calc(100dvh-9rem)] gap-4 overflow-y-auto overscroll-contain rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-4"
               onSubmit={applyFilters}
             >
-              <label className="grid min-w-0 gap-1 text-sm font-medium">
+              <label className="grid min-w-0 gap-1 text-label font-medium">
                 Hostel type
                 <select
-                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-sm"
+                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-label"
                   onChange={(event) =>
                     setFilters((current) => ({
                       ...current,
@@ -731,10 +734,10 @@ export default function SearchPageClient({
                   <option value="MIXED">All genders accepted</option>
                 </select>
               </label>
-              <label className="grid min-w-0 gap-1 text-sm font-medium">
+              <label className="grid min-w-0 gap-1 text-label font-medium">
                 Sort by
                 <select
-                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-sm"
+                  className="min-h-11 rounded-lg border border-line bg-white px-3 text-label"
                   onChange={(event) =>
                     setFilters((current) => ({
                       ...current,
@@ -750,10 +753,10 @@ export default function SearchPageClient({
                   ))}
                 </select>
               </label>
-              <label className="grid min-w-0 gap-1 text-sm font-medium">
+              <label className="grid min-w-0 gap-1 text-label font-medium">
                 Minimum monthly price (PKR)
                 <input
-                  className="min-h-11 rounded-lg border border-line px-3 text-sm"
+                  className="min-h-11 rounded-lg border border-line px-3 text-label"
                   inputMode="numeric"
                   min="0"
                   onChange={(event) =>
@@ -766,10 +769,10 @@ export default function SearchPageClient({
                   value={filters.minPrice}
                 />
               </label>
-              <label className="grid min-w-0 gap-1 text-sm font-medium">
+              <label className="grid min-w-0 gap-1 text-label font-medium">
                 Maximum monthly price (PKR)
                 <input
-                  className="min-h-11 rounded-lg border border-line px-3 text-sm"
+                  className="min-h-11 rounded-lg border border-line px-3 text-label"
                   inputMode="numeric"
                   min="0"
                   onChange={(event) =>
@@ -783,11 +786,11 @@ export default function SearchPageClient({
                 />
               </label>
               <fieldset className="grid gap-2 border-0 p-0 sm:col-span-2 lg:col-span-4">
-                <legend className="mb-1 text-sm font-semibold">Amenities</legend>
+                <legend className="mb-1 text-label font-semibold">Amenities</legend>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
                   {AMENITIES.map((amenity) => (
                     <label
-                      className="inline-flex min-h-11 items-center gap-2 text-sm"
+                      className="inline-flex min-h-11 items-center gap-2 text-label"
                       key={amenity.id}
                     >
                       <input
@@ -811,7 +814,7 @@ export default function SearchPageClient({
                 </div>
               </fieldset>
               {filterError && (
-                <p className="m-0 text-sm text-[#991b1b]" role="alert">
+                <p className="m-0 text-label text-[#991b1b]" role="alert">
                   {filterError}
                 </p>
               )}
@@ -842,18 +845,18 @@ export default function SearchPageClient({
             className="search-results-content min-w-0"
           >
             <div className="search-results-heading mb-[6px] flex items-baseline justify-between gap-[18px] [@media(max-width:520px)]:items-start [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-1">
-              <h1 className="m-0 text-[clamp(1.2rem,1.55vw,1.48rem)] leading-[1.3] font-[650] tracking-[-0.035em]">
+              <h1 className="m-0 text-headline leading-[1.3] font-[650] tracking-[-0.035em]">
                 {pageTitle}
               </h1>
               {!isLoading && !searchError && totalHostels > 0 && (
-                <p aria-live="polite" className="m-0 flex-none text-[0.82rem] text-muted" role="status">
+                <p aria-live="polite" className="m-0 flex-none text-label text-muted" role="status">
                   {totalHostels} {totalHostels === 1 ? "hostel" : "hostels"}
                   {appliedCity ? ` in ${appliedCity}` : ""}
                 </p>
               )}
             </div>
 
-            <p className="search-price-note mt-0 mb-[18px] text-[0.76rem] text-muted">
+            <p className="search-price-note mt-0 mb-[18px] text-meta text-muted">
               Prices include monthly rent
             </p>
             {activeFilterTags.length > 0 && (
@@ -864,7 +867,7 @@ export default function SearchPageClient({
                 {activeFilterTags.map((filter) => (
                   <button
                     aria-label={`Remove ${filter.label} filter`}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface-muted px-3 text-sm text-ink"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface-muted px-3 text-label text-ink"
                     key={filter.id}
                     onClick={() => removeAppliedFilter(filter.id)}
                     type="button"
@@ -876,31 +879,34 @@ export default function SearchPageClient({
               </div>
             )}
 
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface-muted px-4 py-3">
-              <p className="m-0 text-sm text-muted">
-                Want to know when a matching hostel has space for your stay?
-              </p>
-              {appliedNearby && !alertNearbyCoordinatesLoaded ? (
-                <p className="m-0 text-sm text-muted" role="status">
-                  Loading nearby location…
-                </p>
-              ) : appliedNearby && !alertNearbyCoordinates ? (
-                <p className="m-0 text-sm text-muted" role="status">
-                  Nearby location is unavailable. Start a new Nearby search to save this location.
-                </p>
-              ) : (
-                <Link
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-brand bg-white px-4 text-sm font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
-                  href={availabilityAlertHref}
-                >
-                  Create availability alert
-                </Link>
+            {accountUser?.role !== "OWNER" &&
+              accountUser?.role !== "ADMIN" && (
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface-muted px-4 py-3">
+                  <p className="m-0 text-label text-muted">
+                    Want to know when a matching hostel has space for your stay?
+                  </p>
+                  {appliedNearby && !alertNearbyCoordinatesLoaded ? (
+                    <p className="m-0 text-label text-muted" role="status">
+                      Loading nearby location…
+                    </p>
+                  ) : appliedNearby && !alertNearbyCoordinates ? (
+                    <p className="m-0 text-label text-muted" role="status">
+                      Nearby location is unavailable. Start a new Nearby search to save this location.
+                    </p>
+                  ) : (
+                    <Link
+                      className="inline-flex min-h-11 items-center justify-center rounded-lg border border-brand bg-white px-4 text-label font-semibold text-brand hover:bg-brand-soft focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                      href={availabilityAlertHref}
+                    >
+                      Create availability alert
+                    </Link>
+                  )}
+                </div>
               )}
-            </div>
 
             {isLoading && (
               <p
-                className="search-results-message m-0 py-[30px] text-[0.9rem] text-muted"
+                className="search-results-message m-0 py-[30px] text-label text-muted"
                 role="status"
               >
                 Finding hostels…
@@ -908,7 +914,7 @@ export default function SearchPageClient({
             )}
             {searchError && (
               <div
-                className="search-results-message m-0 py-[30px] text-[0.9rem] text-muted"
+                className="search-results-message m-0 py-[30px] text-label text-muted"
                 role="alert"
               >
                 <p className="m-0">{searchError}</p>
@@ -923,7 +929,7 @@ export default function SearchPageClient({
             )}
             {!isLoading && !searchError && hostels.length === 0 && (
               <p
-                className="search-results-message m-0 py-[30px] text-[0.9rem] text-muted"
+                className="search-results-message m-0 py-[30px] text-label text-muted"
                 role="status"
               >
                 {appliedMoveInDate
@@ -953,21 +959,34 @@ export default function SearchPageClient({
                 >
                   <button
                     aria-label="Previous page"
-                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-meta text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === 1}
                     onClick={() => selectPage(page - 1)}
                     type="button"
                   >
                     <ChevronLeft aria-hidden="true" size={17} />
                   </button>
-                  {Array.from(
-                    { length: Math.min(pageCount, 5) },
-                    (_, index) => index + 1,
-                  ).map((pageNumber) => (
+                  {pageCount > 5 && getPaginationPages(page, pageCount)[0] > 1 ? (
+                    <>
+                      <button
+                        aria-current={page === 1 ? "page" : undefined}
+                        aria-label="Page 1"
+                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta ${
+                          page === 1 ? "bg-ink text-white" : "bg-transparent text-ink hover:bg-surface-muted"
+                        }`}
+                        onClick={() => selectPage(1)}
+                        type="button"
+                      >
+                        1
+                      </button>
+                      <span aria-hidden="true">…</span>
+                    </>
+                  ) : null}
+                  {getPaginationPages(page, pageCount).map((pageNumber) => (
                     <button
                       aria-current={pageNumber === page ? "page" : undefined}
                       aria-label={`Page ${pageNumber}`}
-                      className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
+                      className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta motion-reduce:scroll-auto motion-reduce:transition-none ${
                         pageNumber === page
                           ? "bg-ink text-white"
                           : "bg-transparent text-ink hover:bg-surface-muted"
@@ -979,13 +998,14 @@ export default function SearchPageClient({
                       {pageNumber}
                     </button>
                   ))}
-                  {pageCount > 5 && (
+                  {pageCount > 5 &&
+                    getPaginationPages(page, pageCount)[4] < pageCount ? (
                     <>
                       <span aria-hidden="true">…</span>
                       <button
                         aria-current={page === pageCount ? "page" : undefined}
                         aria-label={`Page ${pageCount}`}
-                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-[0.78rem] motion-reduce:scroll-auto motion-reduce:transition-none ${
+                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta motion-reduce:scroll-auto motion-reduce:transition-none ${
                           page === pageCount
                             ? "bg-ink text-white"
                             : "bg-transparent text-ink hover:bg-surface-muted"
@@ -996,10 +1016,10 @@ export default function SearchPageClient({
                         {pageCount}
                       </button>
                     </>
-                  )}
+                  ) : null}
                   <button
                     aria-label="Next page"
-                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-[0.78rem] text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-meta text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === pageCount}
                     onClick={() => selectPage(page + 1)}
                     type="button"
@@ -1015,28 +1035,40 @@ export default function SearchPageClient({
         </div>
       </main>
 
-      <footer className="search-results-footer border-t border-line bg-[#f7f7f5] pt-[34px] pr-[max(32px,calc((100%-1440px)/2))] pb-[18px] pl-[max(32px,calc((100%-1440px)/2))] [@media(max-width:780px)]:px-5 [@media(max-width:520px)]:px-4">
+      <div
+        className={`search-results-footer border-t border-line bg-[#f7f7f5] pt-[34px] pr-[max(32px,calc((100%-1440px)/2))] pb-[18px] pl-[max(32px,calc((100%-1440px)/2))] [@media(max-width:780px)]:px-5 [@media(max-width:520px)]:px-4 ${
+          showsStudentNavigation
+            ? "[@media(max-width:720px)]:pb-[calc(5rem+env(safe-area-inset-bottom))]"
+            : ""
+        }`}
+      >
         <div className="search-footer-columns grid grid-cols-3 gap-[30px] pb-[30px] [@media(max-width:520px)]:grid-cols-2 [@media(max-width:520px)]:gap-x-4 [@media(max-width:520px)]:gap-y-6">
           <div className="flex flex-col items-start gap-[10px]">
-            <h2 className="m-0 mb-[2px] text-[0.82rem] font-bold">Support</h2>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/messages">Contact HostelLo</Link>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Browse hostels</Link>
+            <h2 className="m-0 mb-[2px] text-label font-bold">Support</h2>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/contact">Contact HostelLo</Link>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Browse hostels</Link>
           </div>
           <div className="flex flex-col items-start gap-[10px]">
-            <h2 className="m-0 mb-[2px] text-[0.82rem] font-bold">For students</h2>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Find a hostel</Link>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/">Explore HostelLo</Link>
+            <h2 className="m-0 mb-[2px] text-label font-bold">For students</h2>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Find a hostel</Link>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/">Explore HostelLo</Link>
           </div>
           <div className="flex flex-col items-start gap-[10px]">
-            <h2 className="m-0 mb-[2px] text-[0.82rem] font-bold">For hostel owners</h2>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/signup?role=OWNER">List your hostel</Link>
-            <Link className="text-[0.74rem] text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/login">Sign in</Link>
+            <h2 className="m-0 mb-[2px] text-label font-bold">For hostel owners</h2>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/signup?role=OWNER">List your hostel</Link>
+            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/login">Sign in</Link>
           </div>
         </div>
-        <div className="search-footer-bottom flex justify-between gap-[18px] border-t border-line pt-[17px] text-[0.74rem] text-[#566158] [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-[6px]">
+        <div className="search-footer-bottom flex justify-between gap-[18px] border-t border-line pt-[17px] text-meta text-[#566158] [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-[6px]">
           <span>Made for student stays in Pakistan</span>
         </div>
-      </footer>
+      </div>
+      {showsStudentNavigation && (
+        <MobileTabNavigation
+          activeTab="explore"
+          role={accountUser?.role ?? null}
+        />
+      )}
     </div>
   );
 }

@@ -87,6 +87,7 @@ export function HostelDetailGallery({
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const mosaicPhotos = photos.slice(0, 5);
   const photoCount = Math.max(1, mosaicPhotos.length);
+  const photoCountLabel = `${photos.length} ${photos.length === 1 ? "photo" : "photos"}`;
 
   async function shareListing() {
     setActionMessage("");
@@ -172,14 +173,14 @@ export function HostelDetailGallery({
       >
         <div className="hostel-detail-title-row flex items-center justify-between gap-5 [@media(max-width:720px)]:absolute [@media(max-width:720px)]:inset-x-0 [@media(max-width:720px)]:bottom-0 [@media(max-width:720px)]:z-10 [@media(max-width:720px)]:rounded-t-[24px] [@media(max-width:720px)]:bg-white [@media(max-width:720px)]:px-5 [@media(max-width:720px)]:pt-5 [@media(max-width:720px)]:pb-3">
           <h1
-            className="m-0 min-w-0 max-w-full text-xl leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-[1.75rem] [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
+            className="m-0 min-w-0 max-w-full text-title leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-display [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
             id="hostel-detail-title"
           >
             {name}
           </h1>
           <div className="hostel-detail-actions flex shrink-0 items-center gap-4 [@media(max-width:720px)]:hidden">
             <button
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-[2px] py-1.5 text-[0.82rem] font-semibold text-ink underline underline-offset-[3px]"
+              className="inline-flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-[2px] py-1.5 text-label font-semibold text-ink underline underline-offset-[3px]"
               onClick={() => void shareListing()}
               type="button"
             >
@@ -188,7 +189,7 @@ export function HostelDetailGallery({
             </button>
             <button
               aria-pressed={isSaved}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-[2px] py-1.5 text-[0.82rem] font-semibold text-ink underline underline-offset-[3px] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-[0.65]"
+              className="inline-flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-[2px] py-1.5 text-label font-semibold text-ink underline underline-offset-[3px] aria-pressed:text-brand-dark disabled:cursor-wait disabled:opacity-[0.65]"
               disabled={isSaving}
               onClick={() => void toggleSaved()}
               type="button"
@@ -232,7 +233,7 @@ export function HostelDetailGallery({
           ) : (
             <div
               aria-label="Photos are not available for this hostel yet."
-              className="hostel-detail-photo-fallback col-span-full row-span-full grid place-items-center p-6 text-center text-sm text-muted [@media(max-width:720px)]:col-start-1 [@media(max-width:720px)]:row-start-1"
+              className="hostel-detail-photo-fallback col-span-full row-span-full grid place-items-center p-6 text-center text-label text-muted [@media(max-width:720px)]:col-start-1 [@media(max-width:720px)]:row-start-1"
               role="img"
             >
               Photos are not available for this hostel yet.
@@ -240,11 +241,11 @@ export function HostelDetailGallery({
           )}
           {photos.length > 0 && (
             <button
-              className="hostel-detail-show-photos absolute right-[14px] bottom-[14px] z-[1] min-h-[34px] cursor-pointer rounded-md border border-ink bg-white px-3 text-[0.8125rem] font-semibold text-ink hover:bg-surface-muted motion-reduce:transition-none [@media(max-width:720px)]:right-3 [@media(max-width:720px)]:bottom-3 btn-secondary"
+              className="hostel-detail-show-photos absolute right-[14px] bottom-[14px] z-[1] min-h-[34px] cursor-pointer rounded-md border border-ink bg-white px-3 text-label font-semibold text-ink hover:bg-surface-muted motion-reduce:transition-none [@media(max-width:720px)]:right-3 [@media(max-width:720px)]:bottom-3 btn-secondary"
               onClick={() => dialogRef.current?.showModal()}
               type="button"
             >
-              Show all {photos.length} photos
+              Show all {photoCountLabel}
             </button>
           )}
         </div>
@@ -277,7 +278,7 @@ export function HostelDetailGallery({
           ) : (
             <div
               aria-label="Photos are not available for this hostel yet."
-              className="grid h-full w-full shrink-0 place-items-center p-6 text-center text-sm text-muted"
+              className="grid h-full w-full shrink-0 place-items-center p-6 text-center text-label text-muted"
               role="img"
             >
               Photos are not available for this hostel yet.
@@ -320,8 +321,8 @@ export function HostelDetailGallery({
         </div>
         {photos.length > 0 && (
           <button
-            aria-label={`Show all ${photos.length} photos, photo ${activePhotoIndex + 1} of ${photos.length}`}
-            className="hostel-detail-mobile-photo-count absolute right-4 bottom-[76px] z-[2] hidden min-h-11 cursor-pointer items-center rounded-md border border-white/30 bg-black/45 px-2.5 text-[0.8125rem] font-semibold text-white backdrop-blur-md [@media(max-width:720px)]:inline-flex"
+            aria-label={`Show all photos, ${activePhotoIndex + 1} / ${photos.length}`}
+            className="hostel-detail-mobile-photo-count absolute right-4 bottom-[76px] z-[2] hidden min-h-11 cursor-pointer items-center rounded-md border border-white/30 bg-ink px-2.5 text-label font-semibold text-white [@media(max-width:720px)]:inline-flex"
             onClick={() => dialogRef.current?.showModal()}
             type="button"
           >
@@ -331,7 +332,7 @@ export function HostelDetailGallery({
         {actionMessage && (
           <p
             aria-live="polite"
-            className="hostel-detail-action-message mt-[10px] mb-0 text-right text-[0.8125rem] text-muted [@media(max-width:720px)]:text-left"
+            className="hostel-detail-action-message mt-[10px] mb-0 text-right text-label text-muted [@media(max-width:720px)]:text-left"
             role="status"
           >
             {actionMessage}
@@ -350,12 +351,12 @@ export function HostelDetailGallery({
       {photos.length > 0 && (
         <dialog
           aria-label={`Photos of ${name}`}
-          className="hostel-detail-photo-dialog m-auto max-h-[min(90dvh,900px)] w-[min(960px,calc(100%-32px))] max-w-[960px] rounded-[14px] border-0 bg-white p-5 text-ink backdrop:bg-black/[0.58] [@media(max-width:720px)]:w-[calc(100%-20px)] [@media(max-width:720px)]:p-[14px]"
+          className="hostel-detail-photo-dialog m-auto max-h-[min(90dvh,900px)] w-[min(960px,calc(100%-32px))] max-w-[960px] rounded-xl border-0 bg-white p-5 text-ink backdrop:bg-black/[0.58] [@media(max-width:720px)]:w-[calc(100%-20px)] [@media(max-width:720px)]:p-[14px]"
           ref={dialogRef}
         >
           <div className="hostel-detail-dialog-header mb-4 flex items-center justify-between gap-5">
-            <h2 className="m-0 text-xl leading-[1.2] font-semibold tracking-[-0.009em]">
-              {photos.length} photos
+            <h2 className="m-0 text-title leading-[1.2] font-semibold tracking-[-0.009em]">
+              {photoCountLabel}
             </h2>
             <button
               aria-label="Close photos"

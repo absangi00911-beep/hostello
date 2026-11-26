@@ -4,6 +4,7 @@ import {
   parseEarnings,
   parseSavedBankDetails,
   validateBankDetails,
+  validateBankDetailFields,
 } from "./ownerEarnings";
 
 const payout = {
@@ -107,5 +108,17 @@ describe("validateBankDetails", () => {
     expect(
       validateBankDetails({ ...valid, bankAccountNumber: "9".repeat(61) }),
     ).toMatch(/at most 60/);
+  });
+
+  it("returns separate field errors instead of one generic bank-details message", () => {
+    expect(validateBankDetailFields({
+      bankAccountTitle: "",
+      bankAccountNumber: "",
+      bankName: "",
+    })).toEqual({
+      bankAccountTitle: "Enter the account title.",
+      bankAccountNumber: "Enter the account number or IBAN.",
+      bankName: "Enter the bank name.",
+    });
   });
 });

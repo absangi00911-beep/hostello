@@ -96,12 +96,12 @@ export function AvailabilityAlertCard({
   const hostelId = alert.criteria.hostelId;
 
   return (
-    <li className="rounded-[14px] border border-line bg-surface p-4 shadow-[0_1px_2px_rgb(15_23_42_/_4%)] sm:p-5">
+    <li className="rounded-xl border border-line bg-surface p-4 shadow-[0_1px_2px_rgb(15_23_42_/_4%)] sm:p-5">
       <article aria-labelledby={`alert-title-${alert.id}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2
-              className="mt-1 mb-0 break-words text-base font-semibold"
+              className="mt-1 mb-0 break-words text-body font-semibold"
               id={`alert-title-${alert.id}`}
             >
               {describeAvailabilityAlert(alert)}
@@ -110,22 +110,22 @@ export function AvailabilityAlertCard({
               typeof hostelId === "string" &&
               /^[a-zA-Z0-9_-]{1,128}$/.test(hostelId) && (
                 <Link
-                  className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-brand underline underline-offset-2"
+                  className="mt-1 inline-flex min-h-11 items-center text-label font-semibold text-brand underline underline-offset-2"
                   href={`/hostels/${encodeURIComponent(hostelId)}`}
                 >
                   View hostel
                 </Link>
               )}
           </div>
-          <span className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-xs font-semibold">
+          <span className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-meta font-semibold">
             {statusLabel}
           </span>
         </div>
-        <p className="mb-1 mt-3 text-sm text-muted">
+        <p className="mb-1 mt-3 text-label text-muted">
           {dateLabel(alert.checkIn)} – {dateLabel(alert.checkOut)} · {alert.guests}{" "}
           {alert.guests === 1 ? "guest" : "guests"}
         </p>
-        <p className="m-0 text-sm text-muted" role="status">
+        <p className="m-0 text-label text-muted" role="status">
           {alert.isMatched
             ? "Currently matches your availability criteria."
             : "No current match."}
@@ -134,7 +134,7 @@ export function AvailabilityAlertCard({
         {alert.status === "EXPIRED" ? (
           <div className="mt-3 flex flex-wrap gap-2">
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-label font-semibold disabled:opacity-60"
               disabled={pending}
               onClick={onCreateNew}
               type="button"
@@ -142,7 +142,7 @@ export function AvailabilityAlertCard({
               Create a new alert
             </button>
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-danger disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-label font-semibold text-danger disabled:opacity-60"
               disabled={pending}
               onClick={onDelete}
               type="button"
@@ -153,7 +153,7 @@ export function AvailabilityAlertCard({
         ) : (
           <div className="mt-4 flex flex-wrap gap-2">
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-label font-semibold disabled:opacity-60"
               disabled={pending}
               onClick={onEdit}
               type="button"
@@ -161,7 +161,7 @@ export function AvailabilityAlertCard({
               Edit
             </button>
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-label font-semibold disabled:opacity-60"
               disabled={pending}
               onClick={onToggle}
               type="button"
@@ -169,7 +169,7 @@ export function AvailabilityAlertCard({
               {alert.status === "ACTIVE" ? "Pause" : "Resume"}
             </button>
             <button
-              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-sm font-semibold text-danger disabled:opacity-60"
+              className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-label font-semibold text-danger disabled:opacity-60"
               disabled={pending}
               onClick={onDelete}
               type="button"

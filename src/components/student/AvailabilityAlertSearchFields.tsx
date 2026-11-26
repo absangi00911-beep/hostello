@@ -14,10 +14,10 @@ type Props = {
 export function AvailabilityAlertSearchFields({ values, update }: Props) {
   return (
     <fieldset className="grid gap-4 border-0 p-0">
-      <legend className="mb-1 text-sm font-semibold text-ink">
+      <legend className="mb-1 text-label font-semibold text-ink">
         Search filters
       </legend>
-      <label className="grid gap-1 text-sm font-medium">
+      <label className="grid gap-1 text-label font-medium">
         Keywords
         <input
           className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -27,7 +27,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
           value={values.q}
         />
       </label>
-      <label className="grid gap-1 text-sm font-medium">
+      <label className="grid gap-1 text-label font-medium">
         City
         <input
           className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -36,7 +36,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
           value={values.city}
         />
       </label>
-      <label className="grid gap-1 text-sm font-medium">
+      <label className="grid gap-1 text-label font-medium">
         Gender preference
         <select
           className="min-h-11 rounded-lg border border-line bg-white px-3 font-normal"
@@ -52,7 +52,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
         </select>
       </label>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm font-medium">
+        <label className="grid gap-1 text-label font-medium">
           Minimum monthly rent (PKR)
           <input
             className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -62,7 +62,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
             value={values.minPrice}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium">
+        <label className="grid gap-1 text-label font-medium">
           Maximum monthly rent (PKR)
           <input
             className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -74,13 +74,13 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
         </label>
       </div>
       <fieldset className="grid gap-2 border-0 p-0">
-        <legend className="mb-1 text-sm font-semibold text-ink">
+        <legend className="mb-1 text-label font-semibold text-ink">
           Amenities
         </legend>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {AMENITIES.map((amenity) => (
             <label
-              className="flex min-h-11 items-center gap-2 text-sm"
+              className="flex min-h-11 items-center gap-2 text-label"
               key={amenity.id}
             >
               <input
@@ -100,7 +100,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
           ))}
         </div>
       </fieldset>
-      <label className="flex min-h-11 items-center gap-2 text-sm">
+      <label className="flex min-h-11 items-center gap-2 text-label">
         <input
           checked={values.verified}
           onChange={(event) => update("verified", event.target.checked)}
@@ -109,14 +109,14 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
         Verified listings only
       </label>
       <fieldset className="grid gap-3 border-0 p-0">
-        <legend className="text-sm font-semibold text-ink">
+        <legend className="text-label font-semibold text-ink">
           Nearby location (optional)
         </legend>
-        <p className="m-0 text-xs text-muted">
+        <p className="m-0 text-meta text-muted">
           Coordinates are used only when you enter both values.
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="grid gap-1 text-sm font-medium">
+          <label className="grid gap-1 text-label font-medium">
             Latitude
             <input
               className="min-h-11 rounded-lg border border-line px-3 font-normal"
@@ -128,7 +128,7 @@ export function AvailabilityAlertSearchFields({ values, update }: Props) {
               value={values.latitude}
             />
           </label>
-          <label className="grid gap-1 text-sm font-medium">
+          <label className="grid gap-1 text-label font-medium">
             Longitude
             <input
               className="min-h-11 rounded-lg border border-line px-3 font-normal"

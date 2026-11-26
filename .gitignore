@@ -62,7 +62,8 @@ build-*.txt
 # Test outputs and temporary files
 test-results/
 .playwright-cli/
-.playwrite-mcp/
+.playwright-mcp/
+/*.png
 tmp_del.sql
 
 # Covers logs nested anywhere: logs/ci/build.log, packages/app/logs/build.log

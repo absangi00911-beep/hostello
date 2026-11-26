@@ -68,6 +68,9 @@ describe("AdminVerificationsContent", () => {
     expect(markup).toContain("ayesha@example.com");
     expect(markup).toContain("Lahore");
     expect(markup).toContain("2 bookings");
+    expect(markup).toContain('aria-label="Review document for Ayesha Khan"');
+    expect(markup).toContain('aria-label="Approve Ayesha Khan"');
+    expect(markup).toContain('aria-label="Reject Ayesha Khan"');
     expect(markup).toContain("Review document");
     expect(markup).toContain(">Approve<");
     expect(markup).toContain(">Reject<");
@@ -133,6 +136,7 @@ describe("DocumentPreview", () => {
       <DocumentPreview student={student({ documentContentType: "application/pdf" })} />,
     );
     expect(markup).toContain("Download PDF");
+    expect(markup).toContain('aria-label="Download verification PDF for Ayesha Khan"');
     expect(markup).toContain('href="/api/admin/verifications/u1/document"');
     expect(markup).toContain('rel="noopener noreferrer"');
     expect(markup).not.toContain("<img");
@@ -153,6 +157,7 @@ describe("DecisionForm", () => {
         busy={false}
         error={null}
         mode={mode}
+        studentName="Ayesha Khan"
         onCancel={vi.fn()}
         onConfirm={vi.fn()}
         {...overrides}
@@ -169,6 +174,11 @@ describe("DecisionForm", () => {
     const markup = form("reject");
     expect(markup).toContain("Reject verification");
     expect(markup).toContain("can submit a new document");
+  });
+
+  it("names the decision button for the student", () => {
+    expect(form("approve")).toContain('aria-label="Approve student Ayesha Khan"');
+    expect(form("reject")).toContain('aria-label="Reject verification for Ayesha Khan"');
   });
 
   it("shows API errors and a busy state", () => {

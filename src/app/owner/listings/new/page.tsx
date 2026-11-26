@@ -36,10 +36,10 @@ export default async function NewListingRoute() {
       }
     >
       <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-20 pt-8 md:pt-10">
-        <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+        <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
           Add a listing
         </h1>
-        <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+        <p className="mb-6 mt-2 text-body text-muted">
           Tell students about your hostel. You can submit once the details and
           at least one room type are filled in.
         </p>

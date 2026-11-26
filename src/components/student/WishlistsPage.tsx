@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Star } from "@/components/icons/HostelloIcons";
 import { useEffect, useState } from "react";
 import type { HostelListing } from "@/components/home/HostelRow";
 import { hostelCardImageClassName } from "@/components/hostel-card-styles";
+import { HostelCardImage } from "@/components/HostelCardImage";
 import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
 interface FavoritesPage {
@@ -96,7 +96,7 @@ function LoadingCards() {
     >
       {Array.from({ length: 3 }, (_, index) => (
         <div className="min-w-0 motion-safe:animate-pulse" key={index}>
-          <div className="mb-3 aspect-[1.18] rounded-[14px] bg-surface-muted" />
+          <div className="mb-3 aspect-[1.18] rounded-xl bg-surface-muted" />
           <div className="mb-2 h-[14px] w-[76%] rounded-lg bg-surface-muted" />
           <div className="h-[11px] w-[48%] rounded-lg bg-surface-muted" />
         </div>
@@ -133,7 +133,7 @@ export function WishlistsPageContent({
         {isLoading ? (
           <section
             aria-busy="true"
-            className="py-8 text-sm text-muted"
+            className="py-8 text-label text-muted"
             role="status"
           >
             <p className="m-0">Loading saved hostels...</p>
@@ -141,10 +141,10 @@ export function WishlistsPageContent({
           </section>
         ) : error && hostels.length === 0 ? (
           <section
-            className="rounded-[14px] border border-danger bg-surface p-7 text-danger"
+            className="rounded-xl border border-danger bg-surface p-7 text-danger"
             role="alert"
           >
-            <p className="m-0 text-[0.95rem]">{error}</p>
+            <p className="m-0 text-body">{error}</p>
             <button
               className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
@@ -155,13 +155,13 @@ export function WishlistsPageContent({
           </section>
         ) : hostels.length === 0 ? (
           <section
-            className="rounded-[14px] border border-line bg-surface p-7"
+            className="rounded-xl border border-line bg-surface p-7"
             role="status"
           >
-            <h2 className="m-0 text-[1.2rem] font-semibold text-ink">
+            <h2 className="m-0 text-title font-semibold text-ink">
               No saved hostels yet
             </h2>
-            <p className="mt-2 mb-4 text-[0.95rem] text-muted">
+            <p className="mt-2 mb-4 text-body text-muted">
               Save a hostel while exploring and it will appear here.
             </p>
             <Link
@@ -175,7 +175,7 @@ export function WishlistsPageContent({
           <>
             {error && (
               <p
-                className="mb-5 rounded-[14px] border border-danger bg-surface p-3 text-[0.9rem] text-danger"
+                className="mb-5 rounded-xl border border-danger bg-surface p-3 text-label text-danger"
                 role="alert"
               >
                 {error}{" "}
@@ -194,45 +194,37 @@ export function WishlistsPageContent({
                 const image = hostel.coverImage || hostel.images[0];
                 return (
                   <article
-                    className="hostel-card min-w-0 snap-start overflow-hidden rounded-[14px] border border-line bg-surface"
+                    className="hostel-card min-w-0 snap-start overflow-hidden rounded-xl border border-line bg-surface"
                     key={hostel.id}
                   >
                     <Link
-                      aria-label={`View details for ${hostel.name}`}
+                      aria-labelledby={`wishlist-hostel-title-${hostel.id}`}
                       className="hostel-card-link group block min-w-0 text-inherit"
                       href={`/hostels/${hostel.slug}`}
                     >
                       <div className="hostel-card-image relative aspect-[1.18] overflow-hidden bg-brand-soft">
-                        {image ? (
-                          <Image
-                            alt={hostel.name}
-                            className={hostelCardImageClassName}
-                            fill
-                            sizes="(max-width: 720px) 90vw, (max-width: 1100px) 45vw, 25vw"
-                            src={image}
-                          />
-                        ) : (
-                          <div
-                            aria-label={`No photo available for ${hostel.name}`}
-                            className="hostel-image-fallback h-full w-full bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73/16%)),var(--brand-soft)]"
-                            role="img"
-                          />
-                        )}
+                        <HostelCardImage
+                          alt={hostel.name}
+                          className={hostelCardImageClassName}
+                          sizes="(max-width: 720px) 90vw, (max-width: 1100px) 45vw, 25vw"
+                          src={image}
+                        />
                       </div>
                       <div className="hostel-card-details px-[10px] pt-[11px] pb-3 [@media(max-width:720px)]:px-[9px] [@media(max-width:720px)]:pt-[10px] [@media(max-width:720px)]:pb-[11px]">
                         <h2
-                          className="m-0 mb-[6px] overflow-hidden text-[0.95rem] font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap"
+                          className="m-0 mb-[6px] overflow-hidden text-body font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap"
+                          id={`wishlist-hostel-title-${hostel.id}`}
                           title={hostel.name}
                         >
                           {hostel.name}
                         </h2>
-                        <p className="hostel-card-price m-0 mb-[9px] overflow-hidden text-[0.875rem] leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-[0.875rem] [font-family:var(--font-inter),_sans-serif]">
+                        <p className="hostel-card-price m-0 mb-[9px] overflow-hidden text-label leading-[1.43] font-semibold text-ellipsis whitespace-nowrap [@media(max-width:720px)]:text-label [font-family:var(--font-inter),_sans-serif]">
                           PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
-                          <span className="text-[0.7rem] font-[450] text-muted [@media(max-width:720px)]:text-xs">
+                          <span className="text-meta font-[450] text-muted [@media(max-width:720px)]:text-meta">
                             {" / month"}
                           </span>
                         </p>
-                        <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-[0.72rem] text-muted [@media(max-width:720px)]:text-xs">
+                        <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-meta text-muted [@media(max-width:720px)]:text-meta">
                           <span className="hostel-card-area inline-flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
                             {hostel.area || hostel.city}
                           </span>

@@ -35,19 +35,19 @@ export function AdminBookingDetailContent({
     <main id="main-content" className="mx-auto grid w-[min(760px,calc(100%-var(--page-gutter-mobile)))] gap-5 pb-16 pt-8 md:pt-10">
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         <Link
-          className="text-[0.85rem] font-semibold text-brand hover:underline"
+          className="text-label font-semibold text-brand hover:underline"
           href="/admin/bookings"
         >
           ← Back to bookings
         </Link>
         <Link
-          className="text-[0.85rem] font-semibold text-brand hover:underline"
+          className="text-label font-semibold text-brand hover:underline"
           href="/admin"
         >
           Admin console
         </Link>
       </div>
-      <h1 className="m-0 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="m-0 text-display font-semibold tracking-[-0.035em] text-ink">
         Booking detail
       </h1>
       {isLoading ? (
@@ -55,7 +55,7 @@ export function AdminBookingDetailContent({
           Loading booking...
         </p>
       ) : loadError ? (
-        <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+        <div className="rounded-xl bg-surface-muted p-4" role="alert">
           <p className="m-0 text-danger">{loadError}</p>
           <button
             className={`${secondaryButtonClassName} mt-3`}
@@ -68,15 +68,15 @@ export function AdminBookingDetailContent({
       ) : booking ? (
         <section
           aria-labelledby="admin-booking-details"
-          className="grid gap-4 rounded-[14px] border border-line bg-surface p-4"
+          className="grid gap-4 rounded-xl border border-line bg-surface p-4"
         >
           <h2
-            className="m-0 text-[1.05rem] font-semibold text-ink"
+            className="m-0 text-body font-semibold text-ink"
             id="admin-booking-details"
           >
             {booking.hostel.name}
           </h2>
-          <dl className="m-0 grid gap-3 text-[0.9rem] sm:grid-cols-2">
+          <dl className="m-0 grid gap-3 text-label sm:grid-cols-2">
             <div>
               <dt className="text-muted">Booking status</dt>
               <dd className="m-0 font-semibold text-ink">
@@ -119,7 +119,7 @@ export function AdminBookingDetailContent({
               </div>
             ) : null}
           </dl>
-          <p className="m-0 text-[0.82rem] text-muted">
+          <p className="m-0 text-label text-muted">
             No admin action is available on this screen. This endpoint does not
             expose a booking audit history.
           </p>

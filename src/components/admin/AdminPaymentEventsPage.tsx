@@ -34,8 +34,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "Asia/Karachi",
 });
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 export interface RetryActionResult {
   /** Error to show on the card; null when the retry was queued. */
@@ -71,7 +70,7 @@ export function RetryForm({
 
   return (
     <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-      <p className="m-0 text-[0.9rem] text-ink">
+      <p className="m-0 text-label text-ink">
         Retrying puts the stored event back in the processing queue. Check the
         payment in Safepay first. Your name, the tracker and your reason are
         recorded and cannot be edited later.
@@ -110,7 +109,7 @@ export function RetryForm({
           value={reason}
         />
       </Field>
-      <label className="flex items-start gap-2 text-[0.88rem] text-ink">
+      <label className="flex items-start gap-2 text-label text-ink">
         <input
           checked={checked}
           className="mt-1"
@@ -120,7 +119,7 @@ export function RetryForm({
         <span>I checked this payment in Safepay.</span>
       </label>
       {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
@@ -184,18 +183,18 @@ function EventCard({
   }
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 text-[1.02rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {eventTypeLabel(event.eventType)}
         </h3>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${event.status === "RETRYABLE" ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-danger"}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${event.status === "RETRYABLE" ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-danger"}`}
         >
           {statusLabel(event.status)}
         </span>
       </div>
-      <dl className="m-0 grid gap-1 text-[0.88rem]">
+      <dl className="m-0 grid gap-1 text-label">
         {amount ? (
           <div className="flex flex-wrap gap-x-2">
             <dt className="text-muted">Amount</dt>
@@ -232,17 +231,17 @@ function EventCard({
         </div>
       </dl>
       {event.lastErrorCode ? (
-        <p className="m-0 text-[0.85rem] text-warn-ink">
+        <p className="m-0 text-label text-warn-ink">
           {errorCodeLabel(event.lastErrorCode)}{" "}
           <span className="text-muted">({event.lastErrorCode})</span>
         </p>
       ) : null}
       {event.replays.length > 0 ? (
         <div className="grid gap-1">
-          <p className="m-0 text-[0.8rem] font-semibold text-muted">
+          <p className="m-0 text-label font-semibold text-muted">
             Recent retries
           </p>
-          <ul className="m-0 grid list-none gap-1 p-0 text-[0.85rem] text-ink">
+          <ul className="m-0 grid list-none gap-1 p-0 text-label text-ink">
             {event.replays.map((replay) => (
               <li key={`${replay.createdAt}-${replay.adminUserId}`}>
                 {dateFormatter.format(new Date(replay.createdAt))}: “
@@ -255,7 +254,7 @@ function EventCard({
       {uncertain ? (
         <AdminUncertainActionNotice />
       ) : blocked ? (
-        <p className="m-0 text-[0.85rem] text-warn-ink">{blocked}</p>
+        <p className="m-0 text-label text-warn-ink">{blocked}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           <button
@@ -316,15 +315,15 @@ export function AdminPaymentEventsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Payment events
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Safepay payment notifications that did not finish processing. Events
         that can be retried are replayed from the evidence stored when they
         arrived. You can queue up to 5 retries an hour.
@@ -333,7 +332,7 @@ export function AdminPaymentEventsContent({
       <div className="grid gap-5">
         {notice ? (
           <p
-            className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+            className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
             role={notice.tone === "success" ? "status" : "alert"}
           >
             {notice.text}
@@ -346,7 +345,7 @@ export function AdminPaymentEventsContent({
               Loading payment events...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -357,12 +356,12 @@ export function AdminPaymentEventsContent({
               </button>
             </div>
           ) : events.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               No payment events need attention.
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} {total === 1 ? "event needs" : "events need"} attention
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -378,7 +377,7 @@ export function AdminPaymentEventsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

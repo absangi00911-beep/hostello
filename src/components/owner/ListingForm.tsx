@@ -65,10 +65,10 @@ export function ListingSubmitted({
       className="grid gap-4 rounded-[16px] border border-line bg-surface p-6"
       role="status"
     >
-      <h2 className="m-0 text-[1.3rem] font-semibold text-ink">
+      <h2 className="m-0 text-title font-semibold text-ink">
         {updated ? "Changes saved and submitted for review" : "Listing submitted for review"}
       </h2>
-      <p className="m-0 text-[0.95rem] text-muted">
+      <p className="m-0 text-body text-muted">
         {updated
           ? "Your listing is pending review again and isn't visible to students until it is approved. We'll notify you once it has been reviewed."
           : "Your listing is pending review and isn't visible to students yet. We'll notify you once it has been reviewed."}
@@ -196,9 +196,30 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
 
   return (
     <form className="grid gap-5" noValidate onSubmit={handleSubmit}>
+      <nav
+        aria-label="Listing form sections"
+        className="flex flex-wrap gap-2"
+      >
+        {[
+          ["Basics", "listing-basics"],
+          ["Rooms", "listing-rooms"],
+          ["Amenities", "listing-amenities"],
+          ["Photos", "listing-photos"],
+          ["Stay", "listing-stay"],
+          ["Cancellation", "listing-cancellation"],
+        ].map(([label, id]) => (
+          <a
+            className="inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-3 text-label font-semibold text-ink hover:bg-surface-muted"
+            href={`#${id}`}
+            key={id}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
       {hasSummary ? (
         <div
-          className="rounded-[14px] bg-surface-muted p-4 text-[0.9rem] text-danger outline-none"
+          className="rounded-xl bg-surface-muted p-4 text-label text-danger outline-none"
           ref={summaryRef}
           role="alert"
           tabIndex={-1}
@@ -226,7 +247,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
         </div>
       ) : null}
 
-      <FormSection title="Basics">
+      <FormSection id="listing-basics" title="Basics">
         <Field error={errors.name} id="listing-name" label="Hostel name">
           <input
             {...controlProps("listing-name", errors.name)}
@@ -256,12 +277,12 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
           />
         </Field>
         <fieldset className="m-0 grid gap-2 border-0 p-0" aria-describedby={errors.gender ? "listing-gender-error" : undefined}>
-          <legend className="mb-1 p-0 text-[0.875rem] font-semibold text-ink">
+          <legend className="mb-1 p-0 text-label font-semibold text-ink">
             Who is it for?
           </legend>
           <div className="flex flex-wrap gap-4">
             {GENDER_OPTIONS.map(({ value, label }) => (
-              <label className="inline-flex items-center gap-2 text-[0.92rem] text-ink" key={value}>
+              <label className="inline-flex items-center gap-2 text-body text-ink" key={value}>
                 <input
                   checked={values.gender === value}
                   name="gender"
@@ -274,7 +295,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             ))}
           </div>
           {errors.gender ? (
-            <p className="m-0 text-[0.82rem] text-danger" id="listing-gender-error">
+            <p className="m-0 text-label text-danger" id="listing-gender-error">
               {errors.gender}
             </p>
           ) : null}
@@ -319,6 +340,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
 
       <FormSection
         description="Add each kind of room students can book. The listing price shown to students is your lowest room price."
+        id="listing-rooms"
         title="Rooms"
       >
         <ListingRoomsEditor
@@ -328,7 +350,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
         />
       </FormSection>
 
-      <FormSection title="Amenities">
+      <FormSection id="listing-amenities" title="Amenities">
         <fieldset
           aria-describedby={errors.amenities ? "listing-amenities-error" : undefined}
           className="m-0 grid gap-4 border-0 p-0"
@@ -336,14 +358,14 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
           <legend className="sr-only">Amenities</legend>
           {AMENITY_CATEGORIES.map((category) => (
             <div className="grid gap-2" key={category.id}>
-              <p className="m-0 text-[0.8rem] font-semibold uppercase tracking-wide text-muted">
+              <p className="m-0 text-label font-semibold uppercase tracking-wide text-muted">
                 {category.label}
               </p>
               <div className="flex flex-wrap gap-x-5 gap-y-2">
                 {AMENITY_OPTIONS.filter((amenity) => amenity.category === category.id).map(
                   (amenity) => (
                     <label
-                      className="inline-flex items-center gap-2 text-[0.92rem] text-ink"
+                      className="inline-flex items-center gap-2 text-body text-ink"
                       key={amenity.id}
                     >
                       <input
@@ -360,7 +382,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             </div>
           ))}
           {errors.amenities ? (
-            <p className="m-0 text-[0.82rem] text-danger" id="listing-amenities-error">
+            <p className="m-0 text-label text-danger" id="listing-amenities-error">
               {errors.amenities}
             </p>
           ) : null}
@@ -369,6 +391,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
 
       <FormSection
         description="Photos help students decide. The first photo is used as the cover."
+        id="listing-photos"
         title="Photos"
       >
         <ListingPhotosField
@@ -378,7 +401,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
         />
       </FormSection>
 
-      <FormSection title="Stay length and house rules">
+      <FormSection id="listing-stay" title="Stay length and house rules">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field error={errors.minStay} id="listing-min-stay" label="Minimum stay (months)">
             <input
@@ -422,6 +445,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
 
       <FormSection
         description="Students see these terms before they book, and refunds follow them."
+        id="listing-cancellation"
         title="Cancellation policy"
       >
         <fieldset
@@ -444,8 +468,8 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
                   type="radio"
                   value={policy}
                 />
-                <span className="grid gap-1 text-[0.85rem] text-muted">
-                  <span className="text-[0.95rem] font-semibold text-ink">{details.label}</span>
+                <span className="grid gap-1 text-label text-muted">
+                  <span className="text-body font-semibold text-ink">{details.label}</span>
                   <span>{details.fullRefund}</span>
                   <span>{details.partialRefund}</span>
                   <span>{details.noRefund}</span>
@@ -454,7 +478,7 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
             );
           })}
           {errors.cancellationPolicy ? (
-            <p className="m-0 text-[0.82rem] text-danger" id="listing-policy-error">
+            <p className="m-0 text-label text-danger" id="listing-policy-error">
               {errors.cancellationPolicy}
             </p>
           ) : null}
@@ -471,11 +495,11 @@ export function ListingForm({ existing }: ListingFormProps = {}) {
               ? "Save and submit for review"
               : "Submit for review"}
         </button>
-        <Link className="text-[0.9rem] font-semibold text-brand hover:underline" href="/owner">
+        <Link className="text-label font-semibold text-brand hover:underline" href="/owner">
           Cancel
         </Link>
       </div>
-      <p className="m-0 text-[0.82rem] text-muted">
+      <p className="m-0 text-label text-muted">
         {isEdit
           ? "Saving changes sends the listing back to review. It stays hidden from students until it is approved again."
           : "New listings are reviewed before they become visible to students."}

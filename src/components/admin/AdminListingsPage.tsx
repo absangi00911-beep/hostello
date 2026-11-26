@@ -46,8 +46,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "Asia/Karachi",
 });
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 export interface ModerationResult {
   /** Error to show on the card; null when the change went through. */
@@ -65,12 +64,14 @@ export function ModerationForm({
   mode,
   busy,
   error,
+  listingName,
   onSubmit,
   onCancel,
 }: {
   mode: ModerationAction;
   busy: boolean;
   error: string | null;
+  listingName: string;
   onSubmit: (input: {
     reason: string;
     checks: VerificationChecks;
@@ -115,12 +116,12 @@ export function ModerationForm({
       {mode === "verify" ? (
         <>
           <fieldset className="m-0 grid gap-2 border-0 p-0">
-            <legend className="mb-1 p-0 text-[0.9rem] font-semibold text-ink">
+            <legend className="mb-1 p-0 text-label font-semibold text-ink">
               Confirm each check before publishing
             </legend>
             {VERIFICATION_CHECK_LABELS.map(({ key, label }) => (
               <label
-                className="flex items-start gap-2 text-[0.9rem] text-ink"
+                className="flex items-start gap-2 text-label text-ink"
                 key={key}
               >
                 <input
@@ -135,7 +136,7 @@ export function ModerationForm({
               </label>
             ))}
           </fieldset>
-          <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+          <label className="grid gap-1 text-label font-semibold text-ink">
             Notes (optional, internal)
             <textarea
               className={`${fieldClassName} min-h-[80px] font-normal`}
@@ -144,14 +145,14 @@ export function ModerationForm({
               value={notes}
             />
           </label>
-          <p className="m-0 text-[0.82rem] text-muted">
+          <p className="m-0 text-label text-muted">
             This publishes the listing with the verified badge and notifies the
             owner.
           </p>
         </>
       ) : mode === "suspend" ? (
         <>
-          <label className="grid gap-1 text-[0.875rem] font-semibold text-ink">
+          <label className="grid gap-1 text-label font-semibold text-ink">
             Reason (optional, sent to the owner)
             <textarea
               className={`${fieldClassName} min-h-[80px] font-normal`}
@@ -160,26 +161,33 @@ export function ModerationForm({
               value={reason}
             />
           </label>
-          <p className="m-0 text-[0.82rem] text-muted">
+          <p className="m-0 text-label text-muted">
             The listing is hidden from students and removed from search. The
             owner is notified.
           </p>
         </>
       ) : (
-        <p className="m-0 text-[0.9rem] text-ink">
+        <p className="m-0 text-label text-ink">
           Make this listing live again? It returns to search and the owner is
           notified.
         </p>
       )}
 
       {shownError ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {shownError}
         </p>
       ) : null}
 
       <div className="flex flex-wrap gap-2">
         <button
+          aria-label={
+            mode === "verify"
+              ? `Verify and publish ${listingName}`
+              : mode === "suspend"
+                ? `Suspend listing ${listingName}`
+                : `Reactivate listing ${listingName}`
+          }
           className={mode === "suspend" ? dangerButtonClassName : primaryButtonClassName}
           disabled={busy || (mode === "verify" && !allChecksDone(checks))}
           type="submit"
@@ -219,15 +227,15 @@ export function ReviewDetails({
   return (
     <div className="grid gap-4 rounded-[12px] border border-line p-4">
       {isLoading ? (
-        <p className="m-0 text-[0.88rem] text-muted" role="status">
+        <p className="m-0 text-label text-muted" role="status">
           Loading details...
         </p>
       ) : detailError ? (
-        <p className="m-0 text-[0.88rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {detailError}
         </p>
       ) : detail ? (
-        <div className="grid gap-3 text-[0.88rem] text-ink">
+        <div className="grid gap-3 text-label text-ink">
           <p className="m-0">
             <span className="font-semibold">Address:</span> {detail.address}
             {detail.area ? `, ${detail.area}` : ""}, {listing.city}
@@ -278,20 +286,20 @@ export function ReviewDetails({
           ))}
         </div>
       ) : (
-        <p className="m-0 text-[0.88rem] text-muted">No photos uploaded.</p>
+        <p className="m-0 text-label text-muted">No photos uploaded.</p>
       )}
 
-      <p className="m-0 whitespace-pre-line text-[0.9rem] text-ink">
+      <p className="m-0 whitespace-pre-line text-label text-ink">
         {listing.description || "No description."}
       </p>
       {listing.amenities.length > 0 ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           <span className="font-semibold text-ink">Amenities:</span>{" "}
           {listing.amenities.join(", ")}
         </p>
       ) : null}
       {listing.rules.length > 0 ? (
-        <p className="m-0 text-[0.85rem] text-muted">
+        <p className="m-0 text-label text-muted">
           <span className="font-semibold text-ink">House rules:</span>{" "}
           {listing.rules.join(" · ")}
         </p>
@@ -366,29 +374,30 @@ function ListingReviewCard({
   const lowCompleteness = listing.completeness < FLAGGED_THRESHOLD;
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 text-[1.02rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {listing.name}
         </h3>
         {listing.verified ? (
-          <span className="rounded-full bg-brand-soft px-[10px] py-[2px] text-[0.72rem] font-bold text-brand-dark">
+          <span className="rounded-full bg-brand-soft px-[10px] py-[2px] text-meta font-bold text-brand-dark">
             Verified
           </span>
         ) : null}
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${lowCompleteness ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-muted"}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${lowCompleteness ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-muted"}`}
         >
           {listing.completeness}% complete
         </span>
       </div>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         {listing.city} · {listing.ownerName} ({listing.ownerEmail}) · added{" "}
         {dateFormatter.format(new Date(listing.createdAt))}
       </p>
 
       <div className="flex flex-wrap gap-2">
         <button
+          aria-label={`${expanded ? "Hide" : "Review"} details for ${listing.name}`}
           aria-expanded={expanded}
           className={secondaryButtonClassName}
           onClick={() => setExpanded((open) => !open)}
@@ -398,6 +407,7 @@ function ListingReviewCard({
         </button>
         {!uncertain && listing.status === "PENDING_REVIEW" ? (
           <button
+            aria-label={`Verify and publish ${listing.name}`}
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "verify" ? null : "verify")}
             type="button"
@@ -408,6 +418,7 @@ function ListingReviewCard({
         {!uncertain &&
         (listing.status === "PENDING_REVIEW" || listing.status === "ACTIVE") ? (
           <button
+            aria-label={`Suspend ${listing.name}`}
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "suspend" ? null : "suspend")}
             type="button"
@@ -417,6 +428,7 @@ function ListingReviewCard({
         ) : null}
         {!uncertain && listing.status === "SUSPENDED" ? (
           <button
+            aria-label={`Reactivate ${listing.name}`}
             className={secondaryButtonClassName}
             onClick={() => setPanel(panel === "activate" ? null : "activate")}
             type="button"
@@ -449,6 +461,7 @@ function ListingReviewCard({
         <ModerationForm
           busy={busy}
           error={error}
+          listingName={listing.name}
           mode={panel}
           onCancel={() => {
             setPanel(null);
@@ -501,15 +514,15 @@ export function AdminListingsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Listing review
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Check new listings before students can see them.
       </p>
 
@@ -552,7 +565,7 @@ export function AdminListingsContent({
 
         {notice ? (
           <p
-            className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+            className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
             role={notice.tone === "success" ? "status" : "alert"}
           >
             {notice.text}
@@ -565,7 +578,7 @@ export function AdminListingsContent({
               Loading listings...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -576,14 +589,14 @@ export function AdminListingsContent({
               </button>
             </div>
           ) : listings.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               {status === "PENDING_REVIEW"
                 ? "Nothing waiting for review."
                 : "No listings match."}
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} {total === 1 ? "listing" : "listings"}
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -599,7 +612,7 @@ export function AdminListingsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

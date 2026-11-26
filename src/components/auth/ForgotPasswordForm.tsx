@@ -62,7 +62,7 @@ export function ForgotPasswordForm() {
     <>
       {errorMessage ? <AuthNotice tone="error">{errorMessage}</AuthNotice> : null}
       <form className="grid gap-[14px]" noValidate onSubmit={handleSubmit}>
-        <label className="grid gap-[6px] text-[0.875rem] font-semibold text-ink">
+        <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Email</span>
           <input
             autoComplete="email"
@@ -83,7 +83,7 @@ export function ForgotPasswordForm() {
           {isSubmitting ? "Sending…" : "Send reset link"}
         </button>
       </form>
-      <p className="mb-0 mt-5 text-center text-[0.9rem] text-muted">
+      <p className="mb-0 mt-5 text-center text-label text-muted">
         <Link className={authLinkClassName} href="/login">
           Back to log in
         </Link>

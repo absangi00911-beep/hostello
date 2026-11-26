@@ -20,7 +20,7 @@ export function RouteError({
   const { states } = siteCopy;
 
   return (
-    <div role="alert">
+    <div className="flex flex-1 flex-col" role="alert">
       <StatePanel
         actions={
           <button

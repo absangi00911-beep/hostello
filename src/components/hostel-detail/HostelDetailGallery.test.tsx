@@ -45,6 +45,7 @@ describe("HostelDetailGallery", () => {
     expect(markup.match(/hostel-detail-photo relative/g)).toHaveLength(5);
     expect(markup).toContain("grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))]");
     expect(markup).toContain("Show all 6 photos");
+    expect(markup).toContain(">6 photos</h2>");
     expect(markup).toContain('alt="Sample Hostel photo 6"');
   });
 
@@ -57,6 +58,8 @@ describe("HostelDetailGallery", () => {
     );
 
     expect(markup).toContain("col-span-full row-span-full");
+    expect(markup).toContain("Show all 1 photo</button>");
+    expect(markup).toContain(">1 photo</h2>");
   });
 
   it("renders a swipeable mobile gallery with photo count and listing actions", () => {
@@ -75,6 +78,9 @@ describe("HostelDetailGallery", () => {
     expect(markup).toContain("h-[45svh]");
     expect(markup).toContain("Photo 1 of 2");
     expect(markup).toContain("1 / 2");
+    expect(markup).toContain('aria-label="Show all photos, 1 / 2"');
+    expect(markup).toContain("bg-ink");
+    expect(markup).not.toContain("bg-black/45");
     expect(markup).toContain('aria-label="Go back"');
     expect(markup).toContain('aria-label="Share Sample Hostel"');
     expect(markup).toContain('aria-label="Save Sample Hostel"');

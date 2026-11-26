@@ -84,12 +84,12 @@ export function HostelDateCalendar({
 
     return (
       <div className="mx-auto w-full max-w-[390px]" key={toDateInputValue(monthStart)}>
-        <h3 className="m-0 mb-4 text-base leading-6 font-[650]">
+        <h3 className="m-0 mb-4 text-body leading-6 font-[650]">
           {monthLabel}
         </h3>
         <div
           aria-hidden="true"
-          className="mb-[6px] grid grid-cols-7 justify-items-center text-xs font-semibold text-muted"
+          className="mb-[6px] grid grid-cols-7 justify-items-center text-meta font-semibold text-muted"
         >
           {weekDays.map((day) => (
             <span className="py-[5px]" key={day}>
@@ -142,7 +142,7 @@ export function HostelDateCalendar({
                   ? "is-in-range rounded-none bg-brand-soft text-brand-dark"
                   : "rounded-full bg-transparent";
             const className = [
-              "grid aspect-square w-[min(100%,44px)] cursor-pointer place-items-center border-0 text-sm font-medium tabular-nums transition-colors duration-150 aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-brand-soft aria-[pressed=false]:hover:text-brand-dark aria-[pressed=true]:hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
+              "grid aspect-square w-[min(100%,44px)] cursor-pointer place-items-center border-0 text-label font-medium tabular-nums transition-colors duration-150 aria-[current=date]:border aria-[current=date]:border-brand-dark aria-[pressed=false]:hover:bg-brand-soft aria-[pressed=false]:hover:text-brand-dark aria-[pressed=true]:hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! disabled:cursor-not-allowed disabled:text-muted disabled:opacity-40",
               dateStyle,
               isMoveIn ? "is-move-in" : "",
               isMoveOut ? "is-move-out" : "",
@@ -185,19 +185,19 @@ export function HostelDateCalendar({
       <div className="mb-4 flex items-start justify-between gap-4 [@media(max-width:720px)]:flex-col">
         <div>
           <h2
-            className="m-0 text-xl leading-[1.35] font-semibold tracking-[-0.02em]"
+            className="m-0 text-title leading-[1.35] font-semibold tracking-[-0.02em]"
             id="hostel-date-calendar-title"
           >
             Choose your dates
           </h2>
-          <p className="mt-[6px] mb-0 text-sm leading-[1.5] text-muted">
+          <p className="mt-[6px] mb-0 text-label leading-[1.5] text-muted">
             Choose move-in first, then a move-out date exactly {minimumStay} or
             more later. Monthly anniversaries clamp to the last day of shorter
             months; maximum stay: {maximumStay ?? `${MAX_BOOKING_MONTHS} months`}.
             Global maximum: {MAX_BOOKING_MONTHS} months.
           </p>
           {!validStayBounds && (
-            <p className="mt-2 mb-0 text-sm leading-[1.5] text-[#8b2525]" role="alert">
+            <p className="mt-2 mb-0 text-label leading-[1.5] text-[#8b2525]" role="alert">
               This listing&apos;s stay requirements are invalid, so booking is unavailable.
             </p>
           )}
@@ -205,7 +205,7 @@ export function HostelDateCalendar({
         <div className="flex flex-[0_0_auto] items-center gap-2 [@media(max-width:720px)]:w-full [@media(max-width:720px)]:justify-end">
           {(checkIn || checkOut) && (
             <button
-              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
+              className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-line bg-white px-3 text-label font-semibold text-ink hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand-dark! focus-visible:outline-offset-2! btn-secondary"
               onClick={() => selectMoveIn("")}
               type="button"
             >

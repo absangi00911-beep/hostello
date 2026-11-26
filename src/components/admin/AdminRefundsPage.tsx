@@ -31,8 +31,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "UTC",
 });
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 export interface RefundActionResult {
   /** Error to show on the card; null when the action succeeded. */
@@ -67,13 +66,13 @@ export function RefundConfirmForm({
     <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
       {manual ? (
         <>
-          <p className="m-0 text-[0.9rem] text-ink">
+          <p className="m-0 text-label text-ink">
             Record {amount} as refunded to {booking.studentName}. Do this only
             after you have checked in Safepay that the money was returned. The
             student is told the refund was processed, and this cannot be
             undone.
           </p>
-          <label className="flex items-start gap-2 text-[0.88rem] text-ink">
+          <label className="flex items-start gap-2 text-label text-ink">
             <input
               checked={verified}
               className="mt-1"
@@ -84,7 +83,7 @@ export function RefundConfirmForm({
           </label>
         </>
       ) : (
-        <p className="m-0 text-[0.9rem] text-ink">
+        <p className="m-0 text-label text-ink">
           Send {amount} back to {booking.studentName} through Safepay? The
           student is told the refund was processed, and this cannot be undone.
           If Safepay does not confirm the result, the booking is marked as
@@ -92,7 +91,7 @@ export function RefundConfirmForm({
         </p>
       )}
       {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
@@ -148,29 +147,29 @@ function RefundCard({
   }
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 text-[1.02rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {booking.studentName}
         </h3>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${unresolved ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-muted"}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${unresolved ? "bg-warn-soft text-warn-ink" : "bg-surface-muted text-muted"}`}
         >
           {refundStateLabel(booking.refundState)}
         </span>
       </div>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         {booking.hostelName} ·{" "}
         {dateFormatter.format(new Date(booking.checkIn))} to{" "}
         {dateFormatter.format(new Date(booking.checkOut))}
       </p>
       <Link
-        className="w-fit text-[0.85rem] font-semibold text-brand hover:underline"
+        className="w-fit text-label font-semibold text-brand hover:underline"
         href={`/admin/bookings/${encodeURIComponent(booking.id)}`}
       >
         View booking
       </Link>
-      <dl className="m-0 grid gap-1 text-[0.88rem]">
+      <dl className="m-0 grid gap-1 text-label">
         <div className="flex flex-wrap gap-x-2">
           <dt className="text-muted">Paid</dt>
           <dd className="m-0 text-ink">
@@ -199,7 +198,7 @@ function RefundCard({
         </div>
       </dl>
       {unresolved ? (
-        <p className="m-0 text-[0.85rem] text-warn-ink">
+        <p className="m-0 text-label text-warn-ink">
           {booking.refundState === "PROCESSING"
             ? "An automatic refund is still processing. Manual confirmation is only accepted if it has been stuck for more than 5 minutes."
             : "Safepay did not confirm the last automatic refund. Check Safepay before doing anything else; a second automatic request is blocked."}
@@ -268,15 +267,15 @@ export function AdminRefundsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Refunds
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Cancelled bookings that were paid and still have money to return. The
         amount comes from the cancellation terms. You can send up to 5 refund
         actions an hour.
@@ -285,7 +284,7 @@ export function AdminRefundsContent({
       <div className="grid gap-5">
         {notice ? (
           <p
-            className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+            className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
             role={notice.tone === "success" ? "status" : "alert"}
           >
             {notice.text}
@@ -298,7 +297,7 @@ export function AdminRefundsContent({
               Loading cancelled bookings...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -309,14 +308,14 @@ export function AdminRefundsContent({
               </button>
             </div>
           ) : bookings.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               {hasMore
                 ? "No refunds are needed in the bookings loaded so far."
                 : "No cancelled bookings need a refund."}
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {bookings.length}{" "}
                 {bookings.length === 1 ? "booking needs" : "bookings need"} a
                 refund
@@ -334,7 +333,7 @@ export function AdminRefundsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}
@@ -342,7 +341,7 @@ export function AdminRefundsContent({
           ) : null}
           {hasMore ? (
             <div className="grid gap-2 text-center">
-              <p className="m-0 text-[0.8125rem] text-muted">
+              <p className="m-0 text-label text-muted">
                 There is no refund queue endpoint, so this page loads cancelled
                 bookings newest first and shows the ones that need a refund.
               </p>

@@ -32,8 +32,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "Asia/Karachi",
 });
 
-const dangerButtonClassName =
-  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-danger px-4 text-[0.85rem] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),inset_0_-2px_0_rgb(0_0_0/0.18),0_2px_3px_rgb(15_23_42/0.22)] transition-[background-color,box-shadow,translate] duration-150 hover:bg-[#a52c10] active:translate-y-px active:bg-[#8f240d] active:shadow-[inset_0_3px_6px_rgb(0_0_0/0.3)] disabled:cursor-wait disabled:opacity-60 disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 focus-visible:outline-2! focus-visible:outline-brand!";
+const dangerButtonClassName = "btn-danger";
 
 export interface DeleteResult {
   /** Error to show on the card; null when the post was deleted. */
@@ -60,18 +59,19 @@ export function DeleteForm({
 }) {
   return (
     <div className="grid gap-3 rounded-[12px] bg-surface-muted p-4">
-      <p className="m-0 text-[0.9rem] text-ink">
+      <p className="m-0 text-label text-ink">
         Delete this post permanently? Its{" "}
         {post.reportCount === 1 ? "report is" : `${post.reportCount} reports are`}{" "}
         deleted with it. The author is not notified, and this cannot be undone.
       </p>
       {error ? (
-        <p className="m-0 text-[0.875rem] text-danger" role="alert">
+        <p className="m-0 text-label text-danger" role="alert">
           {error}
         </p>
       ) : null}
       <div className="flex flex-wrap gap-2">
         <button
+          aria-label={`Delete post by ${post.authorName} permanently`}
           className={dangerButtonClassName}
           disabled={busy}
           onClick={onConfirm}
@@ -80,6 +80,7 @@ export function DeleteForm({
           {busy ? "Working…" : "Delete post"}
         </button>
         <button
+          aria-label={`Cancel deletion of ${post.authorName}'s post`}
           className={secondaryButtonClassName}
           disabled={busy}
           onClick={onCancel}
@@ -124,26 +125,26 @@ function ReportedPostCard({
   }
 
   return (
-    <li className="grid gap-3 rounded-[14px] border border-line bg-surface p-4">
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="m-0 text-[1.02rem] font-semibold text-ink">
+        <h3 className="m-0 text-body font-semibold text-ink">
           {post.authorName}
         </h3>
-        <span className="rounded-full bg-warn-soft px-[10px] py-[2px] text-[0.72rem] font-bold text-warn-ink">
+        <span className="rounded-full bg-warn-soft px-[10px] py-[2px] text-meta font-bold text-warn-ink">
           {post.reportCount} {post.reportCount === 1 ? "report" : "reports"}
         </span>
         <span
-          className={`rounded-full px-[10px] py-[2px] text-[0.72rem] font-bold ${hidden ? "bg-surface-muted text-muted" : "bg-brand-soft text-brand-dark"}`}
+          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${hidden ? "bg-surface-muted text-muted" : "bg-brand-soft text-brand-dark"}`}
         >
           {hidden ? "Hidden from students" : "Still visible"}
         </span>
         {expired ? (
-          <span className="rounded-full bg-surface-muted px-[10px] py-[2px] text-[0.72rem] font-bold text-muted">
+          <span className="rounded-full bg-surface-muted px-[10px] py-[2px] text-meta font-bold text-muted">
             Expired
           </span>
         ) : null}
       </div>
-      <p className="m-0 text-[0.85rem] text-muted">
+      <p className="m-0 text-label text-muted">
         On{" "}
         <Link
           className="font-semibold text-brand hover:underline"
@@ -159,19 +160,19 @@ function ReportedPostCard({
           ? ` · move-in ${dateFormatter.format(new Date(post.moveIn))}`
           : ""}
       </p>
-      <p className="m-0 whitespace-pre-line text-[0.9rem] text-ink">
+      <p className="m-0 whitespace-pre-line text-label text-ink">
         {post.bio}
       </p>
 
       <div className="grid gap-2 rounded-[12px] border border-line p-4">
-        <h4 className="m-0 text-[0.9rem] font-semibold text-ink">Reports</h4>
+        <h4 className="m-0 text-label font-semibold text-ink">Reports</h4>
         <ul className="m-0 grid list-none gap-2 p-0">
           {post.reports.map((report) => (
-            <li className="grid gap-[2px] text-[0.88rem]" key={report.id}>
+            <li className="grid gap-[2px] text-label" key={report.id}>
               <span className="whitespace-pre-line text-ink">
                 {report.reason}
               </span>
-              <span className="text-[0.8125rem] text-muted">
+              <span className="text-label text-muted">
                 {report.reporterName} ·{" "}
                 {dateFormatter.format(new Date(report.createdAt))}
               </span>
@@ -179,7 +180,7 @@ function ReportedPostCard({
           ))}
         </ul>
         {post.reportCount > post.reports.length ? (
-          <p className="m-0 text-[0.8125rem] text-muted">
+          <p className="m-0 text-label text-muted">
             Showing the latest {post.reports.length} of {post.reportCount}{" "}
             reports.
           </p>
@@ -192,6 +193,7 @@ function ReportedPostCard({
         <>
           <div className="flex flex-wrap gap-2">
             <button
+              aria-label={`Delete post by ${post.authorName}`}
               className={secondaryButtonClassName}
               onClick={() => setConfirming((open) => !open)}
               type="button"
@@ -253,15 +255,15 @@ export function AdminRoommateReportsContent({
   return (
     <main id="main-content" className="mx-auto w-[min(760px,calc(100%-var(--page-gutter-mobile)))] pb-16 pt-8 md:pt-10">
       <Link
-        className="text-[0.85rem] font-semibold text-brand hover:underline"
+        className="text-label font-semibold text-brand hover:underline"
         href="/admin"
       >
         ← Back to admin console
       </Link>
-      <h1 className="mb-0 mt-3 text-[clamp(1.6rem,3vw,2.1rem)] font-semibold tracking-[-0.035em] text-ink">
+      <h1 className="mb-0 mt-3 text-display font-semibold tracking-[-0.035em] text-ink">
         Roommate reports
       </h1>
-      <p className="mb-6 mt-2 text-[0.95rem] text-muted">
+      <p className="mb-6 mt-2 text-body text-muted">
         Review roommate posts that students have reported. A post is hidden
         from students once it reaches {hideThreshold} reports. Deleting is the
         only action available, and reports cannot be dismissed.
@@ -270,7 +272,7 @@ export function AdminRoommateReportsContent({
       <div className="grid gap-5">
         {notice ? (
           <p
-            className={`m-0 rounded-[14px] px-[13px] py-[11px] text-[0.875rem] ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
+            className={`m-0 rounded-xl px-[13px] py-[11px] text-label ${notice.tone === "success" ? "bg-brand-soft text-brand-dark" : "bg-surface-muted text-danger"}`}
             role={notice.tone === "success" ? "status" : "alert"}
           >
             {notice.text}
@@ -283,7 +285,7 @@ export function AdminRoommateReportsContent({
               Loading reported posts...
             </p>
           ) : loadError ? (
-            <div className="rounded-[14px] bg-surface-muted p-4" role="alert">
+            <div className="rounded-xl bg-surface-muted p-4" role="alert">
               <p className="m-0 text-danger">{loadError}</p>
               <button
                 className={`${secondaryButtonClassName} mt-3`}
@@ -294,12 +296,12 @@ export function AdminRoommateReportsContent({
               </button>
             </div>
           ) : posts.length === 0 ? (
-            <p className="m-0 text-[0.92rem] text-muted">
+            <p className="m-0 text-body text-muted">
               No roommate posts have been reported.
             </p>
           ) : (
             <>
-              <p aria-live="polite" className="m-0 text-[0.85rem] text-muted">
+              <p aria-live="polite" className="m-0 text-label text-muted">
                 {total} reported {total === 1 ? "post" : "posts"}
               </p>
               <ul className="m-0 grid list-none gap-3 p-0">
@@ -317,7 +319,7 @@ export function AdminRoommateReportsContent({
           )}
           {moreError ? (
             <p
-              className="m-0 rounded-[14px] bg-surface-muted px-[13px] py-[11px] text-[0.875rem] text-danger"
+              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
               role="alert"
             >
               {moreError}

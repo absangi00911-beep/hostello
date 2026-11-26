@@ -25,6 +25,17 @@ describe("RootLayout and the nonce policy", () => {
     expect(connection).not.toHaveBeenCalled();
   });
 
+  it("uses a flex column body so short pages can keep the footer at the bottom", async () => {
+    const html = (await RootLayout({ children: null })) as {
+      props: { children: React.ReactElement<{ className: string }> };
+    };
+    const body = html.props.children;
+
+    expect(body.props.className.split(" ")).toEqual(
+      expect.arrayContaining(["flex", "flex-col", "min-h-dvh"]),
+    );
+  });
+
   it("forces per-request rendering once the nonce policy is enforced", async () => {
     vi.stubEnv("CSP_ENFORCE", "true");
     await RootLayout({ children: null });

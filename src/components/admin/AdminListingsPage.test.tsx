@@ -70,7 +70,10 @@ describe("AdminListingsContent", () => {
     expect(markup).toContain("Green Hostel");
     expect(markup).toContain("72% complete");
     expect(markup).toContain("Sana");
+    expect(markup).toContain('aria-label="Review details for Green Hostel"');
     expect(markup).toContain("Review details");
+    expect(markup).toContain('aria-label="Verify and publish Green Hostel"');
+    expect(markup).toContain('aria-label="Suspend Green Hostel"');
     expect(markup).toContain("Verify and publish");
     expect(markup).toContain(">Suspend<");
     expect(markup).not.toContain("Reactivate");
@@ -90,6 +93,7 @@ describe("AdminListingsContent", () => {
       total: 1,
     });
     expect(markup).toContain("Verified");
+    expect(markup).toContain('aria-label="Suspend Green Hostel"');
     expect(markup).toContain(">Suspend<");
     expect(markup).toContain('href="/hostels/green-hostel"');
     expect(markup).not.toContain("Verify and publish");
@@ -101,6 +105,7 @@ describe("AdminListingsContent", () => {
       listings: [listing({ status: "SUSPENDED" })],
       total: 1,
     });
+    expect(markup).toContain('aria-label="Reactivate Green Hostel"');
     expect(markup).toContain("Reactivate");
     expect(markup).not.toContain(">Suspend<");
     expect(markup).not.toContain("Verify and publish");
@@ -119,7 +124,13 @@ describe("AdminListingsContent", () => {
 });
 
 describe("ModerationForm", () => {
-  const props = { busy: false, error: null, onSubmit: vi.fn(), onCancel: vi.fn() };
+  const props = {
+    busy: false,
+    error: null,
+    listingName: "Green Hostel",
+    onSubmit: vi.fn(),
+    onCancel: vi.fn(),
+  };
 
   it("blocks verifying until every check is ticked", () => {
     const markup = renderToStaticMarkup(<ModerationForm mode="verify" {...props} />);
@@ -133,12 +144,23 @@ describe("ModerationForm", () => {
     const markup = renderToStaticMarkup(<ModerationForm mode="suspend" {...props} />);
     expect(markup).toContain("removed from search");
     expect(markup).toContain("Suspend listing");
+    expect(markup).toMatch(/<button[^>]*class="[^"]*btn-danger/);
   });
 
   it("asks for confirmation before reactivating", () => {
     const markup = renderToStaticMarkup(<ModerationForm mode="activate" {...props} />);
     expect(markup).toContain("Make this listing live again?");
     expect(markup).toContain("Reactivate listing");
+  });
+
+  it("names the moderation submit button for the listing", () => {
+    const verify = renderToStaticMarkup(<ModerationForm mode="verify" {...props} />);
+    const suspend = renderToStaticMarkup(<ModerationForm mode="suspend" {...props} />);
+    const activate = renderToStaticMarkup(<ModerationForm mode="activate" {...props} />);
+
+    expect(verify).toContain('aria-label="Verify and publish Green Hostel"');
+    expect(suspend).toContain('aria-label="Suspend listing Green Hostel"');
+    expect(activate).toContain('aria-label="Reactivate listing Green Hostel"');
   });
 
   it("shows API errors and the working state", () => {
