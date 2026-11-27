@@ -624,7 +624,7 @@ export function HostelBookingCard({
             </p>
           )}
           {availabilityError && (
-            <p className="m-0 text-label text-[#991b1b]" role="alert">
+            <p className="m-0 text-label text-danger" role="alert">
               {availabilityError}
               {" "}
               <button
@@ -648,7 +648,7 @@ export function HostelBookingCard({
               </p>
             )}
           {!stayBoundsAreValid && (
-            <p className="m-0 text-label leading-[1.5] text-[#8b2525]" role="alert">
+            <p className="m-0 text-label leading-[1.5] text-danger" role="alert">
               This listing's stay requirements are invalid, so booking is unavailable.
             </p>
           )}
@@ -662,7 +662,7 @@ export function HostelBookingCard({
           )}
           {checkIn && checkOut && !stayIsValid && stayBoundsAreValid && (
             <p
-              className="m-0 text-label leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-danger"
               role="status"
             >
               Stay must be a whole-month term from {minStay} to {Math.min(maxStay ?? MAX_BOOKING_MONTHS, MAX_BOOKING_MONTHS)} months (global maximum: {MAX_BOOKING_MONTHS} months).
@@ -732,7 +732,7 @@ export function HostelBookingCard({
             </section>
           )}
           {submissionUncertain && (
-            <p className="m-0 text-label text-[#991b1b]" role="alert">
+            <p className="m-0 text-label text-danger" role="alert">
               We couldn't confirm the request status. Check Trips before trying again.
               {" "}
               <a className="font-semibold text-brand-dark underline" href="/trips">
@@ -756,7 +756,7 @@ export function HostelBookingCard({
           </p>
           {!hasCancellationPolicy && (
             <p
-              className="m-0 text-label leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-danger"
               role="status"
             >
               Booking is temporarily unavailable while cancellation terms are updated.
@@ -765,7 +765,7 @@ export function HostelBookingCard({
           {message && (
             <p
               aria-live="polite"
-              className="m-0 text-label leading-[1.5] text-[#8b2525]"
+              className="m-0 text-label leading-[1.5] text-danger"
               role="alert"
             >
               {message}
@@ -824,7 +824,7 @@ export function HostelBookingCard({
         </form>
       ) : (
         <p
-          className="m-0 text-label leading-[1.5] text-[#8b2525]"
+          className="m-0 text-label leading-[1.5] text-danger"
           role="status"
         >
           No rooms are currently available to book.

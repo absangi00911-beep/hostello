@@ -81,7 +81,7 @@ export function HostelInquiryForm({
         value={message}
       />
       {error && (
-        <p className="hostel-inquiry-error m-0 text-label text-[#8b2525]" role="alert">
+        <p className="hostel-inquiry-error m-0 text-label text-danger" role="alert">
           {error}
         </p>
       )}

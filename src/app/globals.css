@@ -71,6 +71,13 @@ html {
   scroll-behavior: auto;
 }
 
+/* Keep keyboard-focused controls clear of the fixed bottom tab bar on phones (WCAG 2.4.11). */
+@media (max-width: 720px) {
+  html {
+    scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
 body {
   margin: 0;
   font-family:

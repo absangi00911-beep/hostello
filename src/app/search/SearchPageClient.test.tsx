@@ -89,6 +89,77 @@ describe("SearchPageClient footer", () => {
     expect(markup).toContain("text-headline");
   });
 
+  it("shows the city once when a listing has no area", () => {
+    const markup = renderToStaticMarkup(
+      <SearchPageClient
+        accountUser={null}
+        initialQuery=""
+        initialCity="Lahore"
+        initialNearby={false}
+        initialNearbyCoordinates={null}
+        initialMoveInDate=""
+        initialCheckOut=""
+        initialGuests={1}
+        initialFilters={{ gender: "", minPrice: "", maxPrice: "", amenities: [], verified: false, sort: "newest" }}
+        initialPage={1}
+        initialResults={{
+          hostels: [
+            { id: "h1", name: "Green View Hostel", city: "Lahore", area: "Gulberg", pricePerMonth: 12000, coverImage: null, images: [], rating: 4.5, reviewCount: 3 },
+            { id: "h2", name: "Campus Stay", city: "Lahore", area: null, pricePerMonth: 9000, coverImage: null, images: [], rating: 0, reviewCount: 0 },
+          ],
+          total: 2,
+        }}
+      />,
+    );
+
+    expect(markup).toContain("Gulberg, Lahore");
+    expect(markup).not.toContain("Lahore, Lahore");
+    expect(markup).toMatch(/search-result-area[^>]*>Lahore<\/p>/);
+  });
+
+  it("offers a way out of an empty result when filters are active", () => {
+    const markup = renderToStaticMarkup(
+      <SearchPageClient
+        accountUser={null}
+        initialQuery=""
+        initialCity="Lahore"
+        initialNearby={false}
+        initialNearbyCoordinates={null}
+        initialMoveInDate=""
+        initialCheckOut=""
+        initialGuests={1}
+        initialFilters={{ gender: "", minPrice: "", maxPrice: "", amenities: ["WIFI"], verified: false, sort: "newest" }}
+        initialPage={1}
+        initialResults={{ hostels: [], total: 0 }}
+      />,
+    );
+
+    expect(markup).toContain("No hostels found in Lahore yet.");
+    expect(markup).toContain("Your filters may be hiding matches");
+    expect(markup).toMatch(/<button[^>]*>Clear filters<\/button>/);
+  });
+
+  it("does not suggest clearing filters when none are applied", () => {
+    const markup = renderToStaticMarkup(
+      <SearchPageClient
+        accountUser={null}
+        initialQuery=""
+        initialCity="Lahore"
+        initialNearby={false}
+        initialNearbyCoordinates={null}
+        initialMoveInDate=""
+        initialCheckOut=""
+        initialGuests={1}
+        initialFilters={{ gender: "", minPrice: "", maxPrice: "", amenities: [], verified: false, sort: "newest" }}
+        initialPage={1}
+        initialResults={{ hostels: [], total: 0 }}
+      />,
+    );
+
+    expect(markup).toContain("No hostels found in Lahore yet.");
+    expect(markup).not.toContain("Your filters may be hiding matches");
+  });
+
   it("uses the standard card shape for the compact search form", () => {
     const markup = renderToStaticMarkup(
       <SearchPageClient

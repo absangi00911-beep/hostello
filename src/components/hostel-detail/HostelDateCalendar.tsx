@@ -9,12 +9,19 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "@/components/icons/HostelloIcons";
-import { useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import {
   areStayBoundsValid,
   getEffectiveMaxStay,
   isStayWithinBounds,
 } from "@/lib/hostel-date-selection";
+import { getCalendarFocusTarget } from "@/lib/calendar-keyboard";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
 
 interface HostelDateCalendarProps {
@@ -53,6 +60,20 @@ function monthStartPlus(month: Date, offset: number): Date {
   return addCalendarMonths(startOfUtcMonth(month), offset);
 }
 
+function monthDateValues(month: Date): string[] {
+  const monthStart = startOfUtcMonth(month);
+  const monthDays = new Date(
+    Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  return Array.from({ length: monthDays }, (_, index) =>
+    toDateInputValue(
+      new Date(
+        Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), index + 1),
+      ),
+    ),
+  );
+}
+
 export function HostelDateCalendar({
   minStay,
   maxStay,
@@ -66,9 +87,78 @@ export function HostelDateCalendar({
   const validStayBounds = areStayBoundsValid(minStay, maxStay);
   const effectiveMaxStay = getEffectiveMaxStay(minStay, maxStay);
   const minimumStay = `${minStay} ${minStay === 1 ? "month" : "months"}`;
-  const maximumStay = effectiveMaxStay === null
-    ? null
-    : `${effectiveMaxStay} ${effectiveMaxStay === 1 ? "month" : "months"}`;
+  const maximumMonths = effectiveMaxStay ?? MAX_BOOKING_MONTHS;
+  const maximumStay = `${maximumMonths} ${maximumMonths === 1 ? "month" : "months"}`;
+  const hintId = useId();
+  const [focusedDate, setFocusedDate] = useState<string | null>(null);
+  const pendingFocus = useRef<string | null>(null);
+  const isWaitingForMoveOut = Boolean(checkIn && !checkOut);
+
+  function getDateState(dateValue: string) {
+    const canChooseMoveIn = !isWaitingForMoveOut || dateValue <= checkIn;
+    const canChooseMoveOut =
+      validStayBounds &&
+      isWaitingForMoveOut &&
+      dateValue > checkIn &&
+      isStayWithinBounds(checkIn, dateValue, minStay, maxStay);
+    return {
+      canChooseMoveIn,
+      canChooseMoveOut,
+      isDisabled:
+        dateValue < todayValue || (!canChooseMoveIn && !canChooseMoveOut),
+    };
+  }
+
+  const visibleMonths = [0, 1].map((offset) => monthStartPlus(firstMonth, offset));
+  const enabledVisibleDates = visibleMonths
+    .flatMap(monthDateValues)
+    .filter((dateValue) => !getDateState(dateValue).isDisabled);
+  // One tab stop for the whole grid (roving tabindex); arrow keys move inside it.
+  const tabStopDate =
+    [focusedDate, checkOut, checkIn].find(
+      (dateValue) => dateValue && enabledVisibleDates.includes(dateValue),
+    ) ??
+    enabledVisibleDates[0] ??
+    null;
+
+  useEffect(() => {
+    const target = pendingFocus.current;
+    if (!target) return;
+    pendingFocus.current = null;
+    document
+      .querySelector<HTMLButtonElement>(`[data-calendar-date="${target}"]`)
+      ?.focus();
+  });
+
+  function moveFocus(from: string, event: KeyboardEvent<HTMLButtonElement>) {
+    const target = getCalendarFocusTarget(
+      from,
+      event.key,
+      todayValue,
+      (dateValue) => getDateState(dateValue).isDisabled,
+    );
+    if (event.key.startsWith("Arrow") || event.key.startsWith("Page") ||
+        event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+    }
+    if (!target) return;
+
+    const targetMonth = startOfUtcMonth(new Date(`${target}T00:00:00.000Z`));
+    const secondMonth = monthStartPlus(firstMonth, 1);
+    if (targetMonth < startOfUtcMonth(firstMonth)) {
+      setFirstMonth(targetMonth);
+    } else if (targetMonth > secondMonth) {
+      setFirstMonth(addCalendarMonths(targetMonth, -1));
+    }
+    pendingFocus.current = target;
+    setFocusedDate(target);
+  }
+
+  const selectionStatus = !checkIn
+    ? "Choose a move-in date."
+    : !checkOut
+      ? `Move-in ${formatUtcDate(new Date(`${checkIn}T00:00:00.000Z`))}. Now choose a move-out date at least ${minimumStay} later.`
+      : `Move-in ${formatUtcDate(new Date(`${checkIn}T00:00:00.000Z`))}. Move-out ${formatUtcDate(new Date(`${checkOut}T00:00:00.000Z`))}.`;
 
   function renderMonth(month: Date) {
     const monthStart = startOfUtcMonth(month);
@@ -98,6 +188,7 @@ export function HostelDateCalendar({
           ))}
         </div>
         <div
+          aria-describedby={hintId}
           aria-label={`${monthLabel} dates`}
           className="grid grid-cols-7 justify-items-center gap-y-1"
           role="group"
@@ -117,18 +208,9 @@ export function HostelDateCalendar({
               Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), day),
             );
             const dateValue = toDateInputValue(date);
-            const isWaitingForMoveOut = Boolean(checkIn && !checkOut);
-            const canChooseMoveIn =
-              !isWaitingForMoveOut || dateValue <= checkIn;
-            const canChooseMoveOut =
-              validStayBounds &&
-              isWaitingForMoveOut &&
-              dateValue > checkIn &&
-              isStayWithinBounds(checkIn, dateValue, minStay, maxStay);
+            const { canChooseMoveIn, canChooseMoveOut, isDisabled } =
+              getDateState(dateValue);
             const action = canChooseMoveIn ? "move-in" : "move-out";
-            const isDisabled =
-              dateValue < todayValue ||
-              (!canChooseMoveIn && !canChooseMoveOut);
             const isMoveIn = dateValue === checkIn;
             const isMoveOut = dateValue === checkOut;
             const isInRange =
@@ -156,8 +238,12 @@ export function HostelDateCalendar({
                 aria-label={`Select ${action} date ${formatUtcDate(date)}`}
                 aria-pressed={isMoveIn || isMoveOut}
                 className={className}
+                data-calendar-date={dateValue}
                 disabled={isDisabled}
                 key={dateValue}
+                onFocus={() => setFocusedDate(dateValue)}
+                onKeyDown={(event) => moveFocus(dateValue, event)}
+                tabIndex={dateValue === tabStopDate ? 0 : -1}
                 onClick={() => {
                   if (canChooseMoveIn) {
                     selectMoveIn(dateValue);
@@ -190,14 +276,23 @@ export function HostelDateCalendar({
           >
             Choose your dates
           </h2>
-          <p className="mt-[6px] mb-0 text-label leading-[1.5] text-muted">
+          <p className="mt-[6px] mb-0 max-w-prose text-label leading-[1.5] text-muted">
             Choose move-in first, then a move-out date exactly {minimumStay} or
             more later. Monthly anniversaries clamp to the last day of shorter
-            months; maximum stay: {maximumStay ?? `${MAX_BOOKING_MONTHS} months`}.
-            Global maximum: {MAX_BOOKING_MONTHS} months.
+            months. Maximum stay: {maximumStay}.
+          </p>
+          <p
+            className="mt-3 mb-0 text-label leading-[1.5] font-semibold text-ink"
+            role="status"
+          >
+            {validStayBounds ? selectionStatus : null}
+          </p>
+          <p className="sr-only" id={hintId}>
+            Use the arrow keys to move between dates, Home and End for the start
+            and end of the week, and Page Up and Page Down to change month.
           </p>
           {!validStayBounds && (
-            <p className="mt-2 mb-0 text-label leading-[1.5] text-[#8b2525]" role="alert">
+            <p className="mt-2 mb-0 text-label leading-[1.5] text-danger" role="alert">
               This listing&apos;s stay requirements are invalid, so booking is unavailable.
             </p>
           )}
@@ -239,9 +334,7 @@ export function HostelDateCalendar({
         </div>
       </div>
       <div className="grid grid-cols-2 gap-6 [@media(max-width:720px)]:grid-cols-1">
-        {[0, 1].map((offset) =>
-          renderMonth(monthStartPlus(firstMonth, offset)),
-        )}
+        {visibleMonths.map((month) => renderMonth(month))}
       </div>
     </section>
   );

@@ -35,6 +35,60 @@ describe("AnalyticsPageContent", () => {
     expect(markup).not.toContain('role="button"');
   });
 
+  it("gives chart data a table alternative instead of bars alone", () => {
+    const markup = renderToStaticMarkup(
+      <AnalyticsPageContent
+        analytics={analytics}
+        error={null}
+        isLoading={false}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).toContain("<table");
+    expect(markup).toContain("<caption");
+    expect(markup).toContain('scope="col"');
+    expect(markup).toContain('<th class="py-3 pr-3 font-medium text-ink" scope="row">Oct</th>');
+    const revenue = new Intl.NumberFormat("en-PK", {
+      style: "currency",
+      currency: "PKR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(120_000);
+    expect(markup).toContain(`>${revenue}</td>`);
+    expect(markup).toContain('aria-labelledby="monthly-performance-title"');
+  });
+
+  it("uses flat solid surfaces rather than translucent blurred cards", () => {
+    const markup = renderToStaticMarkup(
+      <AnalyticsPageContent
+        analytics={analytics}
+        error={null}
+        isLoading={false}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).not.toContain("backdrop-blur");
+    expect(markup).not.toContain("rgb(255_255_255_/_0.8)");
+  });
+
+  it("says plainly when the period has no activity", () => {
+    const markup = renderToStaticMarkup(
+      <AnalyticsPageContent
+        analytics={{
+          ...analytics,
+          byMonth: [{ key: "2026-10", label: "Oct", bookings: 0, revenue: 0 }],
+        }}
+        error={null}
+        isLoading={false}
+        onRetry={() => {}}
+      />,
+    );
+
+    expect(markup).toContain("No bookings or revenue in this period yet.");
+  });
+
   it("disables monthly-bar transition for reduced-motion users", () => {
     const markup = renderToStaticMarkup(
       <AnalyticsPageContent
