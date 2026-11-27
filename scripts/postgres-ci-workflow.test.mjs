@@ -66,6 +66,11 @@ test("PostgreSQL CI gates are isolated and required before deployment", () => {
   assertPostgresJob(ciPostgres);
   const preview = jobSection(ciWorkflow, "preview");
   assert.match(preview, /needs:\s*\[[^\]]*postgres-integration[^\]]*\]/);
+  assert.match(
+    preview,
+    /if:\s*github\.event_name\s*==\s*'pull_request'\s*&&\s*github\.actor\s*!=\s*'dependabot\[bot\]'/,
+    "Vercel previews must be skipped when Dependabot cannot access deployment secrets",
+  );
 
   const productionPostgres = jobSection(productionWorkflow, "gate-postgres");
   assertPostgresJob(productionPostgres);
