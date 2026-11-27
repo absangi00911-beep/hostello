@@ -67,7 +67,7 @@ function MapPreview({
   return (
     <aside
       aria-label="Map preview"
-      className="search-map-preview sticky top-[164px] min-h-[min(720px,calc(100svh-190px))] isolate overflow-hidden rounded-xl border border-[#dfe3d8] bg-[#e7eddc] [@media(max-width:780px)]:hidden"
+      className="search-map-preview sticky top-[164px] min-h-[min(720px,calc(100svh-190px))] isolate overflow-hidden rounded-xl border border-line bg-surface-muted [@media(max-width:780px)]:hidden"
       role="region"
     >
       <div
@@ -86,13 +86,13 @@ function MapPreview({
             d="m-20 290 160 55 95-115 150 55 125-95 165 40M-40 610l185-65 125 90 125-55 145 65 135-70M275-20l-25 185 70 145-60 210 80 165-15 175"
           />
         </svg>
-        <span className="search-map-area absolute top-[28%] left-[16%] text-meta tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[28%] left-[16%] text-meta tracking-[0.02em] text-muted">
           Gulberg
         </span>
-        <span className="search-map-area absolute top-[63%] left-[54%] text-meta tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[63%] left-[54%] text-meta tracking-[0.02em] text-muted">
           Model Town
         </span>
-        <span className="search-map-area absolute top-[78%] left-[17%] text-meta tracking-[0.02em] text-[#737d70]">
+        <span className="search-map-area absolute top-[78%] left-[17%] text-meta tracking-[0.02em] text-muted">
           Garden Town
         </span>
       </div>
@@ -108,7 +108,7 @@ function MapPreview({
           PKR {(hostel.pricePerMonth / 1000).toFixed(0)}k
         </span>
       ))}
-      <div className="search-map-attribution absolute right-0 bottom-0 left-0 bg-white/[0.82] px-[11px] py-[7px] text-right text-meta text-[#586358]">
+      <div className="search-map-attribution absolute right-0 bottom-0 left-0 bg-white/[0.82] px-[11px] py-[7px] text-right text-meta text-muted">
         Illustrative map preview
       </div>
     </aside>
@@ -120,6 +120,24 @@ function formatShortDate(value: string): string | null {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function ResultsSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="search-result-grid grid grid-cols-2 gap-x-[18px] gap-y-6 [@media(max-width:520px)]:grid-cols-[minmax(0,1fr)] [@media(max-width:520px)]:gap-y-[22px]"
+    >
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index}>
+          <div className="aspect-[1.28] motion-safe:animate-pulse rounded-xl bg-surface-muted [@media(max-width:520px)]:aspect-[1.35]" />
+          <div className="mt-3 h-4 w-3/5 motion-safe:animate-pulse rounded-md bg-surface-muted" />
+          <div className="mt-2 h-3 w-2/5 motion-safe:animate-pulse rounded-md bg-surface-muted" />
+          <div className="mt-3 h-4 w-1/3 motion-safe:animate-pulse rounded-md bg-surface-muted" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function HostelCard({
@@ -183,10 +201,10 @@ function HostelCard({
           </span>
         </div>
         <p className="search-result-area mt-[3px] mb-0 overflow-hidden text-meta text-muted text-ellipsis [@media(max-width:520px)]:text-label whitespace-nowrap">
-          {hostel.area || hostel.city}, {hostel.city}
+          {hostel.area ? `${hostel.area}, ${hostel.city}` : hostel.city}
         </p>
-        <p className="search-result-price mt-2 mb-0 text-meta [@media(max-width:520px)]:text-body">
-          <strong className="font-[650]">
+        <p className="search-result-price mt-2 mb-0 text-label [@media(max-width:520px)]:text-body">
+          <strong className="font-bold text-ink">
             PKR {hostel.pricePerMonth.toLocaleString("en-PK")}
           </strong>
           <span className="text-muted"> / month</span>
@@ -684,7 +702,7 @@ export default function SearchPageClient({
             </button>
             {filterError ? (
               <p
-                className="col-span-full m-0 text-label text-[#b32505]"
+                className="col-span-full m-0 text-label text-danger"
                 role="alert"
               >
                 {filterError}
@@ -814,7 +832,7 @@ export default function SearchPageClient({
                 </div>
               </fieldset>
               {filterError && (
-                <p className="m-0 text-label text-[#991b1b]" role="alert">
+                <p className="m-0 text-label text-danger" role="alert">
                   {filterError}
                 </p>
               )}
@@ -876,6 +894,15 @@ export default function SearchPageClient({
                     <span aria-hidden="true">×</span>
                   </button>
                 ))}
+                {activeFilterTags.length > 1 && (
+                  <button
+                    className="inline-flex min-h-11 items-center px-2 text-label font-semibold text-brand-dark underline underline-offset-2 hover:text-brand"
+                    onClick={clearFilters}
+                    type="button"
+                  >
+                    Clear all
+                  </button>
+                )}
               </div>
             )}
 
@@ -905,12 +932,12 @@ export default function SearchPageClient({
               )}
 
             {isLoading && (
-              <p
-                className="search-results-message m-0 py-[30px] text-label text-muted"
-                role="status"
-              >
-                Finding hostels…
-              </p>
+              <>
+                <p className="sr-only" role="status">
+                  Finding hostels…
+                </p>
+                <ResultsSkeleton />
+              </>
             )}
             {searchError && (
               <div
@@ -919,7 +946,7 @@ export default function SearchPageClient({
               >
                 <p className="m-0">{searchError}</p>
                 <button
-                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-control-border bg-white px-4 font-semibold text-ink btn-secondary"
                   onClick={retry}
                   type="button"
                 >
@@ -928,18 +955,32 @@ export default function SearchPageClient({
               </div>
             )}
             {!isLoading && !searchError && hostels.length === 0 && (
-              <p
-                className="search-results-message m-0 py-[30px] text-label text-muted"
-                role="status"
-              >
-                {appliedMoveInDate
-                  ? `No hostels have space for ${appliedGuests} ${
-                      appliedGuests === "1" ? "guest" : "guests"
-                    } on ${appliedMoveInDate}.`
-                  : appliedCity
-                    ? `No hostels found in ${appliedCity} yet.`
-                    : "No active hostel listings yet."}
-              </p>
+              <div className="search-results-message py-[30px]">
+                <p className="m-0 text-body font-semibold text-ink" role="status">
+                  {appliedMoveInDate
+                    ? `No hostels have space for ${appliedGuests} ${
+                        appliedGuests === "1" ? "guest" : "guests"
+                      } on ${appliedMoveInDate}.`
+                    : appliedCity
+                      ? `No hostels found in ${appliedCity} yet.`
+                      : "No active hostel listings yet."}
+                </p>
+                {activeFilterTags.length > 0 ? (
+                  <>
+                    <p className="mt-2 mb-0 max-w-prose text-label text-muted">
+                      Your filters may be hiding matches. Remove them to see every hostel
+                      {appliedCity ? ` in ${appliedCity}` : ""}.
+                    </p>
+                    <button
+                      className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-control-border bg-white px-4 font-semibold text-ink btn-secondary"
+                      onClick={clearFilters}
+                      type="button"
+                    >
+                      Clear filters
+                    </button>
+                  </>
+                ) : null}
+              </div>
             )}
             {!isLoading && !searchError && hostels.length > 0 && (
               <>
@@ -959,7 +1000,7 @@ export default function SearchPageClient({
                 >
                   <button
                     aria-label="Previous page"
-                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-meta text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-label text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === 1}
                     onClick={() => selectPage(page - 1)}
                     type="button"
@@ -971,7 +1012,7 @@ export default function SearchPageClient({
                       <button
                         aria-current={page === 1 ? "page" : undefined}
                         aria-label="Page 1"
-                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta ${
+                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-label ${
                           page === 1 ? "bg-ink text-white" : "bg-transparent text-ink hover:bg-surface-muted"
                         }`}
                         onClick={() => selectPage(1)}
@@ -986,7 +1027,7 @@ export default function SearchPageClient({
                     <button
                       aria-current={pageNumber === page ? "page" : undefined}
                       aria-label={`Page ${pageNumber}`}
-                      className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta motion-reduce:scroll-auto motion-reduce:transition-none ${
+                      className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-label motion-reduce:scroll-auto motion-reduce:transition-none ${
                         pageNumber === page
                           ? "bg-ink text-white"
                           : "bg-transparent text-ink hover:bg-surface-muted"
@@ -1005,7 +1046,7 @@ export default function SearchPageClient({
                       <button
                         aria-current={page === pageCount ? "page" : undefined}
                         aria-label={`Page ${pageCount}`}
-                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-meta motion-reduce:scroll-auto motion-reduce:transition-none ${
+                        className={`relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 px-[9px] text-label motion-reduce:scroll-auto motion-reduce:transition-none ${
                           page === pageCount
                             ? "bg-ink text-white"
                             : "bg-transparent text-ink hover:bg-surface-muted"
@@ -1019,7 +1060,7 @@ export default function SearchPageClient({
                   ) : null}
                   <button
                     aria-label="Next page"
-                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-meta text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-[#a0a9a2] motion-reduce:scroll-auto motion-reduce:transition-none"
+                    className="relative grid size-9 min-w-9 cursor-pointer place-items-center before:absolute before:-inset-1 before:content-[''] rounded-full border-0 bg-transparent px-[9px] text-label text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-muted disabled:opacity-50 motion-reduce:scroll-auto motion-reduce:transition-none"
                     disabled={page === pageCount}
                     onClick={() => selectPage(page + 1)}
                     type="button"
@@ -1036,7 +1077,7 @@ export default function SearchPageClient({
       </main>
 
       <div
-        className={`search-results-footer border-t border-line bg-[#f7f7f5] pt-[34px] pr-[max(32px,calc((100%-1440px)/2))] pb-[18px] pl-[max(32px,calc((100%-1440px)/2))] [@media(max-width:780px)]:px-5 [@media(max-width:520px)]:px-4 ${
+        className={`search-results-footer border-t border-line bg-canvas pt-[34px] pr-[max(32px,calc((100%-1440px)/2))] pb-[18px] pl-[max(32px,calc((100%-1440px)/2))] [@media(max-width:780px)]:px-5 [@media(max-width:520px)]:px-4 ${
           showsStudentNavigation
             ? "[@media(max-width:720px)]:pb-[calc(5rem+env(safe-area-inset-bottom))]"
             : ""
@@ -1045,21 +1086,21 @@ export default function SearchPageClient({
         <div className="search-footer-columns grid grid-cols-3 gap-[30px] pb-[30px] [@media(max-width:520px)]:grid-cols-2 [@media(max-width:520px)]:gap-x-4 [@media(max-width:520px)]:gap-y-6">
           <div className="flex flex-col items-start gap-[10px]">
             <h2 className="m-0 mb-[2px] text-label font-bold">Support</h2>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/contact">Contact HostelLo</Link>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Browse hostels</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/contact">Contact HostelLo</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Browse hostels</Link>
           </div>
           <div className="flex flex-col items-start gap-[10px]">
             <h2 className="m-0 mb-[2px] text-label font-bold">For students</h2>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Find a hostel</Link>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/">Explore HostelLo</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/search">Find a hostel</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/">Explore HostelLo</Link>
           </div>
           <div className="flex flex-col items-start gap-[10px]">
             <h2 className="m-0 mb-[2px] text-label font-bold">For hostel owners</h2>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/signup?role=OWNER">List your hostel</Link>
-            <Link className="text-meta text-[#566158] hover:text-ink hover:underline hover:underline-offset-[3px]" href="/login">Sign in</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/signup?role=OWNER">List your hostel</Link>
+            <Link className="text-meta text-muted hover:text-ink hover:underline hover:underline-offset-[3px]" href="/login">Sign in</Link>
           </div>
         </div>
-        <div className="search-footer-bottom flex justify-between gap-[18px] border-t border-line pt-[17px] text-meta text-[#566158] [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-[6px]">
+        <div className="search-footer-bottom flex justify-between gap-[18px] border-t border-line pt-[17px] text-meta text-muted [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:gap-[6px]">
           <span>Made for student stays in Pakistan</span>
         </div>
       </div>

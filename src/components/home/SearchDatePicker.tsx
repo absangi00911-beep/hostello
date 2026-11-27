@@ -82,106 +82,116 @@ export function SearchDatePicker({
         ))}
       </div>
 
-      {mode === "dates" ? (
-        <div
-          aria-labelledby="search-date-dates-tab"
-          id="search-date-dates-panel"
-          role="tabpanel"
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <p className="m-0 text-label font-semibold text-ink">Choose a date</p>
-            <div className="flex gap-2">
-              <button
-                aria-label="Previous month"
-                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors enabled:hover:border-brand enabled:hover:bg-brand-soft enabled:hover:text-brand-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
-                disabled={monthOffset === 0}
-                onClick={() => setMonthOffset((offset) => offset - 1)}
-                type="button"
-              >
-                <span aria-hidden="true">‹</span>
-              </button>
-              <button
-                aria-label="Next month"
-                className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark active:scale-[0.97] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
-                onClick={() => setMonthOffset((offset) => offset + 1)}
-                type="button"
-              >
-                <span aria-hidden="true">›</span>
-              </button>
+      <div
+        aria-labelledby="search-date-dates-tab"
+        hidden={mode !== "dates"}
+        id="search-date-dates-panel"
+        role="tabpanel"
+      >
+        {mode === "dates" ? (
+          <>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="m-0 text-label font-semibold text-ink">
+                Choose a date
+              </p>
+              <div className="flex gap-2">
+                <button
+                  aria-label="Previous month"
+                  className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors enabled:hover:border-brand enabled:hover:bg-brand-soft enabled:hover:text-brand-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                  disabled={monthOffset === 0}
+                  onClick={() => setMonthOffset((offset) => offset - 1)}
+                  type="button"
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
+                <button
+                  aria-label="Next month"
+                  className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark active:scale-[0.97] focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                  onClick={() => setMonthOffset((offset) => offset + 1)}
+                  type="button"
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-7 [@media(max-width:520px)]:grid-cols-1">
-            {[monthOffset, monthOffset + 1].map((offset) => (
-              <SearchCalendarMonth
-                key={offset}
-                month={
-                  new Date(
+            <div className="grid grid-cols-2 gap-7 [@media(max-width:520px)]:grid-cols-1">
+              {[monthOffset, monthOffset + 1].map((offset) => (
+                <SearchCalendarMonth
+                  key={offset}
+                  month={
+                    new Date(
+                      currentMonth.getFullYear(),
+                      currentMonth.getMonth() + offset,
+                      1,
+                    )
+                  }
+                  onSelect={onSelect}
+                  selectedDate={selectedDate}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
+      </div>
+      <div
+        aria-labelledby="search-date-flexible-tab"
+        hidden={mode !== "flexible"}
+        id="search-date-flexible-panel"
+        role="tabpanel"
+      >
+        {mode === "flexible" ? (
+          <>
+            <p className="mb-3 text-label font-semibold text-ink">
+              {flexibleMonth
+                ? `Choose a move-in day in ${MONTH_FORMATTER.format(flexibleMonth)}`
+                : "Choose a month"}
+            </p>
+            {!flexibleMonth ? (
+              <div
+                aria-label="Choose a flexible month"
+                className="grid grid-cols-3 gap-2 [@media(max-width:520px)]:grid-cols-2"
+              >
+                {Array.from({ length: 6 }, (_, index) => {
+                  const month = new Date(
                     currentMonth.getFullYear(),
-                    currentMonth.getMonth() + offset,
+                    currentMonth.getMonth() + index,
                     1,
-                  )
-                }
-                onSelect={onSelect}
-                selectedDate={selectedDate}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div
-          aria-labelledby="search-date-flexible-tab"
-          id="search-date-flexible-panel"
-          role="tabpanel"
-        >
-          <p className="mb-3 text-label font-semibold text-ink">
-            {flexibleMonth
-              ? `Choose a move-in day in ${MONTH_FORMATTER.format(flexibleMonth)}`
-              : "Choose a month"}
-          </p>
-          {!flexibleMonth ? (
-            <div
-              aria-label="Choose a flexible month"
-              className="grid grid-cols-3 gap-2 [@media(max-width:520px)]:grid-cols-2"
-            >
-              {Array.from({ length: 6 }, (_, index) => {
-                const month = new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth() + index,
-                  1,
-                );
-                return (
-                  <button
-                    className="min-h-12 cursor-pointer rounded-xl border border-line bg-white px-4 text-left text-label font-medium text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
-                    key={toDateKey(month)}
-                    onClick={() => setFlexibleMonth(month)}
-                    type="button"
-                  >
-                    {MONTH_FORMATTER.format(month)}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div>
-              <button
-                className="mb-3 min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-label font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
-                onClick={() => setFlexibleMonth(null)}
-                type="button"
-              >
-                Change month
-              </button>
-              <SearchCalendarMonth
-                month={flexibleMonth}
-                onSelect={onSelect}
-                selectedDate={selectedDate}
-              />
-            </div>
-          )}
-          <p className="mt-4 text-meta leading-5 text-muted">
-            Choose one exact move-in day. Availability is checked for that day.
-          </p>
-        </div>
-      )}
+                  );
+                  return (
+                    <button
+                      className="min-h-12 cursor-pointer rounded-xl border border-line bg-white px-4 text-left text-label font-medium text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                      key={toDateKey(month)}
+                      onClick={() => setFlexibleMonth(month)}
+                      type="button"
+                    >
+                      {MONTH_FORMATTER.format(month)}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div>
+                <button
+                  className="mb-3 min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 text-label font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! focus-visible:outline-offset-2! btn-secondary"
+                  onClick={() => setFlexibleMonth(null)}
+                  type="button"
+                >
+                  Change month
+                </button>
+                <SearchCalendarMonth
+                  month={flexibleMonth}
+                  onSelect={onSelect}
+                  selectedDate={selectedDate}
+                />
+              </div>
+            )}
+            <p className="mt-4 text-meta leading-5 text-muted">
+              Choose one exact move-in day. Availability is checked for that
+              day.
+            </p>
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }

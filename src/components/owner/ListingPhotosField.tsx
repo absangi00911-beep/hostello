@@ -7,6 +7,7 @@ import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_SIZE_MB,
 } from "@hostello/shared";
+import { prepareImageForUpload } from "@/lib/client-image-prepare";
 import { LISTING_LIMITS } from "./listing-form";
 import { secondaryButtonClassName } from "./ListingFormFields";
 
@@ -54,6 +55,7 @@ export function ListingPhotosField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const remaining = LISTING_LIMITS.imagesMax - images.length;
 
@@ -72,10 +74,27 @@ export function ListingPhotosField({
 
     setIsUploading(true);
     let next = images;
-    for (const file of accepted) {
+    const maxBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+    for (const [position, original] of accepted.entries()) {
+      setProgress({ current: position + 1, total: accepted.length });
+      // Phone photos are often larger than the limit; shrink them here instead of
+      // making the owner do it. Unsupported types skip this and fail validation below.
+      const file = ACCEPTED_IMAGE_TYPES.includes(original.type)
+        ? await prepareImageForUpload(original, maxBytes)
+        : original;
       const invalid = validateImageFile(file);
       if (invalid) {
-        problems.push(`${file.name}: ${invalid}`);
+        const couldNotResize =
+          file === original &&
+          ACCEPTED_IMAGE_TYPES.includes(original.type) &&
+          original.size > maxBytes;
+        problems.push(
+          `${original.name}: ${
+            couldNotResize
+              ? `This photo is over ${MAX_IMAGE_SIZE_MB}MB and could not be resized. Try a smaller image.`
+              : invalid
+          }`,
+        );
         continue;
       }
       try {
@@ -84,11 +103,12 @@ export function ListingPhotosField({
         onChange(next);
       } catch (cause) {
         problems.push(
-          `${file.name}: ${cause instanceof Error ? cause.message : "Upload failed."}`,
+          `${original.name}: ${cause instanceof Error ? cause.message : "Upload failed."}`,
         );
       }
     }
     setUploadErrors(problems);
+    setProgress(null);
     setIsUploading(false);
   }
 
@@ -107,7 +127,7 @@ export function ListingPhotosField({
                   src={url}
                 />
                 {index === 0 ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-[2px] text-label font-bold text-ink">
+                  <span className="absolute left-2 top-2 rounded-md bg-white px-2 py-[2px] text-label font-bold text-ink">
                     Cover
                   </span>
                 ) : null}
@@ -160,11 +180,15 @@ export function ListingPhotosField({
           type="button"
         >
           <ImagePlus aria-hidden="true" size={16} />
-          {isUploading ? "Uploading…" : "Add photos"}
+          {isUploading
+            ? progress && progress.total > 1
+              ? `Uploading ${progress.current} of ${progress.total}…`
+              : "Uploading…"
+            : "Add photos"}
         </button>
         <span aria-live="polite" className="text-label text-muted">
-          {images.length}/{LISTING_LIMITS.imagesMax} photos · JPEG, PNG or WebP, up to{" "}
-          {MAX_IMAGE_SIZE_MB}MB each. The first photo is the cover.
+          {images.length}/{LISTING_LIMITS.imagesMax} photos · JPEG, PNG or WebP. Photos over{" "}
+          {MAX_IMAGE_SIZE_MB}MB are resized automatically. The first photo is the cover.
         </span>
       </div>
 

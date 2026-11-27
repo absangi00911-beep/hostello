@@ -25,14 +25,14 @@ describe("HostelDateCalendar", () => {
     dateSelection.checkOut = "";
   });
 
-  it("states the monthly anniversary rule, listing limit, and global 24-month cap", () => {
+  it("states the monthly anniversary rule and one effective maximum stay", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2027-01-15T12:00:00.000Z"));
     const markup = renderCalendar(2, 36);
 
     expect(markup).toContain("move-out date exactly 2 months or more later");
-    expect(markup).toContain("maximum stay: 24 months");
-    expect(markup).toContain("Global maximum: 24 months");
+    expect(markup).toContain("Maximum stay: 24 months");
+    expect(markup).not.toContain("Global maximum");
     expect(markup).toContain('aria-label="Select move-in date January 15, 2027"');
     expect(markup).toContain("Monthly anniversaries clamp to the last day of shorter months");
   });
@@ -62,6 +62,35 @@ describe("HostelDateCalendar", () => {
     expect(expectedCheckout).toBeDefined();
     expect(expectedCheckout).not.toMatch(/\sdisabled(?:=|\s|>)/);
     expect(partialCheckout).toMatch(/\sdisabled(?:=|\s|>)/);
+  });
+
+  it("announces the next step for the current selection", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2027-01-15T12:00:00.000Z"));
+
+    expect(renderCalendar(1, null)).toContain("Choose a move-in date.");
+
+    dateSelection.checkIn = "2027-01-20";
+    expect(renderCalendar(2, null)).toContain(
+      "Move-in January 20, 2027. Now choose a move-out date at least 2 months later.",
+    );
+
+    dateSelection.checkOut = "2027-03-20";
+    expect(renderCalendar(2, null)).toContain(
+      "Move-in January 20, 2027. Move-out March 20, 2027.",
+    );
+  });
+
+  it("exposes a single roving tab stop for the whole date grid", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2027-01-15T12:00:00.000Z"));
+    const markup = renderCalendar(1, null);
+    const dateButtons = markup.match(/<button[^>]*data-calendar-date="[^"]*"[^>]*>/g) ?? [];
+    const tabStops = dateButtons.filter((button) => button.includes('tabindex="0"'));
+
+    expect(dateButtons.length).toBeGreaterThan(50);
+    expect(tabStops).toHaveLength(1);
+    expect(tabStops[0]).toContain('data-calendar-date="2027-01-15"');
   });
 
   it("keeps invalid listing bounds visible as a booking blocker", () => {
