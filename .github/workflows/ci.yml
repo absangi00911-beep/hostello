@@ -146,15 +146,15 @@ jobs:
 
   # ─────────────────────────────────────────────
   # Job 3: Vercel preview deploy
-  # Only runs on PRs (not on pushes to main — that's handled by production.yml).
+  # Only runs on non-Dependabot PRs; Dependabot runs do not receive Vercel secrets.
   # Waits for all checks to pass, then deploys a preview and posts the URL.
   # ─────────────────────────────────────────────
   preview:
     name: Preview deploy
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Only deploy previews for pull requests, not direct pushes to main
-    if: github.event_name == 'pull_request'
+    # Do not run credentialed Vercel commands for Dependabot pull requests.
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     # Only deploy after all quality gates pass
     needs: [web, shared, postgres-integration]
 
