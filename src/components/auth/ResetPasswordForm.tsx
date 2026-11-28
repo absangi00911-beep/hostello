@@ -8,6 +8,7 @@ import {
   authInputClassName,
   authLinkClassName,
 } from "./AuthPageShell";
+import { PasswordField } from "./PasswordField";
 import { validateSignupPassword } from "./SignupForm";
 
 export function ResetPasswordForm({ token }: { token: string | null }) {
@@ -34,7 +35,7 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   if (done) {
     return (
       <div className="grid gap-4">
-        <AuthNotice tone="success">
+        <AuthNotice focusOnMount tone="success">
           Your password has been changed. You can log in now.
         </AuthNotice>
         <Link className={authButtonClassName} href="/login">
@@ -88,34 +89,26 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
     <>
       {errorMessage ? <AuthNotice tone="error">{errorMessage}</AuthNotice> : null}
       <form className="grid gap-[14px]" noValidate onSubmit={handleSubmit}>
-        <label className="grid gap-[6px] text-label font-semibold text-ink">
-          <span>New password</span>
-          <input
-            autoComplete="new-password"
-            autoFocus
-            className={authInputClassName}
-            name="password"
-            onChange={(event) => setPassword(event.currentTarget.value)}
-            required
-            type="password"
-            value={password}
-          />
-          <span className="text-label font-normal text-muted">
-            At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
-          </span>
-        </label>
-        <label className="grid gap-[6px] text-label font-semibold text-ink">
-          <span>Confirm new password</span>
-          <input
-            autoComplete="new-password"
-            className={authInputClassName}
-            name="confirmPassword"
-            onChange={(event) => setConfirmPassword(event.currentTarget.value)}
-            required
-            type="password"
-            value={confirmPassword}
-          />
-        </label>
+        <PasswordField
+          autoComplete="new-password"
+          autoFocus
+          hint="At least 8 characters, with one uppercase letter and one number. Avoid common passwords."
+          inputClassName={authInputClassName}
+          label="New password"
+          name="password"
+          onChange={(event) => setPassword(event.currentTarget.value)}
+          required
+          value={password}
+        />
+        <PasswordField
+          autoComplete="new-password"
+          inputClassName={authInputClassName}
+          label="Confirm new password"
+          name="confirmPassword"
+          onChange={(event) => setConfirmPassword(event.currentTarget.value)}
+          required
+          value={confirmPassword}
+        />
         <button
           className={authButtonClassName}
           disabled={isSubmitting}

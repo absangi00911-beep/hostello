@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { AccountPageHeader } from "@/components/layout/AccountPageHeader";
 
+import { AuthNotice } from "@/components/auth/AuthNotice";
+import { prepareImageForUpload } from "@/lib/client-image-prepare";
+
 export type VerificationStatus = "NONE" | "PENDING" | "APPROVED" | "REJECTED";
 
 const MAX_FILE_BYTES = 4_000_000;
@@ -50,6 +53,7 @@ export function StudentVerificationPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -81,16 +85,30 @@ export function StudentVerificationPage() {
     event.preventDefault();
     setErrorMessage(null);
 
-    const fileError = validateVerificationFile(file);
-    if (fileError || !file) {
-      setErrorMessage(fileError);
+    if (!file) {
+      setErrorMessage(validateVerificationFile(null));
       return;
     }
 
     setIsSubmitting(true);
     try {
+      // ID photos taken on a phone are usually over the limit; shrink images (not PDFs) first.
+      const candidate =
+        file.type === "application/pdf"
+          ? file
+          : await prepareImageForUpload(file, MAX_FILE_BYTES);
+      const fileError = validateVerificationFile(candidate);
+      if (fileError) {
+        setErrorMessage(
+          candidate === file && file.size > MAX_FILE_BYTES && file.type.startsWith("image/")
+            ? "This photo is over 4MB and could not be resized. Try a smaller image."
+            : fileError,
+        );
+        return;
+      }
+
       const form = new FormData();
-      form.set("file", file);
+      form.set("file", candidate);
       const uploadResponse = await fetch("/api/user/verify-student/upload", {
         method: "POST",
         body: form,
@@ -117,6 +135,7 @@ export function StudentVerificationPage() {
       }
 
       setFile(null);
+      setJustSubmitted(true);
       setStatus("PENDING");
     } catch (error) {
       setErrorMessage(
@@ -144,7 +163,9 @@ export function StudentVerificationPage() {
         />
 
       {isLoading ? (
-        <p className="text-muted">Loading verification status...</p>
+        <p className="text-muted" role="status">
+          Loading verification status...
+        </p>
       ) : loadError || !status ? (
         <p className="rounded-xl bg-surface-muted p-4 text-danger" role="alert">
           {loadError ?? "Could not load your verification status."}
@@ -157,12 +178,9 @@ export function StudentVerificationPage() {
           You're verified. A verified student badge shows on your profile.
         </p>
       ) : status === "PENDING" ? (
-        <p
-          className="rounded-xl bg-brand-soft p-4 text-brand-dark"
-          role="status"
-        >
-          Your document is under review. We'll notify you once it's decided.
-        </p>
+        <AuthNotice focusOnMount={justSubmitted} tone="success">
+          Your document is under review. We&apos;ll notify you once it&apos;s decided.
+        </AuthNotice>
       ) : (
         <>
           {status === "REJECTED" ? (
@@ -174,22 +192,21 @@ export function StudentVerificationPage() {
               different document below.
             </p>
           ) : null}
-          {errorMessage ? (
-            <p
-              className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
-              role="alert"
-            >
-              {errorMessage}
-            </p>
-          ) : null}
+          {errorMessage ? <AuthNotice tone="error">{errorMessage}</AuthNotice> : null}
           <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
             <label className="grid gap-2 text-label font-semibold text-ink">
-              <span>Document (JPEG, PNG, WebP or PDF, up to 4MB)</span>
+              <span>Document (JPEG, PNG, WebP or PDF)</span>
+              <span className="text-label font-normal text-muted">
+                Photos over 4MB are resized automatically. PDFs must be 4MB or smaller.
+              </span>
               <input
                 accept={ACCEPTED_TYPES.join(",")}
-                className="text-body font-normal"
+                className="w-full text-body font-normal text-ink file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-[8px] file:border file:border-control-border file:bg-white file:px-4 file:text-label file:font-semibold file:text-ink hover:file:bg-surface-muted"
                 name="file"
-                onChange={(event) => setFile(event.currentTarget.files?.[0] ?? null)}
+                onChange={(event) => {
+                  setFile(event.currentTarget.files?.[0] ?? null);
+                  setErrorMessage(null);
+                }}
                 type="file"
               />
             </label>

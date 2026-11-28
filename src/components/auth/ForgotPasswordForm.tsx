@@ -18,6 +18,10 @@ export function ForgotPasswordForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setErrorMessage("Enter the email address you signed up with.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/auth/forgot-password", {
@@ -47,7 +51,7 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="grid gap-4">
-        <AuthNotice tone="success">
+        <AuthNotice focusOnMount tone="success">
           If an account exists for that email, a reset link is on its way. The
           link expires in 30 minutes.
         </AuthNotice>
@@ -65,9 +69,12 @@ export function ForgotPasswordForm() {
         <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Email</span>
           <input
+            autoCapitalize="none"
             autoComplete="email"
             autoFocus
             className={authInputClassName}
+            inputMode="email"
+            spellCheck={false}
             name="email"
             onChange={(event) => setEmail(event.currentTarget.value)}
             required

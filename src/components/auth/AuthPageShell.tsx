@@ -11,26 +11,7 @@ export const authButtonClassName =
 export const authLinkClassName =
   "font-semibold text-brand hover:underline focus-visible:outline-brand!";
 
-export function AuthNotice({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "error" | "success";
-}) {
-  return (
-    <p
-      className={`mb-4 rounded-xl px-[13px] py-[11px] text-label leading-[1.45] ${
-        tone === "error"
-          ? "bg-surface-muted text-danger"
-          : "bg-brand-soft text-brand-dark"
-      }`}
-      role={tone === "error" ? "alert" : "status"}
-    >
-      {children}
-    </p>
-  );
-}
+export { AuthNotice } from "./AuthNotice";
 
 export function AuthPageShell({
   children,
