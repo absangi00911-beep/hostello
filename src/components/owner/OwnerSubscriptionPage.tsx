@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { PLANS } from "@/config/plans";
@@ -51,9 +52,7 @@ function PlanCard({
           {plan.label}
         </h3>
         {current ? (
-          <span className="rounded-full bg-brand px-[10px] py-[2px] text-meta font-bold text-white">
-            Current plan
-          </span>
+          <StatusBadge tone="info">Current plan</StatusBadge>
         ) : null}
       </div>
       <p className="m-0 text-headline font-bold tracking-[-0.03em] text-ink">

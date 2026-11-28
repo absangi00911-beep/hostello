@@ -1,8 +1,9 @@
 "use client";
 
+import { AuthNotice } from "@/components/auth/AuthNotice";
 import { StatusBadge, bookingStatusTone } from "@/components/ui/StatusBadge";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import {
   BOOKING_FILTERS,
   getResponseState,
@@ -70,6 +71,20 @@ function BookingCard({
 }: BookingCardProps) {
   const response = getResponseState(booking, now);
   const { student } = booking;
+  const declinePanelRef = useRef<HTMLDivElement>(null);
+  const declineButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreDeclineFocus = useRef(false);
+
+  // "Decline" is replaced by its confirmation, so move focus into the confirmation, and back to
+  // "Decline" if the owner keeps the request.
+  useEffect(() => {
+    if (declining) {
+      declinePanelRef.current?.focus();
+    } else if (restoreDeclineFocus.current) {
+      restoreDeclineFocus.current = false;
+      declineButtonRef.current?.focus();
+    }
+  }, [declining]);
 
   return (
     <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
@@ -94,7 +109,7 @@ function BookingCard({
       <p className="m-0 flex flex-wrap gap-x-4 text-label">
         {student.email ? (
           <a
-            className="font-semibold text-brand hover:underline"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-dark hover:underline"
             href={`mailto:${student.email}`}
           >
             {student.email}
@@ -102,7 +117,7 @@ function BookingCard({
         ) : null}
         {student.phone ? (
           <a
-            className="font-semibold text-brand hover:underline"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-dark hover:underline"
             href={`tel:${student.phone}`}
           >
             {student.phone}
@@ -129,9 +144,11 @@ function BookingCard({
       {response.kind === "open" ? (
         declining ? (
           <div
-            className="grid gap-3 rounded-[12px] bg-surface-muted p-3"
-            role="group"
             aria-label={`Confirm declining ${student.name}'s request`}
+            className="grid gap-3 rounded-[12px] bg-surface-muted p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            ref={declinePanelRef}
+            role="group"
+            tabIndex={-1}
           >
             <p className="m-0 text-label text-ink">
               Decline this request? {student.name} will be refunded{" "}
@@ -149,7 +166,10 @@ function BookingCard({
               <button
                 className={secondaryButtonClassName}
                 disabled={busy}
-                onClick={onCancelDecline}
+                onClick={() => {
+                  restoreDeclineFocus.current = true;
+                  onCancelDecline();
+                }}
                 type="button"
               >
                 Keep request
@@ -170,6 +190,7 @@ function BookingCard({
               className={secondaryButtonClassName}
               disabled={busy}
               onClick={() => onAskDecline(booking.id)}
+              ref={declineButtonRef}
               type="button"
             >
               Decline
@@ -248,7 +269,7 @@ export function OwnerBookingsContent({
         {BOOKING_FILTERS.map(({ value, label }) => (
           <button
             aria-pressed={filter === value}
-            className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+            className="min-h-11 cursor-pointer rounded-full border border-line bg-white px-4 text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
             key={value}
             onClick={() => onFilterChange(value)}
             type="button"
@@ -259,16 +280,13 @@ export function OwnerBookingsContent({
       </div>
 
       {notice ? (
-        <p
-          className={`mb-4 rounded-xl px-[13px] py-[11px] text-label ${
-            notice.tone === "error"
-              ? "bg-surface-muted text-danger"
-              : "bg-brand-soft text-brand-dark"
-          }`}
-          role={notice.tone === "error" ? "alert" : "status"}
+        <AuthNotice
+          focusOnMount={notice.tone !== "error"}
+          key={`${notice.tone}:${notice.text}`}
+          tone={notice.tone === "error" ? "error" : "success"}
         >
           {notice.text}
-        </p>
+        </AuthNotice>
       ) : null}
 
       <p aria-live="polite" className="mb-3 mt-0 text-label text-muted">

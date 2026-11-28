@@ -35,10 +35,10 @@ export function WorkspaceShell({
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`shrink-0 rounded-md px-3 py-2 text-label font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                className={`inline-flex min-h-11 shrink-0 items-center rounded-md px-3 text-label font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [@media(max-width:720px)]:border ${
                   isActive
-                    ? "bg-brand-soft text-brand-dark"
-                    : "text-muted hover:bg-surface-muted hover:text-ink"
+                    ? "bg-brand-soft text-brand-dark [@media(max-width:720px)]:border-brand"
+                    : "text-muted hover:bg-surface-muted hover:text-ink [@media(max-width:720px)]:border-line"
                 }`}
               >
                 {item.label}
