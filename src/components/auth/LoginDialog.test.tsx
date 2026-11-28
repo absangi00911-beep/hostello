@@ -124,6 +124,17 @@ describe("LoginDialog keyboard and focus affordances", () => {
     expect(closeButton).toContain("focus-visible:outline");
   });
 
+  it("resets the browser's default button border on the close control", () => {
+    // The app does not load Tailwind's preflight, so a <button> without an
+    // explicit border class renders the browser's 2px outset border as a ring.
+    const markup = renderLoginDialog();
+    const closeButton = markup.match(
+      /<button\b(?=[^>]*aria-label="Close login dialog")[^>]*>/,
+    )?.[0];
+
+    expect(closeButton).toMatch(/class="[^"]*\bborder-0\b/);
+  });
+
   it("keeps the optional method switch a keyboard-sized control", () => {
     const markup = renderLoginDialog({ emailCodeEnabled: true });
     const switchButton = markup.match(

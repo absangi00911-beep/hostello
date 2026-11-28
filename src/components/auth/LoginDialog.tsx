@@ -355,7 +355,7 @@ export default function LoginDialog({
           <Dialog.Close asChild>
             <button
               aria-label="Close login dialog"
-              className="absolute right-4 top-4 grid size-11 cursor-pointer place-items-center rounded-full bg-transparent text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+              className="absolute right-4 top-4 grid size-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
               type="button"
             >
               <X aria-hidden="true" size={18} />
