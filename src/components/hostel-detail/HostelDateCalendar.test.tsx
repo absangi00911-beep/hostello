@@ -33,7 +33,7 @@ describe("HostelDateCalendar", () => {
     expect(markup).toContain("move-out date exactly 2 months or more later");
     expect(markup).toContain("Maximum stay: 24 months");
     expect(markup).not.toContain("Global maximum");
-    expect(markup).toContain('aria-label="Select move-in date January 15, 2027"');
+    expect(markup).toContain('aria-label="Select move-in date 15 Jan 2027"');
     expect(markup).toContain("Monthly anniversaries clamp to the last day of shorter months");
   });
 
@@ -45,8 +45,8 @@ describe("HostelDateCalendar", () => {
   });
 
   it.each([
-    ["non-leap year", "2027-01-01T12:00:00.000Z", "2027-01-31", "February 28, 2027"],
-    ["leap year", "2028-01-01T12:00:00.000Z", "2028-01-31", "February 29, 2028"],
+    ["non-leap year", "2027-01-01T12:00:00.000Z", "2027-01-31", "28 Feb 2027"],
+    ["leap year", "2028-01-01T12:00:00.000Z", "2028-01-31", "29 Feb 2028"],
   ])("enables only the server-matching month-end checkout in a %s", (_label, now, checkIn, expectedDate) => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(now));
@@ -56,7 +56,7 @@ describe("HostelDateCalendar", () => {
       new RegExp(`<button[^>]*aria-label="Select move-out date ${expectedDate}"[^>]*>`),
     )?.[0];
     const partialCheckout = markup.match(
-      new RegExp(`<button[^>]*aria-label="Select move-out date February ${expectedDate.includes("28") ? "27" : "28"}, ${expectedDate.slice(-4)}"[^>]*>`),
+      new RegExp(`<button[^>]*aria-label="Select move-out date ${expectedDate.startsWith("28") ? "27" : "28"} Feb ${expectedDate.slice(-4)}"[^>]*>`),
     )?.[0];
 
     expect(expectedCheckout).toBeDefined();
@@ -72,12 +72,12 @@ describe("HostelDateCalendar", () => {
 
     dateSelection.checkIn = "2027-01-20";
     expect(renderCalendar(2, null)).toContain(
-      "Move-in January 20, 2027. Now choose a move-out date at least 2 months later.",
+      "Move-in 20 Jan 2027. Now choose a move-out date at least 2 months later.",
     );
 
     dateSelection.checkOut = "2027-03-20";
     expect(renderCalendar(2, null)).toContain(
-      "Move-in January 20, 2027. Move-out March 20, 2027.",
+      "Move-in 20 Jan 2027. Move-out 20 Mar 2027.",
     );
   });
 

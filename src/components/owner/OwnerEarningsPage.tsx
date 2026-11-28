@@ -25,7 +25,9 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 });
 
 const dateFormatter = new Intl.DateTimeFormat("en-PK", {
-  dateStyle: "medium",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
   timeZone: "Asia/Karachi",
 });
 

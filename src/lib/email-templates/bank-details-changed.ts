@@ -30,7 +30,10 @@ export function bankDetailsChangedEmail({
 }) {
   const firstName = escapeHtml(name.split(" ")[0]);
   const when = new Intl.DateTimeFormat("en-PK", {
-    dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Karachi",
+    day: "numeric",
+    month: "short",
+    year: "numeric", hour: "numeric",
+    minute: "2-digit", timeZone: "Asia/Karachi",
   }).format(changedAt);
 
   const content = `

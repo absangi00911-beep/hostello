@@ -48,9 +48,9 @@ function formatUtcMonth(date: Date): string {
 }
 
 function formatUtcDate(date: Date): string {
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
+  return new Intl.DateTimeFormat("en-PK", {
     day: "numeric",
+    month: "short",
     year: "numeric",
     timeZone: "UTC",
   }).format(date);

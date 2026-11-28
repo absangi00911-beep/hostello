@@ -95,8 +95,11 @@ export function bookingOwnerReminderEmail(props: BookingEmailProps & { responseD
   const escapedStudentName = escapeHtml(props.studentName);
   const escapedHostelName = escapeHtml(props.hostelName);
   const deadline = new Intl.DateTimeFormat("en-PK", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
     timeZone: "Asia/Karachi",
   }).format(props.responseDueAt);
 

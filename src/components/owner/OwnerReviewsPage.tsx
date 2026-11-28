@@ -24,7 +24,9 @@ import {
 const PAGE_SIZE = 20;
 
 const dateFormatter = new Intl.DateTimeFormat("en-PK", {
-  dateStyle: "medium",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
   timeZone: "Asia/Karachi",
 });
 
