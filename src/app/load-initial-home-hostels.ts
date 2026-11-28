@@ -1,29 +1,19 @@
 // Path: src/app/load-initial-home-hostels.ts
 //
 // Server side of the home page: the listings for the opening tab, rendered into the HTML.
-// Runs the same validation and search code as GET /api/hostels. Returns null, so the browser
+// Loads a few hostels per city (see src/lib/home-hostels.ts). Returns null, so the browser
 // loads the listings as before, whenever anything goes wrong; it never breaks the page.
 import { unstable_cache } from "next/cache";
-import {
-  buildHomeListingsQuery,
-  INITIAL_HOME_CATEGORY,
-  isHostelSearchResponse,
-} from "@/components/home/home-listings";
+import { INITIAL_HOME_CATEGORY, isHostelSearchResponse } from "@/components/home/home-listings";
 import type { HostelListing } from "@/components/home/HostelRow";
-import { searchHostelsWithFallback } from "@/lib/hostel-search";
-import { parseHostelSearchParams } from "@/lib/hostel-search-params";
-import { fetchHostelSearchResults } from "@/lib/hostel-search-response";
+import { HOME_HOSTELS_REVALIDATE_SECONDS, loadHomeHostelsByCity } from "@/lib/home-hostels";
 import { createOperationalLogContext, logOperationalEvent } from "@/lib/operational-logger";
 import { getSafeErrorSummary } from "@/lib/safe-error";
 
-export const HOME_HOSTELS_REVALIDATE_SECONDS = 60;
+export { HOME_HOSTELS_REVALIDATE_SECONDS };
 
 async function loadHomeHostels(): Promise<HostelListing[]> {
-  const parsed = parseHostelSearchParams(buildHomeListingsQuery(INITIAL_HOME_CATEGORY));
-  if (!parsed.ok) throw new Error("The home listing query is not valid.");
-
-  const { hostelIds, total } = await searchHostelsWithFallback(parsed.search, createOperationalLogContext());
-  const response = { data: await fetchHostelSearchResults(hostelIds), total };
+  const response = await loadHomeHostelsByCity(INITIAL_HOME_CATEGORY, createOperationalLogContext());
   if (!isHostelSearchResponse(response)) throw new Error("Home listings are not in the expected shape.");
   return response.data;
 }

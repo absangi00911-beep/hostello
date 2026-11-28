@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ search: vi.fn(), fetchResults: vi.fn(), log: vi.fn() }));
+const mocks = vi.hoisted(() => ({ search: vi.fn(), fetchResults: vi.fn(), log: vi.fn(), cities: vi.fn() }));
 vi.mock("next/cache", () => ({ unstable_cache: <T>(fn: T) => fn }));
+vi.mock("@/lib/city-links", () => ({ getCityLinks: mocks.cities }));
 vi.mock("@/lib/hostel-search", () => ({ searchHostelsWithFallback: mocks.search }));
 vi.mock("@/lib/hostel-search-response", () => ({ fetchHostelSearchResults: mocks.fetchResults }));
 vi.mock("@/lib/operational-logger", () => ({
@@ -26,11 +27,24 @@ const listing = (id: string) => ({
 
 beforeEach(() => {
   for (const fn of Object.values(mocks)) fn.mockReset();
+  // No city list by default, so the loader takes its single-query fallback; the per-city path has its own test.
+  mocks.cities.mockResolvedValue([]);
   mocks.search.mockResolvedValue({ hostelIds: ["a", "b"], total: 2, isSearchDegraded: false });
   mocks.fetchResults.mockResolvedValue([listing("a"), listing("b")]);
 });
 
 describe("loadInitialHomeHostels", () => {
+  it("loads the opening listing per city so every city gets a row", async () => {
+    mocks.cities.mockResolvedValue([
+      { slug: "lahore", name: "Lahore", hostelCount: 20 },
+      { slug: "quetta", name: "Quetta", hostelCount: 5 },
+    ]);
+
+    await loadInitialHomeHostels();
+
+    expect(mocks.search.mock.calls.map(([params]) => params.city)).toEqual(["Lahore", "Quetta"]);
+  });
+
   it("runs the search behind the opening tab: newest first, one page of 50", async () => {
     await loadInitialHomeHostels();
 
