@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { AuthNotice } from "@/components/auth/AuthNotice";
 import {
   Field,
   FormSection,
@@ -33,25 +34,79 @@ function RangeRow({
   isRemoving: boolean;
   onRemove: (id: string) => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const removeButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const rangeLabel = formatBlockedRange(range.startDate, range.endDate);
+
+  // Removing a block reopens those dates to students, so it asks first. The "Remove" button is
+  // replaced by the question, so focus moves into it, and back if the owner keeps the block.
+  useEffect(() => {
+    if (confirming) {
+      panelRef.current?.focus();
+    } else if (restoreFocus.current) {
+      restoreFocus.current = false;
+      removeButtonRef.current?.focus();
+    }
+  }, [confirming]);
+
   return (
-    <li className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line bg-surface p-4">
-      <div className="grid gap-1">
-        <span className="text-body font-semibold text-ink">
-          {formatBlockedRange(range.startDate, range.endDate)}
-        </span>
-        {range.reason ? (
-          <span className="text-label text-muted">{range.reason}</span>
-        ) : null}
+    <li className="grid gap-3 rounded-xl border border-line bg-surface p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="grid gap-1">
+          <span className="text-body font-semibold text-ink">{rangeLabel}</span>
+          {range.reason ? (
+            <span className="text-label text-muted">{range.reason}</span>
+          ) : null}
+        </div>
+        {confirming ? null : (
+          <button
+            aria-label={`Remove block ${rangeLabel}`}
+            className={secondaryButtonClassName}
+            disabled={isRemoving}
+            onClick={() => setConfirming(true)}
+            ref={removeButtonRef}
+            type="button"
+          >
+            {isRemoving ? "Removing…" : "Remove"}
+          </button>
+        )}
       </div>
-      <button
-        aria-label={`Remove block ${formatBlockedRange(range.startDate, range.endDate)}`}
-        className={secondaryButtonClassName}
-        disabled={isRemoving}
-        onClick={() => onRemove(range.id)}
-        type="button"
-      >
-        {isRemoving ? "Removing…" : "Remove"}
-      </button>
+      {confirming ? (
+        <div
+          aria-label={`Confirm removing block ${rangeLabel}`}
+          className="grid gap-3 rounded-[12px] bg-surface-muted p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          ref={panelRef}
+          role="group"
+          tabIndex={-1}
+        >
+          <p className="m-0 text-label text-ink">
+            Remove this block? Students will be able to choose move-in dates in this range again.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className={secondaryButtonClassName}
+              disabled={isRemoving}
+              onClick={() => onRemove(range.id)}
+              type="button"
+            >
+              {isRemoving ? "Removing…" : "Yes, remove block"}
+            </button>
+            <button
+              className={secondaryButtonClassName}
+              disabled={isRemoving}
+              onClick={() => {
+                restoreFocus.current = true;
+                setConfirming(false);
+              }}
+              type="button"
+            >
+              Keep block
+            </button>
+          </div>
+        </div>
+      ) : null}
     </li>
   );
 }
@@ -75,6 +130,8 @@ export interface OwnerBlockedDatesContentProps {
   onRemove: (id: string) => void;
   onRetry: () => void;
   onLoadMore: () => void;
+  /** Confirmation of the last block or removal. */
+  notice?: string | null;
 }
 
 export function OwnerBlockedDatesContent({
@@ -96,6 +153,7 @@ export function OwnerBlockedDatesContent({
   onRemove,
   onRetry,
   onLoadMore,
+  notice = null,
 }: OwnerBlockedDatesContentProps) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -114,6 +172,12 @@ export function OwnerBlockedDatesContent({
         Blocked dates
       </h1>
       <p className="mb-6 mt-2 text-body text-muted">{listingName}</p>
+
+      {notice ? (
+        <AuthNotice focusOnMount key={notice} tone="success">
+          {notice}
+        </AuthNotice>
+      ) : null}
 
       <div className="grid gap-5">
         <FormSection
@@ -287,6 +351,7 @@ export function OwnerBlockedDatesPage({
   const [form, setForm] = useState<BlockedRangeInput>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
 
@@ -342,6 +407,7 @@ export function OwnerBlockedDatesPage({
       return;
     }
     setFormError(null);
+    setNotice(null);
     setIsSaving(true);
     try {
       const response = await fetch(
@@ -366,6 +432,7 @@ export function OwnerBlockedDatesPage({
         );
         return;
       }
+      setNotice(`Blocked ${formatBlockedRange(form.startDate, form.endDate)}.`);
       setForm(emptyForm);
       // Reload from page 1 so the new range lands in its sorted position.
       setRetryCount((count) => count + 1);
@@ -380,6 +447,7 @@ export function OwnerBlockedDatesPage({
     async (id: string) => {
       setRemovingId(id);
       setRemoveError(null);
+      setNotice(null);
       try {
         const response = await fetch(
           `/api/owner/hostels/${encodeURIComponent(hostelId)}/blocked-dates`,
@@ -396,6 +464,12 @@ export function OwnerBlockedDatesPage({
           );
           return;
         }
+        const removed = ranges.find((item) => item.id === id);
+        if (removed) {
+          setNotice(
+            `Removed the block on ${formatBlockedRange(removed.startDate, removed.endDate)}.`,
+          );
+        }
         setRanges((current) => current.filter((item) => item.id !== id));
         setTotal((current) => Math.max(0, current - 1));
       } catch {
@@ -404,7 +478,7 @@ export function OwnerBlockedDatesPage({
         setRemovingId(null);
       }
     },
-    [hostelId],
+    [hostelId, ranges],
   );
 
   return (
@@ -418,6 +492,7 @@ export function OwnerBlockedDatesPage({
       listingName={listingName}
       loadError={loadError}
       moreError={moreError}
+      notice={notice}
       onFormChange={setForm}
       onLoadMore={() => void loadMore()}
       onRemove={(id) => void remove(id)}

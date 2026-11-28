@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useId, useRef } from "react";
 import {
   FormSection,
   fieldClassName,
@@ -47,6 +47,35 @@ function ReviewCard({
   const [text, setText] = useState(review.ownerReply ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const countId = useId();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const entryButtonRef = useRef<HTMLButtonElement>(null);
+  const deletePanelRef = useRef<HTMLDivElement>(null);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreEntryFocus = useRef(false);
+  const restoreDeleteFocus = useRef(false);
+
+  // The control that opened the reply editor (or delete question) is replaced by it, so keep
+  // keyboard and screen-reader focus with the person: into the editor when it opens, back to
+  // the button that opened it when it closes.
+  useEffect(() => {
+    if (editing) {
+      textareaRef.current?.focus();
+    } else if (restoreEntryFocus.current) {
+      restoreEntryFocus.current = false;
+      entryButtonRef.current?.focus();
+    }
+  }, [editing, review.ownerReply]);
+
+  useEffect(() => {
+    if (confirmingDelete) {
+      deletePanelRef.current?.focus();
+    } else if (restoreDeleteFocus.current) {
+      restoreDeleteFocus.current = false;
+      deleteButtonRef.current?.focus();
+    }
+  }, [confirmingDelete]);
 
   async function save() {
     const validationError = validateReply(text);
@@ -59,7 +88,10 @@ function ReviewCard({
     const failure = await onSaveReply(review.id, text.trim());
     setBusy(false);
     if (failure) setError(failure);
-    else setEditing(false);
+    else {
+      restoreEntryFocus.current = true;
+      setEditing(false);
+    }
   }
 
   async function remove() {
@@ -69,6 +101,8 @@ function ReviewCard({
     setBusy(false);
     if (failure) setError(failure);
     else {
+      restoreEntryFocus.current = true;
+      setConfirmingDelete(false);
       setText("");
       setEditing(false);
     }
@@ -112,13 +146,18 @@ function ReviewCard({
             Your public reply
           </label>
           <textarea
+            aria-describedby={countId}
             aria-invalid={error ? true : undefined}
             className={`${fieldClassName} min-h-[110px]`}
             id={`reply-${review.id}`}
             maxLength={REPLY_MAX_LENGTH}
             onChange={(event) => setText(event.target.value)}
+            ref={textareaRef}
             value={text}
           />
+          <p className="m-0 text-label text-muted" id={countId}>
+            {text.length}/{REPLY_MAX_LENGTH}. Replies are public.
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
               className={primaryButtonClassName}
@@ -132,6 +171,7 @@ function ReviewCard({
               className={secondaryButtonClassName}
               disabled={busy}
               onClick={() => {
+                restoreEntryFocus.current = true;
                 setEditing(false);
                 setText(review.ownerReply ?? "");
                 setError(null);
@@ -158,19 +198,57 @@ function ReviewCard({
               className={secondaryButtonClassName}
               disabled={busy}
               onClick={() => setEditing(true)}
+              ref={entryButtonRef}
               type="button"
             >
               Edit reply
             </button>
-            <button
-              className={secondaryButtonClassName}
-              disabled={busy}
-              onClick={() => void remove()}
-              type="button"
-            >
-              {busy ? "Removing…" : "Delete reply"}
-            </button>
+            {confirmingDelete ? null : (
+              <button
+                className={secondaryButtonClassName}
+                disabled={busy}
+                onClick={() => setConfirmingDelete(true)}
+                ref={deleteButtonRef}
+                type="button"
+              >
+                {busy ? "Removing…" : "Delete reply"}
+              </button>
+            )}
           </div>
+          {confirmingDelete ? (
+            <div
+              aria-label="Confirm deleting your reply"
+              className="grid gap-3 border-t border-line pt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              ref={deletePanelRef}
+              role="group"
+              tabIndex={-1}
+            >
+              <p className="m-0 text-label text-ink">
+                Delete your public reply? You can write a new one later.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className={secondaryButtonClassName}
+                  disabled={busy}
+                  onClick={() => void remove()}
+                  type="button"
+                >
+                  {busy ? "Removing…" : "Yes, delete reply"}
+                </button>
+                <button
+                  className={secondaryButtonClassName}
+                  disabled={busy}
+                  onClick={() => {
+                    restoreDeleteFocus.current = true;
+                    setConfirmingDelete(false);
+                  }}
+                  type="button"
+                >
+                  Keep reply
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div>
@@ -178,6 +256,7 @@ function ReviewCard({
             aria-label={`Reply to review for ${review.hostelName}`}
             className={secondaryButtonClassName}
             onClick={() => setEditing(true)}
+            ref={entryButtonRef}
             type="button"
           >
             Reply

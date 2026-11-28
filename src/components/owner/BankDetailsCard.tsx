@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { AuthNotice } from "@/components/auth/AuthNotice";
+import { useState, type FormEvent, useEffect, useRef } from "react";
 import {
   Field,
   FormSection,
@@ -38,6 +39,20 @@ export function BankDetailsCard({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<BankDetailFieldErrors>({});
   const [saved, setSaved] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreEditFocus = useRef(false);
+
+  // Editing swaps the "Edit" button for a form, so focus goes to the first field, and back to
+  // the button if the owner cancels.
+  useEffect(() => {
+    if (editing) {
+      formRef.current?.querySelector("input")?.focus();
+    } else if (restoreEditFocus.current) {
+      restoreEditFocus.current = false;
+      editButtonRef.current?.focus();
+    }
+  }, [editing]);
   const [isSaving, setIsSaving] = useState(false);
 
   function startEditing() {
@@ -99,24 +114,14 @@ export function BankDetailsCard({
       title="Bank details"
     >
       {saved ? (
-        <p
-          className="m-0 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
-          role="status"
-        >
+        <AuthNotice focusOnMount tone="success">
           Bank details saved.
-        </p>
+        </AuthNotice>
       ) : null}
 
       {editing ? (
-        <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
-          {error ? (
-            <p
-              className="m-0 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
-              role="alert"
-            >
-              {error}
-            </p>
-          ) : null}
+        <form className="grid gap-4" noValidate onSubmit={handleSubmit} ref={formRef}>
+          {error ? <AuthNotice tone="error">{error}</AuthNotice> : null}
           <Field
             error={fieldErrors.bankAccountTitle}
             id="bank-title"
@@ -190,7 +195,10 @@ export function BankDetailsCard({
             <button
               className={secondaryButtonClassName}
               disabled={isSaving}
-              onClick={() => setEditing(false)}
+              onClick={() => {
+                restoreEditFocus.current = true;
+                setEditing(false);
+              }}
               type="button"
             >
               Cancel
@@ -216,7 +224,12 @@ export function BankDetailsCard({
             </div>
           </dl>
           <div>
-            <button className={secondaryButtonClassName} onClick={startEditing} type="button">
+            <button
+              className={secondaryButtonClassName}
+              onClick={startEditing}
+              ref={editButtonRef}
+              type="button"
+            >
               Change bank details
             </button>
           </div>
@@ -228,7 +241,12 @@ export function BankDetailsCard({
             your payouts.
           </p>
           <div>
-            <button className={primaryButtonClassName} onClick={startEditing} type="button">
+            <button
+              className={primaryButtonClassName}
+              onClick={startEditing}
+              ref={editButtonRef}
+              type="button"
+            >
               Add bank details
             </button>
           </div>

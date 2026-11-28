@@ -203,7 +203,7 @@ export function OwnerDashboardContent({
           {STATUS_FILTERS.map(({ value, label }) => (
             <button
               aria-pressed={filter === value}
-              className="cursor-pointer rounded-full border border-line bg-white px-4 py-[7px] text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
+              className="min-h-11 cursor-pointer rounded-full border border-line bg-white px-4 text-label font-semibold text-ink hover:bg-surface-muted aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-brand-dark focus-visible:outline-2! focus-visible:outline-brand! btn-secondary"
               key={value}
               onClick={() => onFilterChange(value)}
               type="button"

@@ -84,3 +84,54 @@ describe("OwnerBlockedDatesContent", () => {
     expect(render({ ranges: [range], total: 30, hasMore: true })).toContain("Load more");
   });
 });
+
+describe("OwnerBlockedDatesContent feedback", () => {
+  const base = {
+    listingName: "Green View",
+    isLoading: false,
+    loadError: null,
+    ranges: [],
+    total: 0,
+    hasMore: false,
+    isLoadingMore: false,
+    moreError: null,
+    removingId: null,
+    removeError: null,
+    form: { startDate: "", endDate: "", reason: "" },
+    formError: null,
+    isSaving: false,
+    onFormChange: () => {},
+    onSubmit: () => {},
+    onRemove: () => {},
+    onRetry: () => {},
+    onLoadMore: () => {},
+  };
+
+  it("confirms a block or removal in a status message", () => {
+    const markup = renderToStaticMarkup(
+      <OwnerBlockedDatesContent {...base} notice="Blocked 3 Mar 2027 to 10 Mar 2027." />,
+    );
+
+    expect(markup).toMatch(/role="status"[^>]*>Blocked 3 Mar 2027 to 10 Mar 2027\./);
+    expect(markup).toContain('tabindex="-1"');
+  });
+
+  it("shows no message when there is nothing to confirm", () => {
+    const markup = renderToStaticMarkup(<OwnerBlockedDatesContent {...base} />);
+
+    expect(markup).not.toContain('tabindex="-1"');
+  });
+
+  it("does not remove a block on the first tap", () => {
+    const markup = renderToStaticMarkup(
+      <OwnerBlockedDatesContent
+        {...base}
+        ranges={[{ id: "b1", startDate: "2027-03-03", endDate: "2027-03-10", reason: "Repairs" }]}
+        total={1}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Remove block');
+    expect(markup).not.toContain("Yes, remove block");
+  });
+});
