@@ -45,7 +45,7 @@ export function BrowseCategoryNav({
           className={
             variant === "mobile"
               ? "relative flex min-h-[44px] min-w-max cursor-pointer flex-row items-center justify-center gap-[7px] rounded-lg border border-line bg-surface px-3 py-[7px] text-meta font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:border-ink aria-pressed:bg-surface-muted aria-pressed:text-ink [@media(max-width:720px)]:after:hidden"
-              : "relative flex min-w-[70px] cursor-pointer flex-col items-center justify-center gap-[5px] border-0 bg-transparent px-[2px] pt-2 pb-[10px] text-meta font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:text-ink [@media(max-width:960px)]:min-w-[58px] [@media(max-width:420px)]:min-w-16"
+              : "relative flex min-w-[70px] cursor-pointer flex-col items-center justify-center gap-[5px] border-0 bg-transparent px-[2px] pt-2 pb-[10px] text-meta font-[550] whitespace-nowrap text-muted transition-colors duration-[160ms] hover:text-ink aria-pressed:text-ink after:pointer-events-none after:absolute after:inset-x-0 after:bottom-3 after:h-0.5 after:rounded-full after:bg-line after:opacity-0 after:transition-opacity after:duration-[160ms] motion-reduce:after:transition-none hover:after:opacity-100 aria-pressed:after:bg-ink aria-pressed:after:opacity-100 [@media(max-width:960px)]:min-w-[58px] [@media(max-width:420px)]:min-w-16"
           }
           data-category={id}
           key={id}
