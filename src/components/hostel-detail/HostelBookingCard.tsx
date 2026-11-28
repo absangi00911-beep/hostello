@@ -235,6 +235,13 @@ export function HostelBookingCard({
   const [needsSignIn, setNeedsSignIn] = useState(false);
 
   const room = rooms.find((candidate) => candidate.id === roomId);
+  const lowestPrice =
+    rooms.length > 0
+      ? Math.min(...rooms.map((candidate) => candidate.pricePerMonth))
+      : null;
+  const hasPriceRange = rooms.some(
+    (candidate) => candidate.pricePerMonth !== lowestPrice,
+  );
   const selectedAvailability =
     availability?.find((candidate) => candidate.roomId === roomId) ?? null;
   const stayTerm = getWholeMonthTerm(checkIn, checkOut);
@@ -502,6 +509,14 @@ export function HostelBookingCard({
           <>
             <strong className="text-title leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
               PKR {formatPrice(room.pricePerMonth)}
+            </strong>
+            <span> / month</span>
+          </>
+        ) : lowestPrice !== null ? (
+          <>
+            {hasPriceRange && <span>From </span>}
+            <strong className="text-title leading-[1.18] font-bold tracking-[-0.02em] text-ink tabular-nums [font-family:var(--font-inter),_sans-serif]">
+              PKR {formatPrice(lowestPrice)}
             </strong>
             <span> / month</span>
           </>
@@ -793,6 +808,14 @@ export function HostelBookingCard({
                     </strong>
                     <span>/ month</span>
                   </>
+                ) : lowestPrice !== null ? (
+                  <>
+                    {hasPriceRange && <span>From</span>}
+                    <strong className="text-body font-bold text-ink tabular-nums">
+                      PKR {formatPrice(lowestPrice)}
+                    </strong>
+                    <span>/ month</span>
+                  </>
                 ) : (
                   <strong className="text-label font-semibold text-ink">
                     Rates unavailable
@@ -802,7 +825,7 @@ export function HostelBookingCard({
               <p className="m-0 mt-0.5 truncate text-label text-muted">
                 {estimatedTotal !== null
                   ? `Estimated total PKR ${formatPrice(estimatedTotal)}`
-                  : "Choose dates to see your stay total"}
+                  : "Add dates for your total"}
               </p>
             </div>
             <button
