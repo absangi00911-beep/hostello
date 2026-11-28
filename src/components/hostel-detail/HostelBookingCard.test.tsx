@@ -103,6 +103,28 @@ describe("HostelBookingCard", () => {
     expect(markup).toContain("[@media(min-width:901px)]:overflow-y-auto");
   });
 
+  it("explains payment, the 24-hour host window and refunds in plain language", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={null}
+          minStay={1}
+          rooms={[
+            { id: "room-1", name: "Twin room", pricePerMonth: 8500, capacity: 2 },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect(markup).toContain("pay through Safepay to send your request");
+    expect(markup).toContain("The host has 24 hours to confirm.");
+    expect(markup).toContain("you&#x27;re refunded in full.");
+    expect(markup).not.toContain("the server confirms");
+    expect(markup).not.toContain("You won&#x27;t be charged");
+  });
+
   it("shows the lowest room price before a room is chosen", () => {
     const markup = renderToStaticMarkup(
       <HostelDateSelectionProvider>

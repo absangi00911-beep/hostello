@@ -767,7 +767,7 @@ export function HostelBookingCard({
                 : "Review booking"}
           </button>
           <p className="m-0 text-label leading-[1.5] text-muted">
-            Booking and payment statuses are shown only after the server confirms them.
+            You'll pay through Safepay to send your request. The host has 24 hours to confirm. If they decline or don't respond, you're refunded in full.
           </p>
           {!hasCancellationPolicy && (
             <p
