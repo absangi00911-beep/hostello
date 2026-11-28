@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import Link from "next/link";
 import type { SearchAlertCriteria } from "@/lib/availability-alert-criteria";
 import type { AvailabilityAlertFormInitial } from "@/components/student/availability-alert-form-model";
@@ -117,9 +118,9 @@ export function AvailabilityAlertCard({
                 </Link>
               )}
           </div>
-          <span className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-meta font-semibold">
+          <StatusBadge status={alert.status.toLowerCase()} tone={alert.status === "ACTIVE" ? "info" : "neutral"}>
             {statusLabel}
-          </span>
+          </StatusBadge>
         </div>
         <p className="mb-1 mt-3 text-label text-muted">
           {dateLabel(alert.checkIn)} – {dateLabel(alert.checkOut)} · {alert.guests}{" "}

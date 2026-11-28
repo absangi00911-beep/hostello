@@ -108,7 +108,8 @@ describe("TripsPage", () => {
     );
 
     expect(markup).toContain('data-status="cancelled"');
-    expect(markup).toContain("bg-[#f5e6e3] text-[#8c2822]");
+    expect(markup).toMatch(/<span[^>]*data-status="cancelled"[^>]*>Cancelled<\/span>/);
+    expect(markup).toContain("bg-warn-soft text-danger");
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("Could not load additional trips.");
     expect(markup).toContain("border-danger");

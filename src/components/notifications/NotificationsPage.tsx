@@ -167,6 +167,14 @@ function formatWhen(iso: string): string {
 const actionClassName =
   "inline-flex min-h-11 items-center justify-center cursor-pointer rounded-[8px] border border-line bg-white px-3 py-2 text-label font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 btn-secondary";
 
+// "View" is the useful action on a notification, so it leads; deleting is quiet but still a
+// full-size touch target.
+const primaryActionClassName =
+  "inline-flex min-h-11 items-center justify-center rounded-[8px] bg-brand px-4 py-2 text-label font-semibold text-white no-underline hover:bg-brand-dark";
+
+const quietActionClassName =
+  "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border-0 bg-transparent px-3 py-2 text-label font-semibold text-muted underline-offset-2 hover:text-danger hover:underline disabled:cursor-wait disabled:opacity-60";
+
 export function NotificationsPage({ role }: { role: Role }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -487,7 +495,7 @@ export function NotificationsPage({ role }: { role: Role }) {
                   {href ? (
                     <Link
                       aria-label={`View notification: ${item.title}`}
-                      className={`${actionClassName} no-underline`}
+                      className={primaryActionClassName}
                       href={href}
                     >
                       View
@@ -506,7 +514,7 @@ export function NotificationsPage({ role }: { role: Role }) {
                   ) : null}
                   <button
                     aria-label={`Delete notification: ${item.title}`}
-                    className={actionClassName}
+                    className={quietActionClassName}
                     disabled={busyId !== null}
                     onClick={() => remove(item)}
                     type="button"

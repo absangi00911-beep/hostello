@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge, bookingStatusTone } from "@/components/ui/StatusBadge";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -119,13 +120,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "UTC",
 });
 
-const bookingStatusClassNames: Record<BookingStatus, string> = {
-  PENDING: "bg-surface-muted text-ink",
-  CONFIRMED: "bg-brand-soft text-brand-dark",
-  CANCELLED: "bg-[#f5e6e3] text-[#8c2822]",
-  COMPLETED: "bg-brand-soft text-brand-dark",
-};
-
 function TripsLoading() {
   return (
     <section
@@ -145,7 +139,7 @@ function TripsLoading() {
               <div className="h-4 w-1/4 rounded bg-surface-muted" />
               <div className="h-6 w-2/3 rounded bg-surface-muted" />
               <div className="h-4 w-1/2 rounded bg-surface-muted" />
-              <div className="h-7 w-20 rounded-full bg-surface-muted" />
+              <div className="h-6 w-20 rounded-md bg-surface-muted" />
             </div>
           </div>
         ))}
@@ -188,7 +182,7 @@ export function TripsPageContent({
           >
             <p className="m-0 text-body">{error}</p>
             <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
               type="button"
             >
@@ -207,7 +201,7 @@ export function TripsPageContent({
               Your hostel bookings will appear here.
             </p>
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-4 py-2.5 font-semibold text-white"
               href="/"
             >
               Explore hostels
@@ -251,7 +245,7 @@ export function TripsPageContent({
                         src={booking.hostel.coverImage}
                       />
                     ) : (
-                      <span className="flex h-full w-full bg-[linear-gradient(135deg,transparent_40%,rgb(47_101_73/16%)),var(--brand-soft)]" />
+                      <span className="flex h-full w-full bg-brand-soft" />
                     )}
                   </Link>
                   <div className="min-w-0 self-center py-1 md:px-1">
@@ -272,25 +266,27 @@ export function TripsPageContent({
                         {dateFormatter.format(new Date(booking.checkOut))}
                       </time>
                     </p>
-                    <span
-                      className={`inline-flex min-h-[28px] items-center rounded-full px-2.5 text-meta font-semibold ${bookingStatusClassNames[booking.status]}`}
-                      data-status={booking.status.toLowerCase()}
-                    >
-                      {bookingStatuses[booking.status]}
-                    </span>
-                    <Link
-                      className="ml-3 text-label font-semibold text-brand no-underline hover:underline"
-                      href={`/bookings/${encodeURIComponent(booking.id)}`}
-                    >
-                      View booking
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <StatusBadge
+                        status={booking.status.toLowerCase()}
+                        tone={bookingStatusTone[booking.status]}
+                      >
+                        {bookingStatuses[booking.status]}
+                      </StatusBadge>
+                      <Link
+                        className="inline-flex min-h-11 items-center text-label font-semibold text-brand-dark no-underline hover:underline"
+                        href={`/bookings/${encodeURIComponent(booking.id)}`}
+                      >
+                        View booking
+                      </Link>
+                    </div>
                   </div>
                 </article>
               ))}
             </div>
             {hasMore && (
               <button
-                className="mt-7 mx-auto flex min-w-[140px] items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white disabled:cursor-wait disabled:opacity-60"
+                className="mt-7 mx-auto flex min-h-11 min-w-[140px] items-center justify-center rounded-lg border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary disabled:cursor-wait disabled:opacity-60"
                 disabled={isLoadingMore}
                 onClick={onLoadMore}
                 type="button"

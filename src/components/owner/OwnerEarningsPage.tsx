@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BankDetailsCard } from "./BankDetailsCard";
@@ -28,11 +29,11 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   timeZone: "Asia/Karachi",
 });
 
-const statusBadgeClassName: Record<PayoutStatus, string> = {
-  PENDING: "bg-warn-soft text-warn-ink",
-  APPROVED: "bg-warn-soft text-warn-ink",
-  PAID: "bg-brand-soft text-brand-dark",
-  CANCELLED: "bg-surface-muted text-muted",
+const payoutStatusTone: Record<PayoutStatus, StatusTone> = {
+  PENDING: "warning",
+  APPROVED: "warning",
+  PAID: "info",
+  CANCELLED: "neutral",
 };
 
 function PayoutRow({ payout }: { payout: OwnerPayout }) {
@@ -42,11 +43,9 @@ function PayoutRow({ payout }: { payout: OwnerPayout }) {
         <span className="text-body font-semibold text-ink">
           {currencyFormatter.format(payout.amount)}
         </span>
-        <span
-          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[payout.status]}`}
-        >
+        <StatusBadge tone={payoutStatusTone[payout.status]}>
           {PAYOUT_STATUS_LABELS[payout.status]}
-        </span>
+        </StatusBadge>
       </div>
       <p className="m-0 text-label text-muted">
         Batch created {dateFormatter.format(new Date(payout.createdAt))}

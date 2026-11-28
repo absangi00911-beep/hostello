@@ -47,7 +47,7 @@ export function MessagesInbox({
 
       {inbox.hasPendingInquiry && (
         <section
-          className="mx-5 mt-4 rounded-lg border border-[#d8bd84] bg-warn-soft p-4 text-warn-ink md:mx-8"
+          className="mx-5 mt-4 rounded-lg border border-line bg-warn-soft p-4 text-warn-ink md:mx-8"
           aria-live="polite"
         >
           {!inbox.pendingError ? (
@@ -57,14 +57,14 @@ export function MessagesInbox({
               <p role="alert">{inbox.pendingError}</p>
               <div className="mt-3 flex flex-wrap gap-2.5">
                 <button
-                  className="rounded-lg border border-line bg-surface px-3 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
+                  className="min-h-11 rounded-lg border border-line bg-surface px-4 text-label font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.retryPendingInquiry}
                   type="button"
                 >
                   Retry delivery
                 </button>
                 <button
-                  className="rounded-lg border border-line bg-transparent px-3 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
+                  className="min-h-11 rounded-lg border border-line bg-transparent px-4 text-label font-semibold text-ink hover:border-brand btn-secondary"
                   onClick={inbox.cancelPendingInquiry}
                   type="button"
                 >

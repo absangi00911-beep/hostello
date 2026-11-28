@@ -31,7 +31,7 @@ export function AvailabilityAlertsError({
     <div className="rounded-xl border border-danger bg-surface p-5 text-danger" role="alert">
       <p className="m-0 text-label">{message}</p>
       <button
-        className="mt-3 inline-flex min-h-11 items-center rounded-full border border-current px-4 font-semibold"
+        className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-current px-4 font-semibold"
         onClick={onRetry}
         type="button"
       >
