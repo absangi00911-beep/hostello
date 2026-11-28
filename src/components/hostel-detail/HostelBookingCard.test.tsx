@@ -82,6 +82,27 @@ describe("HostelBookingCard", () => {
     expect(markup).toMatch(/<option[^>]*disabled[^>]*value=""[^>]*>Choose a room<\/option>/);
   });
 
+  it("sticks below the 80px sticky header and never outgrows short desktop viewports", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={null}
+          minStay={1}
+          rooms={[
+            { id: "room-1", name: "Twin room", pricePerMonth: 8500, capacity: 2 },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect(markup).toContain("sticky top-[6.5rem]");
+    expect(markup).not.toContain("top-6 ");
+    expect(markup).toContain("[@media(min-width:901px)]:max-h-[calc(100dvh-7.5rem)]");
+    expect(markup).toContain("[@media(min-width:901px)]:overflow-y-auto");
+  });
+
   it("shows the lowest room price before a room is chosen", () => {
     const markup = renderToStaticMarkup(
       <HostelDateSelectionProvider>
