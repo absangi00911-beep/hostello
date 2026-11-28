@@ -173,7 +173,7 @@ export function HostelDetailGallery({
       >
         <div className="hostel-detail-title-row flex items-center justify-between gap-5 [@media(max-width:720px)]:absolute [@media(max-width:720px)]:inset-x-0 [@media(max-width:720px)]:bottom-0 [@media(max-width:720px)]:z-10 [@media(max-width:720px)]:rounded-t-[24px] [@media(max-width:720px)]:bg-white [@media(max-width:720px)]:px-5 [@media(max-width:720px)]:pt-5 [@media(max-width:720px)]:pb-3">
           <h1
-            className="m-0 min-w-0 max-w-full text-title leading-[1.18] font-medium tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-display [@media(max-width:720px)]:leading-[1.2] [@media(max-width:720px)]:font-semibold"
+            className="m-0 min-w-0 max-w-full text-headline leading-[1.25] font-semibold tracking-[-0.02em] [overflow-wrap:anywhere] [text-wrap:balance] [@media(max-width:720px)]:text-center [@media(max-width:720px)]:text-display [@media(max-width:720px)]:leading-[1.2]"
             id="hostel-detail-title"
           >
             {name}

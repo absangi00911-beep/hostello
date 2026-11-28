@@ -14,6 +14,19 @@ const baseProps = {
 };
 
 describe("HostelDetailGallery", () => {
+  it("styles the hostel title as a headline that outranks the 18px section headings", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDetailGallery {...baseProps} photos={[]} />,
+    );
+    const h1 = markup.match(/<h1[^>]*class="([^"]*)"/)?.[1] ?? "";
+    const desktopClasses = h1.split(" ").filter((c) => !c.startsWith("["));
+
+    expect(desktopClasses).toContain("text-headline");
+    expect(desktopClasses).toContain("font-semibold");
+    expect(desktopClasses).not.toContain("text-title");
+    expect(desktopClasses).not.toContain("font-medium");
+  });
+
   it("announces the empty-photo message and omits the gallery dialog", () => {
     const markup = renderToStaticMarkup(
       <HostelDetailGallery {...baseProps} photos={[]} />,
