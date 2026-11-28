@@ -39,7 +39,7 @@ describe("BrowseHeader", () => {
 
     const header = markup.match(/<header\b[^>]*>/)?.[0];
     expect(header).toMatch(
-      /<header class="bg-\[#fcfcfb\].*sticky top-0 z-30[^"]*" data-scrolled="false">/,
+      /<header class="bg-surface.*sticky top-0 z-30[^"]*" data-scrolled="false">/,
     );
     expect(header).not.toContain("border-b");
     expect(markup).toContain('alt="Hostello logo"');

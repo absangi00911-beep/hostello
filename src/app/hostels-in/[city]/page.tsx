@@ -21,7 +21,7 @@ import { getSiteUrl } from "@/lib/site-metadata";
 const getCity = cache(getCityPage);
 
 const linkClassName =
-  "inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 text-body font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2";
+  "inline-flex min-h-11 items-center rounded-lg border border-line bg-white px-4 text-body font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2";
 
 function genderLabel(gender: string): string {
   if (gender === "MALE") return "Men\u2019s hostel";
@@ -68,7 +68,7 @@ export default async function CityHostelsPage({
     <>
       {jsonLd ? <JsonLd data={jsonLd} /> : null}
       <SiteHeader user={user} />
-      <main id="main-content" className="mx-auto w-[min(960px,calc(100%-2.5rem))] py-8 text-ink">
+      <main id="main-content" className="mx-auto w-[min(960px,calc(100%-2.5rem))] pt-8 pb-[calc(96px+env(safe-area-inset-bottom))] text-ink min-[721px]:pb-12">
         <nav aria-label="Breadcrumb" className="mb-4 text-label text-muted">
           <Link className="hover:underline" href="/">
             Home
@@ -86,6 +86,12 @@ export default async function CityHostelsPage({
           ))}
         </div>
 
+        <p className="mt-5 mb-0">
+          <Link className={linkClassName} href={`/search?city=${encodeURIComponent(city.name)}`}>
+            Filter {city.name} hostels by price, gender and facilities
+          </Link>
+        </p>
+
         <ul className="m-0 mt-6 grid list-none gap-3 p-0">
           {city.hostels.map((hostel) => {
             const price = getStartingPrice(hostel);
@@ -93,15 +99,17 @@ export default async function CityHostelsPage({
             return (
               <li key={hostel.id}>
                 <Link
-                  className="block rounded-2xl border border-line bg-white p-4 text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+                  className="block rounded-xl border border-line bg-white p-4 text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                   href={`/hostels/${encodeURIComponent(hostel.slug)}`}
                 >
                   <span className="block text-title font-semibold">{hostel.name}</span>
                   <span className="block text-label text-muted">
                     {[hostel.area?.trim(), genderLabel(hostel.gender)].filter(Boolean).join(" \u00b7 ")}
                   </span>
-                  <span className="mt-1 block text-label">
-                    {price > 0 ? `From ${formatPkr(price)}/month` : "Price on request"}
+                  <span className="mt-2 block text-label text-muted">
+                    <span className="font-semibold text-ink">
+                      {price > 0 ? `From ${formatPkr(price)}/month` : "Price on request"}
+                    </span>
                     {hasRating ? ` \u00b7 ${hostel.rating.toFixed(1)}/5 (${hostel.reviewCount})` : ""}
                     {hostel.verified ? " \u00b7 Verified" : ""}
                   </span>
@@ -110,12 +118,6 @@ export default async function CityHostelsPage({
             );
           })}
         </ul>
-
-        <p className="mt-6">
-          <Link className={linkClassName} href={`/search?city=${encodeURIComponent(city.name)}`}>
-            Filter {city.name} hostels by price, gender and facilities
-          </Link>
-        </p>
 
         {city.relatedCities.length > 0 ? (
           <nav aria-label="Other cities" className="mt-8">

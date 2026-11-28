@@ -34,7 +34,7 @@ export function SiteHeader({
     return (
       <ScrollAwareSurface
         as="header"
-        className={`bg-[#fcfcfb] ${hidden} sticky top-0 z-30`}
+        className={`bg-surface ${hidden} sticky top-0 z-30`}
         scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
       >
         <div className="mx-auto grid min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:960px)]:grid-cols-[minmax(120px,1fr)_auto_minmax(140px,1fr)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:720px)]:pt-2 [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))] [@media(max-width:420px)]:min-h-[68px]">
@@ -51,7 +51,7 @@ export function SiteHeader({
   return (
     <ScrollAwareSurface
       as="header"
-      className={`sticky top-0 z-30 bg-[#fcfcfb] ${hidden}`}
+      className={`sticky top-0 z-30 bg-surface ${hidden}`}
       scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
     >
       <div className="mx-auto flex min-h-20 w-[min(1920px,calc(100%-var(--page-gutter-total)))] items-center justify-between [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)]">

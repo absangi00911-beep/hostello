@@ -154,7 +154,7 @@ export function HostelSearchBar({
 
   return (
     <section
-      className="w-full border-b border-line bg-[#fcfcfb] py-[14px] [@media(max-width:720px)]:py-3 [@media(max-width:720px)]:pb-[10px]"
+      className="w-full border-b border-line bg-surface py-[14px] [@media(max-width:720px)]:py-3 [@media(max-width:720px)]:pb-[10px]"
       aria-label="Search stays"
     >
       <div className="mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))] [@media(max-width:960px)]:w-[min(calc(100%-var(--page-gutter-tablet)),1344px)] [@media(max-width:720px)]:w-[min(calc(100%-var(--page-gutter-mobile)),600px)]! [@media(max-width:420px)]:w-[calc(100%-var(--page-gutter-mobile))]">

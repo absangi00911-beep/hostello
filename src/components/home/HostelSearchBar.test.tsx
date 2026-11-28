@@ -24,7 +24,7 @@ describe("HostelSearchBar", () => {
     );
 
     expect(markup).toMatch(
-      /<section class="[^"]*w-full[^"]*bg-\[#fcfcfb\][^"]*" aria-label="Search stays">/,
+      /<section class="[^"]*w-full[^"]*bg-surface[^"]*" aria-label="Search stays">/,
     );
     expect(markup).toContain(
       "mx-auto w-[min(1920px,calc(100%-var(--page-gutter-total)))]",
