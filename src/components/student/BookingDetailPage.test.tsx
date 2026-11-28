@@ -6,6 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 import {
   BookingDetailPage,
   getPaymentNotice,
+  getPaymentNoticeForBooking,
   isReturnFromCheckout,
   parseBookingDetail,
 } from "./BookingDetailPage";
@@ -89,5 +90,44 @@ describe("BookingDetailPage", () => {
     );
 
     expect(markup).toContain("Loading booking...");
+  });
+});
+
+describe("getPaymentNoticeForBooking", () => {
+  it("never claims payment from the URL alone", () => {
+    for (const status of ["PENDING", "FAILED", null] as const) {
+      const notice = getPaymentNoticeForBooking("return", status);
+      expect(notice?.message ?? "").not.toMatch(/received|successful|\bpaid\b/i);
+      expect(notice?.message ?? "").toMatch(/confirming|waiting|not yet paid|did not go through|cancelled|^$/i);
+    }
+  });
+
+  it("confirms payment only when the server says paid and the customer just returned", () => {
+    expect(getPaymentNoticeForBooking("return", "PAID")).toEqual({
+      message: "Payment received. Thank you!",
+      isProblem: false,
+    });
+    expect(getPaymentNoticeForBooking("pending", "PAID")?.message).toBe(
+      "Payment received. Thank you!",
+    );
+  });
+
+  it("does not contradict a paid booking with a stale cancelled or failed code", () => {
+    for (const code of ["cancelled", "failed", "error", "unavailable", null]) {
+      expect(getPaymentNoticeForBooking(code, "PAID")).toBeNull();
+    }
+  });
+
+  it("flags failures as problems and progress messages as information", () => {
+    expect(getPaymentNoticeForBooking("failed", "FAILED")?.isProblem).toBe(true);
+    expect(getPaymentNoticeForBooking("error", "PENDING")?.isProblem).toBe(true);
+    expect(getPaymentNoticeForBooking("cancelled", "PENDING")?.isProblem).toBe(false);
+    expect(getPaymentNoticeForBooking("return", "PENDING")?.isProblem).toBe(false);
+  });
+
+  it("ignores unknown or missing codes", () => {
+    expect(getPaymentNoticeForBooking(null, "PENDING")).toBeNull();
+    expect(getPaymentNoticeForBooking("bogus", "PENDING")).toBeNull();
+    expect(getPaymentNoticeForBooking("constructor", "PENDING")).toBeNull();
   });
 });

@@ -1,8 +1,14 @@
 "use client";
 
+import { AuthNotice } from "@/components/auth/AuthNotice";
+import {
+  StatusBadge,
+  bookingStatusTone,
+  type StatusTone,
+} from "@/components/ui/StatusBadge";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { formatPrice } from "@hostello/shared";
 import { BookingReviewForm } from "./BookingReviewForm";
 import {
@@ -148,15 +154,48 @@ export function getPaymentNotice(code: string | null): string | null {
 const CONFIRMATION_POLL_MS = 3_000;
 const CONFIRMATION_MAX_CHECKS = 20;
 
+const problemPaymentCodes = new Set(["failed", "error", "unavailable", "unknown-provider"]);
+
+/**
+ * Picks the payment banner. The booking's server-side payment status decides what we claim:
+ * a URL code alone never says "paid", and a leftover code (for example "cancelled" after an
+ * earlier payment already went through) never contradicts a booking the server reports as paid.
+ */
+export function getPaymentNoticeForBooking(
+  code: string | null,
+  paymentStatus: PaymentStatus | null,
+): { message: string; isProblem: boolean } | null {
+  if (paymentStatus === "PAID") {
+    return isReturnFromCheckout(code)
+      ? { message: "Payment received. Thank you!", isProblem: false }
+      : null;
+  }
+  const message = getPaymentNotice(code);
+  if (!message) return null;
+  return { message, isProblem: code !== null && problemPaymentCodes.has(code) };
+}
+
 export function isReturnFromCheckout(code: string | null): boolean {
   return code === "return" || code === "pending";
 }
 
+// Hostels are in Pakistan, so show every date in that zone instead of the viewer's. This is
+// right for calendar dates stored at UTC or Pakistan midnight and for timestamps like the
+// owner's response deadline.
 const dateFormatter = new Intl.DateTimeFormat("en-PK", {
   day: "numeric",
   month: "short",
   year: "numeric",
+  timeZone: "Asia/Karachi",
 });
+
+const paymentStatusTone: Record<PaymentStatus, StatusTone> = {
+  PENDING: "warning",
+  PAID: "info",
+  FAILED: "danger",
+  PARTIALLY_REFUNDED: "neutral",
+  REFUNDED: "neutral",
+};
 
 const primaryButtonClassName =
   "inline-flex min-h-[46px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
@@ -179,6 +218,20 @@ export function BookingDetailPage({
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [pollTimedOut, setPollTimedOut] = useState(false);
   const [pollRound, setPollRound] = useState(0);
+  const confirmPanelRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreCancelFocus = useRef(false);
+
+  // The "Cancel booking" button is replaced by the confirmation panel, so move focus into the
+  // panel, and back to the button if the person keeps the booking.
+  useEffect(() => {
+    if (confirmingCancel) {
+      confirmPanelRef.current?.focus();
+    } else if (restoreCancelFocus.current) {
+      restoreCancelFocus.current = false;
+      cancelButtonRef.current?.focus();
+    }
+  }, [confirmingCancel]);
 
   const loadBooking = useCallback(
     async (signal?: AbortSignal) => {
@@ -309,15 +362,19 @@ export function BookingDetailPage({
     }
   }
 
-  const paymentNotice =
-    isReturnFromCheckout(paymentCode) && booking?.paymentStatus === "PAID"
-      ? "Payment received. Thank you!"
-      : getPaymentNotice(paymentCode);
+  const paymentNoticeResult = getPaymentNoticeForBooking(
+    paymentCode,
+    booking?.paymentStatus ?? null,
+  );
+  const paymentNotice = paymentNoticeResult?.message ?? null;
+  const paymentNoticeIsProblem = paymentNoticeResult?.isProblem ?? false;
 
   if (isLoading) {
     return (
       <main id="main-content" className="mx-auto w-full max-w-[860px] px-4 pb-28 pt-8">
-        <p className="text-muted">Loading booking...</p>
+        <p className="text-muted" role="status">
+          Loading booking...
+        </p>
       </main>
     );
   }
@@ -357,30 +414,19 @@ export function BookingDetailPage({
       </Link>
       <h1 className="mb-1 mt-3 text-display font-bold text-ink">Your booking</h1>
 
-      {paymentNotice ? (
-        <p
-          className="my-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
-          role="status"
-        >
-          {paymentNotice}
-        </p>
-      ) : null}
-      {actionMessage ? (
-        <p
-          className="my-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
-          role="status"
-        >
-          {actionMessage}
-        </p>
-      ) : null}
-      {actionError ? (
-        <p
-          className="my-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
-          role="alert"
-        >
-          {actionError}
-        </p>
-      ) : null}
+      <div className="mt-4">
+        {paymentNotice ? (
+          <AuthNotice tone={paymentNoticeIsProblem ? "error" : "success"}>
+            {paymentNotice}
+          </AuthNotice>
+        ) : null}
+        {actionMessage ? (
+          <AuthNotice focusOnMount tone="success">
+            {actionMessage}
+          </AuthNotice>
+        ) : null}
+        {actionError ? <AuthNotice tone="error">{actionError}</AuthNotice> : null}
+      </div>
 
       <section className="mt-4 grid gap-5 overflow-hidden rounded-xl border border-line bg-surface p-3 md:grid-cols-[minmax(180px,260px)_minmax(0,1fr)]">
         <div className="relative min-h-[170px] overflow-hidden rounded-[10px] bg-brand-soft">
@@ -433,14 +479,24 @@ export function BookingDetailPage({
           </div>
           <div>
             <dt className="text-label text-muted">Booking status</dt>
-            <dd className="m-0 font-semibold text-ink" data-status={booking.status.toLowerCase()}>
-              {bookingStatuses[booking.status]}
+            <dd className="m-0 mt-1">
+              <StatusBadge
+                status={booking.status.toLowerCase()}
+                tone={bookingStatusTone[booking.status]}
+              >
+                {bookingStatuses[booking.status]}
+              </StatusBadge>
             </dd>
           </div>
           <div>
             <dt className="text-label text-muted">Payment</dt>
-            <dd className="m-0 font-semibold text-ink">
-              {paymentStatuses[booking.paymentStatus]}
+            <dd className="m-0 mt-1">
+              <StatusBadge
+                status={booking.paymentStatus.toLowerCase()}
+                tone={paymentStatusTone[booking.paymentStatus]}
+              >
+                {paymentStatuses[booking.paymentStatus]}
+              </StatusBadge>
             </dd>
           </div>
           <div className="sm:col-span-2">
@@ -529,6 +585,7 @@ export function BookingDetailPage({
               className={secondaryButtonClassName}
               disabled={isBusy}
               onClick={() => setConfirmingCancel(true)}
+              ref={cancelButtonRef}
               type="button"
             >
               Cancel booking
@@ -539,9 +596,11 @@ export function BookingDetailPage({
 
       {confirmingCancel ? (
         <div
-          className="mt-4 rounded-xl border border-line bg-surface-muted p-4"
-          role="alertdialog"
           aria-label="Confirm cancellation"
+          className="mt-4 rounded-xl border border-line bg-surface-muted p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          ref={confirmPanelRef}
+          role="alertdialog"
+          tabIndex={-1}
         >
           <p className="m-0 font-semibold text-ink">Cancel this booking?</p>
           <p className="mb-3 mt-1 text-label text-muted">
@@ -559,7 +618,10 @@ export function BookingDetailPage({
             <button
               className={secondaryButtonClassName}
               disabled={isBusy}
-              onClick={() => setConfirmingCancel(false)}
+              onClick={() => {
+                restoreCancelFocus.current = true;
+                setConfirmingCancel(false);
+              }}
               type="button"
             >
               Keep booking
