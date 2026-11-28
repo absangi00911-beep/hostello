@@ -269,7 +269,7 @@ export function HostelRow({
                 </div>
                 <div className="hostel-card-details px-[2px] pt-2 pb-1 [@media(max-width:720px)]:px-0">
                   <h3
-                    className="m-0 mb-[3px] overflow-hidden text-label font-semibold leading-[1.25] tracking-normal text-ellipsis whitespace-nowrap [@media(max-width:720px)]:line-clamp-2 [@media(max-width:720px)]:min-h-[2.5em] [@media(max-width:720px)]:whitespace-normal [@media(max-width:720px)]:text-label"
+                    className="m-0 mb-[3px] min-h-[2.5em] overflow-hidden text-label font-semibold leading-[1.25] tracking-normal line-clamp-2"
                     id={`hostel-title-${hostel.id}`}
                     title={hostel.name}
                   >
@@ -281,8 +281,8 @@ export function HostelRow({
                       {" / month"}
                     </span>
                   </p>
-                  <div className="hostel-card-meta flex items-center justify-between gap-[7px] text-meta text-muted [@media(max-width:720px)]:text-meta">
-                    <span className="hostel-card-area min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap [@media(max-width:720px)]:line-clamp-2 [@media(max-width:720px)]:items-start [@media(max-width:720px)]:whitespace-normal">
+                  <div className="hostel-card-meta flex items-start justify-between gap-[7px] text-meta text-muted">
+                    <span className="hostel-card-area min-w-0 flex-1 overflow-hidden line-clamp-2">
                       {hostel.area || hostel.city}
                     </span>
                     <span
