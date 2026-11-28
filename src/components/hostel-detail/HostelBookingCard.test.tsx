@@ -82,6 +82,49 @@ describe("HostelBookingCard", () => {
     expect(markup).toMatch(/<option[^>]*disabled[^>]*value=""[^>]*>Choose a room<\/option>/);
   });
 
+  it("shows the lowest room price before a room is chosen", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={null}
+          minStay={1}
+          rooms={[
+            { id: "room-1", name: "Premium triple", pricePerMonth: 9500, capacity: 3 },
+            { id: "room-2", name: "Standard double", pricePerMonth: 8500, capacity: 2 },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect(markup).toContain("From </span>");
+    expect(markup).toContain("PKR 8,500");
+    expect(markup).not.toContain("Monthly rate");
+    expect(markup).not.toContain("Rates unavailable");
+    expect(markup).toContain("Add dates for your total");
+  });
+
+  it("omits the From label when every room costs the same", () => {
+    const markup = renderToStaticMarkup(
+      <HostelDateSelectionProvider>
+        <HostelBookingCard
+          hasCancellationPolicy
+          hostelId="hostel-1"
+          maxStay={null}
+          minStay={1}
+          rooms={[
+            { id: "room-1", name: "Twin room", pricePerMonth: 8500, capacity: 2 },
+            { id: "room-2", name: "Twin room B", pricePerMonth: 8500, capacity: 2 },
+          ]}
+        />
+      </HostelDateSelectionProvider>,
+    );
+
+    expect(markup).toContain("PKR 8,500");
+    expect(markup).not.toContain("From </span>");
+  });
+
   it("requests exact availability only for a valid whole-month term", () => {
     expect(
       buildExactAvailabilityUrl("green view", "2099-03-10", "2099-04-10", 2),
