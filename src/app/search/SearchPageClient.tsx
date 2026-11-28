@@ -48,25 +48,14 @@ export function getPaginationPages(currentPage: number, pageCount: number): numb
   return Array.from({ length: 5 }, (_, index) => start + index);
 }
 
-const mapPinPositions = [
-  { top: "23%", left: "24%" },
-  { top: "39%", left: "69%" },
-  { top: "57%", left: "45%" },
-  { top: "72%", left: "79%" },
-];
-
-function MapPreview({
-  city,
-  hostels,
-}: {
-  city: string;
-  hostels: HostelSearchResult[];
-}) {
-  const mapHostels = hostels.slice(0, mapPinPositions.length);
-
+/**
+ * Decorative placeholder only: there is no map library or geocoded results yet, so it
+ * must not imply real locations (no street names, no per-hostel pins).
+ */
+function MapPreview({ city }: { city: string }) {
   return (
     <aside
-      aria-label="Map preview"
+      aria-label="Map (coming soon)"
       className="search-map-preview sticky top-[164px] min-h-[min(720px,calc(100svh-190px))] isolate overflow-hidden rounded-xl border border-line bg-surface-muted [@media(max-width:780px)]:hidden"
       role="region"
     >
@@ -86,30 +75,12 @@ function MapPreview({
             d="m-20 290 160 55 95-115 150 55 125-95 165 40M-40 610l185-65 125 90 125-55 145 65 135-70M275-20l-25 185 70 145-60 210 80 165-15 175"
           />
         </svg>
-        <span className="search-map-area absolute top-[28%] left-[16%] text-meta tracking-[0.02em] text-muted">
-          Gulberg
-        </span>
-        <span className="search-map-area absolute top-[63%] left-[54%] text-meta tracking-[0.02em] text-muted">
-          Model Town
-        </span>
-        <span className="search-map-area absolute top-[78%] left-[17%] text-meta tracking-[0.02em] text-muted">
-          Garden Town
-        </span>
       </div>
       <span className="search-map-label absolute top-4 left-4 z-[2] rounded-full border border-[rgb(29_42_34_/_8%)] bg-white/[0.92] px-3 py-2 text-meta font-semibold text-ink shadow-[0_2px_8px_rgb(29_42_34_/_10%)]">
-        {city || "Pakistan"} · Map preview
+        {city || "Pakistan"} · Map view coming soon
       </span>
-      {mapHostels.map((hostel, index) => (
-        <span
-          className="search-map-price absolute z-[2] rounded-full border border-[rgb(29_42_34_/_12%)] bg-white px-[10px] py-[7px] text-meta font-bold text-ink shadow-[0_2px_7px_rgb(29_42_34_/_18%)] whitespace-nowrap"
-          key={hostel.id}
-          style={mapPinPositions[index]}
-        >
-          PKR {(hostel.pricePerMonth / 1000).toFixed(0)}k
-        </span>
-      ))}
       <div className="search-map-attribution absolute right-0 bottom-0 left-0 bg-white/[0.82] px-[11px] py-[7px] text-right text-meta text-muted">
-        Illustrative map preview
+        Interactive map not available yet
       </div>
     </aside>
   );
@@ -1072,7 +1043,7 @@ export default function SearchPageClient({
             )}
           </section>
 
-          <MapPreview city={appliedCity} hostels={hostels} />
+          <MapPreview city={appliedCity} />
         </div>
       </main>
 
