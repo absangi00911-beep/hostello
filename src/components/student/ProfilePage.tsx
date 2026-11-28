@@ -388,7 +388,7 @@ function ProfileDetails({ profile }: { profile: StudentProfile }) {
               </div>
             </div>
             <Link
-              className="inline-flex min-h-11 flex-none items-center justify-center rounded-full border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary"
+              className="inline-flex min-h-11 flex-none items-center justify-center rounded-lg border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary"
               href="/profile/verification"
             >
               {verification.action}
@@ -473,7 +473,7 @@ function ErrorPanel({
     >
       <p className="m-0 text-body">{message}</p>
       <button
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
         onClick={onRetry}
         type="button"
       >

@@ -9,6 +9,7 @@ import {
   authInputClassName,
   authLinkClassName,
 } from "./AuthPageShell";
+import { PasswordField } from "./PasswordField";
 
 export type SignupRole = "STUDENT" | "OWNER";
 
@@ -103,7 +104,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
   if (createdEmail) {
     return (
       <div className="grid gap-4">
-        <AuthNotice tone="success">
+        <AuthNotice focusOnMount tone="success">
           Check your inbox. We sent an email to {createdEmail}. Follow the link
           in it to verify your email, then log in.
         </AuthNotice>
@@ -130,7 +131,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
               ] as const
             ).map(([value, label]) => (
               <label
-                className="flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-line bg-white text-body font-semibold text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-dark"
+                className="flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-line bg-white text-body font-semibold text-ink has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-dark has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
                 key={value}
               >
                 <input
@@ -164,8 +165,11 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
         <label className="grid gap-[6px] text-label font-semibold text-ink">
           <span>Email</span>
           <input
+            autoCapitalize="none"
             autoComplete="email"
             className={authInputClassName}
+            inputMode="email"
+            spellCheck={false}
             name="email"
             onChange={(event) => setEmail(event.currentTarget.value)}
             required
@@ -190,34 +194,26 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
           />
         </label>
 
-        <label className="grid gap-[6px] text-label font-semibold text-ink">
-          <span>Password</span>
-          <input
-            autoComplete="new-password"
-            className={authInputClassName}
-            name="password"
-            onChange={(event) => setPassword(event.currentTarget.value)}
-            required
-            type="password"
-            value={password}
-          />
-          <span className="text-label font-normal text-muted">
-            At least 8 characters, with one uppercase letter and one number. Avoid common passwords.
-          </span>
-        </label>
+        <PasswordField
+          autoComplete="new-password"
+          hint="At least 8 characters, with one uppercase letter and one number. Avoid common passwords."
+          inputClassName={authInputClassName}
+          label="Password"
+          name="password"
+          onChange={(event) => setPassword(event.currentTarget.value)}
+          required
+          value={password}
+        />
 
-        <label className="grid gap-[6px] text-label font-semibold text-ink">
-          <span>Confirm password</span>
-          <input
-            autoComplete="new-password"
-            className={authInputClassName}
-            name="confirmPassword"
-            onChange={(event) => setConfirmPassword(event.currentTarget.value)}
-            required
-            type="password"
-            value={confirmPassword}
-          />
-        </label>
+        <PasswordField
+          autoComplete="new-password"
+          inputClassName={authInputClassName}
+          label="Confirm password"
+          name="confirmPassword"
+          onChange={(event) => setConfirmPassword(event.currentTarget.value)}
+          required
+          value={confirmPassword}
+        />
 
         <button
           className={authButtonClassName}

@@ -7,6 +7,8 @@ import { type FormEvent, useRef, useState } from "react";
 import { X } from "@/components/icons/HostelloIcons";
 import Image from "next/image";
 import Link from "next/link";
+import { AuthNotice } from "./AuthNotice";
+import { PasswordField } from "./PasswordField";
 
 function getResponseMessage(value: unknown): string | null {
   if (
@@ -388,30 +390,16 @@ export default function LoginDialog({
           </Dialog.Description>
 
           {verified && (
-            <p
-              className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label leading-[1.45] text-brand-dark"
-              role="status"
-            >
+            <AuthNotice tone="success">
               Your email has been verified. Log in to continue.
-            </p>
+            </AuthNotice>
           )}
           {errorMessage && (
-            <p
-              id="login-dialog-error"
-              className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label leading-[1.45] text-danger"
-              role="alert"
-            >
+            <AuthNotice id="login-dialog-error" tone="error">
               {errorMessage}
-            </p>
+            </AuthNotice>
           )}
-          {statusMessage && (
-            <p
-              className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label leading-[1.45] text-brand-dark"
-              role="status"
-            >
-              {statusMessage}
-            </p>
-          )}
+          {statusMessage && <AuthNotice tone="success">{statusMessage}</AuthNotice>}
 
           {step === "email" && loginMethod === "otp" ? (
             <form className="grid gap-[14px]" noValidate onSubmit={requestOtp}>
@@ -422,7 +410,10 @@ export default function LoginDialog({
                     invalidField === "email" ? "login-dialog-error" : undefined
                   }
                   aria-invalid={invalidField === "email" || undefined}
+                  autoCapitalize="none"
                   autoComplete="email"
+                  inputMode="email"
+                  spellCheck={false}
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
@@ -466,7 +457,10 @@ export default function LoginDialog({
                     invalidField === "email" ? "login-dialog-error" : undefined
                   }
                   aria-invalid={invalidField === "email" || undefined}
+                  autoCapitalize="none"
                   autoComplete="email"
+                  inputMode="email"
+                  spellCheck={false}
                   autoFocus
                   className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
                   name="email"
@@ -480,28 +474,23 @@ export default function LoginDialog({
                   value={email}
                 />
               </label>
-              <label className="grid gap-[6px] text-label font-semibold text-ink">
-                <span>Password</span>
-                <input
-                  aria-describedby={
-                    invalidField === "password"
-                      ? "login-dialog-error"
-                      : undefined
-                  }
-                  aria-invalid={invalidField === "password" || undefined}
-                  autoComplete="current-password"
-                  className="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
-                  name="password"
-                  onChange={(event) => {
-                    setPassword(event.currentTarget.value);
-                    clearFieldError("password");
-                  }}
-                  required
-                  ref={passwordInputRef}
-                  type="password"
-                  value={password}
-                />
-              </label>
+              <PasswordField
+                autoComplete="current-password"
+                describedBy={
+                  invalidField === "password" ? "login-dialog-error" : undefined
+                }
+                inputClassName="min-h-[50px] w-full rounded-[8px] border border-muted bg-white px-[13px] text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!"
+                inputRef={passwordInputRef}
+                invalid={invalidField === "password"}
+                label="Password"
+                name="password"
+                onChange={(event) => {
+                  setPassword(event.currentTarget.value);
+                  clearFieldError("password");
+                }}
+                required
+                value={password}
+              />
               <Link
                 className="inline-flex min-h-11 items-center justify-self-end rounded-[8px] px-2 text-label font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
                 href="/forgot-password"
