@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import { compare } from "bcryptjs";
+import { CredentialsSignin } from "@auth/core/errors";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { getIp, rateLimit } from "@/lib/rate-limit";
@@ -24,7 +25,15 @@ export const credentialLoginSchema = z.object({
 
 const DUMMY_PASSWORD_HASH = "$2b$12$1zuzVPtuwVgN9sQCw07Tv.yJCX4zFh4TL33DWTI0Ux7ZktYLulnQ6";
 
-export class CredentialLoginRateLimitError extends Error {
+/**
+ * Extends CredentialsSignin so Auth.js forwards `code` to the client
+ * (signIn(..., { redirect: false }) resolves with `code: "rate_limited"`).
+ * A plain Error is collapsed into a generic failure, which made throttled users
+ * see "Email or password is incorrect".
+ */
+export class CredentialLoginRateLimitError extends CredentialsSignin {
+  code = "rate_limited";
+
   constructor() {
     super("Too many login attempts. Please wait a few minutes and try again.");
     this.name = "CredentialLoginRateLimitError";

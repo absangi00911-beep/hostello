@@ -22,6 +22,7 @@ const PAGE_SIZE = 50;
 const currencyFormatter = new Intl.NumberFormat("en-PK", {
   style: "currency",
   currency: "PKR",
+  currencyDisplay: "code",
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });

@@ -31,6 +31,7 @@ function formatPrice(n: number) {
   return new Intl.NumberFormat("en-PK", {
     style: "currency",
     currency: "PKR",
+    currencyDisplay: "code",
     maximumFractionDigits: 0,
   }).format(n);
 }

@@ -24,6 +24,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 const currencyFormatter = new Intl.NumberFormat("en-PK", {
   style: "currency",
   currency: "PKR",
+  currencyDisplay: "code",
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
