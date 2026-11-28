@@ -10,7 +10,7 @@ vi.mock("@/lib/operational-logger", () => ({
   logOperationalEvent: vi.fn(),
 }));
 
-import { authorizeCredentials } from "./credentials-authorize";
+import { authorizeCredentials, CredentialLoginRateLimitError } from "./credentials-authorize";
 import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
 import { getIp, rateLimit } from "@/lib/rate-limit";
@@ -167,6 +167,20 @@ describe("authorizeCredentials", () => {
       expect.objectContaining({ reason: "invalid_credentials" }),
       { request_id: "req_test" },
     );
+  });
+
+  it("exposes a rate_limited code so the client can tell throttling from bad credentials", async () => {
+    vi.mocked(rateLimit).mockResolvedValueOnce({ ok: false, remaining: 0, resetAt: 1 });
+
+    const error = await authorizeCredentials(
+      { email: user.email, password: "password123" },
+      request,
+    ).catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(CredentialLoginRateLimitError);
+    expect((error as CredentialLoginRateLimitError).code).toBe("rate_limited");
+    // Must be a CredentialsSignin so Auth.js forwards `code` instead of a generic failure.
+    expect((error as { type?: string }).type).toBe("CredentialsSignin");
   });
 
   it("does not query the account when its attempt limit is exhausted", async () => {

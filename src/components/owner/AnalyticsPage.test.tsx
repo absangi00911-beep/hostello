@@ -52,9 +52,11 @@ describe("AnalyticsPageContent", () => {
     const revenue = new Intl.NumberFormat("en-PK", {
       style: "currency",
       currency: "PKR",
+      currencyDisplay: "code",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(120_000);
+    expect(revenue).toMatch(/^PKR\s/);
     expect(markup).toContain(`>${revenue}</td>`);
     expect(markup).toContain('aria-labelledby="monthly-performance-title"');
   });

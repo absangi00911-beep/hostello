@@ -161,6 +161,13 @@ export default function LoginDialog({
         redirectTo: callbackUrl,
       });
 
+      if (result?.code === "rate_limited") {
+        setErrorMessage(
+          "Too many login attempts. Please wait a few minutes and try again.",
+        );
+        return;
+      }
+
       if (result?.error || !result?.ok) {
         setErrorMessage("Email or password is incorrect.");
         return;

@@ -170,7 +170,7 @@ export function validateListingForm(
     const price = parseWholeNumber(room.pricePerMonth);
     if (price === null || price < L.priceMin || price > L.priceMax) {
       errors[roomFieldKey(index, "pricePerMonth")] =
-        `Price must be a whole number from Rs. ${L.priceMin.toLocaleString("en-PK")} to Rs. ${L.priceMax.toLocaleString("en-PK")}.`;
+        `Price must be a whole number from PKR ${L.priceMin.toLocaleString("en-PK")} to PKR ${L.priceMax.toLocaleString("en-PK")}.`;
     }
     const capacity = parseWholeNumber(room.capacity);
     if (capacity === null || capacity < 1 || capacity > L.roomCapacityMax) {

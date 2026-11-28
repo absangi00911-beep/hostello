@@ -75,7 +75,7 @@ export function ListingRoomsEditor({
                   error={err("pricePerMonth")}
                   hint="Per bed, per month"
                   id={id("price")}
-                  label="Price per month (Rs.)"
+                  label="Price per month (PKR)"
                 >
                   <input
                     {...controlProps(id("price"), err("pricePerMonth"), "Per bed, per month")}
