@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge, bookingStatusTone } from "@/components/ui/StatusBadge";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -39,13 +40,6 @@ const statusLabel: Record<BookingStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
-const statusBadgeClassName: Record<BookingStatus, string> = {
-  PENDING: "bg-warn-soft text-warn-ink",
-  CONFIRMED: "bg-brand-soft text-brand-dark",
-  COMPLETED: "bg-surface-muted text-muted",
-  CANCELLED: "bg-[#f9e4e0] text-[#8c2822]",
-};
-
 export interface BookingNotice {
   tone: "success" | "error";
   text: string;
@@ -81,11 +75,9 @@ function BookingCard({
         <h3 className="m-0 min-w-0 text-body font-semibold text-ink">
           {student.name}
         </h3>
-        <span
-          className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[booking.status]}`}
-        >
+        <StatusBadge status={booking.status.toLowerCase()} tone={bookingStatusTone[booking.status]}>
           {statusLabel[booking.status]}
-        </span>
+        </StatusBadge>
       </div>
 
       <p className="m-0 text-label text-ink">

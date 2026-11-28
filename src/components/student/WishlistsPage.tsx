@@ -146,7 +146,7 @@ export function WishlistsPageContent({
           >
             <p className="m-0 text-body">{error}</p>
             <button
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-current bg-transparent px-4 py-2 font-semibold text-current btn-secondary"
               onClick={onRetry}
               type="button"
             >
@@ -165,7 +165,7 @@ export function WishlistsPageContent({
               Save a hostel while exploring and it will appear here.
             </p>
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-4 py-2.5 font-semibold text-white"
               href="/"
             >
               Explore hostels
@@ -260,7 +260,7 @@ export function WishlistsPageContent({
             </div>
             {hasMore && (
               <button
-                className="mt-7 mx-auto flex min-w-[140px] items-center justify-center rounded-full bg-brand px-4 py-2.5 font-semibold text-white disabled:cursor-wait disabled:opacity-60"
+                className="mt-7 mx-auto flex min-h-11 min-w-[140px] items-center justify-center rounded-lg border border-line bg-white px-4 py-2.5 font-semibold text-ink btn-secondary disabled:cursor-wait disabled:opacity-60"
                 disabled={isLoadingMore}
                 onClick={onLoadMore}
                 type="button"

@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -26,11 +27,11 @@ const currencyFormatter = new Intl.NumberFormat("en-PK", {
 const secondaryButtonClassName =
   "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-label font-semibold text-ink no-underline shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 hover:border-line-strong hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2! focus-visible:outline-brand! btn-secondary";
 
-const statusBadgeClassName: Record<ListingStatus, string> = {
-  ACTIVE: "bg-brand-soft text-brand-dark",
-  PENDING_REVIEW: "bg-warn-soft text-warn-ink",
-  DRAFT: "bg-surface-muted text-muted",
-  SUSPENDED: "bg-[#f9e4e0] text-[#8c2822]",
+const listingStatusTone: Record<ListingStatus, StatusTone> = {
+  ACTIVE: "info",
+  PENDING_REVIEW: "warning",
+  DRAFT: "neutral",
+  SUSPENDED: "danger",
 };
 
 function StatusNote({ status }: { status: ListingStatus }) {
@@ -81,11 +82,9 @@ function ListingCard({ listing }: { listing: OwnerListing }) {
           <h3 className="m-0 min-w-0 text-body font-semibold text-ink">
             {listing.name}
           </h3>
-          <span
-            className={`rounded-full px-[10px] py-[2px] text-meta font-bold ${statusBadgeClassName[listing.status]}`}
-          >
+          <StatusBadge tone={listingStatusTone[listing.status]}>
             {getListingStatusLabel(listing.status)}
-          </span>
+          </StatusBadge>
         </div>
         <p className="m-0 text-label text-muted">{location}</p>
         <p className="m-0 text-label text-ink">

@@ -128,7 +128,7 @@ function ConversationListHeader({
         </label>
         <input
           autoComplete="off"
-          className="h-11 w-full rounded-full border border-line bg-surface px-4 text-label text-ink placeholder:text-muted focus:border-brand focus:outline-2 focus:outline-brand"
+          className="h-11 w-full rounded-lg border border-control-border bg-surface px-4 text-label text-ink placeholder:text-muted focus-visible:border-brand"
           id="conversation-search"
           onChange={(event) => onSearchChange(event.currentTarget.value)}
           placeholder="Search hostels or people"
@@ -164,7 +164,7 @@ function ConversationListEmptyState({
           When you contact a hostel, your conversations will appear here.
         </p>
         <Link
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full border border-ink px-4 text-label font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-ink px-4 text-label font-semibold text-ink no-underline hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand btn-secondary"
           href="/search"
         >
           Get started
@@ -187,7 +187,7 @@ function ConversationListEmptyState({
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {searchQuery.trim() && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
+            className="min-h-11 cursor-pointer rounded-lg border border-line bg-surface px-4 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onSearchChange("")}
             type="button"
           >
@@ -196,7 +196,7 @@ function ConversationListEmptyState({
         )}
         {unreadOnly && (
           <button
-            className="cursor-pointer rounded-full border border-line bg-surface px-4 py-2 text-label font-semibold text-ink hover:border-brand btn-secondary"
+            className="min-h-11 cursor-pointer rounded-lg border border-line bg-surface px-4 text-label font-semibold text-ink hover:border-brand btn-secondary"
             onClick={() => onUnreadOnlyChange(false)}
             type="button"
           >
@@ -241,7 +241,7 @@ export function ConversationList({
       />
       {error && (
         <div
-          className="m-3 rounded-lg border border-[#e4b8aa] bg-[#fff5f1] p-3 text-label text-[#772e1b]"
+          className="m-3 rounded-lg border border-danger bg-surface p-3 text-label text-danger"
           role="alert"
         >
           <p className="m-0">{error}</p>
@@ -281,7 +281,7 @@ export function ConversationList({
               <li className="border-t border-line first:border-t-0" key={conversation.id}>
                 <button
                   aria-current={selected ? "page" : undefined}
-                  className={`flex w-full min-w-0 items-center gap-[11px] p-[14px_16px] text-left text-inherit transition-colors hover:bg-[#f4f4ed] ${selected ? "bg-[#f4f4ed]" : "bg-transparent"}`}
+                  className={`flex w-full min-w-0 items-center gap-[11px] p-[14px_16px] text-left text-inherit transition-colors hover:bg-surface-muted ${selected ? "bg-surface-muted shadow-[inset_3px_0_0_var(--brand)]" : "bg-transparent"}`}
                   onClick={() => onSelect(conversation.id)}
                   type="button"
                 >
