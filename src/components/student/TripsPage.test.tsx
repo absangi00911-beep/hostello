@@ -42,8 +42,8 @@ describe("TripsPage", () => {
 
     expect(markup).toContain("Gulberg Student Stay");
     expect(markup).toContain("Lahore");
-    expect(markup).toContain("02-Nov-2026");
-    expect(markup).toContain("02-Dec-2026");
+    expect(markup).toContain("2 Nov 2026");
+    expect(markup).toContain("2 Dec 2026");
     expect(markup).toContain('data-status="confirmed"');
     expect(markup).toContain("Confirmed");
   });

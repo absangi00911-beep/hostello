@@ -14,6 +14,7 @@ import { DEFAULT_PAYMENT_METHOD } from "@/lib/payment-methods";
 import { useHostelDateSelection } from "./HostelDateSelectionProvider";
 import { trackOnce } from "@/lib/analytics/client";
 import { getScrollBehavior } from "@/lib/scroll-behavior";
+import { formatDateOnlyForDisplay } from "@/lib/format-date-only";
 
 interface BookableRoom {
   id: string;
@@ -191,23 +192,6 @@ function formatPrice(amount: number): string {
 
 function todayDateInputValue(): string {
   return getPakistanCalendarDate().toISOString().slice(0, 10);
-}
-
-function formatDateOnlyForDisplay(value: string): string {
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return new Intl.DateTimeFormat("en-PK", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(date);
-}
-
-// Review shows people-friendly dates; fall back to the raw value rather than "Invalid Date".
-function displayDateOrRaw(value: string): string {
-  return Number.isNaN(Date.parse(`${value}T00:00:00.000Z`))
-    ? value
-    : formatDateOnlyForDisplay(value);
 }
 
 function maxGuestsFor(room: BookableRoom | undefined): number {
@@ -710,10 +694,10 @@ export function HostelBookingCard({
                 <dt className="text-muted">Room</dt>
                 <dd className="m-0 font-semibold text-ink">{room.name}</dd>
                 <dt className="text-muted">Move in</dt>
-                <dd className="m-0 font-semibold text-ink">{displayDateOrRaw(checkIn)}</dd>
+                <dd className="m-0 font-semibold text-ink">{formatDateOnlyForDisplay(checkIn)}</dd>
                 <dt className="text-muted">Move out</dt>
                 <dd className="m-0 font-semibold text-ink">
-                  {displayDateOrRaw(checkOut)}
+                  {formatDateOnlyForDisplay(checkOut)}
                   <span className="block font-normal text-muted">
                     Checkout day is not an occupied night.
                   </span>
