@@ -288,7 +288,7 @@ export function HostelDetailGallery({
         <div className="hostel-detail-mobile-actions absolute inset-x-4 top-[max(16px,env(safe-area-inset-top))] z-20 hidden items-center justify-between [@media(max-width:720px)]:flex">
           <button
             aria-label="Go back"
-            className="grid size-11 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md"
+            className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-sm"
             onClick={goBack}
             type="button"
           >
@@ -297,7 +297,7 @@ export function HostelDetailGallery({
           <div className="flex items-center gap-3">
             <button
               aria-label={`Share ${name}`}
-              className="grid size-11 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md"
+              className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-sm"
               onClick={() => void shareListing()}
               type="button"
             >
@@ -306,7 +306,7 @@ export function HostelDetailGallery({
             <button
               aria-label={isSaved ? `Remove ${name} from saved hostels` : `Save ${name}`}
               aria-pressed={isSaved}
-              className="grid size-11 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/55 text-ink shadow-sm backdrop-blur-md disabled:cursor-wait disabled:opacity-[0.65]"
+              className="grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-white text-ink shadow-sm disabled:cursor-wait disabled:opacity-[0.65]"
               disabled={isSaving}
               onClick={() => void toggleSaved()}
               type="button"

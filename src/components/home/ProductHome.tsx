@@ -300,7 +300,7 @@ export default function ProductHome({
               <div className="m-0 py-8 text-body text-muted" role="alert">
                 <p className="m-0">{searchError}</p>
                 <button
-                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-line bg-white px-4 font-semibold text-ink"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-line bg-white px-4 font-semibold text-ink"
                   onClick={() => setSearchReload((current) => current + 1)}
                   type="button"
                 >

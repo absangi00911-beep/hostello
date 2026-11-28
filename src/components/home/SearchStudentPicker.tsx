@@ -21,7 +21,7 @@ export function SearchStudentPicker({
     <div>
       <div className="flex items-center justify-between gap-5">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-lg bg-[#f5f5f4] text-ink">
+          <span className="grid size-10 place-items-center rounded-lg bg-surface-muted text-ink">
             <GraduationCap aria-hidden="true" size={19} />
           </span>
           <span>
@@ -57,7 +57,7 @@ export function SearchStudentPicker({
       </div>
       <p className="mt-3 mb-4 text-meta text-muted">Search for 1-8 students.</p>
       <button
-        className="ml-auto block min-h-11 rounded-full bg-brand px-4 text-label font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
+        className="ml-auto block min-h-11 rounded-lg bg-brand px-4 text-label font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2! focus-visible:outline-brand focus-visible:outline-offset-2!"
         onClick={onDone}
         type="button"
       >

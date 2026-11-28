@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
 import {
+  RoommatesPage,
   parsePosts,
   validatePostInput,
   validateReportReason,
@@ -60,5 +62,23 @@ describe("validateReportReason", () => {
     expect(validateReportReason("ab")).toMatch(/3 to 500/);
     expect(validateReportReason("x".repeat(501))).toMatch(/3 to 500/);
     expect(validateReportReason("Spam")).toBeNull();
+  });
+});
+
+vi.mock("next/link", () => ({
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+describe("RoommatesPage", () => {
+  it("announces loading politely and keeps touch targets accessible", () => {
+    const markup = renderToStaticMarkup(
+      <RoommatesPage currentUserId="u1" hostelParam="green-view" />,
+    );
+
+    expect(markup).toContain("Roommates for this hostel");
+    expect(markup).toMatch(/role="status"[^>]*>Loading roommate posts…/);
+    expect(markup).toContain('href="/hostels/green-view"');
   });
 });

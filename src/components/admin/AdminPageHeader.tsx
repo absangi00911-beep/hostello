@@ -13,7 +13,7 @@ export function AdminPageHeader({ user }: { user: BrowseAccountUser }) {
   return (
     <ScrollAwareSurface
       as="header"
-      className="sticky top-0 z-30 bg-[#fcfcfb]"
+      className="sticky top-0 z-30 bg-surface"
       scrolledClassName="shadow-[0_4px_12px_rgb(0_0_0_/_8%)]"
     >
       <div className="mx-auto flex min-h-16 w-[min(1920px,calc(100%-var(--page-gutter-mobile)))] items-center justify-between md:min-h-20 md:w-[min(1920px,calc(100%-var(--page-gutter-total)))]">

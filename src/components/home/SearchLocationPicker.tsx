@@ -34,11 +34,11 @@ export function SearchLocationPicker({
       <div>
         <button
           aria-label="Nearby"
-          className="flex min-h-[58px] w-full items-center gap-3 rounded-xl border-0 bg-transparent px-2.5 text-left text-ink transition-colors hover:bg-[#f5f5f4] focus-visible:outline-2! focus-visible:outline-brand!"
+          className="flex min-h-[58px] w-full items-center gap-3 rounded-xl border-0 bg-transparent px-2.5 text-left text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand!"
           onClick={onSelectNearby}
           type="button"
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#eef3ff] text-brand">
+          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
             <MapPin aria-hidden="true" size={18} />
           </span>
           <span>
@@ -53,11 +53,11 @@ export function SearchLocationPicker({
             {matchingCities.map((city) => (
               <li key={city}>
                 <button
-                  className="flex min-h-[58px] w-full items-center gap-3 rounded-xl border-0 bg-transparent px-2.5 text-left text-ink transition-colors hover:bg-[#f5f5f4] focus-visible:outline-2! focus-visible:outline-brand!"
+                  className="flex min-h-[58px] w-full items-center gap-3 rounded-xl border-0 bg-transparent px-2.5 text-left text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2! focus-visible:outline-brand!"
                   onClick={() => onSelectCity(city)}
                   type="button"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#eef3ff] text-brand">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
                     <MapPin aria-hidden="true" size={18} />
                   </span>
                   <span>

@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { formatPrice } from "@hostello/shared";
 
 export interface RoommatePost {
@@ -58,7 +65,8 @@ export function validatePostInput(input: {
   budget: string;
 }): string | null {
   if (!input.bio.trim()) return "Tell other students a little about yourself.";
-  if (input.bio.trim().length > 200) return "Keep your bio under 200 characters.";
+  if (input.bio.trim().length > 200)
+    return "Keep your bio under 200 characters.";
   if (input.budget.trim() !== "") {
     const budget = Number(input.budget);
     if (!Number.isSafeInteger(budget) || budget <= 0) {
@@ -91,7 +99,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PK", {
 const inputClassName =
   "min-h-[44px] w-full rounded-[8px] border border-muted bg-white px-3 text-body text-ink focus-visible:border-brand! focus-visible:outline-brand!";
 const buttonClassName =
-  "inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-label font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
+  "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[8px] border border-line bg-white px-4 text-label font-semibold text-ink shadow-[0_1px_2px_rgb(15_23_42/0.06)] transition-[background-color,border-color,box-shadow,translate] duration-150 enabled:hover:border-line-strong enabled:hover:bg-surface-muted active:translate-y-px active:bg-line active:shadow-none disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:cursor-wait disabled:opacity-70 btn-secondary";
 const primaryButtonClassName =
   "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[8px] border-0 bg-brand px-5 text-body font-[650] text-white enabled:hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70";
 
@@ -114,6 +122,11 @@ export function RoommatesPage({
   const [budget, setBudget] = useState("");
   const [moveIn, setMoveIn] = useState("");
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const bioRef = useRef<HTMLTextAreaElement>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const bioCountId = useId();
+
   const [reportingId, setReportingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
 
@@ -122,7 +135,9 @@ export function RoommatesPage({
       const response = await fetch(endpoint, { signal });
       const payload: unknown = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(readApiError(payload, "Could not load roommate posts."));
+        throw new Error(
+          readApiError(payload, "Could not load roommate posts."),
+        );
       }
       const parsed = parsePosts(payload);
       if (!parsed) throw new Error("Could not load roommate posts.");
@@ -141,7 +156,9 @@ export function RoommatesPage({
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
         setLoadError(
-          error instanceof Error ? error.message : "Could not load roommate posts.",
+          error instanceof Error
+            ? error.message
+            : "Could not load roommate posts.",
         );
       })
       .finally(() => {
@@ -149,6 +166,12 @@ export function RoommatesPage({
       });
     return () => controller.abort();
   }, [load]);
+
+  useEffect(() => {
+    if (notice || actionError) {
+      feedbackRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [notice, actionError]);
 
   const ownPost = posts.find((post) => post.userId === currentUserId) ?? null;
   const otherPosts = posts.filter((post) => post.userId !== currentUserId);
@@ -159,6 +182,8 @@ export function RoommatesPage({
     setMoveIn(post.moveIn ? post.moveIn.slice(0, 10) : "");
     setNotice(null);
     setActionError(null);
+    setConfirmingDelete(false);
+    bioRef.current?.focus();
   }
 
   async function savePost(event: FormEvent<HTMLFormElement>) {
@@ -206,14 +231,18 @@ export function RoommatesPage({
     setActionError(null);
     setNotice(null);
     try {
-      const response = await fetch(`/api/roommates/${encodeURIComponent(post.id)}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/roommates/${encodeURIComponent(post.id)}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!response.ok) {
         const payload: unknown = await response.json().catch(() => null);
         throw new Error(readApiError(payload, "Could not delete your post."));
       }
       setPosts((current) => current.filter((entry) => entry.id !== post.id));
+      setConfirmingDelete(false);
       setNotice("Your post was deleted.");
     } catch (error) {
       setActionError(
@@ -224,7 +253,10 @@ export function RoommatesPage({
     }
   }
 
-  async function submitReport(event: FormEvent<HTMLFormElement>, post: RoommatePost) {
+  async function submitReport(
+    event: FormEvent<HTMLFormElement>,
+    post: RoommatePost,
+  ) {
     event.preventDefault();
     setActionError(null);
     setNotice(null);
@@ -262,7 +294,10 @@ export function RoommatesPage({
   }
 
   return (
-    <main id="main-content" className="mx-auto w-full max-w-[760px] px-4 pb-28 pt-8">
+    <main
+      id="main-content"
+      className="mx-auto w-full max-w-[760px] px-4 pb-28 pt-8"
+    >
       <Link
         className="text-label font-semibold text-brand hover:underline"
         href={`/hostels/${encodeURIComponent(hostelParam)}`}
@@ -277,25 +312,29 @@ export function RoommatesPage({
         after 30 days.
       </p>
 
-      {notice ? (
-        <p
-          className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
-          role="status"
-        >
-          {notice}
-        </p>
-      ) : null}
-      {actionError ? (
-        <p
-          className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
-          role="alert"
-        >
-          {actionError}
-        </p>
-      ) : null}
+      <div className="scroll-mt-4" ref={feedbackRef}>
+        {notice ? (
+          <p
+            className="mb-4 rounded-xl bg-brand-soft px-[13px] py-[11px] text-label text-brand-dark"
+            role="status"
+          >
+            {notice}
+          </p>
+        ) : null}
+        {actionError ? (
+          <p
+            className="mb-4 rounded-xl bg-surface-muted px-[13px] py-[11px] text-label text-danger"
+            role="alert"
+          >
+            {actionError}
+          </p>
+        ) : null}
+      </div>
 
       {isLoading ? (
-        <p className="text-muted">Loading roommate posts...</p>
+        <p className="text-muted" role="status">
+          Loading roommate posts…
+        </p>
       ) : loadError ? (
         <p className="rounded-xl bg-surface-muted p-4 text-danger" role="alert">
           {loadError}
@@ -307,7 +346,9 @@ export function RoommatesPage({
             className="mb-6 rounded-xl border border-line bg-surface p-5"
           >
             <h2 className="m-0 mb-3 text-body font-semibold text-ink">
-              {ownPost ? "Your post" : "Post that you're looking for a roommate"}
+              {ownPost
+                ? "Your post"
+                : "Post that you're looking for a roommate"}
             </h2>
 
             {ownPost ? (
@@ -325,15 +366,46 @@ export function RoommatesPage({
                   >
                     Edit
                   </button>
-                  <button
-                    className={buttonClassName}
-                    disabled={isBusy}
-                    onClick={() => deleteOwnPost(ownPost)}
-                    type="button"
-                  >
-                    Delete
-                  </button>
+                  {confirmingDelete ? null : (
+                    <button
+                      className={buttonClassName}
+                      disabled={isBusy}
+                      onClick={() => setConfirmingDelete(true)}
+                      type="button"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
+                {confirmingDelete ? (
+                  <div
+                    className="mt-3 border-t border-line pt-3"
+                    role="group"
+                    aria-label="Confirm deleting your post"
+                  >
+                    <p className="m-0 text-label font-semibold text-ink">
+                      Delete your post? Other students will no longer see it.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        className={buttonClassName}
+                        disabled={isBusy}
+                        onClick={() => deleteOwnPost(ownPost)}
+                        type="button"
+                      >
+                        {isBusy ? "Deleting…" : "Yes, delete post"}
+                      </button>
+                      <button
+                        className={buttonClassName}
+                        disabled={isBusy}
+                        onClick={() => setConfirmingDelete(false)}
+                        type="button"
+                      >
+                        Keep post
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
@@ -341,14 +413,19 @@ export function RoommatesPage({
               <label className="grid gap-1 text-label font-semibold text-ink">
                 <span>About you</span>
                 <textarea
+                  aria-describedby={bioCountId}
                   className={`${inputClassName} min-h-[90px] py-2`}
                   maxLength={200}
+                  ref={bioRef}
                   name="bio"
                   onChange={(event) => setBio(event.currentTarget.value)}
                   required
                   value={bio}
                 />
-                <span className="text-label font-normal text-muted">
+                <span
+                  className="text-label font-normal text-muted"
+                  id={bioCountId}
+                >
                   {bio.trim().length}/200
                 </span>
               </label>
@@ -404,12 +481,17 @@ export function RoommatesPage({
                   <p className="m-0 font-semibold text-ink">
                     {post.user.name}
                     {post.user.city ? (
-                      <span className="font-normal text-muted"> · {post.user.city}</span>
+                      <span className="font-normal text-muted">
+                        {" "}
+                        · {post.user.city}
+                      </span>
                     ) : null}
                   </p>
                   <p className="mb-0 mt-2 text-ink">{post.bio}</p>
                   <p className="mb-0 mt-2 text-label text-muted">
-                    {post.budget !== null ? `Budget ${formatPrice(post.budget)}/month` : null}
+                    {post.budget !== null
+                      ? `Budget ${formatPrice(post.budget)}/month`
+                      : null}
                     {post.budget !== null && post.moveIn ? " · " : null}
                     {post.moveIn
                       ? `Move-in ${dateFormatter.format(new Date(post.moveIn))}`
@@ -427,12 +509,18 @@ export function RoommatesPage({
                         <textarea
                           className={`${inputClassName} min-h-[70px] py-2`}
                           maxLength={500}
-                          onChange={(event) => setReason(event.currentTarget.value)}
+                          onChange={(event) =>
+                            setReason(event.currentTarget.value)
+                          }
                           value={reason}
                         />
                       </label>
                       <div className="flex gap-2">
-                        <button className={buttonClassName} disabled={isBusy} type="submit">
+                        <button
+                          className={buttonClassName}
+                          disabled={isBusy}
+                          type="submit"
+                        >
                           {isBusy ? "Sending…" : "Send report"}
                         </button>
                         <button

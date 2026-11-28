@@ -84,8 +84,8 @@ describe("HostelDetailGallery", () => {
     expect(markup).toContain('aria-label="Go back"');
     expect(markup).toContain('aria-label="Share Sample Hostel"');
     expect(markup).toContain('aria-label="Save Sample Hostel"');
-    expect(markup).toContain("backdrop-blur-md");
-    expect(markup).toContain("bg-white/55");
+    expect(markup).not.toContain("backdrop-blur");
+    expect(markup).not.toContain("bg-white/55");
   });
 
   it.each([

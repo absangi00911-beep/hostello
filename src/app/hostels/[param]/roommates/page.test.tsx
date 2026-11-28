@@ -45,7 +45,7 @@ describe("RoommatesRoute", () => {
     const markup = renderToStaticMarkup(await RoommatesRoute(props));
 
     expect(markup).toContain("Roommates for this hostel");
-    expect(markup).toContain("Loading roommate posts...");
+    expect(markup).toContain("Loading roommate posts…");
     expect(markup).toContain('href="/hostels/gulberg-stay"');
   });
 });
