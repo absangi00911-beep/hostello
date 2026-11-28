@@ -27,6 +27,32 @@ describe("BrowseCategoryNav", () => {
     expect(markup).toContain("aria-pressed:text-ink");
   });
 
+  it("marks the selected desktop category with an underline, not only a text colour change", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseCategoryNav category="women" onSelectCategory={() => {}} />,
+    );
+
+    expect(markup).toContain("aria-pressed:after:bg-ink");
+    expect(markup).toContain("aria-pressed:after:opacity-100");
+    expect(markup).toContain("after:opacity-0");
+    expect(markup).toContain("hover:after:opacity-100");
+    expect(markup).toContain("motion-reduce:after:transition-none");
+  });
+
+  it("keeps the underline off the mobile chips, which show selection with a border and fill", () => {
+    const markup = renderToStaticMarkup(
+      <BrowseCategoryNav
+        category="women"
+        onSelectCategory={() => {}}
+        variant="mobile"
+      />,
+    );
+
+    expect(markup).not.toContain("after:bottom-3");
+    expect(markup).toContain("aria-pressed:border-ink");
+    expect(markup).toContain("aria-pressed:bg-surface-muted");
+  });
+
   it("uses responsive Tailwind utilities for the mobile category strip", () => {
     const markup = renderToStaticMarkup(
       <BrowseCategoryNav
