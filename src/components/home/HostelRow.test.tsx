@@ -99,7 +99,7 @@ describe("HostelRow favorite action", () => {
     );
   });
 
-  it("allows hostel names and areas to wrap within mobile cards", () => {
+  it("lets hostel names and areas wrap to two lines at every width instead of truncating on desktop", () => {
     const markup = renderRow();
     const titleClass = markup.match(
       /<h3 class="([^"]*)" id="hostel-title-hostel-1"/,
@@ -107,11 +107,19 @@ describe("HostelRow favorite action", () => {
     const areaClass = markup.match(
       /<span class="([^"]*hostel-card-area[^"]*)">/,
     )?.[1];
+    const metaClass = markup.match(
+      /<div class="([^"]*hostel-card-meta[^"]*)">/,
+    )?.[1];
 
     expect(titleClass).toContain("line-clamp-2");
-    expect(titleClass).toContain("[@media(max-width:720px)]:whitespace-normal");
+    expect(titleClass).toContain("min-h-[2.5em]");
+    expect(titleClass).not.toContain("whitespace-nowrap");
+    expect(titleClass).not.toContain("text-ellipsis");
     expect(areaClass).toContain("line-clamp-2");
-    expect(areaClass).toContain("[@media(max-width:720px)]:whitespace-normal");
+    expect(areaClass).not.toContain("whitespace-nowrap");
+    expect(areaClass).not.toContain("text-ellipsis");
+    expect(metaClass).toContain("items-start");
+    expect(metaClass).not.toContain("items-center");
   });
 
   it("renders a white outlined heart directly over the image corner", () => {
