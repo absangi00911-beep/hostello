@@ -203,6 +203,13 @@ function formatDateOnlyForDisplay(value: string): string {
   }).format(date);
 }
 
+// Review shows people-friendly dates; fall back to the raw value rather than "Invalid Date".
+function displayDateOrRaw(value: string): string {
+  return Number.isNaN(Date.parse(`${value}T00:00:00.000Z`))
+    ? value
+    : formatDateOnlyForDisplay(value);
+}
+
 function maxGuestsFor(room: BookableRoom | undefined): number {
   return room ? Math.min(4, room.capacity) : 0;
 }
@@ -699,15 +706,27 @@ export function HostelBookingCard({
               <h3 className="m-0 text-label font-semibold" id="booking-review-title">
                 Review your booking
               </h3>
-              <p className="m-0">Room: {room.name}</p>
-              <p className="m-0">Move in: {checkIn}</p>
-              <p className="m-0">Move out: {checkOut} (checkout day is not an occupied night)</p>
-              <p className="m-0">{guests} {guests === 1 ? "guest" : "guests"}</p>
-              {estimatedTotal !== null && (
-                <p className="m-0 font-semibold">
-                  Estimated total: PKR {formatPrice(estimatedTotal)}
-                </p>
-              )}
+              <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">
+                <dt className="text-muted">Room</dt>
+                <dd className="m-0 font-semibold text-ink">{room.name}</dd>
+                <dt className="text-muted">Move in</dt>
+                <dd className="m-0 font-semibold text-ink">{displayDateOrRaw(checkIn)}</dd>
+                <dt className="text-muted">Move out</dt>
+                <dd className="m-0 font-semibold text-ink">
+                  {displayDateOrRaw(checkOut)}
+                  <span className="block font-normal text-muted">
+                    Checkout day is not an occupied night.
+                  </span>
+                </dd>
+                <dt className="text-muted">Guests</dt>
+                <dd className="m-0 font-semibold text-ink">{guests}</dd>
+                {estimatedTotal !== null && (
+                  <>
+                    <dt className="text-muted">Estimated total</dt>
+                    <dd className="m-0 font-bold text-ink">PKR {formatPrice(estimatedTotal)}</dd>
+                  </>
+                )}
+              </dl>
               <button
                 className="min-h-11 cursor-pointer rounded-lg border border-line bg-white px-3 font-semibold text-ink"
                 onClick={changeBookingDetails}
