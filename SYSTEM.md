@@ -35,10 +35,10 @@ Do not edit by hand. Run `node scripts/check-docs.mjs --write` after changing ro
 | Fact | Value |
 |---|---:|
 | Page files (`src/app/**/page.tsx`) | 40 |
-| API route handler files | 84 |
+| API route handler files | 85 |
 | Prisma models | 34 |
 | Prisma migrations | 37 |
-| Vitest test files | 307 |
+| Vitest test files | 309 |
 | Cron jobs in the schedule registry | 11 |
 | Cron route handlers | 11 |
 <!-- docs-check:end -->
@@ -450,6 +450,7 @@ All endpoints live under `/api`. Responses generally use `{ "data": {}, "message
 | Account | `/api/auth/delete-account` (not for admins), `/api/profile`, `/api/profile/change-password` | Signed in |
 | Student verification | `/api/user/verify-student`, `/api/user/verify-student/upload` | Student |
 | Hostels | `/api/hostels` (GET search is public; POST creates a listing as Owner), `/api/hostels/nearby` (POST nearby search; 25 km radius), `/api/hostels/mine` | Public / Owner |
+| | `/api/home-hostels` (GET public category listings grouped across the largest cities; cached for 60 seconds) | Public |
 | | `/api/hostels/[param]` (GET returns owner contact details, Admin; PATCH edits the listing, Owner) | Admin / Owner |
 | | `/api/hostels/[param]/public` (public-safe detail projection) | Public |
 | | `/api/hostels/[param]/availability` (informational 12-month calendar), `/api/hostels/[param]/availability/exact` (room seats for a requested stay), `/api/hostels/[param]/view` (view counter) | Public |

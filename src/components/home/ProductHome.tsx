@@ -8,7 +8,7 @@ import { BrowseCategoryNav } from "./BrowseCategoryNav";
 import { HostelSearchBar } from "./HostelSearchBar";
 import type { HostelSearchFilters } from "./HostelSearchBar";
 import { HostelRow, type HostelListing } from "./HostelRow";
-import { buildHomeListingsQuery, INITIAL_HOME_CATEGORY, isHostelSearchResponse } from "./home-listings";
+import { INITIAL_HOME_CATEGORY, isHostelSearchResponse } from "./home-listings";
 import { MobileTabNavigation } from "@/components/layout/MobileTabNavigation";
 import { isLoadedResultsCurrent, type LoadedResults } from "@/lib/loaded-results";
 import { NEARBY_COORDINATES_SESSION_KEY } from "@/lib/nearby-search";
@@ -122,9 +122,7 @@ export default function ProductHome({
       setSearchError(null);
 
       try {
-        const params = buildHomeListingsQuery(category);
-
-        const response = await fetch(`/api/hostels?${params}`, {
+        const response = await fetch(`/api/home-hostels?category=${category}`, {
           signal: controller.signal,
         });
         const result: unknown = await response.json();
